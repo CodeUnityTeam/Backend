@@ -1,0 +1,75 @@
+# General
+*.pyc
+__pycache__/
+.env
+*.log
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Frontend
+/frontend/build/
+/frontend/dist/
+/frontend/.next/
+/frontend/out/
+/frontend/node_modules/
+
+# Backend
+/backend/venv/
+/backend/.env
+/backend/db.sqlite3
+/backend/media/
+/backend/staticfiles/
+/backend/logs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+.dockerignore
+
+# Python
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.pytest_cache/
+.coverage
+.pytest_cache/
+.pytype/
+cython_debug/
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
