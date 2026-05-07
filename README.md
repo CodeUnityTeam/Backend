@@ -1,20 +1,156 @@
 ###### Backend
+
+Проект использует **uv** — быстрый менеджер пакетов Python.
+
+#### Установка uv
+
+Если uv не установлен глобально:
+
 ```bash
+
 # Установка зависимостей через uv
 ```
 [Справка](https://habr.com/ru/articles/875840)
 
+
 ```bash
 pip install uv
-uv pip install -r requirements.txt
-# Или если uv уже установлен:
-# uv pip install -r requirements.txt
+```
 
+#### Инициализация проекта с uv
+
+Проект уже содержит `pyproject.toml` с зависимостями. Для начала работы:
+
+1. **Создание виртуального окружения** (если ещё не создано):
+
+```bash
+uv venv .venv --python 3.12
+```
+
+2. **Активация окружения**:
+
+```bash
+source .venv/bin/activate
+```
+
+3. **Установка зависимостей**:
+
+```bash
+uv pip install -e .
+```
+
+Или просто (uv автоматически использует виртуальное окружение):
+
+```bash
+uv sync
+```
+
+#### Управление зависимостями
+
+- **Добавить новую зависимость**:
+
+```bash
+uv add package-name
+```
+
+- **Удалить зависимость**:
+
+```bash
+uv remove package-name
+```
+
+- **Обновить все зависимости**:
+
+```bash
+uv pip compile --upgrade
+```
+
+#### Запуск проекта
+
+1. **Настройка переменных окружения**:
+
+Скопируйте пример файла окружения:
+
+```bash
+cp .env.example .env
+```
+
+Отредактируйте `.env` по необходимости.
+
+2. **Запуск базы данных** (опционально, если используется Docker):
+
+```bash
+docker-compose -f docker-compose.db.yaml up -d
+```
+
+3. **Применение миграций**:
+
+```bash
 python manage.py migrate
+```
+
+4. **Запуск сервера разработки**:
+
+```bash
 python manage.py runserver
 ```
 
-###### Запуск только базы данных для разработки
+Или с использованием gunicorn (для продакшена):
+
+```bash
+gunicorn config.wsgi:application --bind 0.0.0.0:8000
+```
+
+### Разработка
+
+#### Добавление зависимостей для разработки
+
+Используйте опциональную группу `dev`:
+
+```bash
+uv add --group dev pytest black flake8
+```
+
+#### Форматирование кода
+
+Проект настроен с использованием `black` и `isort`:
+
+```bash
+uv run black .
+uv run isort .
+```
+
+#### Проверка типов
+
+```bash
+uv run mypy .
+```
+
+#### Тестирование
+
+```bash
+uv run pytest
+```
+
+#### Миграция с requirements.txt
+
+Если вы ранее использовали `requirements.txt`, зависимости уже перенесены в `pyproject.toml`. Вы можете продолжать использовать `requirements.txt` для совместимости, но рекомендуется перейти на `pyproject.toml`.
+
+Для генерации `requirements.txt` из `pyproject.toml`:
+
+```bash
+uv pip compile -o requirements.txt pyproject.toml
+```
+
+#### Полезные команды uv
+
+- `uv python` — запуск Python с активированным окружением
+- `uv run` — запуск команды в виртуальном окружении
+- `uv pip list` — список установленных пакетов
+- `uv pip freeze` — вывод зависимостей в формате requirements
+- `uv pip compile` — компиляция зависимостей с разрешением версий
+
+#### Запуск только базы данных для разработки
 
 Если вы хотите работать с локальным Django-приложением, но использовать контейнеризованную базу данных:
 
@@ -23,32 +159,34 @@ python manage.py runserver
 docker-compose -f docker-compose.db.yaml up -d
 ```
 
-3. Проверьте статус контейнера:
+2. Проверьте статус контейнера:
 ```bash
 docker-compose -f docker-compose.db.yaml ps
 ```
 
-4. Настройте Django для подключения к базе данных:
+3. Настройте Django для подключения к базе данных:
    - Убедитесь, что в `config/settings.py` используются переменные окружения из `.env`
    - Выполните миграции:
 ```bash
 python manage.py migrate
 ```
 
-5. Остановка базы данных:
+4. Остановка базы данных:
 ```bash
-cd ../infra
 docker-compose -f docker-compose.db.yaml down
 ```
 
 > Примечание: Для работы с базой данных убедитесь, что порт 5432 свободен.
 
-Здесь создано базовое приложение config для запуска.
-Создать новое приложение можно команой django startapp <app_name>
- - Можно пойти через создание приложения api/ и писать там весь функционал бекенда.
- - Можно создавать отдельные приложения и работать в них.
+#### Структура Django приложения
 
-Общая структура Django приложения (для пользоователей или вопросов или проектов):
+Здесь создано базовое приложение config для запуска.
+Создать новое приложение можно командой `django startapp <app_name>`
+
+- Можно пойти через создание приложения api/ и писать там весь функционал бекенда.
+- Можно создавать отдельные приложения и работать в них.
+
+Общая структура Django приложения (для пользователей или вопросов или проектов):
 ```
 <app_name>/
     __init__.py
@@ -64,10 +202,11 @@ docker-compose -f docker-compose.db.yaml down
 Основная идея в том, что мы выносим запросы отдельным файлом и добавляем во views.py
 Бизнес-логику выносим в отдельный файл, например, services.py
 Здесь происходит создание, валидация данных, отправка почты.
-Ниже примеры:
 
-selectors.py - отдельно для построения запросов, пример (здесь обработка запроса):
-```
+#### Примеры
+
+**selectors.py** - отдельно для построения запросов, пример (здесь обработка запроса):
+```python
 def collect_detail(id):
     """Получение детальной информации о сборе."""
     cache_data = cache_collect_detail(id)
@@ -85,8 +224,8 @@ def collect_detail(id):
         raise Http404('Сбор не найден')
 ```
 
-services.py - отдельно для логики приложения, пример (здесь сервис кеширует данные и отправляет почту):
-```
+**services.py** - отдельно для логики приложения, пример (здесь сервис кеширует данные и отправляет почту):
+```python
 @transaction.atomic
 def collect_create(collect_data) -> Collect:
     """Создание нового сбора."""
@@ -96,51 +235,10 @@ def collect_create(collect_data) -> Collect:
     send_collect_created_email(collect)
     invalidate_collect_list_cache()
     return collect
-
-
-@transaction.atomic
-def payment_create(payment_data) -> Payment:
-    """Создание нового пожертвования."""
-    payment = Payment(**payment_data)
-    payment.full_clean()
-    payment.save()
-    send_payment_created_email(payment)
-    invalidate_collect_detail_cache(payment.collect.id)
-    invalidate_collect_list_cache()
-    return payment
 ```
 
-views.py:
-```
-class CollectViewSet(ModelViewSet):
-    """Создание сбора, список сборов, детальная информация."""
+## Дополнительные ресурсы
 
-    http_method_names = ('post', 'get')
-
-    def get_queryset(self):
-        """Запрос к связным данным с вычислениями."""
-        if self.action == 'retrieve':
-            return collect_detail()  # используем selectors.py
-        return collect_list()
-
-    def get_serializer_class(self):
-        """Выбор сериализатора."""
-        if self.action == 'create':
-            return CollectCreateSerializer
-        if self.action == 'retrieve':
-            return CollectDetailSerializer
-        return CollectListSerializer
-
-    def get_object(self):
-        """Получение объекта."""
-        return collect_detail(self.kwargs.get('pk'))
-
-    def perform_create(self, serializer) -> None:
-        """Создание сбора."""
-        collect_data = serializer.validated_data
-        collect_data['author'] = self.request.user
-        collect_create(collect_data)  # используем services.py
-        return collect_data
-```
-посмотреть можно тут:
-https://github.com/HackSoftware/Django-Styleguide
+- [Документация uv](https://docs.astral.sh/uv/)
+- [Документация Django](https://docs.djangoproject.com/)
+- [Документация Django REST Framework](https://www.django-rest-framework.org/)

@@ -1,0 +1,86 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "backend"
+version = "0.1.0"
+description = "Django backend project"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [
+    { name = "Your Name", email = "your.email@example.com" }
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.12",
+    "Framework :: Django",
+    "Framework :: Django :: 4.2",
+]
+
+dependencies = [
+    "Django>=4.2,<5.0",
+    "djangorestframework>=3.14,<4.0",
+    "django-cors-headers>=4.0,<5.0",
+    "psycopg2-binary>=2.9,<3.0",
+    "gunicorn>=21.0,<22.0",
+    "python-dotenv==1.2.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-django>=4.5",
+    "black>=24.0",
+    "flake8>=7.0",
+    "mypy>=1.8",
+]
+
+[project.scripts]
+manage = "manage:main"
+
+[tool.uv]
+# Конфигурация uv
+index-url = "https://pypi.org/simple"
+
+[tool.hatch.build.targets.wheel]
+packages = ["config"]
+
+[tool.black]
+line-length = 88
+target-version = ['py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings"
+python_files = ["tests.py", "test_*.py", "*_test.py"]
+addopts = "-v --tb=short"
+testpaths = ["."]
