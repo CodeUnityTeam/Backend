@@ -7,10 +7,11 @@
 Если uv не установлен глобально:
 
 ```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
 
-Или через pip:
+# Установка зависимостей через uv
+```
+[Справка](https://habr.com/ru/articles/875840)
+
 
 ```bash
 pip install uv
