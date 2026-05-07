@@ -1,7 +1,7 @@
 ###### Backend
 ```bash
 # Установка зависимостей через uv
-> [Справка] (https://habr.com/ru/articles/875840)
+[Справка] (https://habr.com/ru/articles/875840)
 ```
 ```bash
 pip install uv
