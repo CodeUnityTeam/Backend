@@ -28,6 +28,9 @@ dependencies = [
     "psycopg2-binary>=2.9,<3.0",
     "gunicorn>=21.0,<22.0",
     "python-dotenv==1.2.2",
+    "djangorestframework-simplejwt>=5.5.1",
+    "dj-rest-auth[with-social]>=7.2.0",
+    "django-allauth>=65.16.1",
 ]
 
 [project.optional-dependencies]
@@ -84,3 +87,10 @@ DJANGO_SETTINGS_MODULE = "config.settings"
 python_files = ["tests.py", "test_*.py", "*_test.py"]
 addopts = "-v --tb=short"
 testpaths = ["."]
+
+[dependency-groups]
+dev = [
+    "black>=26.3.1",
+    "flake8>=7.3.0",
+    "pytest>=9.0.3",
+]
