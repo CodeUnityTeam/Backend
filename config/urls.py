@@ -1,11 +1,7 @@
-from django.contrib import admin
-from django.urls import path
-from django.http import JsonResponse
 from django.conf import settings
 from django.conf.urls.static import static
-
-from datetime import datetime
-
+from django.contrib import admin
+from django.urls import path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
