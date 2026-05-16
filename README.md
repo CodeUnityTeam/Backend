@@ -108,16 +108,15 @@ gunicorn config.wsgi:application --bind 0.0.0.0:8000
 Используйте опциональную группу `dev`:
 
 ```bash
-uv add --group dev pytest black flake8
+uv add --group dev pytest ruff flake8
 ```
 
 #### Форматирование кода
 
-Проект настроен с использованием `black` и `isort`:
+Проект настроен с использованием `ruff`:
 
 ```bash
-uv run black .
-uv run isort .
+uv run ruff check .
 ```
 
 #### Проверка типов
