@@ -39,7 +39,10 @@ INSTALLED_APPS = [
     "dj_rest_auth.registration",
     "rest_framework_simplejwt",
     "corsheaders",
-    "users",
+    "users.apps.AuthConfig",
+    "projects.apps.ProjectsConfig",
+    "qna.apps.QnaConfig",
+    "feedback.apps.FeedbackConfig",
 ]
 
 MIDDLEWARE = [

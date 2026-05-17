@@ -1,15 +1,16 @@
-from dj_rest_auth.registration.views import SocialLoginView
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
-from allauth.socialaccount.providers.yandex.views import YandexOAuth2Adapter
 from allauth.socialaccount.providers.mailru.views import MailRuOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
+from allauth.socialaccount.providers.yandex.views import YandexOAuth2Adapter
+from dj_rest_auth.registration.views import SocialLoginView
 
 from config.settings import SOCIALACCOUNT_PROVIDERS
 
 
 class SocialLogin(SocialLoginView):
-    """
-    Базовый View для обработки запросов авторизации через сторонние приложения.
+    """Базовый View.
+
+    Для обработки запросов авторизации через сторонние приложения.
     """
 
     client_class = OAuth2Client
