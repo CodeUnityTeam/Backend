@@ -1,8 +1,9 @@
 import uuid
 
-from core.constants.users import SKILL_NAME_LENGTH
 from django.conf import settings
 from django.db import models
+
+from core.constants.users import SKILL_NAME_LENGTH
 
 
 class Skill(models.Model):

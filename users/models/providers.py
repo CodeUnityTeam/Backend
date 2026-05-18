@@ -1,7 +1,8 @@
 import uuid
 
-from core.constants.users import OAUTHPROVIDER_NAME_LENGTH
 from django.db import models
+
+from core.constants.users import OAUTHPROVIDER_NAME_LENGTH
 
 
 class OauthProvider(models.Model):

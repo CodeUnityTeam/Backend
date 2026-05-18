@@ -1,8 +1,8 @@
 from django.apps import AppConfig
 
 
-class AuthConfig(AppConfig):
-    """Приложение авторизации."""
+class UsersConfig(AppConfig):
+    """Приложение пользователей."""
 
-    default_auto_field = "django.db.models.BigAutoField"
-    name = "users"
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'users'

@@ -37,23 +37,3 @@ class TimestampMixin(CreatedAtMixin, UpdatedAtMixin):
     class Meta(CreatedAtMixin.Meta, UpdatedAtMixin.Meta):
         abstract = True
         ordering = ('-updated_at', '-created_at')
-
-
-class BusinessDateTimeMixin(models.Model):
-    """Миксин для хранения бизнесовых даты и времени."""
-
-    create_date_time = models.DateTimeField(
-        'Дата и время создания',
-        auto_now_add=True,
-        help_text='Дата и время создания бизнес-сущности.',
-    )
-    update_date_time = models.DateTimeField(
-        'Дата и время обновления',
-        auto_now=True,
-        help_text='Дата и время обновления бизнес-сущности.',
-    )
-
-    class Meta:
-        abstract = True
-        ordering = ('-update_date_time', '-create_date_time')
-        default_related_name = '%(app_label)s_%(class)s'
