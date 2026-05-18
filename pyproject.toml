@@ -38,7 +38,6 @@ dependencies = [
 dev = [
     "pytest>=7.0",
     "pytest-django>=4.5",
-    "black>=24.0",
     "flake8>=7.0",
     "mypy>=1.8",
 ]
@@ -52,30 +51,6 @@ index-url = "https://pypi.org/simple"
 
 [tool.hatch.build.targets.wheel]
 packages = ["config"]
-
-[tool.black]
-line-length = 88
-target-version = ['py312']
-include = '\.pyi?$'
-extend-exclude = '''
-/(
-  \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | venv
-  | _build
-  | buck-out
-  | build
-  | dist
-)/
-'''
-
-[tool.isort]
-profile = "black"
-line_length = 88
 
 [tool.mypy]
 python_version = "3.12"
@@ -91,7 +66,7 @@ testpaths = ["."]
 
 [dependency-groups]
 dev = [
-    "black>=26.3.1",
     "flake8>=7.3.0",
     "pytest>=9.0.3",
+    "ruff>=0.15.13",
 ]
