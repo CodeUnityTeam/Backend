@@ -1,4 +1,3 @@
-# flake8: noqa
 import os
 from datetime import timedelta
 from pathlib import Path
@@ -14,7 +13,7 @@ SPECTACULAR_SETTINGS = {
     'SERVE_INCLUDE_SCHEMA': False,
     'TERMS_OF_SERVICE': '',
     'CONTACT': {'name': '', 'email': ''},
-    'LICENSE': {'name': ''}, 
+    'LICENSE': {'name': ''},
 }
 
 BASE_DIR = Path(__file__).resolve().parent.parent
