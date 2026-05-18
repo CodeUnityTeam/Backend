@@ -7,6 +7,16 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'CodeUnity',
+    'DESCRIPTION': "Platform for project's and developer's unity",
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'TERMS_OF_SERVICE': '',
+    'CONTACT': {'name': '', 'email': ''},
+    'LICENSE': {'name': ''}, 
+}
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv("SECRET_KEY")
@@ -29,6 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "rest_framework.authtoken",
+    'drf_spectacular',
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
@@ -145,6 +156,7 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "dj_rest_auth.jwt_auth.JWTCookieAuthentication",
     ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 REST_AUTH = {
