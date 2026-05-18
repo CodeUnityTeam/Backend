@@ -28,13 +28,16 @@ dependencies = [
     "psycopg2-binary>=2.9,<3.0",
     "gunicorn>=21.0,<22.0",
     "python-dotenv==1.2.2",
+    "djangorestframework-simplejwt>=5.5.1",
+    "dj-rest-auth[with-social]>=7.2.0",
+    "django-allauth>=65.16.1",
+    "drf-spectacular>=0.29.0",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0",
     "pytest-django>=4.5",
-    "black>=24.0",
     "flake8>=7.0",
     "mypy>=1.8",
 ]
@@ -49,30 +52,6 @@ index-url = "https://pypi.org/simple"
 [tool.hatch.build.targets.wheel]
 packages = ["config"]
 
-[tool.black]
-line-length = 88
-target-version = ['py312']
-include = '\.pyi?$'
-extend-exclude = '''
-/(
-  \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | venv
-  | _build
-  | buck-out
-  | build
-  | dist
-)/
-'''
-
-[tool.isort]
-profile = "black"
-line_length = 88
-
 [tool.mypy]
 python_version = "3.12"
 warn_return_any = true
@@ -84,3 +63,10 @@ DJANGO_SETTINGS_MODULE = "config.settings"
 python_files = ["tests.py", "test_*.py", "*_test.py"]
 addopts = "-v --tb=short"
 testpaths = ["."]
+
+[dependency-groups]
+dev = [
+    "flake8>=7.3.0",
+    "pytest>=9.0.3",
+    "ruff>=0.15.13",
+]
