@@ -50,7 +50,7 @@ INSTALLED_APPS = [
     "dj_rest_auth.registration",
     "rest_framework_simplejwt",
     "corsheaders",
-    "users.apps.AuthConfig",
+    "users.apps.UsersConfig",
     "projects.apps.ProjectsConfig",
     "qna.apps.QnaConfig",
     "feedback.apps.FeedbackConfig",

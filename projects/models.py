@@ -1,6 +1,6 @@
 import uuid
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.core.validators import MaxLengthValidator, MinLengthValidator
 from django.db import models
 
@@ -25,6 +25,8 @@ from users.models.skills import Skill
 from users.models.specializations import Specialization
 
 from .validators import validate_location
+
+User = get_user_model()
 
 
 class WorkFormat(models.Model):

@@ -1,10 +1,9 @@
-from dj_rest_auth.registration.views import SocialLoginView
-from drf_spectacular.utils import extend_schema_view, extend_schema
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.mailru.views import MailRuOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from allauth.socialaccount.providers.yandex.views import YandexOAuth2Adapter
 from dj_rest_auth.registration.views import SocialLoginView
+from drf_spectacular.utils import extend_schema, extend_schema_view
 
 from config.settings import SOCIALACCOUNT_PROVIDERS
 
@@ -19,7 +18,7 @@ class SocialLogin(SocialLoginView):
 
 
 @extend_schema_view(
-    post=extend_schema(tags=['social_auth'], summary="Вход через Google")
+    post=extend_schema(tags=['social_auth'], summary="Вход через Google"),
 )
 class GoogleLogin(SocialLogin):
     """View для обработки запросов авторизации через Google."""
@@ -29,7 +28,7 @@ class GoogleLogin(SocialLogin):
 
 
 @extend_schema_view(
-    post=extend_schema(tags=['social_auth'], summary="Вход через Яндекс")
+    post=extend_schema(tags=['social_auth'], summary="Вход через Яндекс"),
 )
 class YandexLogin(SocialLogin):
     """View для обработки запросов авторизации через Yandex."""
@@ -39,7 +38,7 @@ class YandexLogin(SocialLogin):
 
 
 @extend_schema_view(
-    post=extend_schema(tags=['social_auth'], summary="Вход через Mail.ru")
+    post=extend_schema(tags=['social_auth'], summary="Вход через Mail.ru"),
 )
 class MailRuLogin(SocialLogin):
     """View для обработки запросов авторизации через Mail.ru."""

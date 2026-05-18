@@ -1,6 +1,6 @@
 import uuid
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.db import models
 
 from core.constants import (
@@ -13,6 +13,8 @@ from core.constants import (
     STATUS_FEEDBACK,
 )
 
+User = get_user_model()
+
 
 class FeedbackForm(models.Model):
     """Форма обратной связи, отправленная пользователем.
@@ -22,7 +24,7 @@ class FeedbackForm(models.Model):
     - Можно прикрепить изображение.
     """
 
-    feedback = models.UUIDField(
+    feedback_id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
         editable=False,
@@ -111,7 +113,7 @@ class FeedbackImage(models.Model):
         auto_now_add=True,
         verbose_name='Дата и время загрузки',
     )
-    image_url = models.CharField(
+    image_url = models.URLField(
         max_length=MAX_IMAGE_URL,
         verbose_name='URL изображения',
     )

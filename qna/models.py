@@ -1,6 +1,6 @@
 import uuid
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.db import models
 
 from core.constants import (
@@ -11,6 +11,8 @@ from core.constants import (
 from users.models.skills import Skill
 
 from .mixins import BaseImageMixin
+
+User = get_user_model()
 
 
 class Question(models.Model):
@@ -67,6 +69,7 @@ class Question(models.Model):
     class Meta:
         """Метаданные модели."""
 
+        ordering = ('-created_at',)
         db_table = 'questions'
         verbose_name = 'Вопрос'
         verbose_name_plural = 'Вопросы'

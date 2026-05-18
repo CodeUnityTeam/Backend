@@ -36,7 +36,7 @@ class BaseImageMixin(models.Model):
         db_column='uploaded_by',
         verbose_name='Загружено',
     )
-    image_url = models.CharField(
+    image_url = models.URLField(
         max_length=MAX_IMAGE_URL,
         verbose_name='URL изображения',
     )
