@@ -1,6 +1,5 @@
 import uuid
 
-from django.contrib.auth.models import User
 from django.db import models
 
 from core.constants import MAX_IMAGE_URL, MAX_MINE_TYPE, MAX_ORIGINAL_NAME
@@ -31,7 +30,7 @@ class BaseImageMixin(models.Model):
         verbose_name='Дата и время загрузки',
     )
     uploaded_by = models.ForeignKey(
-        User,
+        'users.User',
         on_delete=models.CASCADE,
         db_column='uploaded_by',
         verbose_name='Загружено',

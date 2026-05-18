@@ -1,11 +1,13 @@
 from django.contrib import admin
-from django.contrib.auth import get_user_model
 
-User = get_user_model()
+from users.models import User
 
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
     """Административная панель пользователей."""
 
-    list_display = '__all__'
+    list_display = (
+        'user_id',
+        'role',
+    )

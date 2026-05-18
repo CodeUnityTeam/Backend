@@ -1,6 +1,5 @@
 import uuid
 
-from django.contrib.auth import get_user_model
 from django.core.validators import MaxLengthValidator, MinLengthValidator
 from django.db import models
 
@@ -21,12 +20,8 @@ from core.constants import (
     STATUS_PROJECT,
     STATUS_RESPONSE_PROJECT,
 )
-from users.models.skills import Skill
-from users.models.specializations import Specialization
 
 from .validators import validate_location
-
-User = get_user_model()
 
 
 class WorkFormat(models.Model):
@@ -66,7 +61,7 @@ class Project(models.Model):
         verbose_name='Идентификатор проекта',
     )
     author = models.ForeignKey(
-        User,
+        'users.User',
         on_delete=models.CASCADE,
         related_name='projects',
         verbose_name='Автор проекта',
@@ -160,7 +155,7 @@ class Project(models.Model):
         ),
     )
     skills = models.ManyToManyField(
-        Skill,
+        'users.Skill',
         related_name='projects',
         db_table='project_skills',
         verbose_name='Навыки для проекта',
@@ -172,7 +167,7 @@ class Project(models.Model):
         verbose_name='Формат работы',
     )
     specializations = models.ManyToManyField(
-        Specialization,
+        'users.Specialization',
         related_name='projects',
         db_table='project_specializations',
         verbose_name='Специализации (роли в проекте)',
@@ -209,7 +204,7 @@ class ProjectParticipant(models.Model):
         verbose_name='Проект',
     )
     user = models.ForeignKey(
-        User,
+        'users.User',
         on_delete=models.CASCADE,
         db_column='user_id',
         related_name='project_participations',
@@ -254,7 +249,7 @@ class ProjectLike(models.Model):
     """
 
     user = models.ForeignKey(
-        User,
+        'users.User',
         on_delete=models.CASCADE,
         db_column='user_id',
         related_name='project_likes',
@@ -318,7 +313,7 @@ class Response(models.Model):
         verbose_name='Проект',
     )
     user = models.ForeignKey(
-        User,
+        'users.User',
         on_delete=models.CASCADE,
         db_column='user_id',
         related_name='responses',

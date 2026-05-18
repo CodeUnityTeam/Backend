@@ -1,6 +1,5 @@
 import uuid
 
-from django.contrib.auth import get_user_model
 from django.db import models
 
 from core.constants import (
@@ -8,11 +7,9 @@ from core.constants import (
     MAX_LEN_TITLE,
     ZERO_LIKE_COUNT,
 )
-from users.models.skills import Skill
+from users.models import Skill
 
 from .mixins import BaseImageMixin
-
-User = get_user_model()
 
 
 class Question(models.Model):
@@ -30,7 +27,7 @@ class Question(models.Model):
         verbose_name='Идентификатор вопроса',
     )
     user = models.ForeignKey(
-        User,
+        'users.User',
         on_delete=models.CASCADE,
         db_column='user_id',
         related_name='questions',
@@ -101,7 +98,7 @@ class Answer(models.Model):
         verbose_name='Вопрос',
     )
     user = models.ForeignKey(
-        User,
+        'users.User',
         on_delete=models.CASCADE,
         db_column='user_id',
         related_name='answers',
@@ -157,7 +154,7 @@ class QuestionLike(models.Model):
     """Лайки, поставленные пользователями вопросам."""
 
     user = models.ForeignKey(
-        User,
+        'users.User',
         on_delete=models.CASCADE,
         db_column='user_id',
         related_name='question_likes',
@@ -203,7 +200,7 @@ class AnswerLike(models.Model):
     """Лайки, поставленные пользователями ответам."""
 
     user = models.ForeignKey(
-        User,
+        'users.User',
         on_delete=models.CASCADE,
         db_column='user_id',
         related_name='answer_likes',
