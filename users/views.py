@@ -18,30 +18,30 @@ class SocialLogin(SocialLoginView):
 
 
 @extend_schema_view(
-    post=extend_schema(tags=['social_auth'], summary="Вход через Google"),
+    post=extend_schema(tags=['social_auth'], summary='Вход через Google'),
 )
 class GoogleLogin(SocialLogin):
     """View для обработки запросов авторизации через Google."""
 
     adapter_class = GoogleOAuth2Adapter
-    callback_url = SOCIALACCOUNT_PROVIDERS["google"]["CALLBACK_URL"]
+    callback_url = SOCIALACCOUNT_PROVIDERS['google']['CALLBACK_URL']
 
 
 @extend_schema_view(
-    post=extend_schema(tags=['social_auth'], summary="Вход через Яндекс"),
+    post=extend_schema(tags=['social_auth'], summary='Вход через Яндекс'),
 )
 class YandexLogin(SocialLogin):
     """View для обработки запросов авторизации через Yandex."""
 
     adapter_class = YandexOAuth2Adapter
-    callback_url = SOCIALACCOUNT_PROVIDERS["yandex"]["CALLBACK_URL"]
+    callback_url = SOCIALACCOUNT_PROVIDERS['yandex']['CALLBACK_URL']
 
 
 @extend_schema_view(
-    post=extend_schema(tags=['social_auth'], summary="Вход через Mail.ru"),
+    post=extend_schema(tags=['social_auth'], summary='Вход через Mail.ru'),
 )
 class MailRuLogin(SocialLogin):
     """View для обработки запросов авторизации через Mail.ru."""
 
     adapter_class = MailRuOAuth2Adapter
-    callback_url = SOCIALACCOUNT_PROVIDERS["mailru"]["CALLBACK_URL"]
+    callback_url = SOCIALACCOUNT_PROVIDERS['mailru']['CALLBACK_URL']

@@ -9,13 +9,13 @@ from drf_spectacular.views import (
 )
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path('admin/', admin.site.urls),
     path(
-        "api/v1/",
+        'api/v1/',
         include(
             [
                 path(
-                    "auth/",
+                    'auth/',
                     include(('users.urls', 'users'), namespace='users'),
                 ),
                 path(
