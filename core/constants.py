@@ -64,3 +64,25 @@ MAX_LEN_STATUS_FEEDBACK = 50
 MAX_CONTENT_FEEDBACK = 1000
 MAX_SUBJECT_FEEDBACK = 50
 
+# Константы модели 'users'
+
+MAX_USERNAME_LENGTH = 40
+MAX_FIRST_NAME_LENGTH = 35
+MAX_LAST_NAME_LENGTH = 64
+MAX_EMAIL_LENGTH = 254
+MAX_ROLE_LENGTH = 50
+ROLE_USER = 'user'
+ROLE_MODERATOR = 'moderator'
+ROLE_ADMIN = 'admin'
+ROLE_CHOICES_LIST = [
+    (ROLE_USER, 'Пользователь'),
+    (ROLE_MODERATOR, 'Модератор'),
+    (ROLE_ADMIN, 'Администратор'),
+]
+MAX_HASH_LENGTH = 128
+
+# Константы модели 'OauthProvider'
+OAUTHPROVIDER_NAME_LENGTH = 20
+
+# Константы модели 'Purpose'
+MAX_PURPOSE_NAME = 20
