@@ -25,7 +25,7 @@ DEBUG = os.getenv('DEBUG_MODE', default='False').lower() == 'true'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 
-#  DOMAIN = os.getenv('DOMAIN')
+# DOMAIN = os.getenv('DOMAIN')
 
 # CSRF_TRUSTED_ORIGINS = [os.getenv('CSRF_DOMAIN'),]
 
@@ -40,17 +40,20 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'drf_spectacular',
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
-    'allauth.socialaccount.providers.google',
-    'allauth.socialaccount.providers.mailru',
-    'allauth.socialaccount.providers.yandex',
-    'dj_rest_auth',
-    'dj_rest_auth.registration',
-    'rest_framework_simplejwt',
-    'corsheaders',
-    'users.apps.UsersConfig',
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.google",
+    "allauth.socialaccount.providers.mailru",
+    "allauth.socialaccount.providers.yandex",
+    "dj_rest_auth",
+    "dj_rest_auth.registration",
+    "rest_framework_simplejwt",
+    "corsheaders",
+    "users.apps.UsersConfig",
+    "projects.apps.ProjectsConfig",
+    "qna.apps.QnaConfig",
+    "feedback.apps.FeedbackConfig",
 ]
 
 MIDDLEWARE = [
@@ -111,7 +114,7 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'
     },
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
@@ -146,7 +149,6 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
-        'rest_framework.renderers.BrowsableAPIRenderer',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
@@ -176,15 +178,13 @@ SIMPLE_JWT = {
 }
 
 # Настройки dj-rest-auth для стандартной авторизации
-ACCOUNT_SIGNUP_FIELDS = ['first_name*', 'last_name*', 'email*', 'password1*']
+ACCOUNT_SIGNUP_FIELDS = ['firstname*', 'lastname*', 'email*', 'password1*']
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_LOGIN_METHODS = {'email'}
 
 # Настройки dj-rest-auth для авторизации черех сторонние сервисы
-SOCIALACCOUNT_ADAPTER = (
-    'allauth.socialaccount.adapter.DefaultSocialAccountAdapter'
-)
+SOCIALACCOUNT_ADAPTER = 'allauth.socialaccount.adapter.DefaultSocialAccountAdapter'
 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
