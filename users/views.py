@@ -6,6 +6,7 @@ from dj_rest_auth.registration.views import SocialLoginView
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
 from config.settings import SOCIALACCOUNT_PROVIDERS
+from users.serializers import SocialAuthCodeRequestSerializer
 
 
 class SocialLogin(SocialLoginView):
@@ -18,7 +19,11 @@ class SocialLogin(SocialLoginView):
 
 
 @extend_schema_view(
-    post=extend_schema(tags=['social_auth'], summary='Вход через Google'),
+    post=extend_schema(
+        tags=['social_auth'],
+        summary='Вход через Google',
+        request=SocialAuthCodeRequestSerializer,
+    ),
 )
 class GoogleLogin(SocialLogin):
     """View для обработки запросов авторизации через Google."""
@@ -28,7 +33,11 @@ class GoogleLogin(SocialLogin):
 
 
 @extend_schema_view(
-    post=extend_schema(tags=['social_auth'], summary='Вход через Яндекс'),
+    post=extend_schema(
+        tags=['social_auth'],
+        summary='Вход через Yandex',
+        request=SocialAuthCodeRequestSerializer,
+    ),
 )
 class YandexLogin(SocialLogin):
     """View для обработки запросов авторизации через Yandex."""
@@ -38,7 +47,11 @@ class YandexLogin(SocialLogin):
 
 
 @extend_schema_view(
-    post=extend_schema(tags=['social_auth'], summary='Вход через Mail.ru'),
+    post=extend_schema(
+        tags=['social_auth'],
+        summary='Вход через Mail.ru',
+        request=SocialAuthCodeRequestSerializer,
+    ),
 )
 class MailRuLogin(SocialLogin):
     """View для обработки запросов авторизации через Mail.ru."""
