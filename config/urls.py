@@ -23,13 +23,12 @@ urlpatterns = [
                     SpectacularAPIView.as_view(),
                     name='schema',
                 ),
-                # Swagger UI
+                path('schema/', SpectacularAPIView.as_view(), name='schema'),
                 path(
                     'docs/swagger/',
                     SpectacularSwaggerView.as_view(url_name='schema'),
                     name='swagger-ui',
                 ),
-                # ReDoc
                 path(
                     'docs/redoc/',
                     SpectacularRedocView.as_view(url_name='schema'),
