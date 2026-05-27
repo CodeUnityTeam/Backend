@@ -3,20 +3,18 @@ import uuid
 from django.contrib.auth import get_user_model
 from django.db import models
 
-from core.constants import (
+from core.constants.feedback import (
     MAX_CONTENT_FEEDBACK,
-    MAX_IMAGE_URL,
     MAX_LEN_STATUS_FEEDBACK,
-    MAX_MINE_TYPE,
-    MAX_ORIGINAL_NAME,
     MAX_SUBJECT_FEEDBACK,
     STATUS_FEEDBACK,
 )
+from core.models.mixins import BaseImageMixin, TimestampMixin
 
 User = get_user_model()
 
 
-class FeedbackForm(models.Model):
+class FeedbackForm(TimestampMixin):
     """Форма обратной связи, отправленная пользователем.
 
     - Привязана к пользователю.
@@ -51,16 +49,6 @@ class FeedbackForm(models.Model):
         max_length=MAX_CONTENT_FEEDBACK,
         verbose_name='Содержание',
     )
-    create_date_time = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Дата и время создания',
-    )
-    update_date_time = models.DateTimeField(
-        auto_now=True,
-        null=True,
-        blank=True,
-        verbose_name='Дата и время обновления',
-    )
 
     class Meta:
         """Метаданные модели."""
@@ -71,51 +59,25 @@ class FeedbackForm(models.Model):
         indexes = [
             models.Index(fields=['user']),
             models.Index(fields=['status']),
-            models.Index(fields=['-create_date_time']),
         ]
 
     def __str__(self) -> str:
         return f'{self.subject} — {self.user.first_name} ({self.status})'
 
 
-class FeedbackImage(models.Model):
+class FeedbackImage(BaseImageMixin):
     """Изображение, прикреплённое к форме обратной связи.
 
     - Хранит метаданные и URL.
     - Привязано к форме и времени загрузки.
     """
 
-    feedback_image = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False,
-        verbose_name='Идентификатор изображения',
-    )
     feedback = models.ForeignKey(
         FeedbackForm,
         on_delete=models.CASCADE,
         db_column='feedback_id',
         related_name='images',
         verbose_name='Форма',
-    )
-    original_name = models.CharField(
-        max_length=MAX_ORIGINAL_NAME,
-        verbose_name='Оригинальное имя файла',
-    )
-    file_size = models.IntegerField(
-        verbose_name='Размер файла в байтах',
-    )
-    mime_type = models.CharField(
-        max_length=MAX_MINE_TYPE,
-        verbose_name='MIME-тип',
-    )
-    uploaded_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Дата и время загрузки',
-    )
-    image_url = models.URLField(
-        max_length=MAX_IMAGE_URL,
-        verbose_name='URL изображения',
     )
 
     class Meta:
@@ -126,7 +88,6 @@ class FeedbackImage(models.Model):
         verbose_name_plural = 'Изображения обратной связи'
         indexes = [
             models.Index(fields=['feedback']),
-            models.Index(fields=['uploaded_at']),
         ]
 
     def __str__(self) -> str:

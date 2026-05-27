@@ -12,8 +12,6 @@ class FeedbackFormAdmin(admin.ModelAdmin):
         'subject',
         'status',
         'user',
-        'create_date_time',
-        'update_date_time',
     )
 
 
@@ -22,11 +20,10 @@ class FeedbackImageAdmin(admin.ModelAdmin):
     """Админ‑панель для модели FeedbackImage."""
 
     list_display = (
-        'feedback_image',
+        'image_id',
         'feedback',
         'original_name',
         'file_size',
         'mime_type',
-        'uploaded_at',
         'image_url',
     )
