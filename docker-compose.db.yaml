@@ -1,6 +1,5 @@
 volumes:
   pg_data:
-  static:
 
 services:
   db:
@@ -12,22 +11,3 @@ services:
       - "5432:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
-  
-  backend:
-    depends_on:
-      - db
-    build: .
-    env_file: .env
-    ports:
-      - "8000:8000"
-    volumes:
-      - static:/backend_static/static/
-
-  nginx:
-    depends_on:
-      - backend
-    build: ./nginx/
-    ports:
-      - "80:80"
-    volumes:
-      - static:/backend_static/static/

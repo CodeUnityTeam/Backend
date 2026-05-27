@@ -25,9 +25,9 @@ DEBUG = os.getenv('DEBUG_MODE', default='False').lower() == 'true'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 
-# DOMAIN = os.getenv('DOMAIN')
+DOMAIN = os.getenv('DOMAIN')
 
-# CSRF_TRUSTED_ORIGINS = [os.getenv('CSRF_DOMAIN'),]
+CSRF_TRUSTED_ORIGINS = [os.getenv('CSRF_DOMAIN'),]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
