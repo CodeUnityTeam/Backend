@@ -14,7 +14,7 @@ from core.models.mixins import BaseImageMixin, TimestampMixin
 User = get_user_model()
 
 
-class FeedbackForm(TimestampMixin):
+class FeedbackForm(TimestampMixin, models.Model):
     """Форма обратной связи, отправленная пользователем.
 
     - Привязана к пользователю.
@@ -65,7 +65,7 @@ class FeedbackForm(TimestampMixin):
         return f'{self.subject} — {self.user.first_name} ({self.status})'
 
 
-class FeedbackImage(BaseImageMixin):
+class FeedbackImage(BaseImageMixin, models.Model):
     """Изображение, прикреплённое к форме обратной связи.
 
     - Хранит метаданные и URL.

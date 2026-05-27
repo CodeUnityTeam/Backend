@@ -239,7 +239,7 @@ class ProjectParticipant(models.Model):
         )
 
 
-class ProjectLike(CreatedAtMixin):
+class ProjectLike(CreatedAtMixin, models.Model):
     """Лайки, поставленные пользователями проектам.
 
     - Один пользователь может поставить лайк проекту только один раз.
@@ -288,7 +288,7 @@ class ProjectLike(CreatedAtMixin):
         )
 
 
-class Response(CreatedAtMixin):
+class Response(CreatedAtMixin, models.Model):
     """Отклик пользователя на проект или приглашение от автора.
 
     - Один пользователь может иметь только один отклик/приглашение на проект.

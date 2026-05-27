@@ -11,7 +11,7 @@ from core.models.mixins import BaseImageMixin, CreatedAtMixin, TimestampMixin
 from users.models import Skill
 
 
-class Question(TimestampMixin):
+class Question(TimestampMixin, models.Model):
     """Вопрос, созданный пользователем в разделе Q&A.
 
     - Может быть анонимным.
@@ -71,7 +71,7 @@ class Question(TimestampMixin):
         return self.title
 
 
-class Answer(CreatedAtMixin):
+class Answer(CreatedAtMixin, models.Model):
     """Ответ пользователя на вопрос в разделе Q&A."""
 
     answer_id = models.UUIDField(
@@ -136,7 +136,7 @@ class Answer(CreatedAtMixin):
         return f'Ответ на "{self.question.title}": {short_content}...'
 
 
-class QuestionLike(CreatedAtMixin):
+class QuestionLike(CreatedAtMixin, models.Model):
     """Лайки, поставленные пользователями вопросам."""
 
     user = models.ForeignKey(
@@ -178,7 +178,7 @@ class QuestionLike(CreatedAtMixin):
         )
 
 
-class AnswerLike(CreatedAtMixin):
+class AnswerLike(CreatedAtMixin, models.Model):
     """Лайки, поставленные пользователями ответам."""
 
     user = models.ForeignKey(
@@ -217,7 +217,7 @@ class AnswerLike(CreatedAtMixin):
         return f'{self.user.first_name} ответ на {self.answer.question.title}'
 
 
-class QuestionImage(BaseImageMixin):
+class QuestionImage(BaseImageMixin, models.Model):
     """Изображения, прикреплённые к вопросу.
 
     - Хранит метаданные и URL изображения.
@@ -247,7 +247,7 @@ class QuestionImage(BaseImageMixin):
         return f'Изображение {self.image_id} для "{self.question.title}"'
 
 
-class AnswerImage(BaseImageMixin):
+class AnswerImage(BaseImageMixin, models.Model):
     """Изображения, прикреплённые к ответу на вопрос.
 
     - Хранит метаданные и URL изображения.
