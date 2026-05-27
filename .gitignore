@@ -49,3 +49,7 @@ Thumbs.db
 
 # Docker
 postgres_data/
+
+# Migratioms
+
+migrations/
