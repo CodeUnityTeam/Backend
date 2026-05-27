@@ -5,28 +5,24 @@ volumes:
 services:
   db:
     image: postgres:16-alpine
-    container_name: dev_db
+    container_name: backend_db
     restart: unless-stopped
     env_file: .env
-    ports:
-      - "5432:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
-  
+
   backend:
     depends_on:
       - db
-    build: .
+    image: enigmatica33/backend:latest
     env_file: .env
-    ports:
-      - "8000:8000"
     volumes:
       - static:/backend_static/static/
 
   nginx:
     depends_on:
       - backend
-    build: ./nginx/
+    image: enigmatica33/nginx:latest
     ports:
       - "80:80"
     volumes:
