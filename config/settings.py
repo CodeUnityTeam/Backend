@@ -25,9 +25,9 @@ DEBUG = os.getenv('DEBUG_MODE', default='False').lower() == 'true'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 
-# DOMAIN = os.getenv('DOMAIN')
+DOMAIN = os.getenv('DOMAIN')
 
-# CSRF_TRUSTED_ORIGINS = [os.getenv('CSRF_DOMAIN'),]
+CSRF_TRUSTED_ORIGINS = [os.getenv('CSRF_DOMAIN'),]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -127,7 +127,7 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = '/backend_static/static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
