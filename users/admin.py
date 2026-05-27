@@ -2,21 +2,12 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 
 from .models import (
-    OauthProvider,
     Skill,
     Specialization,
     User,
     UserSkill,
     UserSpecialization,
 )
-
-
-@admin.register(OauthProvider)
-class OauthProviderAdmin(admin.ModelAdmin):
-    """Админ-панель для модели провайдеров OAuth."""
-
-    list_display = ('provider_id', 'name')
-    search_fields = ('name',)
 
 
 @admin.register(Specialization)
@@ -63,10 +54,9 @@ class UserAdmin(DjangoUserAdmin):
         'first_name',
         'last_name',
         'role',
-        'provider',
         'is_email_confirmed',
     )
-    list_filter = ('role', 'provider', 'is_email_confirmed')
+    list_filter = ('role', 'is_email_confirmed')
     search_fields = ('email', 'first_name', 'last_name', 'phone_number')
     ordering = ('email',)
     fieldsets = (
@@ -91,7 +81,6 @@ class UserAdmin(DjangoUserAdmin):
             {
                 'fields': (
                     'role',
-                    'provider',
                     'is_active',
                     'is_staff',
                     'is_superuser',

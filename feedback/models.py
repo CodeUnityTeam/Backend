@@ -12,11 +12,12 @@ from core.constants import (
     MAX_SUBJECT_FEEDBACK,
     STATUS_FEEDBACK,
 )
+from core.models.mixins import TimestampMixin 
 
 User = get_user_model()
 
 
-class FeedbackForm(models.Model):
+class FeedbackForm(TimestampMixin, models.Model):
     """Форма обратной связи, отправленная пользователем.
 
     - Привязана к пользователю.
@@ -51,16 +52,6 @@ class FeedbackForm(models.Model):
         max_length=MAX_CONTENT_FEEDBACK,
         verbose_name='Содержание',
     )
-    create_date_time = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Дата и время создания',
-    )
-    update_date_time = models.DateTimeField(
-        auto_now=True,
-        null=True,
-        blank=True,
-        verbose_name='Дата и время обновления',
-    )
 
     class Meta:
         """Метаданные модели."""
@@ -71,14 +62,14 @@ class FeedbackForm(models.Model):
         indexes = [
             models.Index(fields=['user']),
             models.Index(fields=['status']),
-            models.Index(fields=['-create_date_time']),
+            models.Index(fields=['-created_at']),
         ]
 
     def __str__(self) -> str:
         return f'{self.subject} — {self.user.first_name} ({self.status})'
 
 
-class FeedbackImage(models.Model):
+class FeedbackImage(TimestampMixin, models.Model):
     """Изображение, прикреплённое к форме обратной связи.
 
     - Хранит метаданные и URL.
@@ -109,10 +100,6 @@ class FeedbackImage(models.Model):
         max_length=MAX_MINE_TYPE,
         verbose_name='MIME-тип',
     )
-    uploaded_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Дата и время загрузки',
-    )
     image_url = models.URLField(
         max_length=MAX_IMAGE_URL,
         verbose_name='URL изображения',
@@ -126,7 +113,7 @@ class FeedbackImage(models.Model):
         verbose_name_plural = 'Изображения обратной связи'
         indexes = [
             models.Index(fields=['feedback']),
-            models.Index(fields=['uploaded_at']),
+            models.Index(fields=['created_at']),
         ]
 
     def __str__(self) -> str:

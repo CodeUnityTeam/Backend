@@ -80,9 +80,3 @@ ROLE_CHOICES_LIST = [
     (ROLE_ADMIN, 'Администратор'),
 ]
 MAX_HASH_LENGTH = 128
-
-# Константы модели 'OauthProvider'
-OAUTHPROVIDER_NAME_LENGTH = 20
-
-# Константы модели 'Purpose'
-MAX_PURPOSE_NAME = 20

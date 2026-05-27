@@ -26,8 +26,6 @@ from core.constants.users import (
 )
 from core.models.mixins import TimestampMixin
 
-from .providers import OauthProvider
-
 
 class User(TimestampMixin, AbstractUser):
     """Кастомная модель пользователя на базе стандартного AbstractUser."""
@@ -52,15 +50,6 @@ class User(TimestampMixin, AbstractUser):
         choices=RoleChoices.choices,
         default=RoleChoices.USER,
         help_text='Роль пользователя в системе.',
-    )
-    provider = models.ForeignKey(
-        OauthProvider,
-        on_delete=models.PROTECT,
-        null=True,
-        blank=True,
-        related_name='users',
-        verbose_name='OAuth-провайдер',
-        help_text='OAuth-провайдер пользователя.',
     )
     email = models.EmailField(
         'Электронная почта',

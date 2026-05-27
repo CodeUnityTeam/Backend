@@ -22,6 +22,7 @@ from core.constants import (
 )
 
 from .validators import validate_location
+from core.models.mixins import TimestampMixin
 
 
 class WorkFormat(models.Model):
@@ -51,7 +52,7 @@ class WorkFormat(models.Model):
         verbose_name_plural = 'Форматы работы'
 
 
-class Project(models.Model):
+class Project(TimestampMixin, models.Model):
     """Модель проекта."""
 
     project_id = models.UUIDField(
