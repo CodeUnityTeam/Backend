@@ -2,11 +2,8 @@ name: ruff_style_check
 
 on:
   pull_request:
-  push:
     branches:
       - develop
-      - master
-      - main
 
 jobs:
   check_style:
