@@ -7,10 +7,11 @@ from core.constants import (
     MAX_LEN_TITLE,
     ZERO_LIKE_COUNT,
 )
+from core.models.mixins import TimestampMixin
 from users.models import Skill
 
 from .mixins import BaseImageMixin
-from core.models.mixins import TimestampMixin
+
 
 class Question(TimestampMixin, models.Model):
     """Вопрос, созданный пользователем в разделе Q&A.

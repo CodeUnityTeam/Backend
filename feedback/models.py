@@ -12,7 +12,7 @@ from core.constants import (
     MAX_SUBJECT_FEEDBACK,
     STATUS_FEEDBACK,
 )
-from core.models.mixins import TimestampMixin 
+from core.models.mixins import TimestampMixin
 
 User = get_user_model()
 

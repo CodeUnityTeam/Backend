@@ -20,9 +20,9 @@ from core.constants import (
     STATUS_PROJECT,
     STATUS_RESPONSE_PROJECT,
 )
+from core.models.mixins import TimestampMixin
 
 from .validators import validate_location
-from core.models.mixins import TimestampMixin
 
 
 class WorkFormat(models.Model):
