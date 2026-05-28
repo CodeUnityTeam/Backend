@@ -7,12 +7,13 @@ from core.constants import (
     MAX_LEN_TITLE,
     ZERO_LIKE_COUNT,
 )
+from core.models.mixins import TimestampMixin
 from users.models import Skill
 
 from .mixins import BaseImageMixin
 
 
-class Question(models.Model):
+class Question(TimestampMixin, models.Model):
     """Вопрос, созданный пользователем в разделе Q&A.
 
     - Может быть анонимным.
@@ -47,14 +48,6 @@ class Question(models.Model):
     is_active = models.BooleanField(
         default=True,
         verbose_name='Активен',
-    )
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Дата создания',
-    )
-    updated_at = models.DateTimeField(
-        auto_now=True,
-        verbose_name='Дата обновления',
     )
     skills = models.ManyToManyField(
         Skill,
