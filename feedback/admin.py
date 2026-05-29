@@ -12,6 +12,8 @@ class FeedbackFormAdmin(admin.ModelAdmin):
         'subject',
         'status',
         'user',
+        'create_at',
+        'update_at',
     )
 
 
@@ -25,5 +27,6 @@ class FeedbackImageAdmin(admin.ModelAdmin):
         'original_name',
         'file_size',
         'mime_type',
+        'uploaded_at',
         'image_url',
     )

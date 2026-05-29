@@ -7,7 +7,7 @@ from core.constants.qna import (
     MAX_LEN_TITLE,
     ZERO_LIKE_COUNT,
 )
-from core.models.mixins import BaseImageMixin, CreatedAtMixin, TimestampMixin
+from core.models.mixins import TimestampMixin
 from users.models import Skill
 
 

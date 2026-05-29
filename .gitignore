@@ -1,3 +1,6 @@
+# Migrations
+**/migrations/
+**/migrations/__pycache__/
 # Окружение
 .env
 .env.*

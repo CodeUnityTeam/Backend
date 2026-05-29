@@ -3,13 +3,13 @@ import uuid
 from django.contrib.auth import get_user_model
 from django.db import models
 
-from core.constants.feedback import (
+from core.constants import (
     MAX_CONTENT_FEEDBACK,
     MAX_LEN_STATUS_FEEDBACK,
     MAX_SUBJECT_FEEDBACK,
     STATUS_FEEDBACK,
 )
-from core.models.mixins import BaseImageMixin, TimestampMixin
+from core.models.mixins import TimestampMixin
 
 User = get_user_model()
 
@@ -59,13 +59,14 @@ class FeedbackForm(TimestampMixin, models.Model):
         indexes = [
             models.Index(fields=['user']),
             models.Index(fields=['status']),
+            models.Index(fields=['-created_at']),
         ]
 
     def __str__(self) -> str:
         return f'{self.subject} — {self.user.first_name} ({self.status})'
 
 
-class FeedbackImage(BaseImageMixin, models.Model):
+class FeedbackImage(TimestampMixin, models.Model):
     """Изображение, прикреплённое к форме обратной связи.
 
     - Хранит метаданные и URL.
@@ -79,6 +80,21 @@ class FeedbackImage(BaseImageMixin, models.Model):
         related_name='images',
         verbose_name='Форма',
     )
+    original_name = models.CharField(
+        max_length=MAX_ORIGINAL_NAME,
+        verbose_name='Оригинальное имя файла',
+    )
+    file_size = models.IntegerField(
+        verbose_name='Размер файла в байтах',
+    )
+    mime_type = models.CharField(
+        max_length=MAX_MINE_TYPE,
+        verbose_name='MIME-тип',
+    )
+    image_url = models.URLField(
+        max_length=MAX_IMAGE_URL,
+        verbose_name='URL изображения',
+    )
 
     class Meta:
         """Метаданные модели."""
@@ -88,6 +104,7 @@ class FeedbackImage(BaseImageMixin, models.Model):
         verbose_name_plural = 'Изображения обратной связи'
         indexes = [
             models.Index(fields=['feedback']),
+            models.Index(fields=['created_at']),
         ]
 
     def __str__(self) -> str:
