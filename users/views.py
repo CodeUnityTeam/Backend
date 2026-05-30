@@ -1,16 +1,29 @@
+from typing import Any
+
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.mailru.views import MailRuOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from allauth.socialaccount.providers.yandex.views import YandexOAuth2Adapter
 from dj_rest_auth.registration.views import SocialLoginView
 from django.contrib.auth import get_user_model
-from drf_spectacular.utils import extend_schema, extend_schema_view
+from drf_spectacular.utils import (
+    OpenApiExample,
+    extend_schema,
+    extend_schema_view,
+    inline_serializer,
+)
+from rest_framework import serializers, status
 from rest_framework.generics import RetrieveAPIView, RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from config.settings import SOCIALACCOUNT_PROVIDERS
+from users.models.users import User
 from users.serializers import (
     CustomUserDetailsSerializer,
+    EmailChangeSerializer,
     PublicUserProfileSerializer,
     SocialAuthCodeRequestSerializer,
 )
@@ -72,7 +85,7 @@ class MailRuLogin(SocialLogin):
 @extend_schema_view(
     get=extend_schema(
         tags=['profile'],
-        summary='Получить данные профиля авторизованного пользователя.',
+        summary='Получить данные профиля авторизованного пользователя',
         responses={200: CustomUserDetailsSerializer},
     ),
     patch=extend_schema(
@@ -83,22 +96,75 @@ class MailRuLogin(SocialLogin):
     ),
 )
 class MeProfileView(RetrieveUpdateAPIView):
-    """
-    View для просмотра и редактирования профиля авторизованного пользователя.
-    """
+    """View просмотра и редактирования профиля авторизованного пользователя."""
+
     http_method_names = ['get', 'patch', 'head', 'options']
     serializer_class = CustomUserDetailsSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_object(self):
+    def get_object(self) -> User:
         """Возвращает объект текущего авторизованного пользователя."""
         return self.request.user
 
 
 @extend_schema_view(
+    post=extend_schema(
+        tags=['profile'],
+        summary='Запрос на изменение email авторизованным пользователем',
+        description='Запрос на смену email и отправку письма подтверждения.',
+        request=EmailChangeSerializer,
+        responses={
+            200: inline_serializer(
+                name='EmailChangeSuccessResponse',
+                fields={
+                    'detail': serializers.CharField(
+                        help_text=(
+                            'Сообщение об успешной отправке ссылки '
+                            'подтверждения.'
+                        ),
+                    ),
+                },
+            ),
+        },
+        examples=[
+            OpenApiExample(
+                name='Успешный запрос',
+                value={
+                    "detail": (
+                        "Ссылка для подтверждения отправлена на новый email."
+                    ),
+                },
+                response_only=True,
+            ),
+        ],
+    ),
+)
+class EmailChangeView(APIView):
+    """View для инициации смены email авторизованным пользователем."""
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """Обработать POST-запрос на изменение email пользователя."""
+        serializer = EmailChangeSerializer(
+            data=request.data,
+            context={'request': request},
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(
+            {
+                'detail': 'Ссылка подтверждения отправлена на новый email.',
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+@extend_schema_view(
     get=extend_schema(
         tags=['profile'],
-        summary='Получить данные профиля неавторизованного пользователя.',
+        summary='Получить данные профиля неавторизованного пользователя',
         description='Данные доступны по ID пользователя.',
         responses={200: PublicUserProfileSerializer},
     ),

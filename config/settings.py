@@ -15,8 +15,6 @@ SPECTACULAR_SETTINGS = {
     'TERMS_OF_SERVICE': '',
     'CONTACT': {'name': '', 'email': ''},
     'LICENSE': {'name': ''},
-    # 'AUTO_SCHEMA_TYPE': 'dj_rest_auth.openapi.AutoSchema',
-    # 'DEFAULT_GENERATOR_CLASS': 'dj_rest_auth.openapi.AutoSchemaMock',
 }
 
 BASE_DIR = Path(__file__).resolve().parent.parent

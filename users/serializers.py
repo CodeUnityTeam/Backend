@@ -10,6 +10,8 @@ from django.http import HttpRequest
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from users.models.users import User
+
 UserModel = get_user_model()
 
 
@@ -96,7 +98,6 @@ class CustomUserDetailsSerializer(UserDetailsSerializer):
             'email',
             'first_name',
             'last_name',
-            'new_email',
             'role',
             'phone_number',
             'additional_contact',
@@ -107,19 +108,27 @@ class CustomUserDetailsSerializer(UserDetailsSerializer):
             'skills',
             'avatar_url',
         )
-        read_only_fields = ('pk', 'email')
+        read_only_fields = ('pk', 'email',)
+
+
+class EmailChangeSerializer(serializers.Serializer):
+    """Сериализатор для запроса на смену email с сохранением в модель."""
+
+    new_email = serializers.EmailField(required=True)
 
     def validate_new_email(self, value: str) -> str:
-        """Валидировать новый адрес электронной почты пользователя."""
+        """Валидация нового адреса электронной почты."""
         user = self.context['request'].user
+        value = get_adapter().clean_email(value)
+
         if value == user.email:
             raise ValidationError('Этот email уже привязан к вашему аккаунту.')
 
-        # Проверить уникальность по всей базе пользователей
+        # Проверка уникальности по всей базе пользователей
         if UserModel.objects.filter(email=value).exists():
             raise ValidationError('Пользователь с таким email уже существует.')
 
-        # Проверить уникальность среди ожидающих подтверждения адресов
+        # Проверка уникальности среди подтвержденных адресов в django-allauth
         if EmailAddress.objects.filter(email=value, verified=True).exists():
             raise ValidationError(
                 'Этот email уже занят другим подтвержденным аккаунтом.',
@@ -127,25 +136,27 @@ class CustomUserDetailsSerializer(UserDetailsSerializer):
 
         return value
 
-    def update(self, instance: Model, validated_data: dict) -> Model:
-        """Обновить данные пользователя."""
-        new_email = validated_data.pop('new_email', None)
-        instance = super().update(instance, validated_data)
+    def save(self) -> User:
+        """Сохранить new_emailи отправить письмо для подтверждения."""
+        user = self.context['request'].user
+        request = self.context.get('request')
+        new_email = self.validated_data['new_email']
 
-        if new_email:
-            request = self.context.get('request')
-            EmailAddress.objects.filter(user=instance, verified=False).delete()
+        user.new_email = new_email
+        user.save(update_fields=['new_email'])
 
-            email_address = EmailAddress.objects.create(
-                user=instance,
-                email=new_email,
-                primary=False,
-                verified=False,
-            )
+        EmailAddress.objects.filter(user=user, verified=False).delete()
 
-            email_address.send_confirmation(request, signup=False)
+        email_address = EmailAddress.objects.create(
+            user=user,
+            email=new_email,
+            primary=False,
+            verified=False,
+        )
 
-        return instance
+        email_address.send_confirmation(request, signup=False)
+
+        return user
 
 
 class PublicUserProfileSerializer(serializers.ModelSerializer):

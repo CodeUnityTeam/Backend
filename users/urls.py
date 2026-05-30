@@ -1,13 +1,13 @@
 from django.urls import include, path
 
 from users.views import (
+    EmailChangeView,
     GoogleLogin,
     MailRuLogin,
     MeProfileView,
     UserProfileView,
     YandexLogin,
 )
-
 
 urlpatterns = [
     path(
@@ -20,14 +20,19 @@ urlpatterns = [
             path('google/', GoogleLogin.as_view(), name='google_login'),
             path('yandex/', YandexLogin.as_view(), name='yandex_login'),
             path('mailru/', MailRuLogin.as_view(), name='mailru_login'),
-        ])
+        ]),
     ),
 
     path(
         'profile/',
         include([
             path('me/', MeProfileView.as_view(), name='my-profile'),
+            path(
+                'email-change/',
+                EmailChangeView.as_view(),
+                name='email-change',
+            ),
             path('<uuid:pk>/', UserProfileView.as_view(), name='user-profile'),
-        ])
+        ]),
     ),
 ]
