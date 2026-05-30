@@ -5,6 +5,7 @@ from users.views import (
     GoogleLogin,
     MailRuLogin,
     MeProfileView,
+    UserProfileListView,
     UserProfileView,
     YandexLogin,
 )
@@ -26,6 +27,7 @@ urlpatterns = [
     path(
         'profile/',
         include([
+            path('', UserProfileListView.as_view(), name='profile-list'),
             path('me/', MeProfileView.as_view(), name='my-profile'),
             path(
                 'email-change/',
