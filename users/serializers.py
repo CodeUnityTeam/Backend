@@ -3,8 +3,13 @@ from typing import Any
 from allauth.account.adapter import get_adapter
 from allauth.account.models import EmailAddress
 from dj_rest_auth.registration.serializers import RegisterSerializer
-from dj_rest_auth.serializers import LoginSerializer, UserDetailsSerializer
+from dj_rest_auth.serializers import (
+    LoginSerializer,
+    PasswordChangeSerializer,
+    UserDetailsSerializer,
+)
 from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
 from django.db.models import Model
 from django.http import HttpRequest
 from rest_framework import serializers
@@ -87,8 +92,6 @@ class CustomRegisterSerializer(RegisterSerializer):
 class CustomUserDetailsSerializer(UserDetailsSerializer):
     """Сериализатор для отображения и изменения данных пользователя."""
 
-    new_email = serializers.EmailField(write_only=True, required=False)
-
     class Meta(UserDetailsSerializer.Meta):
         """Конфигурация сериализируемых полей пользователя."""
 
@@ -108,7 +111,7 @@ class CustomUserDetailsSerializer(UserDetailsSerializer):
             'skills',
             'avatar_url',
         )
-        read_only_fields = ('pk', 'email',)
+        read_only_fields = ('pk', 'email')
 
 
 class EmailChangeSerializer(serializers.Serializer):
@@ -157,6 +160,34 @@ class EmailChangeSerializer(serializers.Serializer):
         email_address.send_confirmation(request, signup=False)
 
         return user
+
+
+class CustomPasswordChangeSerializer(PasswordChangeSerializer):
+    """Сериализатор для смены пароля с одним полем нового пароля."""
+
+    password = serializers.CharField(
+        style={'input_type': 'password'},
+        write_only=True,
+    )
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Удалить стандартные поля подтверждения пароля из формы."""
+        super().__init__(*args, **kwargs)
+        self.fields.pop('new_password1', None)
+        self.fields.pop('new_password2', None)
+
+    def validate_password(self, value: str) -> str:
+        """Проверить надежность нового пароля по стандартам Django."""
+        user = self.context['request'].user
+        validate_password(value, user=user)
+        return value
+
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
+        """Перераспределить данные для стандартных методов dj-rest-auth."""
+        attrs['new_password1'] = attrs.get('password')
+        attrs['new_password2'] = attrs.get('password')
+
+        return super().validate(attrs)
 
 
 class PublicUserProfileSerializer(serializers.ModelSerializer):
