@@ -14,7 +14,7 @@ class SkillSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Skill
-        fields = ('skill_id', 'name',)
+        fields = ('skill_id', 'name')
 
 
 class SpecializationSerializer(serializers.ModelSerializer):
@@ -22,7 +22,7 @@ class SpecializationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Specialization
-        fields = ('spec_id', 'name',)
+        fields = ('spec_id', 'name')
 
 
 class WorkFormatSerializer(serializers.ModelSerializer):
@@ -30,7 +30,7 @@ class WorkFormatSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = WorkFormat
-        fields = ('format_id', 'name',)
+        fields = ('format_id', 'name')
 
 
 class UserBaseSerializer(serializers.ModelSerializer):
@@ -40,7 +40,7 @@ class UserBaseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('user_id', 'full_name', 'avatar_url',)
+        fields = ('user_id', 'full_name', 'avatar_url')
 
     def get_full_name(self, user: User) -> str:
         """Получаем полное имя пользователя."""

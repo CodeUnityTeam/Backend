@@ -26,9 +26,6 @@ from .serializers import (
     ProjectShortSerializer,
 )
 
-# FIXME: доработать фильтры, проверить работу
-# доработать пермишены, доработать запросы со связями
-
 
 class ProjectViewSet(ModelViewSet):
     """Вьюсет для работы с проектами."""
