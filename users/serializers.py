@@ -91,7 +91,22 @@ class CustomUserDetailsSerializer(UserDetailsSerializer):
         """Конфигурация сериализируемых полей пользователя."""
 
         model = UserModel
-        fields = ('pk', 'email', 'first_name', 'last_name', 'new_email')
+        fields = (
+            'pk',
+            'email',
+            'first_name',
+            'last_name',
+            'new_email',
+            'role',
+            'phone_number',
+            'additional_contact',
+            'country',
+            'city',
+            'about_me',
+            'specializations',
+            'skills',
+            'avatar_url',
+        )
         read_only_fields = ('pk', 'email')
 
     def validate_new_email(self, value: str) -> str:
@@ -131,3 +146,24 @@ class CustomUserDetailsSerializer(UserDetailsSerializer):
             email_address.send_confirmation(request, signup=False)
 
         return instance
+
+
+class PublicUserProfileSerializer(serializers.ModelSerializer):
+    """Сериализатор для публичного просмотра чужого профиля."""
+
+    class Meta:
+        model = UserModel
+        fields = (
+            'pk',
+            'first_name',
+            'last_name',
+            'role',
+            'country',
+            'city',
+            'about_me',
+            'specializations',
+            'skills',
+            'avatar_url',
+        )
+
+        read_only_fields = fields

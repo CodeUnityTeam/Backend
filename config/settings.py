@@ -15,6 +15,8 @@ SPECTACULAR_SETTINGS = {
     'TERMS_OF_SERVICE': '',
     'CONTACT': {'name': '', 'email': ''},
     'LICENSE': {'name': ''},
+    # 'AUTO_SCHEMA_TYPE': 'dj_rest_auth.openapi.AutoSchema',
+    # 'DEFAULT_GENERATOR_CLASS': 'dj_rest_auth.openapi.AutoSchemaMock',
 }
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -179,6 +181,7 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'UPDATE_LAST_LOGIN': True,
+    'USER_ID_FIELD': 'user_id',
 }
 
 # Настройки dj-rest-auth для стандартной авторизации

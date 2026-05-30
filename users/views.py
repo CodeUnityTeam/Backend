@@ -3,10 +3,19 @@ from allauth.socialaccount.providers.mailru.views import MailRuOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from allauth.socialaccount.providers.yandex.views import YandexOAuth2Adapter
 from dj_rest_auth.registration.views import SocialLoginView
+from django.contrib.auth import get_user_model
 from drf_spectacular.utils import extend_schema, extend_schema_view
+from rest_framework.generics import RetrieveAPIView, RetrieveUpdateAPIView
+from rest_framework.permissions import IsAuthenticated
 
 from config.settings import SOCIALACCOUNT_PROVIDERS
-from users.serializers import SocialAuthCodeRequestSerializer
+from users.serializers import (
+    CustomUserDetailsSerializer,
+    PublicUserProfileSerializer,
+    SocialAuthCodeRequestSerializer,
+)
+
+UserModel = get_user_model()
 
 
 class SocialLogin(SocialLoginView):
@@ -58,3 +67,45 @@ class MailRuLogin(SocialLogin):
 
     adapter_class = MailRuOAuth2Adapter
     callback_url = SOCIALACCOUNT_PROVIDERS['mailru']['CALLBACK_URL']
+
+
+@extend_schema_view(
+    get=extend_schema(
+        tags=['profile'],
+        summary='Получить данные профиля авторизованного пользователя.',
+        responses={200: CustomUserDetailsSerializer},
+    ),
+    patch=extend_schema(
+        tags=['profile'],
+        summary='Частично обновить данные авторизованного пользователя',
+        request=CustomUserDetailsSerializer,
+        responses={200: CustomUserDetailsSerializer},
+    ),
+)
+class MeProfileView(RetrieveUpdateAPIView):
+    """
+    View для просмотра и редактирования профиля авторизованного пользователя.
+    """
+    http_method_names = ['get', 'patch', 'head', 'options']
+    serializer_class = CustomUserDetailsSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        """Возвращает объект текущего авторизованного пользователя."""
+        return self.request.user
+
+
+@extend_schema_view(
+    get=extend_schema(
+        tags=['profile'],
+        summary='Получить данные профиля неавторизованного пользователя.',
+        description='Данные доступны по ID пользователя.',
+        responses={200: PublicUserProfileSerializer},
+    ),
+)
+class UserProfileView(RetrieveAPIView):
+    """View для просмотра профиля неавторизованного пользователяпо ID."""
+
+    queryset = UserModel.objects.all()
+    serializer_class = PublicUserProfileSerializer
+    permission_classes = [IsAuthenticated]
