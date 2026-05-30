@@ -5,7 +5,10 @@ from django.db import models
 
 from core.constants import (
     MAX_CONTENT_FEEDBACK,
+    MAX_IMAGE_URL,
     MAX_LEN_STATUS_FEEDBACK,
+    MAX_MINE_TYPE,
+    MAX_ORIGINAL_NAME,
     MAX_SUBJECT_FEEDBACK,
     STATUS_FEEDBACK,
 )
@@ -73,6 +76,12 @@ class FeedbackImage(TimestampMixin, models.Model):
     - Привязано к форме и времени загрузки.
     """
 
+    feedback_image = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+        verbose_name='Идентификатор изображения',
+    )
     feedback = models.ForeignKey(
         FeedbackForm,
         on_delete=models.CASCADE,

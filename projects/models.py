@@ -1,5 +1,6 @@
 import uuid
 
+from django.contrib.auth import get_user_model
 from django.core.validators import MaxLengthValidator, MinLengthValidator
 from django.db import models
 
@@ -20,9 +21,11 @@ from core.constants.projects import (
     STATUS_PROJECT,
     STATUS_RESPONSE_PROJECT,
 )
-from core.models.mixins import TimestampMixin
+from core.models.mixins import CreatedAtMixin, TimestampMixin
 
 from .validators import validate_location
+
+User = get_user_model()
 
 
 class WorkFormat(models.Model):
@@ -62,10 +65,12 @@ class Project(TimestampMixin, models.Model):
         verbose_name='Идентификатор проекта',
     )
     author = models.ForeignKey(
-        'users.User',
+        User,
         on_delete=models.CASCADE,
+        to_field='user_id',
         related_name='projects',
         verbose_name='Автор проекта',
+        null=False,
     )
     title = models.CharField(
         max_length=MAX_LEN_TITLE,

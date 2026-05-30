@@ -2,13 +2,15 @@ import uuid
 
 from django.db import models
 
-from core.constants.qna import (
+from core.constants import (
     MAX_CONTENT_ANSWER,
     MAX_LEN_TITLE,
     ZERO_LIKE_COUNT,
 )
 from core.models.mixins import TimestampMixin
 from users.models import Skill
+
+from .mixins import BaseImageMixin
 
 
 class Question(TimestampMixin, models.Model):
@@ -57,6 +59,7 @@ class Question(TimestampMixin, models.Model):
     class Meta:
         """Метаданные модели."""
 
+        ordering = ('-created_at',)
         db_table = 'questions'
         verbose_name = 'Вопрос'
         verbose_name_plural = 'Вопросы'
@@ -71,7 +74,7 @@ class Question(TimestampMixin, models.Model):
         return self.title
 
 
-class Answer(CreatedAtMixin, models.Model):
+class Answer(models.Model):
     """Ответ пользователя на вопрос в разделе Q&A."""
 
     answer_id = models.UUIDField(
@@ -115,6 +118,10 @@ class Answer(CreatedAtMixin, models.Model):
         default=ZERO_LIKE_COUNT,
         verbose_name='Количество лайков',
     )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата создания',
+    )
 
     class Meta:
         """Метаданные модели."""
@@ -136,7 +143,7 @@ class Answer(CreatedAtMixin, models.Model):
         return f'Ответ на "{self.question.title}": {short_content}...'
 
 
-class QuestionLike(CreatedAtMixin, models.Model):
+class QuestionLike(models.Model):
     """Лайки, поставленные пользователями вопросам."""
 
     user = models.ForeignKey(
@@ -152,6 +159,10 @@ class QuestionLike(CreatedAtMixin, models.Model):
         db_column='question_id',
         related_name='likes',
         verbose_name='Вопрос',
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата лайка',
     )
 
     class Meta:
@@ -178,7 +189,7 @@ class QuestionLike(CreatedAtMixin, models.Model):
         )
 
 
-class AnswerLike(CreatedAtMixin, models.Model):
+class AnswerLike(models.Model):
     """Лайки, поставленные пользователями ответам."""
 
     user = models.ForeignKey(
@@ -194,6 +205,10 @@ class AnswerLike(CreatedAtMixin, models.Model):
         db_column='answer_id',
         related_name='likes',
         verbose_name='Ответ',
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата лайка',
     )
 
     class Meta:
@@ -217,7 +232,7 @@ class AnswerLike(CreatedAtMixin, models.Model):
         return f'{self.user.first_name} ответ на {self.answer.question.title}'
 
 
-class QuestionImage(BaseImageMixin, models.Model):
+class QuestionImage(BaseImageMixin):
     """Изображения, прикреплённые к вопросу.
 
     - Хранит метаданные и URL изображения.
@@ -241,13 +256,14 @@ class QuestionImage(BaseImageMixin, models.Model):
         indexes = [
             models.Index(fields=['question']),
             models.Index(fields=['uploaded_by']),
+            models.Index(fields=['uploaded_at']),
         ]
 
     def __str__(self) -> str:
-        return f'Изображение {self.image_id} для "{self.question.title}"'
+        return f'Изображение {self.image} для "{self.question.title}"'
 
 
-class AnswerImage(BaseImageMixin, models.Model):
+class AnswerImage(BaseImageMixin):
     """Изображения, прикреплённые к ответу на вопрос.
 
     - Хранит метаданные и URL изображения.
@@ -271,10 +287,11 @@ class AnswerImage(BaseImageMixin, models.Model):
         indexes = [
             models.Index(fields=['answer']),
             models.Index(fields=['uploaded_by']),
+            models.Index(fields=['uploaded_at']),
         ]
 
     def __str__(self) -> str:
         return (
-            f'Изображение {self.image_id} для '
+            f'Изображение {self.image} для '
             f'"{self.answer.question.title}"'
         )

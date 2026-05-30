@@ -171,14 +171,16 @@ REST_AUTH = {
     'LOGIN_SERIALIZER': 'users.serializers.CustomLoginSerializer',
     'REGISTER_SERIALIZER': 'users.serializers.CustomRegisterSerializer',
     'USER_DETAILS_SERIALIZER': 'users.serializers.CustomUserDetailsSerializer',
+    'USER_ID_FIELD': 'user_id',
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=7),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'UPDATE_LAST_LOGIN': True,
+    'USER_ID_FIELD': 'user_id',
 }
 
 # Настройки dj-rest-auth для стандартной авторизации
@@ -245,5 +247,31 @@ SOCIALACCOUNT_PROVIDERS = {
         'METHOD': 'oauth2',
         'VERIFIED_EMAIL': True,
         'CALLBACK_URL': os.getenv('MAILRU_CALLBACK_URL'),
+    },
+}
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+            'level': 'DEBUG',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG',
     },
 }
