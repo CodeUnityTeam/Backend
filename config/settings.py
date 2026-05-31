@@ -169,6 +169,7 @@ REST_AUTH = {
     'JWT_AUTH_RETURN_EXPIRATION': True,
     'SESSION_LOGIN': False,
     'LOGIN_SERIALIZER': 'users.serializers.CustomLoginSerializer',
+    'PASSWORD_CHANGE_SERIALIZER': 'users.serializers.CustomPasswordChangeSerializer',
     'REGISTER_SERIALIZER': 'users.serializers.CustomRegisterSerializer',
     'USER_DETAILS_SERIALIZER': 'users.serializers.CustomUserDetailsSerializer',
 }
@@ -179,6 +180,7 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'UPDATE_LAST_LOGIN': True,
+    'USER_ID_FIELD': 'user_id',
 }
 
 # Настройки dj-rest-auth для стандартной авторизации
