@@ -1,11 +1,12 @@
 from typing import Any, List
+
+from django.db import transaction
+from django.db.models import QuerySet
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import (
     extend_schema,
     extend_schema_view,
 )
-from django.db import transaction
-from django.db.models import QuerySet
-from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import serializers, status
 from rest_framework.decorators import action
 from rest_framework.permissions import (
@@ -32,8 +33,12 @@ from .serializers import (
     ProjectShortSerializer,
 )
 
+
 @extend_schema_view(
-    list=extend_schema(tags=['Проекты'], summary='Список проектов с возможностью фильтрации'),
+    list=extend_schema(
+        tags=['Проекты'],
+        summary='Список проектов с возможностью фильтрации',
+    ),
     create=extend_schema(tags=['Проекты'], summary='Создать проект'),
     retrieve=extend_schema(
         tags=['Проекты'],
@@ -136,7 +141,7 @@ class ProjectViewSet(ModelViewSet):
         )
     @action(detail=True, methods=['post'], url_path='like')
     @transaction.atomic
-    def like(self, request, pk=None):
+    def like(self, request: Request, pk: str | None = None) -> Response:
         """Эндпоинт для постановки/снятия лайка проекту."""
         project = self.get_object()
         input_serializer = ProjectLikeSerializer(

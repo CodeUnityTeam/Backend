@@ -246,7 +246,7 @@ class ProjectShortSerializer(serializers.ModelSerializer):
             return False
         return ProjectLike.objects.filter(
             user=user,
-            project=project
+            project=project,
         ).exists()
 
     def get_participants_count(self, project: Project) -> int:
@@ -326,23 +326,26 @@ class ProjectArchiveSerializer(serializers.Serializer):
 
 
 class ProjectLikeResponseSerializer(serializers.Serializer):
+    """Сериализатор для ответа после создани/удаления лайка."""
+
     liked = serializers.BooleanField()
     likes_count = serializers.IntegerField()
 
 
 class ProjectLikeSerializer(serializers.Serializer):
+    """Сериализатор для лайков."""
 
-    def validate_project_id(self, value):
+    def validate_project_id(self, project_id: str) -> str:
         """Используем готовую функцию для получения проекта или 404."""
-        project = get_project_or_404(str(value))
+        project = get_project_or_404(str(project_id))
         if project.status_project not in ALLOWED_STATUSED_FOR_LIKE:
             raise serializers.ValidationError(
                 'Нельзя лайкать проект с текущим статусом.',
             )
         self.context['project'] = project
-        return value
+        return project_id
 
-    def toggle_like(self):
+    def toggle_like(self) -> dict:
         """Toggle-логика: создание/удаление лайка."""
         user = self.context['request'].user
         project = self.context['project']
@@ -358,5 +361,5 @@ class ProjectLikeSerializer(serializers.Serializer):
             liked = True
         return {
             'liked': liked,
-            'likes_count': ProjectLike.objects.filter(project=project).count()
+            'likes_count': ProjectLike.objects.filter(project=project).count(),
         }
