@@ -19,6 +19,12 @@ urlpatterns = [
                     include(('users.urls', 'users'), namespace='users'),
                 ),
                 path(
+                    'projects/',
+                    include(
+                        ('projects.urls', 'projects'), namespace='projects',
+                    ),
+                ),
+                path(
                     'schema/',
                     SpectacularAPIView.as_view(),
                     name='schema',

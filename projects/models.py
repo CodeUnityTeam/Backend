@@ -1,9 +1,10 @@
 import uuid
 
+from django.contrib.auth import get_user_model
 from django.core.validators import MaxLengthValidator, MinLengthValidator
 from django.db import models
 
-from core.constants import (
+from core.constants.projects import (
     INITIATOR_RESPONSE,
     MAX_LEN_FULL_DESC,
     MAX_LEN_INITIATOR_TYPE,
@@ -20,9 +21,11 @@ from core.constants import (
     STATUS_PROJECT,
     STATUS_RESPONSE_PROJECT,
 )
-from core.models.mixins import TimestampMixin
+from core.models.mixins import CreatedAtMixin, TimestampMixin
 
 from .validators import validate_location
+
+User = get_user_model()
 
 
 class WorkFormat(models.Model):
@@ -62,10 +65,12 @@ class Project(TimestampMixin, models.Model):
         verbose_name='Идентификатор проекта',
     )
     author = models.ForeignKey(
-        'users.User',
+        User,
         on_delete=models.CASCADE,
+        to_field='user_id',
         related_name='projects',
         verbose_name='Автор проекта',
+        null=False,
     )
     title = models.CharField(
         max_length=MAX_LEN_TITLE,
@@ -239,7 +244,7 @@ class ProjectParticipant(models.Model):
         )
 
 
-class ProjectLike(models.Model):
+class ProjectLike(CreatedAtMixin, models.Model):
     """Лайки, поставленные пользователями проектам.
 
     - Один пользователь может поставить лайк проекту только один раз.
@@ -262,10 +267,6 @@ class ProjectLike(models.Model):
         db_column='project_id',
         related_name='likes',
         verbose_name='Проект',
-    )
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Дата лайка',
     )
 
     class Meta:
@@ -292,7 +293,7 @@ class ProjectLike(models.Model):
         )
 
 
-class Response(models.Model):
+class Response(CreatedAtMixin, models.Model):
     """Отклик пользователя на проект или приглашение от автора.
 
     - Один пользователь может иметь только один отклик/приглашение на проект.
@@ -330,10 +331,6 @@ class Response(models.Model):
         choices=STATUS_RESPONSE_PROJECT,
         default='pending',
         verbose_name='Статус отклика',
-    )
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Дата создания',
     )
 
     class Meta:

@@ -177,5 +177,10 @@ class User(TimestampMixin, AbstractUser):
             ),
         )
 
+    @property
+    def id(self) -> str:
+        """При логине ожидается id - > возвращаем user_id."""
+        return self.user_id
+
     def __str__(self) -> str:
         return self.email
