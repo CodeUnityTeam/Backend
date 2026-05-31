@@ -59,19 +59,36 @@ class CustomRegisterSerializer(RegisterSerializer):
                 self.fields.pop(field)
 
     def validate_email(self, email: str) -> str:
-        """Валидация email с перехватом неподтвержденных адресов."""
+        """Валидация email с обработкой удаленных аккаунтов."""
         email = get_adapter().clean_email(email)
-        email_address = EmailAddress.objects.filter(
-            email__iexact=email,
-        ).first()
+        user = UserModel.objects.filter(email__iexact=email).first()
 
-        if email_address:
-            if not email_address.verified:
-                request = self.context.get('request')
+        if user:
+            request = self.context.get('request')
+            email_address = EmailAddress.objects.filter(
+                user=user, email__iexact=email,
+            ).first()
+
+            # Пользователь мягко удален
+            if not user.is_active:
+                user.is_active = True
+                user.save(update_fields=['is_active'])
+
+                if email_address:
+                    email_address.send_confirmation(request, signup=True)
+
+                raise ImmediateResponseException(
+                    detail={"detail": MSG_RESENT},
+                )
+
+            # Пользователь активен, но email не подтвержден
+            if email_address and not email_address.verified:
                 email_address.send_confirmation(request, signup=True)
                 raise ImmediateResponseException(
                     detail={"detail": MSG_RESENT},
                 )
+
+            # Активный подтвержденный пользователь
             raise serializers.ValidationError(
                 "Пользователь с таким email уже зарегистрирован.",
             )

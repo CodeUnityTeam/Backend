@@ -1,6 +1,7 @@
 import uuid
 from typing import Any
 
+from allauth.account.models import EmailAddress
 from django.contrib.auth import get_user_model
 from django.contrib.postgres.search import (
     SearchQuery,
@@ -12,13 +13,17 @@ from drf_spectacular.utils import (
     OpenApiParameter,
     extend_schema,
     extend_schema_view,
+    inline_serializer,
 )
+from rest_framework import serializers, status
 from rest_framework.generics import (
     ListAPIView,
     RetrieveAPIView,
-    RetrieveUpdateAPIView,
+    RetrieveUpdateDestroyAPIView,
 )
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.request import Request
+from rest_framework.response import Response
 
 from users.models.users import User
 from users.pagination import ProfileListPagination
@@ -42,17 +47,67 @@ UserModel = get_user_model()
         request=CustomUserDetailsSerializer,
         responses={200: CustomUserDetailsSerializer},
     ),
+    # Добавили описание метода DELETE для Swagger
+    delete=extend_schema(
+        tags=['profile'],
+        summary='Мягкое удаление аккаунта текущего пользователя',
+        description=(
+            'Переводит флаги is_active и is_agreed_to_terms в False. '
+            'Пользователь деактивируется, но запись в БД сохраняется.'
+        ),
+        request=None,
+        responses={
+            200: inline_serializer(
+                name='CurrentUserDeleteSuccessResponse',
+                fields={
+                    'detail': serializers.CharField(
+                        default='Аккаунт успешно удален.',
+                    ),
+                },
+            ),
+            401: inline_serializer(
+                name='CurrentUserDeleteUnauthorizedResponse',
+                fields={
+                    'detail': serializers.CharField(
+                        default='Учетные данные не были предоставлены.',
+                    ),
+                },
+            ),
+        },
+    ),
 )
-class MeProfileView(RetrieveUpdateAPIView):
-    """View просмотра и редактирования профиля авторизованного пользователя."""
+class MeProfileView(RetrieveUpdateDestroyAPIView):
+    """View для работы с профилем авторизованного пользователя.
 
-    http_method_names = ['get', 'patch', 'head', 'options']
+    Поддерживает просмотр, редактирование и мягкое удаление.
+    """
+
+    http_method_names = ['get', 'patch', 'delete', 'head', 'options']
     serializer_class = CustomUserDetailsSerializer
     permission_classes = [IsAuthenticated]
 
     def get_object(self) -> User:
-        """Возвращает объект текущего авторизованного пользователя."""
+        """Вернуть объект текущего авторизованного пользователя."""
         return self.request.user
+
+    def perform_destroy(self, instance: User) -> None:
+        """Перевести флаги активности и согласия в False."""
+        instance.is_active = False
+        instance.is_agreed_to_terms = False
+        instance.save()
+
+        EmailAddress.objects.filter(
+            user=instance,
+            email__iexact=instance.email,
+        ).update(verified=False)
+
+    def delete(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """Мягко далить аккаунт и вернуть статус HTTP 200 с сообщением."""
+        self.destroy(request, *args, **kwargs)
+        return Response(
+            {"detail": "Аккаунт успешно удален."},
+            status=status.HTTP_200_OK,
+        )
 
 
 @extend_schema_view(
@@ -66,7 +121,7 @@ class MeProfileView(RetrieveUpdateAPIView):
 class UserProfileView(RetrieveAPIView):
     """View для просмотра профиля неавторизованного пользователяпо ID."""
 
-    queryset = UserModel.objects.all()
+    queryset = UserModel.objects.filter(is_active=True)
     serializer_class = PublicUserProfileSerializer
     permission_classes = [IsAuthenticated]
 
@@ -164,7 +219,7 @@ class UserProfileListView(ListAPIView):
 
     def get_queryset(self) -> QuerySet[Any]:
         """Получить QuerySet с учетом поиска и фильтров."""
-        queryset = UserModel.objects.prefetch_related(
+        queryset = UserModel.objects.filter(is_active=True).prefetch_related(
             'specializations',
             'skills',
         )
