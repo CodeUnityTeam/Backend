@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from rest_framework import serializers
-
+from django.utils import timezone
 from users.models import Skill, Specialization
 
 from .models import Project, WorkFormat
@@ -125,6 +125,8 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
         specializations_data = validated_data.pop('specializations', [])
         formats_data = validated_data.pop('project_format', [])
         validated_data['author'] = user
+        if validated_data.get('status_project') == 'published':
+            validated_data['published_at'] = timezone.now()
         project = Project.objects.create(**validated_data)
         if skills_data:
             for skill_data in skills_data:
@@ -157,16 +159,6 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
                     )
         return project
 
-    def to_representation(self, project: Project) -> dict:
-        """Добавляем статус проекта в ответ."""
-        data = super().to_representation(project)
-        data['status'] = data.pop('status_project')
-        if project.published_at:
-            data['published_at'] = project.published_at.isoformat()
-        else:
-            data['published_at'] = None
-        return data
-
 
 class ProjectCreationResponseSerializer(serializers.ModelSerializer):
     """Сериализатор для ответа на создание проекта."""
@@ -180,16 +172,6 @@ class ProjectCreationResponseSerializer(serializers.ModelSerializer):
     def get_status(self, project: Project) -> str:
         """Меняем название поля для выдачи информации."""
         return project.status_project
-
-    def to_representation(self, project: Project) -> dict:
-        """Форматируем формат ответа."""
-        data = super().to_representation(project)
-        data['created_at'] = project.created_at.isoformat()
-        if project.published_at:
-            data['published_at'] = project.published_at.isoformat()
-        else:
-            data['published_at'] = None
-        return data
 
 
 class ProjectShortSerializer(serializers.ModelSerializer):
