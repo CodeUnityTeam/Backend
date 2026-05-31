@@ -156,7 +156,7 @@ class User(TimestampMixin, AbstractUser):
         verbose_name='Навыки',
         blank=True,
     )
-    workformat = models.ManyToManyField(
+    workformats = models.ManyToManyField(
         'projects.WorkFormat',
         through='UserWorkFormat',
         related_name='users',

@@ -1,12 +1,38 @@
 import os
+from typing import Any, Optional
 
 from allauth.account.adapter import DefaultAccountAdapter
 from allauth.account.models import EmailConfirmation
+from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.db.models import Model
 from django.http import HttpRequest
 from rest_framework import status
+from rest_framework.exceptions import APIException
 from rest_framework.response import Response
+
+UserModel = get_user_model()
+
+MSG_SUCCESS = "Письмо с подтверждением успешно отправлено на ваш email."
+MSG_RESENT = (
+    "Письмо с подтверждением успешно отправлено на ваш email повторно."
+)
+
+
+class ImmediateResponseException(APIException):
+    """Кастомное исключение для мгновенного возврата HTTP-ответа."""
+
+    status_code = status.HTTP_201_CREATED
+
+    def __init__(
+        self,
+        detail: Optional[Any] = None,
+        status_code: Optional[int] = None,
+    ) -> None:
+        """Добавить статус код экземпляру исключения."""
+        if status_code:
+            self.status_code = status_code
+        super().__init__(detail=detail)
 
 
 class CustomAccountAdapter(DefaultAccountAdapter):
@@ -27,7 +53,7 @@ class CustomAccountAdapter(DefaultAccountAdapter):
         request: HttpRequest,
         emailconfirmation: EmailConfirmation,
     ) -> str:
-        """Получить url для формирования ссылки на подверждение email."""
+        """Получить url для формирования ссылки на подтверждение email."""
         frontend_url = os.getenv('HOST_URL')
         return f"{frontend_url}/{emailconfirmation.key}"
 
@@ -38,10 +64,6 @@ class CustomAccountAdapter(DefaultAccountAdapter):
     ) -> Response:
         """Сформировать ответ на запрос регистрации в сервисе."""
         return Response(
-            {
-                "detail": (
-                    "Письмо с подтверждением успешно отправлено на ваш email."
-                ),
-            },
+            {"detail": MSG_SUCCESS},
             status=status.HTTP_201_CREATED,
         )

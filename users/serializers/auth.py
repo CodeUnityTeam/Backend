@@ -6,11 +6,11 @@ from dj_rest_auth.registration.serializers import RegisterSerializer
 from dj_rest_auth.serializers import LoginSerializer, PasswordChangeSerializer
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
-from django.db.models import Model
 from django.http import HttpRequest
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from users.adapters import MSG_RESENT, ImmediateResponseException
 from users.models.users import User
 
 UserModel = get_user_model()
@@ -36,7 +36,7 @@ class SocialAuthCodeRequestSerializer(serializers.Serializer):
 
 
 class CustomRegisterSerializer(RegisterSerializer):
-    """Сериализатор для базовой регистрации пользователя."""
+    """Сериализатор для базовой регистрации пользователя с одним паролем."""
 
     email = serializers.EmailField(required=True)
     first_name = serializers.CharField(required=True, max_length=150)
@@ -48,7 +48,7 @@ class CustomRegisterSerializer(RegisterSerializer):
     )
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        """Переопределить инициализатор класса, убрав не нужные поля."""
+        """Переопределить инициализатор класса, убрав ненужные поля."""
         super().__init__(*args, **kwargs)
 
         fields_to_pop = [
@@ -58,9 +58,30 @@ class CustomRegisterSerializer(RegisterSerializer):
             if field in self.fields:
                 self.fields.pop(field)
 
+    def validate_email(self, email: str) -> str:
+        """Валидация email с перехватом неподтвержденных адресов."""
+        email = get_adapter().clean_email(email)
+        email_address = EmailAddress.objects.filter(
+            email__iexact=email,
+        ).first()
+
+        if email_address:
+            if not email_address.verified:
+                request = self.context.get('request')
+                email_address.send_confirmation(request, signup=True)
+                raise ImmediateResponseException(
+                    detail={"detail": MSG_RESENT},
+                )
+            raise serializers.ValidationError(
+                "Пользователь с таким email уже зарегистрирован.",
+            )
+
+        return email
+
     def validate(self, attrs: dict) -> dict:
         """Валидировать пароль на соответствие требований надежности."""
         password = attrs.get('password')
+
         user = UserModel(
             email=attrs.get('email'),
             first_name=attrs.get('first_name'),
@@ -78,8 +99,8 @@ class CustomRegisterSerializer(RegisterSerializer):
             'last_name': self.validated_data.get('last_name'),
         }
 
-    def custom_signup(self, request: HttpRequest, user: Model) -> None:
-        """Сохранить поля в модель пользователя."""
+    def custom_signup(self, request: HttpRequest, user: Any) -> None:
+        """Сохранить поля в модель пользователя при регистрации."""
         user.first_name = self.validated_data.get('first_name')
         user.last_name = self.validated_data.get('last_name')
         user.save()

@@ -8,42 +8,26 @@ from django.db import models, transaction
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from projects.models import WorkFormat
+from projects.serializers import (
+    SkillSerializer,
+    SpecializationSerializer,
+    WorkFormatSerializer,
+)
 from users.models.skills import Skill, UserSkill
 from users.models.specializations import Specialization, UserSpecialization
 from users.models.users import User
+from users.models.workformats import UserWorkFormat
 
 UserModel = get_user_model()
-
-
-class SkillSerializer(serializers.ModelSerializer):
-    """Сериализатор для чтения и привязки навыков пользователя."""
-
-    class Meta:
-        model = Skill
-        fields = ('skill_id', 'name')
-        read_only_fields = ('name',)
-        extra_kwargs = {
-            'skill_id': {'read_only': False},
-        }
-
-
-class SpecializationSerializer(serializers.ModelSerializer):
-    """Сериализатор для чтения специализаций."""
-
-    class Meta:
-        model = Specialization
-        fields = ('spec_id', 'name')
-        read_only_fields = ('name',)
-        extra_kwargs = {
-            'spec_id': {'read_only': False},
-        }
 
 
 class CustomUserDetailsSerializer(UserDetailsSerializer):
     """Сериализатор для отображения и изменения данных пользователя."""
 
-    specializations = SpecializationSerializer(required=False, many=True)
+    workformats = WorkFormatSerializer(required=False, many=True)
     skills = SkillSerializer(required=False, many=True)
+    specializations = SpecializationSerializer(required=False, many=True)
 
     class Meta(UserDetailsSerializer.Meta):
         """Конфигурация сериализируемых полей пользователя."""
@@ -60,8 +44,9 @@ class CustomUserDetailsSerializer(UserDetailsSerializer):
             'country',
             'city',
             'about_me',
-            'specializations',
             'skills',
+            'specializations',
+            'workformats',
             'avatar_url',
         )
         read_only_fields = ('pk', 'email', 'role')
@@ -101,19 +86,20 @@ class CustomUserDetailsSerializer(UserDetailsSerializer):
 
     def update(self, instance: Any, validated_data: dict[str, Any]) -> Any:
         """Обновить профиль, специализации и навыки пользователя."""
-        spec_data = validated_data.pop('specializations', None)
+        format_data = validated_data.pop('workformats', None)
         skill_data = validated_data.pop('skills', None)
+        spec_data = validated_data.pop('specializations', None)
 
         instance = super().update(instance, validated_data)
 
         with transaction.atomic():
-            if spec_data is not None:
+            if format_data is not None:
                 self._set_m2m_relations(
                     instance=instance,
-                    data=spec_data,
-                    model_class=Specialization,
-                    through_model_class=UserSpecialization,
-                    fk_field_name='specialization',
+                    data=format_data,
+                    model_class=WorkFormat,
+                    through_model_class=UserWorkFormat,
+                    fk_field_name='workformat',
                 )
             if skill_data is not None:
                 self._set_m2m_relations(
@@ -122,6 +108,14 @@ class CustomUserDetailsSerializer(UserDetailsSerializer):
                     model_class=Skill,
                     through_model_class=UserSkill,
                     fk_field_name='skill',
+                )
+            if spec_data is not None:
+                self._set_m2m_relations(
+                    instance=instance,
+                    data=spec_data,
+                    model_class=Specialization,
+                    through_model_class=UserSpecialization,
+                    fk_field_name='specialization',
                 )
 
         instance.save()
@@ -179,8 +173,9 @@ class EmailChangeSerializer(serializers.Serializer):
 class PublicUserProfileSerializer(serializers.ModelSerializer):
     """Сериализатор для публичного просмотра чужого профиля."""
 
-    specializations = SpecializationSerializer(required=False, many=True)
-    skills = SkillSerializer(required=False, many=True)
+    skills = SkillSerializer(many=True, read_only=True)
+    specializations = SpecializationSerializer(many=True, read_only=True)
+    workformats = WorkFormatSerializer(many=True, read_only=True)
 
     class Meta:
         model = UserModel
@@ -192,8 +187,9 @@ class PublicUserProfileSerializer(serializers.ModelSerializer):
             'country',
             'city',
             'about_me',
-            'specializations',
             'skills',
+            'specializations',
+            'workformats',
             'avatar_url',
         )
 
