@@ -15,6 +15,14 @@ SPECTACULAR_SETTINGS = {
     'TERMS_OF_SERVICE': '',
     'CONTACT': {'name': '', 'email': ''},
     'LICENSE': {'name': ''},
+    'TAG_SORT_ORDER': 'definition',  # сортировка по порядку определения
+    'TAGS': [
+        {'name': 'Questions', 'description': 'Вопросы'},
+        {'name': 'Answers', 'description': 'Ответы'},
+        {'name': 'Likes', 'description': 'Лайки'},
+        {'name': 'Tags', 'description': 'Теги'},
+        {'name': 'Files', 'description': 'Файлы'}
+    ],
 }
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -149,6 +157,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer'
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',

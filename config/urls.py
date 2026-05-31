@@ -18,11 +18,7 @@ urlpatterns = [
                     'auth/',
                     include(('users.urls', 'users'), namespace='users'),
                 ),
-                path(
-                    'schema/',
-                    SpectacularAPIView.as_view(),
-                    name='schema',
-                ),
+                path('qna/', include(('qna.urls', 'qna'), namespace='qna')),
                 path('schema/', SpectacularAPIView.as_view(), name='schema'),
                 path(
                     'docs/swagger/',
