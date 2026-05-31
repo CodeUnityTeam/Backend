@@ -168,10 +168,10 @@ REST_AUTH = {
     'JWT_AUTH_SAMESITE': 'Lax',
     'JWT_AUTH_RETURN_EXPIRATION': True,
     'SESSION_LOGIN': False,
-    'LOGIN_SERIALIZER': 'users.serializers.CustomLoginSerializer',
-    'PASSWORD_CHANGE_SERIALIZER': 'users.serializers.CustomPasswordChangeSerializer',
-    'REGISTER_SERIALIZER': 'users.serializers.CustomRegisterSerializer',
-    'USER_DETAILS_SERIALIZER': 'users.serializers.CustomUserDetailsSerializer',
+    'LOGIN_SERIALIZER': 'users.serializers.auth.CustomLoginSerializer',
+    'PASSWORD_CHANGE_SERIALIZER': 'users.serializers.auth.CustomPasswordChangeSerializer',
+    'REGISTER_SERIALIZER': 'users.serializers.auth.CustomRegisterSerializer',
+    'USER_DETAILS_SERIALIZER': 'users.serializers.profile.CustomUserDetailsSerializer',
     'USER_ID_FIELD': 'user_id',
 }
 

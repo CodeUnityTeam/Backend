@@ -1,23 +1,16 @@
-from typing import Any, Type
+from typing import Any
 
 from allauth.account.adapter import get_adapter
 from allauth.account.models import EmailAddress
 from dj_rest_auth.registration.serializers import RegisterSerializer
-from dj_rest_auth.serializers import (
-    LoginSerializer,
-    PasswordChangeSerializer,
-    UserDetailsSerializer,
-)
+from dj_rest_auth.serializers import LoginSerializer, PasswordChangeSerializer
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
-from django.db import models, transaction
 from django.db.models import Model
 from django.http import HttpRequest
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from users.models.skills import Skill, UserSkill
-from users.models.specializations import Specialization, UserSpecialization
 from users.models.users import User
 
 UserModel = get_user_model()
@@ -40,30 +33,6 @@ class SocialAuthCodeRequestSerializer(serializers.Serializer):
             'OAuth-провайдера на фронтенде.'
         ),
     )
-
-
-class SkillSerializer(serializers.ModelSerializer):
-    """Сериализатор для чтения и привязки навыков пользователя."""
-
-    class Meta:
-        model = Skill
-        fields = ('skill_id', 'name')
-        read_only_fields = ('name',)
-        extra_kwargs = {
-            'skill_id': {'read_only': False},
-        }
-
-
-class SpecializationSerializer(serializers.ModelSerializer):
-    """Сериализатор для чтения специализаций."""
-
-    class Meta:
-        model = Specialization
-        fields = ('spec_id', 'name')
-        read_only_fields = ('name',)
-        extra_kwargs = {
-            'spec_id': {'read_only': False},
-        }
 
 
 class CustomRegisterSerializer(RegisterSerializer):
@@ -114,95 +83,6 @@ class CustomRegisterSerializer(RegisterSerializer):
         user.first_name = self.validated_data.get('first_name')
         user.last_name = self.validated_data.get('last_name')
         user.save()
-
-
-class CustomUserDetailsSerializer(UserDetailsSerializer):
-    """Сериализатор для отображения и изменения данных пользователя."""
-
-    specializations = SpecializationSerializer(required=False, many=True)
-    skills = SkillSerializer(required=False, many=True)
-
-    class Meta(UserDetailsSerializer.Meta):
-        """Конфигурация сериализируемых полей пользователя."""
-
-        model = UserModel
-        fields = (
-            'pk',
-            'email',
-            'first_name',
-            'last_name',
-            'role',
-            'phone_number',
-            'additional_contact',
-            'country',
-            'city',
-            'about_me',
-            'specializations',
-            'skills',
-            'avatar_url',
-        )
-        read_only_fields = ('pk', 'email', 'role')
-
-    def _set_m2m_relations(
-        self,
-        instance: Any,
-        data: list[dict[str, Any]],
-        model_class: Type[models.Model],
-        through_model_class: Type[models.Model],
-        fk_field_name: str,
-    ) -> None:
-        """Универсальный метод для добавления M2M связей."""
-        pk_field_name = model_class._meta.pk.name
-
-        objects_to_add = []
-        for item in data:
-            obj_id = item.get(pk_field_name)
-            if not obj_id:
-                continue
-            try:
-                obj = model_class.objects.get(pk=obj_id)
-                if obj not in objects_to_add:
-                    objects_to_add.append(obj)
-            except model_class.DoesNotExist:
-                continue
-
-        # Удаляем старые связи
-        through_model_class.objects.filter(user=instance).delete()
-
-        # Формируем новые связи
-        new_relations = [
-            through_model_class(**{'user': instance, fk_field_name: obj})
-            for obj in objects_to_add
-        ]
-        through_model_class.objects.bulk_create(new_relations)
-
-    def update(self, instance: Any, validated_data: dict[str, Any]) -> Any:
-        """Обновить профиль, специализации и навыки пользователя."""
-        spec_data = validated_data.pop('specializations', None)
-        skill_data = validated_data.pop('skills', None)
-
-        instance = super().update(instance, validated_data)
-
-        with transaction.atomic():
-            if spec_data is not None:
-                self._set_m2m_relations(
-                    instance=instance,
-                    data=spec_data,
-                    model_class=Specialization,
-                    through_model_class=UserSpecialization,
-                    fk_field_name='specialization',
-                )
-            if skill_data is not None:
-                self._set_m2m_relations(
-                    instance=instance,
-                    data=skill_data,
-                    model_class=Skill,
-                    through_model_class=UserSkill,
-                    fk_field_name='skill',
-                )
-
-        instance.save()
-        return instance
 
 
 class EmailChangeSerializer(serializers.Serializer):
@@ -279,27 +159,3 @@ class CustomPasswordChangeSerializer(PasswordChangeSerializer):
         attrs['new_password2'] = attrs.get('password')
 
         return super().validate(attrs)
-
-
-class PublicUserProfileSerializer(serializers.ModelSerializer):
-    """Сериализатор для публичного просмотра чужого профиля."""
-
-    specializations = SpecializationSerializer(required=False, many=True)
-    skills = SkillSerializer(required=False, many=True)
-
-    class Meta:
-        model = UserModel
-        fields = (
-            'pk',
-            'first_name',
-            'last_name',
-            'role',
-            'country',
-            'city',
-            'about_me',
-            'specializations',
-            'skills',
-            'avatar_url',
-        )
-
-        read_only_fields = fields
