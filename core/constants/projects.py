@@ -9,6 +9,7 @@ ZERO_SYMBOL = 0
 MAX_LEN_STATUS = 20
 MAX_LEN_WORK_FORMAT = 50
 
+
 # Статусы проекта
 STATUS_PROJECT = [
     ('draft', 'Черновик'),
@@ -40,43 +41,10 @@ STATUS_RESPONSE_PROJECT = [
 MAX_LEN_INITIATOR_TYPE = 20
 MAX_LEN_STATUS_RESPONSE = 20
 
-# Контанты моделей приложения 'qna'
-ZERO_LIKE_COUNT = 0
-MAX_TITLE_QUESTION = 150
-MAX_CONTENT_ANSWER = 2000
-MAX_ORIGINAL_NAME = 255
-MAX_MINE_TYPE = 100
-MAX_IMAGE_URL = 255
+MIN_FILTER_DAYS = 7
+MAX_FILTER_DAYS = 365
 
-# Контанты модели 'specializations'
-SPECIALIZATION_NAME_LENGTH = 255
 
-# Контанты модели 'skills'
-SKILL_NAME_LENGTH = 255
-
-# Константы приложения 'feedback'
-STATUS_FEEDBACK = [
-    ('Sent', 'Отправлено'),
-    ('In progress', 'В обработке'),
-    ('Closed', 'Закрыто'),
-]
-MAX_LEN_STATUS_FEEDBACK = 50
-MAX_CONTENT_FEEDBACK = 1000
-MAX_SUBJECT_FEEDBACK = 50
-
-# Константы модели 'users'
-
-MAX_USERNAME_LENGTH = 40
-MAX_FIRST_NAME_LENGTH = 35
-MAX_LAST_NAME_LENGTH = 64
-MAX_EMAIL_LENGTH = 254
-MAX_ROLE_LENGTH = 50
-ROLE_USER = 'user'
-ROLE_MODERATOR = 'moderator'
-ROLE_ADMIN = 'admin'
-ROLE_CHOICES_LIST = [
-    (ROLE_USER, 'Пользователь'),
-    (ROLE_MODERATOR, 'Модератор'),
-    (ROLE_ADMIN, 'Администратор'),
-]
-MAX_HASH_LENGTH = 128
+PAGE_SIZE = 20
+MAX_PAGE_SIZE = 100
+PAGE_SIZE_QUERY_PARAM = 'page_size'
