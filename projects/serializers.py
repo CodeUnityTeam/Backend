@@ -1,7 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.db import transaction
-from rest_framework import serializers
 from django.utils import timezone
+from rest_framework import serializers
+
 from users.models import Skill, Specialization
 
 from .models import Project, WorkFormat
@@ -117,46 +118,93 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
             })
         return data
 
+    def _extract_relationship_data(self, validated_data: dict) -> dict:
+        """Извлекает данные связей и возвращает их в словаре."""
+        return {
+            'skills': validated_data.pop('skills', []),
+            'specializations': validated_data.pop('specializations', []),
+            'formats': validated_data.pop('project_format', []),
+        }
+
+    def _validate_skills(self, skills_data: list) -> list:
+        """Валидирует существование навыков и возвращает объекты."""
+        if not skills_data:
+            return []
+        skill_ids = [item.get('skill_id') for item in skills_data]
+        if None in skill_ids:
+            raise serializers.ValidationError(
+                'В данных навыков отсутствует поле "skill_id"',
+            )
+        existing_skills = Skill.objects.filter(skill_id__in=skill_ids)
+        existing_ids = {str(skill.skill_id) for skill in existing_skills}
+        missing_ids = set(skill_ids) - existing_ids
+        if missing_ids:
+            raise serializers.ValidationError(
+                f'Навык(и) с ID {", ".join(missing_ids)} не найден(ы)',
+            )
+        return list(existing_skills)
+
+    def _validate_specializations(self, specializations_data: list) -> list:
+        """Валидирует существование специализаций и возвращает объекты."""
+        if not specializations_data:
+            return []
+        spec_ids = [item.get('spec_id') for item in specializations_data]
+        if None in spec_ids:
+            raise serializers.ValidationError(
+                'В данных специализаций отсутствует поле "spec_id"',
+            )
+        existing_specs = Specialization.objects.filter(spec_id__in=spec_ids)
+        existing_ids = {str(spec.spec_id) for spec in existing_specs}
+        missing_ids = set(spec_ids) - existing_ids
+        if missing_ids:
+            raise serializers.ValidationError(
+                f'Специализация(и) с ID '
+                f'{", ".join(missing_ids)} не найдена(ы)',
+            )
+        return list(existing_specs)
+
+    def _validate_formats(self, formats_data: list) -> list:
+        """Валидирует существование форматов работы и возвращает объекты."""
+        if not formats_data:
+            return []
+        format_ids = formats_data
+        existing_formats = WorkFormat.objects.filter(format_id__in=format_ids)
+        existing_ids = {str(fmt.format_id) for fmt in existing_formats}
+        missing_ids = set(format_ids) - existing_ids
+        if missing_ids:
+            raise serializers.ValidationError(
+                f'Формат(ы) работы с ID {", ".join(missing_ids)} не найден(ы)',
+            )
+        return list(existing_formats)
+
+    def _add_relationships_in_project(
+        self,
+        instance: Project,
+        relationship_data: dict,
+    ) -> None:
+        """Присваивает связанные объекты проекту."""
+        skills = self._validate_skills(relationship_data['skills'])
+        specializations = self._validate_specializations(
+            relationship_data['specializations'],
+        )
+        formats = self._validate_formats(relationship_data['formats'])
+        if skills:
+            instance.skills.set(skills)
+        if specializations:
+            instance.specializations.set(specializations)
+        if formats:
+            instance.project_format.set(formats)
+
     @transaction.atomic
     def create(self, validated_data: dict) -> Project:
         """Метод для валидации и создания проекта."""
+        relationship_data = self._extract_relationship_data(validated_data)
         user = self.context['request'].user
-        skills_data = validated_data.pop('skills', [])
-        specializations_data = validated_data.pop('specializations', [])
-        formats_data = validated_data.pop('project_format', [])
         validated_data['author'] = user
         if validated_data.get('status_project') == 'published':
             validated_data['published_at'] = timezone.now()
         project = Project.objects.create(**validated_data)
-        if skills_data:
-            for skill_data in skills_data:
-                skill_id = skill_data.get('skill_id')
-                try:
-                    skill = Skill.objects.get(skill_id=skill_id)
-                    project.skills.add(skill)
-                except Skill.DoesNotExist:
-                    raise serializers.ValidationError(
-                        f'Навык с ID {skill_id} не найден',
-                    )
-        if specializations_data:
-            for spec_data in specializations_data:
-                spec_id = spec_data.get('spec_id')
-                try:
-                    spec = Specialization.objects.get(spec_id=spec_id)
-                    project.specializations.add(spec)
-                except Specialization.DoesNotExist:
-                    raise serializers.ValidationError(
-                        f'Специализация с ID {spec_id} не найдена',
-                    )
-        if formats_data:
-            for format_id in formats_data:
-                try:
-                    work_format = WorkFormat.objects.get(format_id=format_id)
-                    project.project_format.add(work_format)
-                except WorkFormat.DoesNotExist:
-                    raise serializers.ValidationError(
-                        f'Формат работы с ID {format_id} не найден',
-                    )
+        self._add_relationships_in_project(project, relationship_data)
         return project
 
 

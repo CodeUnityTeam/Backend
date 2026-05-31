@@ -79,11 +79,9 @@ class ProjectViewSet(ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         project = serializer.save()
-        response_serializer = ProjectCreationResponseSerializer(project)
         return Response(
-            response_serializer.data,
+            ProjectCreationResponseSerializer(project).data,
             status=status.HTTP_201_CREATED,
-            headers=self.get_success_headers(response_serializer.data),
         )
 
     @transaction.atomic
