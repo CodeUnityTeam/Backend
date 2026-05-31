@@ -9,14 +9,18 @@ ZERO_SYMBOL = 0
 MAX_LEN_STATUS = 20
 MAX_LEN_WORK_FORMAT = 50
 
-
+DRAFT = 'draft'
+PUBLISHED = 'published'
+RECRUITING_CLOSED = 'recruiting_closed'
+ARCHIVED = 'archived'
+BLOCKED = 'blocked'
 # Статусы проекта
 STATUS_PROJECT = [
-    ('draft', 'Черновик'),
-    ('published', 'Опубликован'),
-    ('recruiting_closed', 'Набор закрыт'),
-    ('archived', 'Архив'),
-    ('blocked', 'Заблокирован'),
+    (DRAFT, 'Черновик'),
+    (PUBLISHED, 'Опубликован'),
+    (RECRUITING_CLOSED, 'Набор закрыт'),
+    (ARCHIVED, 'Архив'),
+    (BLOCKED, 'Заблокирован'),
 ]
 
 # Статусы пользователя в проекте
@@ -31,12 +35,17 @@ INITIATOR_RESPONSE = [
     ('applicant', 'Отклик соискателя'),
     ('author', 'Приглашение от автора'),
 ]
+
+PENDING = 'pending'
+APPROVED = 'approved'
+REJECTED = 'rejected'
+WITHDRAWN = 'withdrawn'
 # Статус отклика пользователя
 STATUS_RESPONSE_PROJECT = [
-    ('pending', 'Ожидает'),
-    ('approved', 'Одобрен'),
-    ('rejected', 'Отклонён'),
-    ('withdrawn', 'Отозван'),
+    (PENDING, 'Ожидает'),
+    (APPROVED, 'Одобрен'),
+    (REJECTED, 'Отклонён'),
+    (WITHDRAWN, 'Отозван'),
 ]
 MAX_LEN_INITIATOR_TYPE = 20
 MAX_LEN_STATUS_RESPONSE = 20
@@ -48,3 +57,5 @@ MAX_FILTER_DAYS = 365
 PAGE_SIZE = 20
 MAX_PAGE_SIZE = 100
 PAGE_SIZE_QUERY_PARAM = 'page_size'
+
+ALLOWED_STATUSED_FOR_LIKE = (PUBLISHED, RECRUITING_CLOSED)

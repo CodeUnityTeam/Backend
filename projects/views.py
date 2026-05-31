@@ -1,9 +1,13 @@
 from typing import Any, List
-
+from drf_spectacular.utils import (
+    extend_schema,
+    extend_schema_view,
+)
 from django.db import transaction
 from django.db.models import QuerySet
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import serializers, status
+from rest_framework.decorators import action
 from rest_framework.permissions import (
     AllowAny,
     BasePermission,
@@ -23,19 +27,45 @@ from .serializers import (
     ProjectCreateSerializer,
     ProjectCreationResponseSerializer,
     ProjectDetailSerializer,
+    ProjectLikeResponseSerializer,
+    ProjectLikeSerializer,
     ProjectShortSerializer,
 )
 
-
+@extend_schema_view(
+    list=extend_schema(tags=['Проекты'], summary='Список проектов с возможностью фильтрации'),
+    create=extend_schema(tags=['Проекты'], summary='Создать проект'),
+    retrieve=extend_schema(
+        tags=['Проекты'],
+        summary='Просмотр подробной информации о проекте',
+    ),
+    partial_update=extend_schema(
+        tags=['Проекты'],
+        summary='Редактировать проект',
+    ),
+    destroy=extend_schema(tags=['Проекты'], summary='Мягкое удаление проекта'),
+)
 class ProjectViewSet(ModelViewSet):
     """Вьюсет для работы с проектами."""
 
-    queryset = Project.objects.all()
     permission_classes = (IsAuthenticated,)
     http_method_names = ('get', 'post', 'patch', 'delete')
     filter_backends = (DjangoFilterBackend,)
     filterset_class = ProjectFilter
     pagination_class = CustomProjectPagination
+
+    def get_queryset(self) -> QuerySet[Project]:
+        """Оптимизированный queryset с предзагрузкой связанных данных."""
+        return Project.objects.select_related(
+            'author',
+        ).prefetch_related(
+            'skills',
+            'specializations',
+            'project_format',
+            'participants',
+            'likes',
+            'responses',
+        )
 
     def get_permissions(self) -> List[BasePermission]:
         """Переопределяем разрешения для разных действий.
@@ -72,6 +102,8 @@ class ProjectViewSet(ModelViewSet):
             return ProjectArchiveSerializer
         if self.action == 'list':
             return ProjectShortSerializer
+        if self.action == 'like':
+            return ProjectLikeSerializer
         return ProjectDetailSerializer
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
@@ -97,3 +129,23 @@ class ProjectViewSet(ModelViewSet):
         )
         serializer.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @extend_schema(
+            tags=['Проекты'],
+            summary='Лайк/снятие лайка проекта',
+        )
+    @action(detail=True, methods=['post'], url_path='like')
+    @transaction.atomic
+    def like(self, request, pk=None):
+        """Эндпоинт для постановки/снятия лайка проекту."""
+        project = self.get_object()
+        input_serializer = ProjectLikeSerializer(
+            data={'project_id': project.project_id},
+            context={'request': request, 'project': project},
+        )
+        input_serializer.is_valid(raise_exception=True)
+        result = input_serializer.toggle_like()
+        return Response(
+            ProjectLikeResponseSerializer(result).data,
+            status=status.HTTP_200_OK,
+        )

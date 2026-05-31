@@ -3,9 +3,11 @@ from django.db import transaction
 from django.utils import timezone
 from rest_framework import serializers
 
+from core.constants.projects import ALLOWED_STATUSED_FOR_LIKE
 from users.models import Skill, Specialization
 
-from .models import Project, WorkFormat
+from .models import Project, ProjectLike, WorkFormat
+from .selectors import get_project_or_404
 
 User = get_user_model()
 
@@ -240,9 +242,12 @@ class ProjectShortSerializer(serializers.ModelSerializer):
     def get_is_liked_by_me(self, project: Project) -> bool:
         """Проверяем, лайкнул ли проект авторизированный пользователь."""
         user = self.context.get('request').user
-        if user.is_authenticated:
-            return user in project.likes.all()
-        return False
+        if not user.is_authenticated:
+            return False
+        return ProjectLike.objects.filter(
+            user=user,
+            project=project
+        ).exists()
 
     def get_participants_count(self, project: Project) -> int:
         """Получаем количество участников проекта."""
@@ -318,3 +323,40 @@ class ProjectArchiveSerializer(serializers.Serializer):
         project.status_project = 'archived'
         project.save(update_fields=['status_project'])
         return project
+
+
+class ProjectLikeResponseSerializer(serializers.Serializer):
+    liked = serializers.BooleanField()
+    likes_count = serializers.IntegerField()
+
+
+class ProjectLikeSerializer(serializers.Serializer):
+
+    def validate_project_id(self, value):
+        """Используем готовую функцию для получения проекта или 404."""
+        project = get_project_or_404(str(value))
+        if project.status_project not in ALLOWED_STATUSED_FOR_LIKE:
+            raise serializers.ValidationError(
+                'Нельзя лайкать проект с текущим статусом.',
+            )
+        self.context['project'] = project
+        return value
+
+    def toggle_like(self):
+        """Toggle-логика: создание/удаление лайка."""
+        user = self.context['request'].user
+        project = self.context['project']
+        like_exists = ProjectLike.objects.filter(
+            user=user,
+            project=project,
+        ).exists()
+        if like_exists:
+            ProjectLike.objects.filter(user=user, project=project).delete()
+            liked = False
+        else:
+            ProjectLike.objects.create(user=user, project=project)
+            liked = True
+        return {
+            'liked': liked,
+            'likes_count': ProjectLike.objects.filter(project=project).count()
+        }
