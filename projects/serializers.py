@@ -11,19 +11,27 @@ User = get_user_model()
 
 
 class SkillSerializer(serializers.ModelSerializer):
-    """Сериализатор навыков."""
+    """Сериализатор для чтения и привязки навыков пользователя."""
 
     class Meta:
         model = Skill
         fields = ('skill_id', 'name')
+        read_only_fields = ('name',)
+        extra_kwargs = {
+            'skill_id': {'read_only': False},
+        }
 
 
 class SpecializationSerializer(serializers.ModelSerializer):
-    """Сериализатор специализаций."""
+    """Сериализатор для чтения специализаций."""
 
     class Meta:
         model = Specialization
         fields = ('spec_id', 'name')
+        read_only_fields = ('name',)
+        extra_kwargs = {
+            'spec_id': {'read_only': False},
+        }
 
 
 class WorkFormatSerializer(serializers.ModelSerializer):
@@ -32,6 +40,10 @@ class WorkFormatSerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkFormat
         fields = ('format_id', 'name')
+        read_only_fields = ('name',)
+        extra_kwargs = {
+            'format_id': {'read_only': False},
+        }
 
 
 class UserBaseSerializer(serializers.ModelSerializer):

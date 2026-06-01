@@ -1,11 +1,7 @@
 import uuid
 from typing import Any
 
-from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
-from allauth.socialaccount.providers.mailru.views import MailRuOAuth2Adapter
-from allauth.socialaccount.providers.oauth2.client import OAuth2Client
-from allauth.socialaccount.providers.yandex.views import YandexOAuth2Adapter
-from dj_rest_auth.registration.views import SocialLoginView
+from allauth.account.models import EmailAddress
 from django.contrib.auth import get_user_model
 from django.contrib.postgres.search import (
     SearchQuery,
@@ -14,7 +10,6 @@ from django.contrib.postgres.search import (
 )
 from django.db.models import QuerySet
 from drf_spectacular.utils import (
-    OpenApiExample,
     OpenApiParameter,
     extend_schema,
     extend_schema_view,
@@ -24,75 +19,20 @@ from rest_framework import serializers, status
 from rest_framework.generics import (
     ListAPIView,
     RetrieveAPIView,
-    RetrieveUpdateAPIView,
+    RetrieveUpdateDestroyAPIView,
 )
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
-from config.settings import SOCIALACCOUNT_PROVIDERS
 from users.models.users import User
 from users.pagination import ProfileListPagination
-from users.serializers import (
+from users.serializers.profile import (
     CustomUserDetailsSerializer,
-    EmailChangeSerializer,
     PublicUserProfileSerializer,
-    SocialAuthCodeRequestSerializer,
 )
 
 UserModel = get_user_model()
-
-
-class SocialLogin(SocialLoginView):
-    """Базовый View для обработки запросов авторизации.
-
-    Обрабатывает запросы авторизации через сторонние приложения.
-    """
-
-    client_class = OAuth2Client
-
-
-@extend_schema_view(
-    post=extend_schema(
-        tags=['social_auth'],
-        summary='Вход через Google',
-        request=SocialAuthCodeRequestSerializer,
-    ),
-)
-class GoogleLogin(SocialLogin):
-    """View для обработки запросов авторизации через Google."""
-
-    adapter_class = GoogleOAuth2Adapter
-    callback_url = SOCIALACCOUNT_PROVIDERS['google']['CALLBACK_URL']
-
-
-@extend_schema_view(
-    post=extend_schema(
-        tags=['social_auth'],
-        summary='Вход через Yandex',
-        request=SocialAuthCodeRequestSerializer,
-    ),
-)
-class YandexLogin(SocialLogin):
-    """View для обработки запросов авторизации через Yandex."""
-
-    adapter_class = YandexOAuth2Adapter
-    callback_url = SOCIALACCOUNT_PROVIDERS['yandex']['CALLBACK_URL']
-
-
-@extend_schema_view(
-    post=extend_schema(
-        tags=['social_auth'],
-        summary='Вход через Mail.ru',
-        request=SocialAuthCodeRequestSerializer,
-    ),
-)
-class MailRuLogin(SocialLogin):
-    """View для обработки запросов авторизации через Mail.ru."""
-
-    adapter_class = MailRuOAuth2Adapter
-    callback_url = SOCIALACCOUNT_PROVIDERS['mailru']['CALLBACK_URL']
 
 
 @extend_schema_view(
@@ -107,69 +47,65 @@ class MailRuLogin(SocialLogin):
         request=CustomUserDetailsSerializer,
         responses={200: CustomUserDetailsSerializer},
     ),
-)
-class MeProfileView(RetrieveUpdateAPIView):
-    """View просмотра и редактирования профиля авторизованного пользователя."""
-
-    http_method_names = ['get', 'patch', 'head', 'options']
-    serializer_class = CustomUserDetailsSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_object(self) -> User:
-        """Возвращает объект текущего авторизованного пользователя."""
-        return self.request.user
-
-
-@extend_schema_view(
-    post=extend_schema(
+    # Добавили описание метода DELETE для Swagger
+    delete=extend_schema(
         tags=['profile'],
-        summary='Запрос на изменение email авторизованным пользователем',
-        description='Запрос на смену email и отправку письма подтверждения.',
-        request=EmailChangeSerializer,
+        summary='Мягкое удаление аккаунта текущего пользователя',
+        description=(
+            'Переводит флаги is_active и is_agreed_to_terms в False. '
+            'Пользователь деактивируется, но запись в БД сохраняется.'
+        ),
+        request=None,
         responses={
             200: inline_serializer(
-                name='EmailChangeSuccessResponse',
+                name='CurrentUserDeleteSuccessResponse',
                 fields={
                     'detail': serializers.CharField(
-                        help_text=(
-                            'Сообщение об успешной отправке ссылки '
-                            'подтверждения.'
-                        ),
+                        default='Аккаунт успешно удален.',
+                    ),
+                },
+            ),
+            401: inline_serializer(
+                name='CurrentUserDeleteUnauthorizedResponse',
+                fields={
+                    'detail': serializers.CharField(
+                        default='Учетные данные не были предоставлены.',
                     ),
                 },
             ),
         },
-        examples=[
-            OpenApiExample(
-                name='Успешный запрос',
-                value={
-                    "detail": (
-                        "Ссылка для подтверждения отправлена на новый email."
-                    ),
-                },
-                response_only=True,
-            ),
-        ],
     ),
 )
-class EmailChangeView(APIView):
-    """View для инициации смены email авторизованным пользователем."""
+class MeProfileView(RetrieveUpdateDestroyAPIView):
+    """View для работы с профилем авторизованного пользователя.
 
+    Поддерживает просмотр, редактирование и мягкое удаление.
+    """
+
+    http_method_names = ['get', 'patch', 'delete', 'head', 'options']
+    serializer_class = CustomUserDetailsSerializer
     permission_classes = [IsAuthenticated]
 
-    def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        """Обработать POST-запрос на изменение email пользователя."""
-        serializer = EmailChangeSerializer(
-            data=request.data,
-            context={'request': request},
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
+    def get_object(self) -> User:
+        """Вернуть объект текущего авторизованного пользователя."""
+        return self.request.user
 
+    def perform_destroy(self, instance: User) -> None:
+        """Перевести флаги активности и согласия в False."""
+        instance.is_active = False
+        instance.is_agreed_to_terms = False
+        instance.save()
+
+        EmailAddress.objects.filter(
+            user=instance,
+            email__iexact=instance.email,
+        ).update(verified=False)
+
+    def delete(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """Мягко далить аккаунт и вернуть статус HTTP 200 с сообщением."""
+        self.destroy(request, *args, **kwargs)
         return Response(
-            {
-                'detail': 'Ссылка подтверждения отправлена на новый email.',
-            },
+            {"detail": "Аккаунт успешно удален."},
             status=status.HTTP_200_OK,
         )
 
@@ -185,7 +121,7 @@ class EmailChangeView(APIView):
 class UserProfileView(RetrieveAPIView):
     """View для просмотра профиля неавторизованного пользователяпо ID."""
 
-    queryset = UserModel.objects.all()
+    queryset = UserModel.objects.filter(is_active=True)
     serializer_class = PublicUserProfileSerializer
     permission_classes = [IsAuthenticated]
 
@@ -283,7 +219,7 @@ class UserProfileListView(ListAPIView):
 
     def get_queryset(self) -> QuerySet[Any]:
         """Получить QuerySet с учетом поиска и фильтров."""
-        queryset = UserModel.objects.prefetch_related(
+        queryset = UserModel.objects.filter(is_active=True).prefetch_related(
             'specializations',
             'skills',
         )
