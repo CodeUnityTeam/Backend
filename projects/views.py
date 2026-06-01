@@ -58,6 +58,7 @@ class ProjectViewSet(ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_class = ProjectFilter
     pagination_class = CustomProjectPagination
+    lookup_field = 'project_id'
 
     def get_queryset(self) -> QuerySet[Project]:
         """Оптимизированный queryset с предзагрузкой связанных данных."""

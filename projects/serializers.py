@@ -5,27 +5,12 @@ from rest_framework import serializers
 
 from core.constants.projects import ALLOWED_STATUSED_FOR_LIKE
 from users.models import Skill, Specialization
+from users.serializers import SkillSerializer, SpecializationSerializer
 
 from .models import Project, ProjectLike, WorkFormat
 from .selectors import get_project_or_404
 
 User = get_user_model()
-
-
-class SkillSerializer(serializers.ModelSerializer):
-    """Сериализатор навыков."""
-
-    class Meta:
-        model = Skill
-        fields = ('skill_id', 'name')
-
-
-class SpecializationSerializer(serializers.ModelSerializer):
-    """Сериализатор специализаций."""
-
-    class Meta:
-        model = Specialization
-        fields = ('spec_id', 'name')
 
 
 class WorkFormatSerializer(serializers.ModelSerializer):
@@ -362,4 +347,38 @@ class ProjectLikeSerializer(serializers.Serializer):
         return {
             'liked': liked,
             'likes_count': ProjectLike.objects.filter(project=project).count(),
+        }
+
+
+class PartialProjectUpdateSerializer(serializers.ModelSerializer):
+    """Сериализатор для обновления проекта."""
+
+    skills = serializers.ListField(
+        child=serializers.CharField(),
+        required=False,
+        allow_empty=True,
+    )
+    specializations = serializers.ListField(
+        child=serializers.DictField(),
+        required=False,
+        allow_empty=True,
+    )
+    formats = serializers.ListField(
+        child=serializers.CharField(),
+        required=False,
+        allow_empty=True,
+    )
+
+    class Meta:
+        model = Project
+        fields = [
+            'title', 'short_desc', 'full_desc',
+            'location', 'start_date', 'end_date',
+            'status', 'skills', 'specializations', 'formats',
+        ]
+        extra_kwargs = {
+            'title': {'required': False, 'allow_blank': False},
+            'short_desc': {'required': False, 'allow_blank': False},
+            'full_desc': {'required': False, 'allow_blank': False},
+            'location': {'required': False, 'allow_blank': True},
         }
