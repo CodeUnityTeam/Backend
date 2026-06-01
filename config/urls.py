@@ -15,11 +15,22 @@ urlpatterns = [
         include(
             [
                 path(
-                    'auth/',
+                    'user/',
                     include(('users.urls', 'users'), namespace='users'),
                 ),
+
                 path('qna/', include(('qna.urls', 'qna'), namespace='qna')),
-                path('schema/', SpectacularAPIView.as_view(), name='schema'),
+                path(
+                    'projects/',
+                    include(
+                        ('projects.urls', 'projects'), namespace='projects',
+                    ),
+                ),
+                path(
+                    'schema/',
+                    SpectacularAPIView.as_view(),
+                    name='schema',
+                ),
                 path(
                     'docs/swagger/',
                     SpectacularSwaggerView.as_view(url_name='schema'),

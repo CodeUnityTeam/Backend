@@ -156,6 +156,13 @@ class User(TimestampMixin, AbstractUser):
         verbose_name='Навыки',
         blank=True,
     )
+    workformats = models.ManyToManyField(
+        'projects.WorkFormat',
+        through='UserWorkFormat',
+        related_name='users',
+        verbose_name='Формат работы',
+        blank=True,
+    )
 
     class Meta:
         db_table = 'users'
@@ -169,6 +176,11 @@ class User(TimestampMixin, AbstractUser):
                 name='unique_not_empty_new_email',
             ),
         )
+
+    @property
+    def id(self) -> str:
+        """При логине ожидается id - > возвращаем user_id."""
+        return self.user_id
 
     def __str__(self) -> str:
         return self.email
