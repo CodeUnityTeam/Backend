@@ -18,6 +18,8 @@ urlpatterns = [
                     'user/',
                     include(('users.urls', 'users'), namespace='users'),
                 ),
+
+                path('qna/', include(('qna.urls', 'qna'), namespace='qna')),
                 path(
                     'projects/',
                     include(
