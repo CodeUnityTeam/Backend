@@ -15,6 +15,14 @@ SPECTACULAR_SETTINGS = {
     'TERMS_OF_SERVICE': '',
     'CONTACT': {'name': '', 'email': ''},
     'LICENSE': {'name': ''},
+    'TAG_SORT_ORDER': 'definition',  # сортировка по порядку определения
+    'TAGS': [
+        {'name': 'Questions', 'description': 'Вопросы'},
+        {'name': 'Answers', 'description': 'Ответы'},
+        {'name': 'Likes', 'description': 'Лайки'},
+        {'name': 'Tags', 'description': 'Теги'},
+        {'name': 'Files', 'description': 'Файлы'}
+    ],
 }
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -149,6 +157,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer'
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
@@ -168,10 +177,10 @@ REST_AUTH = {
     'JWT_AUTH_SAMESITE': 'Lax',
     'JWT_AUTH_RETURN_EXPIRATION': True,
     'SESSION_LOGIN': False,
-    'LOGIN_SERIALIZER': 'users.serializers.CustomLoginSerializer',
-    'PASSWORD_CHANGE_SERIALIZER': 'users.serializers.CustomPasswordChangeSerializer',
-    'REGISTER_SERIALIZER': 'users.serializers.CustomRegisterSerializer',
-    'USER_DETAILS_SERIALIZER': 'users.serializers.CustomUserDetailsSerializer',
+    'LOGIN_SERIALIZER': 'users.serializers.auth.CustomLoginSerializer',
+    'PASSWORD_CHANGE_SERIALIZER': 'users.serializers.auth.CustomPasswordChangeSerializer',
+    'REGISTER_SERIALIZER': 'users.serializers.auth.CustomRegisterSerializer',
+    'USER_DETAILS_SERIALIZER': 'users.serializers.profile.CustomUserDetailsSerializer',
     'USER_ID_FIELD': 'user_id',
 }
 

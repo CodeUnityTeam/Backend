@@ -1,13 +1,15 @@
 from django.urls import include, path
 
-from users.views import (
+from users.views.auth import (
     EmailChangeView,
     GoogleLogin,
     MailRuLogin,
+    YandexLogin,
+)
+from users.views.profile import (
     MeProfileView,
     UserProfileListView,
     UserProfileView,
-    YandexLogin,
 )
 
 urlpatterns = [

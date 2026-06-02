@@ -24,6 +24,10 @@ class WorkFormatSerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkFormat
         fields = ('format_id', 'name')
+        read_only_fields = ('name',)
+        extra_kwargs = {
+            'format_id': {'read_only': False},
+        }
 
 
 class UserBaseSerializer(serializers.ModelSerializer):

@@ -1,6 +1,6 @@
 import uuid
 
-from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.core.validators import MaxLengthValidator, MinLengthValidator
 from django.db import models
 
@@ -25,7 +25,7 @@ from core.models.mixins import CreatedAtMixin, TimestampMixin
 
 from .validators import validate_location
 
-User = get_user_model()
+User = settings.AUTH_USER_MODEL
 
 
 class WorkFormat(models.Model):

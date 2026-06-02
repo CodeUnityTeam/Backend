@@ -1,12 +1,15 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 
+from projects.models import WorkFormat
+
 from .models import (
     Skill,
     Specialization,
     User,
     UserSkill,
     UserSpecialization,
+    UserWorkFormat,
 )
 
 
@@ -42,6 +45,23 @@ class UserSkillAdmin(admin.ModelAdmin):
     list_display = ('user', 'skill')
     list_filter = ('skill',)
     search_fields = ('user__email', 'skill__name')
+
+
+@admin.register(WorkFormat)
+class WorkFormatAdmin(admin.ModelAdmin):
+    """Админ-панель для модели навыков."""
+
+    list_display = ('format_id', 'name')
+    search_fields = ('name',)
+
+
+@admin.register(UserWorkFormat)
+class UserWorkFormatAdmin(admin.ModelAdmin):
+    """Админ-панель для связи пользователей и навыков."""
+
+    list_display = ('user', 'workformat')
+    list_filter = ('workformat',)
+    search_fields = ('user__email', 'workformat__name')
 
 
 @admin.register(User)
