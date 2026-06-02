@@ -37,8 +37,7 @@ from users.serializers.profile import (
     CustomUserDetailsSerializer,
     PublicUserProfileSerializer,
 )
-from users.services import avatar_upload_handler, avatar_delete_handler
-
+from users.services import avatar_delete_handler, avatar_upload_handler
 
 UserModel = get_user_model()
 
@@ -266,9 +265,9 @@ class UserProfileListView(ListAPIView):
             "multipart/form-data": inline_serializer(
                 name="AvatarUploadRequest",
                 fields={
-                    "file": serializers.ImageField(help_text="Файл аватара")
+                    "file": serializers.ImageField(help_text="Файл аватара"),
                 },
-            )
+            ),
         },
         responses={
             status.HTTP_201_CREATED: inline_serializer(
@@ -306,7 +305,7 @@ class UserAvatarAPIView(APIView):
     ) -> Response:
         """Загрузить новый аватар и удалить старый при наличии."""
         serializer: AvatarUploadSerializer = AvatarUploadSerializer(
-            data=request.data
+            data=request.data,
         )
         serializer.is_valid(raise_exception=True)
 
@@ -316,7 +315,7 @@ class UserAvatarAPIView(APIView):
         public_url: str = avatar_upload_handler(user, file_obj)
 
         return Response(
-            {"avatar_url": public_url}, status=status.HTTP_201_CREATED
+            {"avatar_url": public_url}, status=status.HTTP_201_CREATED,
         )
 
     def delete(

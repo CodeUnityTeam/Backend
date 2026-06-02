@@ -8,12 +8,12 @@ from core.s3_utils import MinioService
 from users.models.users import User
 
 avatar_minio_client = MinioService(
-    bucket_name=settings.STORAGES["avatars"]["OPTIONS"]["bucket_name"]
+    bucket_name=settings.STORAGES["avatars"]["OPTIONS"]["bucket_name"],
 )
 
 
 def avatar_upload_handler(
-    user: User, file_obj: UploadedFile
+    user: User, file_obj: UploadedFile,
 ) -> str:
     """Бизнес-логика загрузки аватара с гарантией целостности БД."""
     old_avatar_url: str = getattr(user, "avatar_url", "")
@@ -27,7 +27,7 @@ def avatar_upload_handler(
     cloud_path: str = f"avatars/{random_filename}.{ext}"
 
     public_url: str = avatar_minio_client.upload_file(
-        cloud_path, file_obj
+        cloud_path, file_obj,
     )
 
     # 2. Атомарно сохраняем изменения в БД
@@ -38,7 +38,7 @@ def avatar_upload_handler(
         # 3. Удаляем старый файл только после успешного коммита транзакции
         if old_avatar_url:
             transaction.on_commit(
-                lambda: avatar_minio_client.delete_file(old_avatar_url)
+                lambda: avatar_minio_client.delete_file(old_avatar_url),
             )
 
     return public_url
@@ -54,5 +54,5 @@ def avatar_delete_handler(user: User) -> None:
 
         if old_avatar_url:
             transaction.on_commit(
-                lambda: avatar_minio_client.delete_file(old_avatar_url)
+                lambda: avatar_minio_client.delete_file(old_avatar_url),
             )

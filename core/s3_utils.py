@@ -11,6 +11,7 @@ class MinioService:
     """Транспортный сервис для управления файлами в MinIO/S3."""
 
     def __init__(self, bucket_name: str) -> None:
+        """Инициализировать имя бакета и настройки хранилища."""
         self.bucket_name: str = bucket_name
         self.storage: S3Boto3Storage = self._init_storage()
         self._ensure_bucket_templated()
@@ -23,7 +24,7 @@ class MinioService:
         endpoint_url: str = avatar_options.get("endpoint_url", "")
 
         clean_domain: str = endpoint_url.replace(
-            "http://", ""
+            "http://", "",
         ).replace("https://", "")
         custom_domain: str = f"{clean_domain}/{self.bucket_name}"
 
@@ -61,7 +62,7 @@ class MinioService:
                         "Principal": "*",
                         "Action": ["s3:GetObject"],
                         "Resource": [f"arn:aws:s3:::{self.bucket_name}/*"],
-                    }
+                    },
                 ],
             }
 

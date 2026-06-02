@@ -35,7 +35,7 @@ urlpatterns = [
             path(
                 "me/avatar/",
                 UserAvatarAPIView.as_view(),
-                name="user-avatar"
+                name="user-avatar",
             ),
             path(
                 'email-change/',

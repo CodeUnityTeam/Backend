@@ -6,9 +6,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# ==============================================================================
+# =============================================================================
 # BASE CONFIGURATION
-# ==============================================================================
+# =============================================================================
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY")
@@ -17,15 +17,15 @@ DEBUG = os.getenv("DEBUG_MODE", default="False").lower() == "true"
 DOMAIN = os.getenv("DOMAIN")
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 
-CSRF_TRUSTED_ORIGINS = [os.getenv('CSRF_DOMAIN'),]
+CSRF_TRUSTED_ORIGINS = [os.getenv('CSRF_DOMAIN')]
 
 ROOT_URLCONF = "config.urls"
 WSGI_APPLICATION = "config.wsgi.application"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# ==============================================================================
+# =============================================================================
 # CORE DJANGO APPS & MIDDLEWARE
-# ==============================================================================
+# =============================================================================
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -84,9 +84,9 @@ TEMPLATES = [
     },
 ]
 
-# ==============================================================================
+# =============================================================================
 # DATABASES & STORAGES (MINIO)
-# ==============================================================================
+# =============================================================================
 
 DB_MODE = os.getenv("DB_MODE")
 
@@ -105,7 +105,7 @@ DATABASES = {
         "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
         "HOST": DB_HOST,
         "PORT": os.getenv("DB_PORT"),
-    }
+    },
 }
 
 STORAGES = {
@@ -131,9 +131,9 @@ STORAGES = {
     },
 }
 
-# ==============================================================================
+# =============================================================================
 # INTERNATIONALIZATION, STATIC & MEDIA
-# ==============================================================================
+# =============================================================================
 
 LANGUAGE_CODE = "ru-RU"
 TIME_ZONE = "Europe/Moscow"
@@ -145,9 +145,9 @@ STATIC_ROOT = "/backend_static/static/"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
-# ==============================================================================
+# =============================================================================
 # SECURITY, CORS & AUTH MODEL
-# ==============================================================================
+# =============================================================================
 
 AUTH_USER_MODEL = "users.User"
 SITE_ID = 1
@@ -164,28 +164,28 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": (
             "django.contrib.auth.password_validation."
             "UserAttributeSimilarityValidator"
-        )
+        ),
     },
     {
         "NAME": (
             "django.contrib.auth.password_validation.MinimumLengthValidator"
-        )
+        ),
     },
     {
         "NAME": (
             "django.contrib.auth.password_validation.CommonPasswordValidator"
-        )
+        ),
     },
     {
         "NAME": (
             "django.contrib.auth.password_validation.NumericPasswordValidator"
-        )
+        ),
     },
 ]
 
-# ==============================================================================
+# =============================================================================
 # DJANGO REST FRAMEWORK CONFIGURATION
-# ==============================================================================
+# =============================================================================
 
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": [
@@ -201,9 +201,9 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
-# ==============================================================================
+# =============================================================================
 # DJ-REST-AUTH & SIMPLE JWT CONFIGURATION
-# ==============================================================================
+# =============================================================================
 
 REST_AUTH = {
     "USE_JWT": True,
@@ -243,9 +243,9 @@ ACCOUNT_UNIQUE_EMAIL = True
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-# ==============================================================================
+# =============================================================================
 # SOCIAL AUTHENTICATION PROVIDERS
-# ==============================================================================
+# =============================================================================
 
 SOCIALACCOUNT_ADAPTER = (
     "allauth.socialaccount.adapter.DefaultSocialAccountAdapter"
@@ -290,9 +290,9 @@ SOCIALACCOUNT_PROVIDERS = {
     },
 }
 
-# ==============================================================================
+# =============================================================================
 # SPECTACULAR API DOCUMENTATION
-# ==============================================================================
+# =============================================================================
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "CodeUnity",
