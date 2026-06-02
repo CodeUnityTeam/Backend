@@ -41,7 +41,7 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "docker-compose.yaml"
-          target: "code-unity"
+          target: "/code-unity"
       - name: Executing remote ssh commands to deploy
         uses: appleboy/ssh-action@master
         with:
@@ -49,10 +49,11 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /opt/user123/
+            cd /code-unity/
             sudo docker compose -f docker-compose.yaml pull
             sudo docker compose -f docker-compose.yaml down
             sudo docker compose -f docker-compose.yaml up -d
+            sudo docker compose -f docker-compose.yaml exec backend python manage.py makemigrations
             sudo docker compose -f docker-compose.yaml exec backend python manage.py migrate
             sudo docker compose -f docker-compose.yaml exec backend python manage.py collectstatic
             sudo docker compose -f docker-compose.yaml exec backend cp -r /app/static/. /backend_static/static/
