@@ -1,12 +1,14 @@
+from typing import Any, Dict
+
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils import timezone
 from rest_framework import serializers
 
-from core.constants.projects import ALLOWED_STATUSED_FOR_LIKE
+from core.constants.projects import ALLOWED_STATUSED_FOR_LIKE, PUBLISHED
 from users.serializers import SkillSerializer, SpecializationSerializer
 
-from .models import Project, ProjectLike, WorkFormat
+from .models import Project, ProjectLike, Response, WorkFormat
 from .selectors import get_project_or_404
 from .validators import (
     add_relationships_to_project,
@@ -361,3 +363,74 @@ class ProjectUpdateResponseSerializer(serializers.ModelSerializer):
             'status', 'published_at', 'created_at',
             'skills', 'specializations', 'formats',
         ]
+
+
+class ResponseUserProjectSerializer(serializers.ModelSerializer):
+    """Сериализатор для создания отклика на проект."""
+
+    class Meta:
+        model = Response
+        fields = [
+            'response_id',
+            'project',
+            'user',
+            'initiator_type',
+            'status_resp',
+        ]
+        read_only_fields = [
+            'response_id',
+            'project',
+            'user',
+            'initiator_type',
+            'status_resp',
+        ]
+
+    def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
+        """Валидация перед созданием отклика."""
+        project = self.context['project']
+        user = self.context['request'].user
+        if project.author == user:
+            raise serializers.ValidationError(
+                'Нельзя откликнуться на собственный проект.',
+            )
+        if project.status_project != PUBLISHED:
+            raise serializers.ValidationError(
+                f'Отклик возможен только на проекты со статусом {PUBLISHED}.',
+            )
+        if Response.objects.filter(project=project, user=user).exists():
+            raise serializers.ValidationError(
+                'Вы уже откликнулись на этот проект.',
+            )
+        return attrs
+
+    def create(self, validated_data: Dict[str, Any]) -> Response:
+        """Создание отклика."""
+        project = self.context['project']
+        user = self.context['request'].user
+        return Response.objects.create(
+            project=project,
+            user=user,
+            initiator_type='applicant',
+            status_resp='pending',
+        )
+
+
+class ResponseResponseCreateProjectSerializer(serializers.ModelSerializer):
+    """Сериализатор для формирования ответа после создания отклика."""
+
+    project_id = serializers.UUIDField(
+        source='project.project_id',
+        read_only=True,
+    )
+    user_id = serializers.UUIDField(
+        source='user.user_id',
+        read_only=True,
+    )
+    status = serializers.CharField(
+        source='status_resp',
+        read_only=True,
+    )
+
+    class Meta:
+        model = Response
+        fields = ['project_id', 'user_id', 'status', 'created_at']

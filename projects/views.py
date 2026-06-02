@@ -33,6 +33,8 @@ from .serializers import (
     ProjectShortSerializer,
     ProjectUpdateResponseSerializer,
     ProjectUpdateSerializer,
+    ResponseResponseCreateProjectSerializer,
+    ResponseUserProjectSerializer,
 )
 
 
@@ -114,6 +116,8 @@ class ProjectViewSet(ModelViewSet):
             return ProjectLikeSerializer
         if self.action == 'partial_update':
             return ProjectUpdateSerializer
+        if self.action == 'responses':
+            return ResponseResponseCreateProjectSerializer
         return ProjectDetailSerializer
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
@@ -163,9 +167,9 @@ class ProjectViewSet(ModelViewSet):
     @transaction.atomic
     def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Обновление проекта, возможно  частичное."""
-        instance = self.get_object()
+        project = self.get_object()
         serializer = self.get_serializer(
-            instance=instance,
+            instance=project,
             data=request.data,
             partial=True,
         )
@@ -173,3 +177,28 @@ class ProjectViewSet(ModelViewSet):
         project = serializer.save()
         response_serializer = ProjectUpdateResponseSerializer(project)
         return Response(response_serializer.data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        tags=['Отклики'],
+        summary='Откликнуться на проект',
+        request=None,
+    )
+    @action(detail=True, methods=['post'], url_path='responses')
+    @transaction.atomic
+    def responses(
+        self,
+        request: Request,
+        project_id: str | None = None,
+    ) -> Response:
+        """Эндпоинт для отклика пользователя на проект."""
+        project = get_project_or_404(project_id=project_id)
+        serializer = ResponseUserProjectSerializer(
+            data={},
+            context={'request': request, 'project': project},
+        )
+        serializer.is_valid(raise_exception=True)
+        response = serializer.save()
+        return Response(
+            ResponseResponseCreateProjectSerializer(response).data,
+            status=status.HTTP_201_CREATED,
+        )
