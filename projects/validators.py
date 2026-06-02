@@ -6,7 +6,6 @@ from django.db.models import Model
 from rest_framework import serializers
 
 from core.constants import ZERO_SYMBOL
-from users.models import Skill, Specialization
 
 
 def validate_location(location: str) -> str:
@@ -45,6 +44,7 @@ def _validate_skills(skills_data: list[dict]) -> list:
         raise serializers.ValidationError(
             'В данных навыков отсутствует поле "skill_id"',
         )
+    Skill = apps.get_model('users', 'Skill')
     existing_skills = Skill.objects.filter(skill_id__in=skill_ids)
     existing_ids = {str(skill.skill_id) for skill in existing_skills}
     missing_ids = set(skill_ids) - existing_ids
@@ -64,6 +64,7 @@ def _validate_specializations(specializations_data: list[dict]) -> list:
         raise serializers.ValidationError(
             'В данных специализаций отсутствует поле "spec_id"',
         )
+    Specialization = apps.get_model('users', 'Specialization')
     existing_specs = Specialization.objects.filter(spec_id__in=spec_ids)
     existing_ids = {str(spec.spec_id) for spec in existing_specs}
     missing_ids = set(spec_ids) - existing_ids

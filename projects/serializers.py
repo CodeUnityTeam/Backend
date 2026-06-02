@@ -6,7 +6,7 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from core.constants.projects import ALLOWED_STATUSED_FOR_LIKE, PUBLISHED
-from users.serializers import SkillSerializer, SpecializationSerializer
+from users.models import Skill, Specialization
 
 from .models import Project, ProjectLike, Response, WorkFormat
 from .selectors import get_project_or_404
@@ -16,6 +16,30 @@ from .validators import (
 )
 
 User = get_user_model()
+
+
+class SkillSerializer(serializers.ModelSerializer):
+    """Сериализатор для чтения и привязки навыков пользователя."""
+
+    class Meta:
+        model = Skill
+        fields = ('skill_id', 'name')
+        read_only_fields = ('name',)
+        extra_kwargs = {
+            'skill_id': {'read_only': False},
+        }
+
+
+class SpecializationSerializer(serializers.ModelSerializer):
+    """Сериализатор для чтения специализаций."""
+
+    class Meta:
+        model = Specialization
+        fields = ('spec_id', 'name')
+        read_only_fields = ('name',)
+        extra_kwargs = {
+            'spec_id': {'read_only': False},
+        }
 
 
 class WorkFormatSerializer(serializers.ModelSerializer):
