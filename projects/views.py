@@ -31,6 +31,8 @@ from .serializers import (
     ProjectLikeResponseSerializer,
     ProjectLikeSerializer,
     ProjectShortSerializer,
+    ProjectUpdateResponseSerializer,
+    ProjectUpdateSerializer,
 )
 
 
@@ -110,6 +112,8 @@ class ProjectViewSet(ModelViewSet):
             return ProjectShortSerializer
         if self.action == 'like':
             return ProjectLikeSerializer
+        if self.action == 'partial_update':
+            return ProjectUpdateSerializer
         return ProjectDetailSerializer
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
@@ -155,3 +159,17 @@ class ProjectViewSet(ModelViewSet):
             ProjectLikeResponseSerializer(result).data,
             status=status.HTTP_200_OK,
         )
+
+    @transaction.atomic
+    def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """Обновление проекта, возможно  частичное."""
+        instance = self.get_object()
+        serializer = self.get_serializer(
+            instance=instance,
+            data=request.data,
+            partial=True,
+        )
+        serializer.is_valid(raise_exception=True)
+        project = serializer.save()
+        response_serializer = ProjectUpdateResponseSerializer(project)
+        return Response(response_serializer.data, status=status.HTTP_200_OK)
