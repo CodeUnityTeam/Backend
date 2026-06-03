@@ -8,6 +8,7 @@ from users.views.auth import (
 )
 from users.views.profile import (
     MeProfileView,
+    UserAvatarAPIView,
     UserProfileListView,
     UserProfileView,
 )
@@ -31,6 +32,11 @@ urlpatterns = [
         include([
             path('', UserProfileListView.as_view(), name='profile-list'),
             path('me/', MeProfileView.as_view(), name='my-profile'),
+            path(
+                "me/avatar/",
+                UserAvatarAPIView.as_view(),
+                name="user-avatar",
+            ),
             path(
                 'email-change/',
                 EmailChangeView.as_view(),

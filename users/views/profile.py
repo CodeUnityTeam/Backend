@@ -8,9 +8,12 @@ from django.contrib.postgres.search import (
     SearchRank,
     SearchVector,
 )
+from django.core.files.uploadedfile import UploadedFile
 from django.db.models import QuerySet
+from django.http import HttpRequest
 from drf_spectacular.utils import (
     OpenApiParameter,
+    OpenApiTypes,
     extend_schema,
     extend_schema_view,
     inline_serializer,
@@ -21,16 +24,21 @@ from rest_framework.generics import (
     RetrieveAPIView,
     RetrieveUpdateDestroyAPIView,
 )
+from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
+from config import settings
 from users.models.users import User
 from users.pagination import ProfileListPagination
 from users.serializers.profile import (
+    AvatarUploadSerializer,
     CustomUserDetailsSerializer,
     PublicUserProfileSerializer,
 )
+from users.services import avatar_delete_handler, avatar_upload_handler
 
 UserModel = get_user_model()
 
@@ -245,3 +253,88 @@ class UserProfileListView(ListAPIView):
 
         # Применяем поиск и сортировку
         return self._apply_search_and_sorting(queryset, search_query, sort_by)
+
+
+@extend_schema_view(
+    post=extend_schema(
+        summary="Загрузить аватар пользователя",
+        description=(
+            "Загрузка изображения (jpeg, jpg, png) размером до 10 МБ. "
+            "Старый файл аватара автоматически удаляется из MinIO."
+        ),
+        request={
+            "multipart/form-data": inline_serializer(
+                name="AvatarUploadRequest",
+                fields={
+                    "file": serializers.ImageField(help_text="Файл аватара"),
+                },
+            ),
+        },
+        responses={
+            status.HTTP_201_CREATED: inline_serializer(
+                name="AvatarUploadResponse",
+                fields={"avatar_url": serializers.URLField()},
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiTypes.OBJECT,
+        },
+        tags=["Files"],
+    ),
+    delete=extend_schema(
+        summary="Удалить аватар пользователя",
+        description=(
+            "Удаляет файл аватара из хранилища MinIO и "
+            "очищает поле avatar_url в профиле пользователя."
+        ),
+        responses={
+            status.HTTP_204_NO_CONTENT: None,
+            status.HTTP_400_BAD_REQUEST: OpenApiTypes.OBJECT,
+        },
+        tags=["Files"],
+    ),
+)
+class UserAvatarAPIView(APIView):
+    """API view для загрузки и удаления аватара пользователя."""
+
+    permission_classes: list[type[IsAuthenticated]] = [IsAuthenticated]
+    parser_classes: list[type[MultiPartParser]] = [MultiPartParser]
+    allow_upload_size: int = settings.ALLOW_AVATAR_SIZE_MB * 1024 * 1024
+
+    def post(
+        self,
+        request: HttpRequest,
+        *args: Any,  # noqa: ARG002
+        **kwargs: Any,  # noqa: ARG002
+    ) -> Response:
+        """Загрузить новый аватар и удалить старый при наличии."""
+        serializer: AvatarUploadSerializer = AvatarUploadSerializer(
+            data=request.data,
+        )
+        serializer.is_valid(raise_exception=True)
+
+        user: User = request.user  # type: ignore[valid-type]
+        file_obj: UploadedFile = serializer.validated_data["file"]
+
+        public_url: str = avatar_upload_handler(user, file_obj)
+
+        return Response(
+            {"avatar_url": public_url}, status=status.HTTP_201_CREATED,
+        )
+
+    def delete(
+        self,
+        request: HttpRequest,
+        *args: Any,  # noqa: ARG002
+        **kwargs: Any,  # noqa: ARG002
+    ) -> Response:
+        """Удаленить аватар."""
+        user: User = request.user  # type: ignore[valid-type]
+
+        if not user.avatar_url:
+            return Response(
+                {"detail": "Аватар отсутствует."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        avatar_delete_handler(user)
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
