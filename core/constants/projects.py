@@ -29,11 +29,12 @@ STATUS_PARTICIPANT = [
     ('member', 'Участник'),
 ]
 MAX_LEN_STATUS_PARTICIPANT = 20
-
+APPLICANT = 'applicant'
+AUTHOR = 'author'
 # Статусы отклика (кто пригласил/сам откликнулся)
 INITIATOR_RESPONSE = [
-    ('applicant', 'Отклик соискателя'),
-    ('author', 'Приглашение от автора'),
+    (APPLICANT, 'Отклик соискателя'),
+    (AUTHOR, 'Приглашение от автора'),
 ]
 
 PENDING = 'pending'

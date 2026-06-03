@@ -22,7 +22,7 @@ from .filters import ProjectFilter
 from .models import Project
 from .paginations import CustomProjectPagination
 from .permissions import CanArchiveProject
-from .selectors import get_project_or_404
+from .selectors import get_optimized_project_queryset, get_project_or_404
 from .serializers import (
     ProjectArchiveSerializer,
     ProjectCreateSerializer,
@@ -66,16 +66,7 @@ class ProjectViewSet(ModelViewSet):
 
     def get_queryset(self) -> QuerySet[Project]:
         """Оптимизированный queryset с предзагрузкой связанных данных."""
-        return Project.objects.select_related(
-            'author',
-        ).prefetch_related(
-            'skills',
-            'specializations',
-            'project_format',
-            'participants',
-            'likes',
-            'responses',
-        )
+        return get_optimized_project_queryset()
 
     def get_permissions(self) -> List[BasePermission]:
         """Переопределяем разрешения для разных действий.
@@ -175,8 +166,10 @@ class ProjectViewSet(ModelViewSet):
         )
         serializer.is_valid(raise_exception=True)
         project = serializer.save()
-        response_serializer = ProjectUpdateResponseSerializer(project)
-        return Response(response_serializer.data, status=status.HTTP_200_OK)
+        return Response(
+            ProjectUpdateResponseSerializer(project).data,
+            status=status.HTTP_200_OK
+        )
 
     @extend_schema(
         tags=['Отклики'],

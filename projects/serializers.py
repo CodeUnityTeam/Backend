@@ -5,11 +5,18 @@ from django.db import transaction
 from django.utils import timezone
 from rest_framework import serializers
 
-from core.constants.projects import ALLOWED_STATUSED_FOR_LIKE, PUBLISHED
+from core.constants.projects import (
+    ALLOWED_STATUSED_FOR_LIKE,
+    PUBLISHED,
+)
 from users.models import Skill, Specialization
 
 from .models import Project, ProjectLike, Response, WorkFormat
-from .selectors import get_project_or_404
+from .selectors import (
+    create_response,
+    get_project_or_404,
+    get_project_with_relations,
+)
 from .validators import (
     add_relationships_to_project,
     extract_relationship_data,
@@ -362,13 +369,7 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
                 setattr(project, attr, value)
         project.save()
         add_relationships_to_project(project, relationship_data)
-        return Project.objects.select_related(
-            'author',
-        ).prefetch_related(
-            'skills',
-            'specializations',
-            'project_format',
-        ).get(project_id=project.project_id)
+        return get_project_with_relations(project.project_id)
 
 
 class ProjectUpdateResponseSerializer(serializers.ModelSerializer):
@@ -435,12 +436,7 @@ class ResponseUserProjectSerializer(serializers.ModelSerializer):
         """Создание отклика."""
         project = self.context['project']
         user = self.context['request'].user
-        return Response.objects.create(
-            project=project,
-            user=user,
-            initiator_type='applicant',
-            status_resp='pending',
-        )
+        return create_response(project, user)
 
 
 class ResponseResponseCreateProjectSerializer(serializers.ModelSerializer):
