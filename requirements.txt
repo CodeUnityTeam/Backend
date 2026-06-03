@@ -2,6 +2,7 @@
 Django>=4.2,<5.0
 djangorestframework>=3.14,<4.0
 django-cors-headers>=4.0,<5.0
+django-filter>=24.2,<25.0
 
 # Driver connection
 psycopg2-binary>=2.9,<3.0
