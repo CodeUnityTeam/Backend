@@ -168,7 +168,7 @@ class ProjectViewSet(ModelViewSet):
         project = serializer.save()
         return Response(
             ProjectUpdateResponseSerializer(project).data,
-            status=status.HTTP_200_OK
+            status=status.HTTP_200_OK,
         )
 
     @extend_schema(
