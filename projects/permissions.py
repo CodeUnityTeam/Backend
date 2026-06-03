@@ -1,10 +1,22 @@
 from typing import Any
 
+from django.contrib.auth import get_user_model
 from rest_framework import permissions
 from rest_framework.request import Request
 
 from .models import Project
-from .selectors import can_archive_project
+
+User = get_user_model()
+
+
+def can_archive_project(user: User, project: Project) -> bool:
+    """Проверяет, может ли пользователь архивировать проект."""
+    return (
+        user.is_superuser or
+        user.is_staff or
+        project.author == user or
+        user.role == 'admin'
+    )
 
 
 class CanArchiveProject(permissions.BasePermission):
