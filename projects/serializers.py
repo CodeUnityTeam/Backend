@@ -1,11 +1,26 @@
+from typing import Any, Dict
+
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils import timezone
 from rest_framework import serializers
 
+from core.constants.projects import (
+    ALLOWED_STATUSED_FOR_LIKE,
+    PUBLISHED,
+)
 from users.models import Skill, Specialization
 
-from .models import Project, WorkFormat
+from .models import Project, ProjectLike, Response, WorkFormat
+from .selectors import (
+    create_response,
+    get_project_or_404,
+    get_project_with_relations,
+)
+from .validators import (
+    add_relationships_to_project,
+    extract_relationship_data,
+)
 
 User = get_user_model()
 
@@ -130,93 +145,16 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
             })
         return data
 
-    def _extract_relationship_data(self, validated_data: dict) -> dict:
-        """Извлекает данные связей и возвращает их в словаре."""
-        return {
-            'skills': validated_data.pop('skills', []),
-            'specializations': validated_data.pop('specializations', []),
-            'formats': validated_data.pop('project_format', []),
-        }
-
-    def _validate_skills(self, skills_data: list) -> list:
-        """Валидирует существование навыков и возвращает объекты."""
-        if not skills_data:
-            return []
-        skill_ids = [item.get('skill_id') for item in skills_data]
-        if None in skill_ids:
-            raise serializers.ValidationError(
-                'В данных навыков отсутствует поле "skill_id"',
-            )
-        existing_skills = Skill.objects.filter(skill_id__in=skill_ids)
-        existing_ids = {str(skill.skill_id) for skill in existing_skills}
-        missing_ids = set(skill_ids) - existing_ids
-        if missing_ids:
-            raise serializers.ValidationError(
-                f'Навык(и) с ID {", ".join(missing_ids)} не найден(ы)',
-            )
-        return list(existing_skills)
-
-    def _validate_specializations(self, specializations_data: list) -> list:
-        """Валидирует существование специализаций и возвращает объекты."""
-        if not specializations_data:
-            return []
-        spec_ids = [item.get('spec_id') for item in specializations_data]
-        if None in spec_ids:
-            raise serializers.ValidationError(
-                'В данных специализаций отсутствует поле "spec_id"',
-            )
-        existing_specs = Specialization.objects.filter(spec_id__in=spec_ids)
-        existing_ids = {str(spec.spec_id) for spec in existing_specs}
-        missing_ids = set(spec_ids) - existing_ids
-        if missing_ids:
-            raise serializers.ValidationError(
-                f'Специализация(и) с ID '
-                f'{", ".join(missing_ids)} не найдена(ы)',
-            )
-        return list(existing_specs)
-
-    def _validate_formats(self, formats_data: list) -> list:
-        """Валидирует существование форматов работы и возвращает объекты."""
-        if not formats_data:
-            return []
-        format_ids = formats_data
-        existing_formats = WorkFormat.objects.filter(format_id__in=format_ids)
-        existing_ids = {str(fmt.format_id) for fmt in existing_formats}
-        missing_ids = set(format_ids) - existing_ids
-        if missing_ids:
-            raise serializers.ValidationError(
-                f'Формат(ы) работы с ID {", ".join(missing_ids)} не найден(ы)',
-            )
-        return list(existing_formats)
-
-    def _add_relationships_in_project(
-        self,
-        instance: Project,
-        relationship_data: dict,
-    ) -> None:
-        """Присваивает связанные объекты проекту."""
-        skills = self._validate_skills(relationship_data['skills'])
-        specializations = self._validate_specializations(
-            relationship_data['specializations'],
-        )
-        formats = self._validate_formats(relationship_data['formats'])
-        if skills:
-            instance.skills.set(skills)
-        if specializations:
-            instance.specializations.set(specializations)
-        if formats:
-            instance.project_format.set(formats)
-
     @transaction.atomic
     def create(self, validated_data: dict) -> Project:
         """Метод для валидации и создания проекта."""
-        relationship_data = self._extract_relationship_data(validated_data)
+        relationship_data = extract_relationship_data(validated_data)
         user = self.context['request'].user
         validated_data['author'] = user
         if validated_data.get('status_project') == 'published':
             validated_data['published_at'] = timezone.now()
         project = Project.objects.create(**validated_data)
-        self._add_relationships_in_project(project, relationship_data)
+        add_relationships_to_project(project, relationship_data)
         return project
 
 
@@ -252,9 +190,12 @@ class ProjectShortSerializer(serializers.ModelSerializer):
     def get_is_liked_by_me(self, project: Project) -> bool:
         """Проверяем, лайкнул ли проект авторизированный пользователь."""
         user = self.context.get('request').user
-        if user.is_authenticated:
-            return user in project.likes.all()
-        return False
+        if not user.is_authenticated:
+            return False
+        return ProjectLike.objects.filter(
+            user=user,
+            project=project,
+        ).exists()
 
     def get_participants_count(self, project: Project) -> int:
         """Получаем количество участников проекта."""
@@ -330,3 +271,190 @@ class ProjectArchiveSerializer(serializers.Serializer):
         project.status_project = 'archived'
         project.save(update_fields=['status_project'])
         return project
+
+
+class ProjectLikeResponseSerializer(serializers.Serializer):
+    """Сериализатор для ответа после создани/удаления лайка."""
+
+    liked = serializers.BooleanField()
+    likes_count = serializers.IntegerField()
+
+
+class ProjectLikeSerializer(serializers.Serializer):
+    """Сериализатор для лайков."""
+
+    def validate_project_id(self, project_id: str) -> str:
+        """Используем готовую функцию для получения проекта или 404."""
+        project = get_project_or_404(str(project_id))
+        if project.status_project not in ALLOWED_STATUSED_FOR_LIKE:
+            raise serializers.ValidationError(
+                'Нельзя лайкать проект с текущим статусом.',
+            )
+        self.context['project'] = project
+        return project_id
+
+    def toggle_like(self) -> dict:
+        """Toggle-логика: создание/удаление лайка."""
+        user = self.context['request'].user
+        project = self.context['project']
+        like_exists = ProjectLike.objects.filter(
+            user=user,
+            project=project,
+        ).exists()
+        if like_exists:
+            ProjectLike.objects.filter(user=user, project=project).delete()
+            liked = False
+        else:
+            ProjectLike.objects.create(user=user, project=project)
+            liked = True
+        return {
+            'liked': liked,
+            'likes_count': ProjectLike.objects.filter(project=project).count(),
+        }
+
+
+class ProjectUpdateSerializer(serializers.ModelSerializer):
+    """Сериализатор для обновления проекта."""
+
+    skills = serializers.ListField(
+        child=serializers.DictField(),
+        required=False,
+        allow_empty=True,
+    )
+    specializations = serializers.ListField(
+        child=serializers.DictField(),
+        required=False,
+        allow_empty=True,
+    )
+    formats = serializers.ListField(
+        child=serializers.UUIDField(),
+        required=False,
+        allow_empty=True,
+    )
+
+    class Meta:
+        model = Project
+        fields = [
+            'title', 'short_desc', 'full_desc',
+            'location', 'start_date', 'end_date',
+            'status', 'skills', 'specializations', 'formats',
+        ]
+        extra_kwargs = {
+            'title': {'required': False},
+            'short_desc': {'required': False},
+            'full_desc': {'required': False},
+            'location': {'required': False},
+            'start_date': {'required': False},
+            'end_date': {'required': False},
+            'status': {'required': False, 'source': 'status_project'},
+        }
+
+    def validate_status(self, status_project: str) -> str:
+        """Валидация статуса проекта."""
+        if status_project is None:
+            return status_project
+        valid_statuses = ['draft', 'published', 'recruiting_closed']
+        if status_project not in valid_statuses:
+            raise serializers.ValidationError(
+                f'Статус должен быть одним из: {", ".join(valid_statuses)}.',
+            )
+        return status_project
+
+    @transaction.atomic
+    def update(self, project: Project, validated_data: dict) -> Project:
+        """Метод для обновления проекта."""
+        relationship_data = extract_relationship_data(validated_data)
+        for attr, value in validated_data.items():
+            if hasattr(project, attr):
+                setattr(project, attr, value)
+        project.save()
+        add_relationships_to_project(project, relationship_data)
+        return get_project_with_relations(project.project_id)
+
+
+class ProjectUpdateResponseSerializer(serializers.ModelSerializer):
+    """Сериализатор для формирования ответа после обновления проекта."""
+
+    status = serializers.CharField(source='status_project', read_only=True)
+    skills = SkillSerializer(many=True, read_only=True)
+    specializations = SpecializationSerializer(many=True, read_only=True)
+    formats = WorkFormatSerializer(
+        many=True,
+        read_only=True,
+        source='project_format',
+    )
+
+    class Meta:
+        model = Project
+        fields = [
+            'project_id', 'title', 'short_desc', 'full_desc',
+            'location', 'start_date', 'end_date',
+            'status', 'published_at', 'created_at',
+            'skills', 'specializations', 'formats',
+        ]
+
+
+class ResponseUserProjectSerializer(serializers.ModelSerializer):
+    """Сериализатор для создания отклика на проект."""
+
+    class Meta:
+        model = Response
+        fields = [
+            'response_id',
+            'project',
+            'user',
+            'initiator_type',
+            'status_resp',
+        ]
+        read_only_fields = [
+            'response_id',
+            'project',
+            'user',
+            'initiator_type',
+            'status_resp',
+        ]
+
+    def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
+        """Валидация перед созданием отклика."""
+        project = self.context['project']
+        user = self.context['request'].user
+        if project.author == user:
+            raise serializers.ValidationError(
+                'Нельзя откликнуться на собственный проект.',
+            )
+        if project.status_project != PUBLISHED:
+            raise serializers.ValidationError(
+                f'Отклик возможен только на проекты со статусом {PUBLISHED}.',
+            )
+        if Response.objects.filter(project=project, user=user).exists():
+            raise serializers.ValidationError(
+                'Вы уже откликнулись на этот проект.',
+            )
+        return attrs
+
+    def create(self, validated_data: Dict[str, Any]) -> Response:
+        """Создание отклика."""
+        project = self.context['project']
+        user = self.context['request'].user
+        return create_response(project, user)
+
+
+class ResponseResponseCreateProjectSerializer(serializers.ModelSerializer):
+    """Сериализатор для формирования ответа после создания отклика."""
+
+    project_id = serializers.UUIDField(
+        source='project.project_id',
+        read_only=True,
+    )
+    user_id = serializers.UUIDField(
+        source='user.user_id',
+        read_only=True,
+    )
+    status = serializers.CharField(
+        source='status_resp',
+        read_only=True,
+    )
+
+    class Meta:
+        model = Response
+        fields = ['project_id', 'user_id', 'status', 'created_at']
