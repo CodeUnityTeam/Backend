@@ -30,6 +30,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from config import settings
 from users.models.users import User
 from users.pagination import ProfileListPagination
 from users.serializers.profile import (
@@ -296,6 +297,7 @@ class UserAvatarAPIView(APIView):
 
     permission_classes: list[type[IsAuthenticated]] = [IsAuthenticated]
     parser_classes: list[type[MultiPartParser]] = [MultiPartParser]
+    allow_upload_size: int = settings.ALLOW_AVATAR_SIZE_MB * 1024 * 1024
 
     def post(
         self,

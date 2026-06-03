@@ -8,6 +8,7 @@ from django.db import models, transaction
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from config import settings
 from core.validators import file_size_validator
 from projects.models import WorkFormat
 from projects.serializers import (
@@ -201,6 +202,8 @@ class AvatarUploadSerializer(serializers.Serializer[dict[str, Any]]):
     """Сериализатор для валидации загружаемого файла аватара."""
 
     file: serializers.ImageField = serializers.ImageField(
-        validators=[file_size_validator(max_size_mb=10)],
+        validators=[file_size_validator(
+            allow_size_mb=settings.ALLOW_AVATAR_SIZE_MB,
+        )],
         write_only=True,
     )
