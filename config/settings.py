@@ -221,6 +221,9 @@ REST_AUTH = {
     "PASSWORD_CHANGE_SERIALIZER": (
         "users.serializers.auth.CustomPasswordChangeSerializer"
     ),
+    "PASSWORD_RESET_SERIALIZER": (
+        "users.serializers.auth.CustomPasswordResetSerializer"
+    ),
     "REGISTER_SERIALIZER": "users.serializers.auth.CustomRegisterSerializer",
     "USER_DETAILS_SERIALIZER": (
         "users.serializers.profile.CustomUserDetailsSerializer"

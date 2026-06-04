@@ -3,7 +3,11 @@ from typing import Any
 from allauth.account.adapter import get_adapter
 from allauth.account.models import EmailAddress
 from dj_rest_auth.registration.serializers import RegisterSerializer
-from dj_rest_auth.serializers import LoginSerializer, PasswordChangeSerializer
+from dj_rest_auth.serializers import (
+    LoginSerializer,
+    PasswordChangeSerializer,
+    PasswordResetSerializer,
+)
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.http import HttpRequest
@@ -12,15 +16,17 @@ from rest_framework.exceptions import ValidationError
 
 from users.adapters import MSG_RESENT, ImmediateResponseException
 from users.models.users import User
+from users.utils import get_frontend_url
 
 UserModel = get_user_model()
 
 
-class CustomLoginSerializer(LoginSerializer):
-    """Сериализатор для запроса на вход в сревис."""
+class SocialAuthUrlResponseSerializer(serializers.Serializer):
+    """Сериализатор для возврата URL авторизации."""
 
-    username = None
-    email = serializers.EmailField(required=True)
+    authorization_url = serializers.URLField(
+        help_text="Url перенаправления пользователя на сторону провайдера.",
+    )
 
 
 class SocialAuthCodeRequestSerializer(serializers.Serializer):
@@ -33,6 +39,13 @@ class SocialAuthCodeRequestSerializer(serializers.Serializer):
             'OAuth-провайдера на фронтенде.'
         ),
     )
+
+
+class CustomLoginSerializer(LoginSerializer):
+    """Сериализатор для запроса на вход в сревис."""
+
+    username = None
+    email = serializers.EmailField(required=True)
 
 
 class CustomRegisterSerializer(RegisterSerializer):
@@ -197,3 +210,22 @@ class CustomPasswordChangeSerializer(PasswordChangeSerializer):
         attrs['new_password2'] = attrs.get('password')
 
         return super().validate(attrs)
+
+
+class CustomPasswordResetSerializer(PasswordResetSerializer):
+    """Кастомный сериализатор для сброса пароля."""
+
+    def get_email_options(self) -> dict[str, any]:
+        """Переопределяет генератор ссылок внутри опций формы."""
+        options: dict[str, any] = super().get_email_options()
+
+        def custom_url_generator(
+            request: HttpRequest,
+            user: User,
+            temp_key: str,
+        ) -> str:
+            """Формирует прямую ссылку на фронтенд."""
+            return get_frontend_url("password", temp_key)
+
+        options["url_generator"] = custom_url_generator
+        return options
