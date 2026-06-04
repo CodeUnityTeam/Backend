@@ -1,0 +1,195 @@
+from typing import Any
+
+from allauth.socialaccount.providers import registry
+from allauth.socialaccount.providers.base import Provider
+from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
+from allauth.socialaccount.providers.mailru.views import MailRuOAuth2Adapter
+from allauth.socialaccount.providers.oauth2.client import OAuth2Client
+from allauth.socialaccount.providers.yandex.views import YandexOAuth2Adapter
+from dj_rest_auth.registration.views import SocialLoginView
+from django.contrib.auth import get_user_model
+from django.http import HttpRequest
+from drf_spectacular.utils import (
+    OpenApiExample,
+    extend_schema,
+    extend_schema_view,
+    inline_serializer,
+)
+from rest_framework import serializers, status
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from config.settings import SOCIALACCOUNT_PROVIDERS
+from users.serializers.auth import (
+    EmailChangeSerializer,
+    SocialAuthCodeRequestSerializer,
+    SocialAuthUrlResponseSerializer,
+)
+
+UserModel = get_user_model()
+
+
+class SocialAuthUrlView(APIView):
+    """Базовый класс для генерации URL авторизации сторонних сервисов."""
+
+    permission_classes = [AllowAny]
+    provider_id: str | None = None
+
+    def get(self, request: HttpRequest, *args: any, **kwargs: any) -> Response:
+        """Обрабатывает GET-запрос и возвращает URL для авторизации."""
+        provider: Provider = registry.by_id(self.provider_id, request)
+
+        # Передаем 'next', если фронтенду нужно сохранить контекст
+        next_url: str = request.GET.get("next", "")
+        login_url: str = provider.get_login_url(request, next=next_url)
+
+        return Response(
+            {"authorization_url": request.build_absolute_uri(login_url)},
+            status=status.HTTP_200_OK,
+        )
+
+
+class SocialLogin(SocialLoginView):
+    """Базовый View для обработки запросов авторизации.
+
+    Обрабатывает запросы авторизации через сторонние приложения.
+    """
+
+    client_class = OAuth2Client
+
+
+@extend_schema_view(
+    get=extend_schema(
+        tags=["social_auth_urls"],
+        summary="Получить ссылку для авторизации через Google",
+        responses={200: SocialAuthUrlResponseSerializer},
+    ),
+)
+class GoogleAuthUrlView(SocialAuthUrlView):
+    """Возвращает URL для редиректа на страницу авторизации Google."""
+
+    provider_id = "google"
+
+
+@extend_schema_view(
+    post=extend_schema(
+        tags=['social_auth'],
+        summary='Вход через Google',
+        request=SocialAuthCodeRequestSerializer,
+    ),
+)
+class GoogleLogin(SocialLogin):
+    """View для обработки запросов авторизации через Google."""
+
+    adapter_class = GoogleOAuth2Adapter
+    callback_url = SOCIALACCOUNT_PROVIDERS['google']['CALLBACK_URL']
+
+
+@extend_schema_view(
+    get=extend_schema(
+        tags=["social_auth_urls"],
+        summary="Получить ссылку для авторизации через Yandex",
+        responses={200: SocialAuthUrlResponseSerializer},
+    ),
+)
+class YandexAuthUrlView(SocialAuthUrlView):
+    """Возвращает URL для редиректа на страницу авторизации Yandex."""
+
+    provider_id = "yandex"
+
+
+@extend_schema_view(
+    post=extend_schema(
+        tags=['social_auth'],
+        summary='Вход через Yandex',
+        request=SocialAuthCodeRequestSerializer,
+    ),
+)
+class YandexLogin(SocialLogin):
+    """View для обработки запросов авторизации через Yandex."""
+
+    adapter_class = YandexOAuth2Adapter
+    callback_url = SOCIALACCOUNT_PROVIDERS['yandex']['CALLBACK_URL']
+
+
+@extend_schema_view(
+    get=extend_schema(
+        tags=["social_auth_urls"],
+        summary="Получить ссылку для авторизации через Mail.ru",
+        responses={200: SocialAuthUrlResponseSerializer},
+    ),
+)
+class MailRuAuthUrlView(SocialAuthUrlView):
+    """Возвращает URL для редиректа на страницу авторизации Mail.ru."""
+
+    provider_id = "mailru"
+
+
+@extend_schema_view(
+    post=extend_schema(
+        tags=['social_auth'],
+        summary='Вход через Mail.ru',
+        request=SocialAuthCodeRequestSerializer,
+    ),
+)
+class MailRuLogin(SocialLogin):
+    """View для обработки запросов авторизации через Mail.ru."""
+
+    adapter_class = MailRuOAuth2Adapter
+    callback_url = SOCIALACCOUNT_PROVIDERS['mailru']['CALLBACK_URL']
+
+
+@extend_schema_view(
+    post=extend_schema(
+        tags=['profile'],
+        summary='Запрос на изменение email авторизованным пользователем',
+        description='Запрос на смену email и отправку письма подтверждения.',
+        request=EmailChangeSerializer,
+        responses={
+            200: inline_serializer(
+                name='EmailChangeSuccessResponse',
+                fields={
+                    'detail': serializers.CharField(
+                        help_text=(
+                            'Сообщение об успешной отправке ссылки '
+                            'подтверждения.'
+                        ),
+                    ),
+                },
+            ),
+        },
+        examples=[
+            OpenApiExample(
+                name='Успешный запрос',
+                value={
+                    "detail": (
+                        "Ссылка для подтверждения отправлена на новый email."
+                    ),
+                },
+                response_only=True,
+            ),
+        ],
+    ),
+)
+class EmailChangeView(APIView):
+    """View для инициации смены email авторизованным пользователем."""
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """Обработать POST-запрос на изменение email пользователя."""
+        serializer = EmailChangeSerializer(
+            data=request.data,
+            context={'request': request},
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(
+            {
+                'detail': 'Ссылка подтверждения отправлена на новый email.',
+            },
+            status=status.HTTP_200_OK,
+        )
