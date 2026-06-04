@@ -1,16 +1,47 @@
-from django.contrib import admin
-from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib import admin
+from django.urls import include, path
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularRedocView,
+    SpectacularSwaggerView,
+)
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path('admin/', admin.site.urls),
     path(
-        "api/v1/",
+        'api/v1/',
         include(
             [
-                path("auth/", include("users.urls")),
-            ]
+                path(
+                    'user/',
+                    include(('users.urls', 'users'), namespace='users'),
+                ),
+
+                path('qna/', include(('qna.urls', 'qna'), namespace='qna')),
+                path(
+                    'projects/',
+                    include(
+                        ('projects.urls', 'projects'), namespace='projects',
+                    ),
+                ),
+                path(
+                    'schema/',
+                    SpectacularAPIView.as_view(),
+                    name='schema',
+                ),
+                path(
+                    'docs/swagger/',
+                    SpectacularSwaggerView.as_view(url_name='schema'),
+                    name='swagger-ui',
+                ),
+                path(
+                    'docs/redoc/',
+                    SpectacularRedocView.as_view(url_name='schema'),
+                    name='redoc',
+                ),
+            ],
         ),
     ),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
