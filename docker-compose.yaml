@@ -16,7 +16,16 @@ services:
       - db
     image: enigmatica33/backend:latest
     env_file: .env
-    ports:
-      - "8000:8000"
     volumes:
       - static:/backend_static/static/
+
+  nginx:
+    build: ./nginx
+    container_name: backend_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - static:/backend_static/static/:ro
+    depends_on:
+      - backend
