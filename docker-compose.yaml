@@ -37,6 +37,7 @@ services:
 
   nginx:
     build: ./nginx
+    image: hihix/backend-nginx:latest
     container_name: backend_nginx
     restart: unless-stopped
     ports:
