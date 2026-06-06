@@ -56,6 +56,6 @@ jobs:
             sudo docker compose -f docker-compose.yaml up -d
             sudo docker compose -f docker-compose.yaml exec backend python manage.py makemigrations
             sudo docker compose -f docker-compose.yaml exec backend python manage.py migrate
-            sudo docker compose -f docker-compose.yaml exec backend python manage.py collectstatic
+            sudo docker compose -f docker-compose.yaml exec backend python manage.py collectstatic --noinput
             # sudo docker compose -f docker-compose.yaml exec backend cp -r /app/static/. /backend_static/static/
             sudo docker image prune -a -f
