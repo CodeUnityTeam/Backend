@@ -22,15 +22,16 @@ STATUS_PROJECT = [
     (ARCHIVED, 'Архив'),
     (BLOCKED, 'Заблокирован'),
 ]
-
+AUTHOR = 'author'
+MEMBER = 'member'
 # Статусы пользователя в проекте
 STATUS_PARTICIPANT = [
-    ('author', 'Автор'),
-    ('member', 'Участник'),
+    (AUTHOR, 'Автор'),
+    (MEMBER, 'Участник'),
 ]
 MAX_LEN_STATUS_PARTICIPANT = 20
 APPLICANT = 'applicant'
-AUTHOR = 'author'
+
 # Статусы отклика (кто пригласил/сам откликнулся)
 INITIATOR_RESPONSE = [
     (APPLICANT, 'Отклик соискателя'),

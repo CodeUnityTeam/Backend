@@ -1,9 +1,19 @@
+from typing import Any, Optional
+
 import django_filters
 from django.db.models import F, Q, QuerySet
+from rest_framework.request import Request
 
-from core.constants.projects import MAX_FILTER_DAYS, MIN_FILTER_DAYS
+from core.constants.projects import (
+    APPROVED,
+    MAX_FILTER_DAYS,
+    MIN_FILTER_DAYS,
+    PENDING,
+    REJECTED,
+    WITHDRAWN,
+)
 
-from .models import Project
+from .models import Project, Response
 
 
 class ProjectFilter(django_filters.FilterSet):
@@ -122,3 +132,82 @@ class ProjectFilter(django_filters.FilterSet):
                 status__in=['published', 'recruiting_closed'],
             )
         return queryset
+
+
+class ResponseFeedFilter(django_filters.FilterSet):
+    """Фильтр для ленты откликов."""
+
+    status = django_filters.CharFilter(method='filter_status')
+    card_type = django_filters.CharFilter(method='filter_card_type')
+    project_id = django_filters.UUIDFilter(field_name='project__project_id')
+    sort_by = django_filters.CharFilter(
+        method='filter_sort_by',
+        label='Поле сортировки',
+    )
+    sort_order = django_filters.ChoiceFilter(
+        choices=[('asc', 'asc'), ('desc', 'desc')],
+        label='Порядок сортировки',
+    )
+
+    class Meta:
+        model = Response
+        fields = ['card_type', 'status', 'project_id']
+
+    def __init__(
+        self,
+        data: Optional[dict] = None,
+        queryset: Optional[QuerySet] = None,
+        request: Optional[Request] = None,
+        **kwargs: Any,
+    ) -> None:
+        """Инициализирует фильтр с дополнительными параметрами."""
+        super().__init__(data, queryset, **kwargs)
+        self.request = request
+
+    def filter_queryset(self, queryset: QuerySet) -> QuerySet:
+        """"Фильтруем QuerySet по времени создания."""
+        queryset = super().filter_queryset(queryset)
+        sort_by = self.data.get('sort_by', 'created_at')
+        sort_order = self.data.get('sort_order', 'desc')
+        order_prefix = '-' if sort_order == 'desc' else ''
+        return queryset.order_by(f'{order_prefix}{sort_by}')
+
+    def filter_status(
+        self,
+        queryset: QuerySet,
+        name: str,
+        status_resp: str,
+    ) -> QuerySet:
+        """Фильтрация по статусу отклика."""
+        if status_resp == 'all' or status_resp not in [
+            PENDING,
+            APPROVED,
+            REJECTED,
+            WITHDRAWN,
+        ]:
+            return queryset
+        return queryset.filter(status_resp=status_resp)
+
+    def filter_card_type(
+        self,
+        queryset: QuerySet,
+        name: str,
+        value: Any,
+    ) -> QuerySet:
+        """Фильтрация по типу карточки."""
+        if value not in ['all', 'project', 'profile']:
+            return queryset
+        if not hasattr(self.request, 'user'):
+            return queryset.none()
+        if not self.request.user or not self.request.user.is_authenticated:
+            return queryset.none()
+        user = self.request.user
+        if value == 'all':
+            return queryset
+        if value == 'project':
+            # Отклики, где пользователь — соискатель
+            return queryset.filter(user=user)
+        if value == 'profile':
+            # Отклики на проекты пользователя (пользователь — автор проекта)
+            return queryset.filter(project__author=user)
+        return queryset.none()
