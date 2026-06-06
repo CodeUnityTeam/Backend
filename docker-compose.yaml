@@ -41,7 +41,7 @@ services:
     container_name: backend_nginx
     restart: unless-stopped
     ports:
-      - "80:80"
+      - "8000:80"
     volumes:
       - static:/backend_static/static/:ro
     depends_on:
