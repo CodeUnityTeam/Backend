@@ -1,10 +1,9 @@
-name: Deploy to dev
+name: Deploy to dev server
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch:
 
 jobs:
   build_and_push_backend:
@@ -57,5 +56,4 @@ jobs:
             sudo docker compose -f docker-compose.dev.yaml exec backend python manage.py makemigrations
             sudo docker compose -f docker-compose.dev.yaml exec backend python manage.py migrate
             sudo docker compose -f docker-compose.dev.yaml exec backend python manage.py collectstatic --noinput
-            # sudo docker compose -f docker-compose.dev.yaml exec backend cp -r /app/static/. /backend_static/static/
             sudo docker image prune -a -f
