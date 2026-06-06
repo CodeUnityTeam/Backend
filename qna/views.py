@@ -1,3 +1,5 @@
+from django.core.files.uploadedfile import UploadedFile
+from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import (
     extend_schema,
     extend_schema_view,
@@ -7,12 +9,20 @@ from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.mixins import DestroyModelMixin, ListModelMixin
 from rest_framework.parsers import MultiPartParser
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 
-from qna.models import Answer, AnswerLike, Question, QuestionLike
+from qna.models import (
+    Answer,
+    AnswerImage,
+    AnswerLike,
+    Question,
+    QuestionImage,
+    QuestionLike,
+)
 from qna.serializers import (
     AnswerCreateResponseSerializer,
     AnswerCreateSerializer,
@@ -25,6 +35,11 @@ from qna.serializers import (
     QuestionDetailSerializer,
     QuestionListSerializer,
     SkillSerializer,
+)
+from qna.services import (
+    answer_image_delete_handler,
+    image_upload_handler,
+    question_image_delete_handler,
 )
 from users.models import Skill
 
@@ -47,6 +62,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
     queryset = Question.objects.all()
     serializer_class = QuestionCreateSerializer
+    permission_classes = [IsAuthenticated]
     http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_serializer_class(self) -> type[serializers.BaseSerializer]:
@@ -66,7 +82,12 @@ class QuestionViewSet(viewsets.ModelViewSet):
             },
         ),
     )
-    def retrieve(self, request: Request) -> Response:
+    def retrieve(
+        self,
+        request: Request,
+        *args,  # noqa: ANN002
+        **kwargs,  # noqa: ANN003
+    ) -> Response:
         """Возвращает детальную страницу вопроса."""
         question = self.get_object()
         answers = question.answers.filter(is_active=True)
@@ -96,7 +117,12 @@ class QuestionViewSet(viewsets.ModelViewSet):
         request=QuestionCreateSerializer,
         responses=QuestionCreateResponseSerializer,
     )
-    def partial_update(self, request: Request) -> Response:
+    def partial_update(
+        self,
+        request: Request,
+        *args,  # noqa: ANN002
+        **kwargs,  # noqa: ANN003
+    ) -> Response:
         """Обновляет вопрос частично."""
         question = self.get_object()
         serializer = QuestionCreateSerializer(
@@ -111,6 +137,27 @@ class QuestionViewSet(viewsets.ModelViewSet):
             QuestionCreateResponseSerializer(question).data,
             status=status.HTTP_200_OK,
         )
+
+    @extend_schema(
+        tags=['Questions'],
+        summary='Удалить изображение вопроса',
+    )
+    @action(
+        detail=True,
+        methods=['delete'],
+        url_path='images/(?P<image_id>[^/.]+)',
+    )
+    def delete_image(
+        self,
+        request: Request,
+        image_id: str,
+        *args,  # noqa: ANN002
+        **kwargs,  # noqa: ANN003
+    ) -> Response:
+        """Удаляет изображение вопроса."""
+        image = get_object_or_404(QuestionImage, pk=image_id)
+        question_image_delete_handler(image)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @extend_schema(
         request=AnswerCreateSerializer,
@@ -197,6 +244,27 @@ class AnswerViewSet(DestroyModelMixin, GenericViewSet):
             'likes_count': answer.likes.count(),
         })
 
+    @extend_schema(
+        tags=['Answers'],
+        summary='Удалить изображение ответа',
+    )
+    @action(
+        detail=True,
+        methods=['delete'],
+        url_path='images/(?P<image_id>[^/.]+)',
+    )
+    def delete_image(
+        self,
+        request: Request,
+        image_id: str,
+        *args,  # noqa: ANN002
+        **kwargs,  # noqa: ANN003
+    ) -> Response:
+        """Удаляет изображение ответа."""
+        image = get_object_or_404(AnswerImage, pk=image_id)
+        answer_image_delete_handler(image)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 @extend_schema_view(
     list=extend_schema(tags=['Tags'], summary='Список тегов (скиллов)'),
@@ -226,18 +294,29 @@ class SkillViewSet(ListModelMixin, GenericViewSet):
     responses=FileUploadResponseSerializer,
 )
 class FileUploadView(APIView):
-    """Загрузка файла."""
+    """API view для загрузки изображений в MinIO."""
 
-    parser_classes = [MultiPartParser]
+    parser_classes: list[type[MultiPartParser]] = [MultiPartParser]
 
-    def post(self, request: Request) -> Response:
-        """Загружает файл и возвращает URL."""
+    def post(
+        self,
+        request: Request,
+        *args,  # noqa: ANN002
+        **kwargs,  # noqa: ANN003
+    ) -> Response:
+        """Загружает файл в MinIO и возвращает публичный URL и метаданные."""
         serializer = FileUploadSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        file = serializer.validated_data['file']
-        # TODO: загрузить файл в хранилище и получить URL
-        image_url = f'https://dev.code-unity.ru/images/{file.name}'
+
+        file: UploadedFile = serializer.validated_data["file"]
+        public_url: str = image_upload_handler(file_obj=file)
+
         return Response(
-            {'image_url': image_url},
+            {
+                "image_url": public_url,
+                "original_name": file.name,
+                "file_size": file.size,
+                "mime_type": file.content_type or "image/jpeg",
+            },
             status=status.HTTP_201_CREATED,
-            )
+        )

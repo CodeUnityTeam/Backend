@@ -1,6 +1,8 @@
 import uuid
 
+from django.contrib import admin
 from django.db import models
+from django.utils.safestring import mark_safe
 
 from core.constants import MAX_IMAGE_URL, MAX_MINE_TYPE, MAX_ORIGINAL_NAME
 
@@ -44,3 +46,10 @@ class BaseImageMixin(models.Model):
         """Метаданные модели."""
 
         abstract = True
+
+    @admin.display(description="Изображение")
+    def post_image(self):  # noqa: ANN201
+        """Отображает превью в админке."""
+        if self.image_url:
+            return mark_safe(f"<img src='{self.image_url}' width=50>")
+        return "Без фото"

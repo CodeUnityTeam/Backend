@@ -260,7 +260,7 @@ class QuestionImage(BaseImageMixin):
         ]
 
     def __str__(self) -> str:
-        return f'Изображение {self.image} для "{self.question.title}"'
+        return f'Изображение {self.original_name} для "{self.question.title}"'
 
 
 class AnswerImage(BaseImageMixin):
@@ -292,6 +292,6 @@ class AnswerImage(BaseImageMixin):
 
     def __str__(self) -> str:
         return (
-            f'Изображение {self.image} для '
+            f'Изображение {self.original_name} для '
             f'"{self.answer.question.title}"'
         )

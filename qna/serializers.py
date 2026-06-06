@@ -47,11 +47,20 @@ class AnswerDetailSerializer(serializers.ModelSerializer):
         return list(obj.images.values_list('image_url', flat=True))
 
 
+class AnswerImageMetaSerializer(serializers.Serializer):
+    """Метаданные изображения при создании ответа."""
+
+    image_url = serializers.URLField()
+    original_name = serializers.CharField()
+    file_size = serializers.IntegerField()
+    mime_type = serializers.CharField()
+
+
 class AnswerCreateSerializer(serializers.ModelSerializer):
     """Сериализатор создания ответа."""
 
-    image_urls = serializers.ListField(
-        child=serializers.URLField(),
+    images = AnswerImageMetaSerializer(
+        many=True,
         required=False,
         write_only=True,
         label='Изображения',
@@ -59,36 +68,40 @@ class AnswerCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Answer
-        fields = ['content', 'parent_answer', 'image_urls']
+        fields = ['content', 'parent_answer', 'images']
 
     def create(self, validated_data: dict) -> Answer:
         """Создаёт ответ с изображениями."""
-        image_urls = validated_data.pop('image_urls', [])
+        images = validated_data.pop('images', [])
         user = self.context['request'].user
         question = self.context['question']
+
         answer = Answer.objects.create(
             user=user,
             question=question,
             **validated_data,
         )
-        for url in image_urls:
+
+        for image in images:
             AnswerImage.objects.create(
                 answer=answer,
                 uploaded_by=user,
-                image_url=url,
-                original_name='',
-                file_size=0,
-                mime_type='',
+                image_url=image['image_url'],
+                original_name=image['original_name'],
+                file_size=image['file_size'],
+                mime_type=image['mime_type'],
             )
+
         return answer
 
 
-class QuestionImageSerializer(serializers.ModelSerializer):
-    """Сериализатор изображения вопроса."""
+class QuestionImageMetaSerializer(serializers.Serializer):
+    """Метаданные изображения при создании вопроса."""
 
-    class Meta:
-        model = QuestionImage
-        fields = ['image_url']
+    image_url = serializers.URLField()
+    original_name = serializers.CharField()
+    file_size = serializers.IntegerField()
+    mime_type = serializers.CharField()
 
 
 class QuestionCreateSerializer(serializers.ModelSerializer):
@@ -100,8 +113,8 @@ class QuestionCreateSerializer(serializers.ModelSerializer):
         queryset=Skill.objects.all(),
         label='Навыки',
     )
-    image_urls = serializers.ListField(
-        child=serializers.URLField(),
+    images = QuestionImageMetaSerializer(
+        many=True,
         required=False,
         write_only=True,
         label='Изображения',
@@ -114,25 +127,28 @@ class QuestionCreateSerializer(serializers.ModelSerializer):
             'description',
             'tags',
             'is_anonymous',
-            'image_urls',
+            'images',
         ]
 
     def create(self, validated_data: dict) -> Question:
         """Создаёт вопрос с тегами и изображениями."""
         tags = validated_data.pop('skills', [])
-        image_urls = validated_data.pop('image_urls', [])
+        images = validated_data.pop('images', [])
         user = self.context['request'].user
+
         question = Question.objects.create(user=user, **validated_data)
         question.skills.set(tags)
-        for url in image_urls:
+
+        for image in images:
             QuestionImage.objects.create(
                 question=question,
                 uploaded_by=user,
-                image_url=url,
-                original_name='',
-                file_size=0,
-                mime_type='',
+                image_url=image['image_url'],
+                original_name=image['original_name'],
+                file_size=image['file_size'],
+                mime_type=image['mime_type'],
             )
+
         return question
 
 
@@ -232,12 +248,15 @@ class QuestionDetailSerializer(serializers.ModelSerializer):
 
 
 class FileUploadSerializer(serializers.Serializer):
-    """Сериализатор загрузки файла."""
+    """Сериализатор для валидации загружаемого файла."""
 
-    file = serializers.ImageField()
+    file: serializers.ImageField = serializers.ImageField(write_only=True)
 
 
 class FileUploadResponseSerializer(serializers.Serializer):
     """Сериализатор ответа на загрузку файла."""
 
     image_url = serializers.URLField()
+    original_name = serializers.CharField()
+    file_size = serializers.IntegerField()
+    mime_type = serializers.CharField()
