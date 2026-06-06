@@ -35,13 +35,13 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-      - name: Copy docker-compose.yml via ssh
+      - name: Copy docker-compose.dev.yaml via ssh
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "docker-compose.yaml"
+          source: "docker-compose.dev.yaml"
           target: "/code-unity"
       - name: Executing remote ssh commands to deploy
         uses: appleboy/ssh-action@master
@@ -51,11 +51,11 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /code-unity/
-            sudo docker compose -f docker-compose.yaml pull
-            sudo docker compose -f docker-compose.yaml down
-            sudo docker compose -f docker-compose.yaml up -d
-            sudo docker compose -f docker-compose.yaml exec backend python manage.py makemigrations
-            sudo docker compose -f docker-compose.yaml exec backend python manage.py migrate
-            sudo docker compose -f docker-compose.yaml exec backend python manage.py collectstatic --noinput
-            # sudo docker compose -f docker-compose.yaml exec backend cp -r /app/static/. /backend_static/static/
+            sudo docker compose -f docker-compose.dev.yaml pull
+            sudo docker compose -f docker-compose.dev.yaml down
+            sudo docker compose -f docker-compose.dev.yaml up -d
+            sudo docker compose -f docker-compose.dev.yaml exec backend python manage.py makemigrations
+            sudo docker compose -f docker-compose.dev.yaml exec backend python manage.py migrate
+            sudo docker compose -f docker-compose.dev.yaml exec backend python manage.py collectstatic --noinput
+            # sudo docker compose -f docker-compose.dev.yaml exec backend cp -r /app/static/. /backend_static/static/
             sudo docker image prune -a -f
