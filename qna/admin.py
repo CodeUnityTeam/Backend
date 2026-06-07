@@ -17,6 +17,7 @@ from .models import (
 
 class QuestionImageInline(admin.TabularInline):
     """Изображения, прикреплённые к вопросу."""
+
     model = QuestionImage
     form = ImageAdminForm
     extra = 0
@@ -27,6 +28,7 @@ class QuestionImageInline(admin.TabularInline):
 
 class AnswerImageInline(admin.TabularInline):
     """Изображения, прикреплённые к ответу."""
+
     model = AnswerImage
     form = ImageAdminForm
     extra = 0

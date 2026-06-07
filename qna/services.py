@@ -1,11 +1,9 @@
 from uuid import uuid4
 
 from django.core.files.uploadedfile import UploadedFile
-from django.db import transaction
 
 from config import settings
 from core.s3_utils import MinioService
-from qna.models import AnswerImage, QuestionImage
 
 image_minio_client = MinioService(
     bucket_name=settings.STORAGES["images"]["OPTIONS"]["bucket_name"],

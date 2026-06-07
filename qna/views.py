@@ -1,5 +1,4 @@
 from django.core.files.uploadedfile import UploadedFile
-from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import (
     extend_schema,
     extend_schema_view,
@@ -17,10 +16,8 @@ from rest_framework.viewsets import GenericViewSet
 
 from qna.models import (
     Answer,
-    AnswerImage,
     AnswerLike,
     Question,
-    QuestionImage,
     QuestionLike,
 )
 from qna.serializers import (
@@ -141,7 +138,12 @@ class QuestionViewSet(viewsets.ModelViewSet):
         summary='Создать ответ',
     )
     @action(detail=True, methods=['post'], url_path='answers')
-    def add_answer(self, request: Request, *args, **kwargs) -> Response:
+    def add_answer(
+        self,
+        request: Request,
+        *args,  # noqa ANN:002
+        **kwargs  # noqa ANN:003
+    ) -> Response:
         """Создаёт ответ на вопрос."""
         question = self.get_object()
         serializer = AnswerCreateSerializer(
@@ -162,7 +164,12 @@ class QuestionViewSet(viewsets.ModelViewSet):
         responses=LikeSerializer(),
     )
     @action(detail=True, methods=['post'], url_path='like')
-    def like(self, request: Request, *args, **kwargs) -> Response:
+    def like(
+        self,
+        request: Request,
+        *args,  # noqa ANN:002
+        **kwargs  # noqa ANN:003
+    ) -> Response:
         """Ставит или снимает лайк на вопрос."""
         question = self.get_object()
         user = request.user
@@ -201,7 +208,12 @@ class AnswerViewSet(DestroyModelMixin, GenericViewSet):
             summary='Лайк/снятие лайка ответа',
         )
     @action(detail=True, methods=['post'], url_path='like')
-    def like(self, request: Request, *args, **kwargs) -> Response:
+    def like(
+        self,
+        request: Request,
+        *args,  # noqa ANN:002
+        **kwargs  # noqa ANN:003
+    ) -> Response:
         """Ставит или снимает лайк на ответ."""
         answer = self.get_object()
         user = request.user
