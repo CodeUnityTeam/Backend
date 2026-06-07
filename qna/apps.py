@@ -9,4 +9,4 @@ class QnaConfig(AppConfig):
     verbose_name = 'Вопросы и ответы'
 
     def ready(self) -> None:  # noqa: D102
-        pass  # noqa: F40
+        import qna.signals

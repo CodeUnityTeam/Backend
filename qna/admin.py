@@ -15,6 +15,26 @@ from .models import (
 )
 
 
+class QuestionImageInline(admin.TabularInline):
+    """Изображения, прикреплённые к вопросу."""
+    model = QuestionImage
+    form = ImageAdminForm
+    extra = 0
+    fields = ('post_image', 'image_url')
+    readonly_fields = ('post_image', 'image_url')
+    can_delete = True
+
+
+class AnswerImageInline(admin.TabularInline):
+    """Изображения, прикреплённые к ответу."""
+    model = AnswerImage
+    form = ImageAdminForm
+    extra = 0
+    fields = ('post_image', 'image_url')
+    readonly_fields = ('post_image', 'image_url')
+    can_delete = True
+
+
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
     """Админ‑панель для модели Question."""
@@ -25,6 +45,7 @@ class QuestionAdmin(admin.ModelAdmin):
         'title',
         'created_at',
     )
+    inlines = (QuestionImageInline,)
 
 
 @admin.register(Answer)
@@ -37,6 +58,7 @@ class AnswerAdmin(admin.ModelAdmin):
         'user',
         'created_at',
     )
+    inlines = (AnswerImageInline,)
 
 
 @admin.register(QuestionImage)

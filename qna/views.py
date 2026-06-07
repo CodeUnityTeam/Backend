@@ -36,11 +36,7 @@ from qna.serializers import (
     QuestionListSerializer,
     SkillSerializer,
 )
-from qna.services import (
-    answer_image_delete_handler,
-    image_upload_handler,
-    question_image_delete_handler,
-)
+from qna.services import image_upload_handler
 from users.models import Skill
 
 
@@ -139,34 +135,13 @@ class QuestionViewSet(viewsets.ModelViewSet):
         )
 
     @extend_schema(
-        tags=['Questions'],
-        summary='Удалить изображение вопроса',
-    )
-    @action(
-        detail=True,
-        methods=['delete'],
-        url_path='images/(?P<image_id>[^/.]+)',
-    )
-    def delete_image(
-        self,
-        request: Request,
-        image_id: str,
-        *args,  # noqa: ANN002
-        **kwargs,  # noqa: ANN003
-    ) -> Response:
-        """Удаляет изображение вопроса."""
-        image = get_object_or_404(QuestionImage, pk=image_id)
-        question_image_delete_handler(image)
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-    @extend_schema(
         request=AnswerCreateSerializer,
         responses=AnswerCreateResponseSerializer,
         tags=['Answers'],
         summary='Создать ответ',
     )
     @action(detail=True, methods=['post'], url_path='answers')
-    def add_answer(self, request: Request) -> Response:
+    def add_answer(self, request: Request, *args, **kwargs) -> Response:
         """Создаёт ответ на вопрос."""
         question = self.get_object()
         serializer = AnswerCreateSerializer(
@@ -187,7 +162,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         responses=LikeSerializer(),
     )
     @action(detail=True, methods=['post'], url_path='like')
-    def like(self, request: Request) -> Response:
+    def like(self, request: Request, *args, **kwargs) -> Response:
         """Ставит или снимает лайк на вопрос."""
         question = self.get_object()
         user = request.user
@@ -226,7 +201,7 @@ class AnswerViewSet(DestroyModelMixin, GenericViewSet):
             summary='Лайк/снятие лайка ответа',
         )
     @action(detail=True, methods=['post'], url_path='like')
-    def like(self, request: Request) -> Response:
+    def like(self, request: Request, *args, **kwargs) -> Response:
         """Ставит или снимает лайк на ответ."""
         answer = self.get_object()
         user = request.user
@@ -243,27 +218,6 @@ class AnswerViewSet(DestroyModelMixin, GenericViewSet):
             'liked': liked,
             'likes_count': answer.likes.count(),
         })
-
-    @extend_schema(
-        tags=['Answers'],
-        summary='Удалить изображение ответа',
-    )
-    @action(
-        detail=True,
-        methods=['delete'],
-        url_path='images/(?P<image_id>[^/.]+)',
-    )
-    def delete_image(
-        self,
-        request: Request,
-        image_id: str,
-        *args,  # noqa: ANN002
-        **kwargs,  # noqa: ANN003
-    ) -> Response:
-        """Удаляет изображение ответа."""
-        image = get_object_or_404(AnswerImage, pk=image_id)
-        answer_image_delete_handler(image)
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @extend_schema_view(
