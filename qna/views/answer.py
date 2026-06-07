@@ -1,17 +1,11 @@
-from drf_spectacular.utils import (
-    extend_schema,
-    extend_schema_view
-)
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework.decorators import action
 from rest_framework.mixins import DestroyModelMixin
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from qna.models import (
-    Answer,
-    AnswerLike
-)
+from qna.models import Answer, AnswerLike
 from qna.serializers.answer import AnswerDetailSerializer
 from qna.serializers.like import LikeSerializer
 

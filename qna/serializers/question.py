@@ -7,6 +7,7 @@ from users.models import Skill
 
 class QuestionImageMetaSerializer(serializers.Serializer):
     """Метаданные изображения при создании вопроса."""
+
     image_id = serializers.UUIDField(required=False)
     image_url = serializers.URLField()
     original_name = serializers.CharField()
@@ -41,6 +42,7 @@ class QuestionCreateSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data: dict) -> Question:
+        """Создание вопроса."""
         tags = validated_data.pop('skills', [])
         images = validated_data.pop('images', [])
         user = self.context['request'].user
@@ -62,6 +64,7 @@ class QuestionCreateSerializer(serializers.ModelSerializer):
         return question
 
     def update(self, instance: Question, validated_data: dict) -> Question:
+        """Обновление вопроса."""
         tags = validated_data.pop('skills', None)
         images = validated_data.pop('images', None)
 
@@ -109,7 +112,9 @@ class QuestionCreateSerializer(serializers.ModelSerializer):
                         )
                         incoming_ids.add(str(new_image.image_id))
 
-                for image in instance.images.exclude(image_id__in=incoming_ids):
+                for image in instance.images.exclude(
+                    image_id__in=incoming_ids,
+                ):
                     image.delete()
 
         return instance

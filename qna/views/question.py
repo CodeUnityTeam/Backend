@@ -1,4 +1,3 @@
-from django.core.files.uploadedfile import UploadedFile
 from drf_spectacular.utils import (
     extend_schema,
     extend_schema_view,
@@ -6,13 +5,9 @@ from drf_spectacular.utils import (
 )
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.mixins import DestroyModelMixin, ListModelMixin
-from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.viewsets import GenericViewSet
 
 from qna.models import (
     Question,
@@ -23,10 +18,6 @@ from qna.serializers.answer import (
     AnswerCreateSerializer,
     AnswerDetailSerializer,
 )
-from qna.serializers.file import (
-    FileUploadResponseSerializer,
-    FileUploadSerializer,
-)
 from qna.serializers.like import LikeSerializer
 from qna.serializers.question import (
     QuestionCreateResponseSerializer,
@@ -34,9 +25,6 @@ from qna.serializers.question import (
     QuestionDetailSerializer,
     QuestionListSerializer,
 )
-from qna.serializers.tag import SkillSerializer
-from qna.services import image_upload_handler
-from users.models import Skill
 
 
 @extend_schema_view(

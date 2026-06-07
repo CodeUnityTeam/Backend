@@ -32,6 +32,7 @@ class AnswerDetailSerializer(serializers.ModelSerializer):
 
 class AnswerImageMetaSerializer(serializers.Serializer):
     """Метаданные изображения при создании ответа."""
+
     image_id = serializers.UUIDField(required=False)
     image_url = serializers.URLField()
     original_name = serializers.CharField()
