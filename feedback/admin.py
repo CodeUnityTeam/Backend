@@ -8,6 +8,17 @@ from qna.services import image_upload_handler
 from .models import FeedbackForm, FeedbackImage
 
 
+class FeedbackImageInline(admin.TabularInline):
+    """Изображения, прикреплённые к форме обратной связи."""
+
+    model = FeedbackImage
+    form = ImageAdminForm
+    extra = 0
+    fields = ('post_image', 'image_url')
+    readonly_fields = ('post_image', 'image_url')
+    can_delete = False
+
+
 @admin.register(FeedbackForm)
 class FeedbackFormAdmin(admin.ModelAdmin):
     """Админ‑панель для модели FeedbackForm."""
@@ -20,6 +31,7 @@ class FeedbackFormAdmin(admin.ModelAdmin):
         'created_at',
         'updated_at',
     )
+    inlines = (FeedbackImageInline,)
 
 
 @admin.register(FeedbackImage)

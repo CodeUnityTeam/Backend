@@ -1,12 +1,11 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from qna.views import (
-    AnswerViewSet,
-    FileUploadView,
-    QuestionViewSet,
-    SkillViewSet,
-)
+from qna.views.answer import AnswerViewSet
+from qna.views.question import QuestionViewSet
+from qna.views.skill import SkillViewSet
+from qna.views.file import FileUploadView
+
 
 app_name = 'qna'
 

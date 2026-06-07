@@ -15,24 +15,26 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 
 from qna.models import (
-    Answer,
-    AnswerLike,
     Question,
     QuestionLike,
 )
-from qna.serializers import (
+from qna.serializers.answer import (
     AnswerCreateResponseSerializer,
     AnswerCreateSerializer,
     AnswerDetailSerializer,
+)
+from qna.serializers.file import (
     FileUploadResponseSerializer,
     FileUploadSerializer,
-    LikeSerializer,
+)
+from qna.serializers.like import LikeSerializer
+from qna.serializers.question import (
     QuestionCreateResponseSerializer,
     QuestionCreateSerializer,
     QuestionDetailSerializer,
     QuestionListSerializer,
-    SkillSerializer,
 )
+from qna.serializers.tag import SkillSerializer
 from qna.services import image_upload_handler
 from users.models import Skill
 
@@ -186,103 +188,3 @@ class QuestionViewSet(viewsets.ModelViewSet):
             'liked': liked,
             'likes_count': question.likes.count(),
         })
-
-
-@extend_schema_view(
-    destroy=extend_schema(tags=['Answers'], summary='Удалить ответ'),
-    like=extend_schema(
-        tags=['Likes'],
-        summary='Лайк/снятие лайка ответа',
-        request=None,
-        responses=LikeSerializer(),
-    ),
-)
-class AnswerViewSet(DestroyModelMixin, GenericViewSet):
-    """Представление для ответов."""
-
-    queryset = Answer.objects.all()
-    serializer_class = AnswerDetailSerializer
-
-    @extend_schema(
-            tags=['Answers'],
-            summary='Лайк/снятие лайка ответа',
-        )
-    @action(detail=True, methods=['post'], url_path='like')
-    def like(
-        self,
-        request: Request,
-        *args,  # noqa ANN:002
-        **kwargs  # noqa ANN:003
-    ) -> Response:
-        """Ставит или снимает лайк на ответ."""
-        answer = self.get_object()
-        user = request.user
-        like, created = AnswerLike.objects.get_or_create(
-            answer=answer,
-            user=user,
-        )
-        if not created:
-            like.delete()
-            liked = False
-        else:
-            liked = True
-        return Response({
-            'liked': liked,
-            'likes_count': answer.likes.count(),
-        })
-
-
-@extend_schema_view(
-    list=extend_schema(tags=['Tags'], summary='Список тегов (скиллов)'),
-)
-class SkillViewSet(ListModelMixin, GenericViewSet):
-    """Представление для Тегов (скиллов)."""
-
-    queryset = Skill.objects.all()
-    serializer_class = SkillSerializer
-
-
-@extend_schema(
-    tags=['Files'],
-    summary='Загрузить файл',
-    request={
-        'multipart/form-data': {
-            'type': 'object',
-            'properties': {
-                'file': {
-                    'type': 'string',
-                    'format': 'binary',
-                },
-            },
-            'required': ['file'],
-        },
-    },
-    responses=FileUploadResponseSerializer,
-)
-class FileUploadView(APIView):
-    """API view для загрузки изображений в MinIO."""
-
-    parser_classes: list[type[MultiPartParser]] = [MultiPartParser]
-
-    def post(
-        self,
-        request: Request,
-        *args,  # noqa: ANN002
-        **kwargs,  # noqa: ANN003
-    ) -> Response:
-        """Загружает файл в MinIO и возвращает публичный URL и метаданные."""
-        serializer = FileUploadSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        file: UploadedFile = serializer.validated_data["file"]
-        public_url: str = image_upload_handler(file_obj=file)
-
-        return Response(
-            {
-                "image_url": public_url,
-                "original_name": file.name,
-                "file_size": file.size,
-                "mime_type": file.content_type or "image/jpeg",
-            },
-            status=status.HTTP_201_CREATED,
-        )

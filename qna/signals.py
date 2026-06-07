@@ -1,4 +1,5 @@
 from django.db.models.signals import post_delete
+from django.db import transaction
 from django.dispatch import receiver
 
 from feedback.models import FeedbackImage
@@ -16,7 +17,10 @@ def delete_question_image_from_minio(
 ) -> None:
     """Удаляет файл из MinIO при удалении QuestionImage."""
     if instance.image_url:
-        image_minio_client.delete_file(instance.image_url)
+        image_url: str = instance.image_url
+        transaction.on_commit(
+            lambda: image_minio_client.delete_file(image_url),
+        )
 
 
 @receiver(post_delete, sender=AnswerImage)
@@ -27,7 +31,10 @@ def delete_answer_image_from_minio(
 ) -> None:
     """Удаляет файл из MinIO при удалении AnswerImage."""
     if instance.image_url:
-        image_minio_client.delete_file(instance.image_url)
+        image_url: str = instance.image_url
+        transaction.on_commit(
+            lambda: image_minio_client.delete_file(image_url),
+        )
 
 
 @receiver(post_delete, sender=FeedbackImage)
@@ -38,7 +45,10 @@ def delete_feedback_image_from_minio(
 ) -> None:
     """Удаляет файл из MinIO при удалении FeedbackImage."""
     if instance.image_url:
-        image_minio_client.delete_file(instance.image_url)
+        image_url: str = instance.image_url
+        transaction.on_commit(
+            lambda: image_minio_client.delete_file(image_url),
+        )
 
 
 @receiver(post_delete, sender=User)
