@@ -27,10 +27,13 @@ services:
       retries: 3
 
   backend:
+    build: .
+    image: enigmatica33/backend:latest
+    container_name: backend
+    restart: unless-stopped
     depends_on:
       - db
       - minio
-    image: enigmatica33/backend:latest
     env_file: .env
     volumes:
       - static:/backend_static/static/
