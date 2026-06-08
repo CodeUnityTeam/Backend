@@ -5,28 +5,26 @@ from drf_spectacular.utils import (
 )
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.mixins import DestroyModelMixin, ListModelMixin
-from rest_framework.parsers import MultiPartParser
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.viewsets import GenericViewSet
 
-from qna.models import Answer, AnswerLike, Question, QuestionLike
-from qna.serializers import (
+from qna.models import (
+    Question,
+    QuestionLike,
+)
+from qna.serializers.answer import (
     AnswerCreateResponseSerializer,
     AnswerCreateSerializer,
     AnswerDetailSerializer,
-    FileUploadResponseSerializer,
-    FileUploadSerializer,
-    LikeSerializer,
+)
+from qna.serializers.like import LikeSerializer
+from qna.serializers.question import (
     QuestionCreateResponseSerializer,
     QuestionCreateSerializer,
     QuestionDetailSerializer,
     QuestionListSerializer,
-    SkillSerializer,
 )
-from users.models import Skill
 
 
 @extend_schema_view(
@@ -47,6 +45,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
     queryset = Question.objects.all()
     serializer_class = QuestionCreateSerializer
+    permission_classes = [IsAuthenticated]
     http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_serializer_class(self) -> type[serializers.BaseSerializer]:
@@ -66,7 +65,12 @@ class QuestionViewSet(viewsets.ModelViewSet):
             },
         ),
     )
-    def retrieve(self, request: Request) -> Response:
+    def retrieve(
+        self,
+        request: Request,
+        *args,  # noqa: ANN002
+        **kwargs,  # noqa: ANN003
+    ) -> Response:
         """Возвращает детальную страницу вопроса."""
         question = self.get_object()
         answers = question.answers.filter(is_active=True)
@@ -96,7 +100,12 @@ class QuestionViewSet(viewsets.ModelViewSet):
         request=QuestionCreateSerializer,
         responses=QuestionCreateResponseSerializer,
     )
-    def partial_update(self, request: Request) -> Response:
+    def partial_update(
+        self,
+        request: Request,
+        *args,  # noqa: ANN002
+        **kwargs,  # noqa: ANN003
+    ) -> Response:
         """Обновляет вопрос частично."""
         question = self.get_object()
         serializer = QuestionCreateSerializer(
@@ -119,7 +128,12 @@ class QuestionViewSet(viewsets.ModelViewSet):
         summary='Создать ответ',
     )
     @action(detail=True, methods=['post'], url_path='answers')
-    def add_answer(self, request: Request) -> Response:
+    def add_answer(
+        self,
+        request: Request,
+        *args,  # noqa ANN:002
+        **kwargs  # noqa ANN:003
+    ) -> Response:
         """Создаёт ответ на вопрос."""
         question = self.get_object()
         serializer = AnswerCreateSerializer(
@@ -140,7 +154,12 @@ class QuestionViewSet(viewsets.ModelViewSet):
         responses=LikeSerializer(),
     )
     @action(detail=True, methods=['post'], url_path='like')
-    def like(self, request: Request) -> Response:
+    def like(
+        self,
+        request: Request,
+        *args,  # noqa ANN:002
+        **kwargs  # noqa ANN:003
+    ) -> Response:
         """Ставит или снимает лайк на вопрос."""
         question = self.get_object()
         user = request.user
@@ -157,87 +176,3 @@ class QuestionViewSet(viewsets.ModelViewSet):
             'liked': liked,
             'likes_count': question.likes.count(),
         })
-
-
-@extend_schema_view(
-    destroy=extend_schema(tags=['Answers'], summary='Удалить ответ'),
-    like=extend_schema(
-        tags=['Likes'],
-        summary='Лайк/снятие лайка ответа',
-        request=None,
-        responses=LikeSerializer(),
-    ),
-)
-class AnswerViewSet(DestroyModelMixin, GenericViewSet):
-    """Представление для ответов."""
-
-    queryset = Answer.objects.all()
-    serializer_class = AnswerDetailSerializer
-
-    @extend_schema(
-            tags=['Answers'],
-            summary='Лайк/снятие лайка ответа',
-        )
-    @action(detail=True, methods=['post'], url_path='like')
-    def like(self, request: Request) -> Response:
-        """Ставит или снимает лайк на ответ."""
-        answer = self.get_object()
-        user = request.user
-        like, created = AnswerLike.objects.get_or_create(
-            answer=answer,
-            user=user,
-        )
-        if not created:
-            like.delete()
-            liked = False
-        else:
-            liked = True
-        return Response({
-            'liked': liked,
-            'likes_count': answer.likes.count(),
-        })
-
-
-@extend_schema_view(
-    list=extend_schema(tags=['Tags'], summary='Список тегов (скиллов)'),
-)
-class SkillViewSet(ListModelMixin, GenericViewSet):
-    """Представление для Тегов (скиллов)."""
-
-    queryset = Skill.objects.all()
-    serializer_class = SkillSerializer
-
-
-@extend_schema(
-    tags=['Files'],
-    summary='Загрузить файл',
-    request={
-        'multipart/form-data': {
-            'type': 'object',
-            'properties': {
-                'file': {
-                    'type': 'string',
-                    'format': 'binary',
-                },
-            },
-            'required': ['file'],
-        },
-    },
-    responses=FileUploadResponseSerializer,
-)
-class FileUploadView(APIView):
-    """Загрузка файла."""
-
-    parser_classes = [MultiPartParser]
-
-    def post(self, request: Request) -> Response:
-        """Загружает файл и возвращает URL."""
-        serializer = FileUploadSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        file = serializer.validated_data['file']
-        # TODO: загрузить файл в хранилище и получить URL
-        image_url = f'https://dev.code-unity.ru/images/{file.name}'
-        return Response(
-            {'image_url': image_url},
-            status=status.HTTP_201_CREATED,
-            )
