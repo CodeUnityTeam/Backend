@@ -27,7 +27,6 @@ services:
       retries: 3
 
   backend:
-    build: .
     depends_on:
       - db
       - minio
