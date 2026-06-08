@@ -1,7 +1,9 @@
 import uuid
 
+from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.utils.safestring import mark_safe
 
 from core.constants import (
     MAX_CONTENT_FEEDBACK,
@@ -118,3 +120,10 @@ class FeedbackImage(TimestampMixin, models.Model):
 
     def __str__(self) -> str:
         return f'Изображение: {self.original_name} для {self.feedback.subject}'
+
+    @admin.display(description="Изображение")
+    def post_image(self):   # noqa: ANN201
+        """Отображает превью в админке."""
+        if self.image_url:
+            return mark_safe(f"<img src='{self.image_url}' width=50>")
+        return "Без фото"

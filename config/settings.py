@@ -108,6 +108,12 @@ DATABASES = {
     },
 }
 
+S3_OPTIONS = {
+    "access_key": os.environ.get("AWS_ACCESS_KEY_ID"),
+    "secret_key": os.environ.get("AWS_SECRET_ACCESS_KEY"),
+    "endpoint_url": S3_ENDPOINT,
+}
+
 STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
@@ -115,6 +121,7 @@ STORAGES = {
     "staticfiles": {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
+
     "avatars": {
         "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
         "OPTIONS": {
@@ -124,6 +131,23 @@ STORAGES = {
             "endpoint_url": S3_ENDPOINT,  # Динамический хост
             "custom_domain": (
                 f"localhost:9000/{os.environ.get('AWS_STORAGE_BUCKET_NAME')}"
+            ),
+            "querystring_auth": False,
+            "file_overwrite": False,
+        },
+    },
+    "images": {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        "OPTIONS": {
+            "access_key": os.environ.get("AWS_ACCESS_KEY_ID"),
+            "secret_key": os.environ.get("AWS_SECRET_ACCESS_KEY"),
+            "bucket_name": os.environ.get(
+                "MINIO_IMAGES_BUCKET_NAME", "images",
+            ),
+            "endpoint_url": S3_ENDPOINT,
+            "custom_domain": (
+                f"localhost:9000/"
+                f"{os.environ.get('MINIO_IMAGES_BUCKET_NAME', 'images')}"
             ),
             "querystring_auth": False,
             "file_overwrite": False,
@@ -146,6 +170,7 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 ALLOW_AVATAR_SIZE_MB = 10
+ALLOW_IMAGE_SIZE_MB = 10
 
 # =============================================================================
 # SECURITY, CORS & AUTH MODEL

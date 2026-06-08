@@ -18,10 +18,8 @@ class MinioService:
 
     def _init_storage(self) -> S3Boto3Storage:
         """Внутренний метод инициализации S3-хранилища."""
-        avatar_options: dict[str, Any] = settings.STORAGES["avatars"][
-            "OPTIONS"
-        ]
-        endpoint_url: str = avatar_options.get("endpoint_url", "")
+        options: dict[str, Any] = settings.S3_OPTIONS
+        endpoint_url: str = options.get("endpoint_url", "")
 
         clean_domain: str = endpoint_url.replace(
             "http://", "",
@@ -29,8 +27,8 @@ class MinioService:
         custom_domain: str = f"{clean_domain}/{self.bucket_name}"
 
         return S3Boto3Storage(
-            access_key=avatar_options.get("access_key"),
-            secret_key=avatar_options.get("secret_key"),
+            access_key=options.get("access_key"),
+            secret_key=options.get("secret_key"),
             bucket_name=self.bucket_name,
             endpoint_url=endpoint_url,
             custom_domain=custom_domain,
