@@ -1,10 +1,12 @@
-from typing import Any, Type
+from datetime import date
+from typing import Any, Dict, Type
 
 from allauth.account.adapter import get_adapter
 from allauth.account.models import EmailAddress
 from dj_rest_auth.serializers import UserDetailsSerializer
 from django.contrib.auth import get_user_model
 from django.db import models, transaction
+from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -18,18 +20,65 @@ from projects.serializers import (
 )
 from users.models.skills import Skill, UserSkill
 from users.models.specializations import Specialization, UserSpecialization
-from users.models.users import User
+from users.models.users import User, UserExperience
 from users.models.workformats import UserWorkFormat
 
 UserModel = get_user_model()
 
 
+class UserExperienceSerializer(
+    serializers.ModelSerializer[UserExperience],
+):
+    """Сериализатор для модели опыта работы пользователя."""
+
+    class Meta:
+        model = UserExperience
+        fields = (
+            'pk',
+            'company',
+            'position',
+            'responsibilities',
+            'start_date',
+            'end_date',
+        )
+        read_only_fields = ('id',)
+
+    def validate_start_date(self, value: date) -> date:
+        """Проверка, что дата начала работы не в будущем."""
+        current_date: date = timezone.now().date()
+        if value > current_date:
+            raise serializers.ValidationError(
+                'Дата начала работы не может быть позже текущей даты.',
+            )
+        return value
+
+    def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
+        """Проверка хронологии дат начала и окончания работы."""
+        start_date: date | None = attrs.get('start_date')
+        end_date: date | None = attrs.get('end_date')
+
+        if start_date and end_date and start_date > end_date:
+            raise serializers.ValidationError(
+                {
+                    'end_date': (
+                        'Дата окончания не может быть '
+                        'раньше даты начала.'
+                    ),
+                },
+            )
+        return attrs
+
+
 class CustomUserDetailsSerializer(UserDetailsSerializer):
     """Сериализатор для отображения и изменения данных пользователя."""
 
-    workformats = WorkFormatSerializer(required=False, many=True)
+    experiences = UserExperienceSerializer(
+        many=True,
+        read_only=True,
+    )
     skills = SkillSerializer(required=False, many=True)
     specializations = SpecializationSerializer(required=False, many=True)
+    workformats = WorkFormatSerializer(required=False, many=True)
 
     class Meta(UserDetailsSerializer.Meta):
         """Конфигурация сериализируемых полей пользователя."""
@@ -41,17 +90,20 @@ class CustomUserDetailsSerializer(UserDetailsSerializer):
             'first_name',
             'last_name',
             'role',
+            'project_relation',
             'phone_number',
             'additional_contact',
             'country',
             'city',
+            'soft_skills',
             'about_me',
+            'avatar_url',
             'skills',
             'specializations',
             'workformats',
-            'avatar_url',
+            'experiences',
         )
-        read_only_fields = ('pk', 'email', 'role')
+        read_only_fields = ('pk', 'email', 'role', 'experiences')
 
     def _set_m2m_relations(
         self,
@@ -172,32 +224,6 @@ class EmailChangeSerializer(serializers.Serializer):
         return user
 
 
-class PublicUserProfileSerializer(serializers.ModelSerializer):
-    """Сериализатор для публичного просмотра чужого профиля."""
-
-    skills = SkillSerializer(many=True, read_only=True)
-    specializations = SpecializationSerializer(many=True, read_only=True)
-    workformats = WorkFormatSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = UserModel
-        fields = (
-            'pk',
-            'first_name',
-            'last_name',
-            'role',
-            'country',
-            'city',
-            'about_me',
-            'skills',
-            'specializations',
-            'workformats',
-            'avatar_url',
-        )
-
-        read_only_fields = fields
-
-
 class AvatarUploadSerializer(serializers.Serializer[dict[str, Any]]):
     """Сериализатор для валидации загружаемого файла аватара."""
 
@@ -207,3 +233,45 @@ class AvatarUploadSerializer(serializers.Serializer[dict[str, Any]]):
         )],
         write_only=True,
     )
+
+
+class PublicUserProfileSerializer(serializers.ModelSerializer):
+    """Сериализатор для списочного отображения профилей."""
+
+    skills = SkillSerializer(many=True, read_only=True)
+    specializations = SpecializationSerializer(
+        many=True, read_only=True,
+    )
+    workformats = WorkFormatSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = UserModel
+        fields = (
+            'pk',
+            'first_name',
+            'last_name',
+            'city',
+            'skills',
+            'specializations',
+            'workformats',
+            'avatar_url',
+        )
+        read_only_fields = fields
+
+
+class DetailUserProfileSerializer(PublicUserProfileSerializer):
+    """Сериализатор для детального просмотра чужого профиля."""
+
+    experiences = UserExperienceSerializer(
+        many=True, read_only=True,
+    )
+
+    class Meta(PublicUserProfileSerializer.Meta):
+        fields = PublicUserProfileSerializer.Meta.fields + (
+            'country',
+            'role',
+            'soft_skills',
+            'about_me',
+            'experiences',
+        )
+        read_only_fields = fields
