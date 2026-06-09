@@ -90,7 +90,7 @@ class CustomUserDetailsSerializer(UserDetailsSerializer):
             'first_name',
             'last_name',
             'role',
-            'project_relation',
+            'projects_relation',
             'phone_number',
             'additional_contact',
             'country',

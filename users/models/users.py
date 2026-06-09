@@ -37,7 +37,7 @@ class User(TimestampMixin, AbstractUser):
         MODERATOR = 'moderator', 'Модератор'
         ADMIN = 'admin', 'Администратор'
 
-    class ProjectRelationChoices(models.TextChoices):
+    class ProjectsRelationChoices(models.TextChoices):
         EMPLOYER = 'employer', 'Наниматель'
         WORKER = 'worker', 'Работник'
 
@@ -53,13 +53,14 @@ class User(TimestampMixin, AbstractUser):
     role = models.CharField(
         'Роль',
         max_length=USER_ROLE_LENGTH,
-        choices=ProjectRelationChoices.choices,
+        choices=RoleChoices.choices,
         default=RoleChoices.USER,
         help_text='Роль пользователя в системе.',
     )
-    project_relation = models.CharField(
+    projects_relation = models.CharField(
         'Роль по отношению к проектам',
-        choices=ProjectRelationChoices.choices,
+        choices=ProjectsRelationChoices.choices,
+        default=ProjectsRelationChoices.WORKER,
         help_text='Роль по отношению к проектам (наниматель или исполнитель).',
     )
     email = models.EmailField(
