@@ -52,3 +52,4 @@ Thumbs.db
 
 # Postgres volume
 postgres_data/
+temp/
