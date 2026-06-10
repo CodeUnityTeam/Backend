@@ -17,7 +17,7 @@ DEBUG = os.getenv("DEBUG_MODE", default="False").lower() == "true"
 DOMAIN = os.getenv("DOMAIN")
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 
-# TODO [SYSTEM]: Синхронизировать CSRF_TRUSTED_ORIGINS с CORS_ALLOWED_ORIGINS.
+# TODO [SYSTEM-1/10]: Синхронизировать CSRF_TRUSTED_ORIGINS с CORS_ALLOWED_ORIGINS.
 #   Сейчас CSRF_TRUSTED_ORIGINS — список из одного элемента без split(','),
 #   а CORS_ALLOWED_ORIGINS (строка 182) парсится через split(',').
 #   Нужно либо:
@@ -95,7 +95,7 @@ TEMPLATES = [
 # DATABASES & STORAGES (MINIO)
 # =============================================================================
 
-# TODO [SYSTEM]: Вынести S3_ENDPOINT в переменную окружения.
+# TODO [SYSTEM-3/10]: Вынести S3_ENDPOINT в переменную окружения.
 #   Сейчас endpoint жёстко зашит: http://localhost:9000 / http://minio:9000.
 #   В production с HTTPS это не сработает.
 #   Нужно: S3_ENDPOINT = os.getenv('S3_ENDPOINT_URL', 'http://minio:9000')
@@ -119,7 +119,7 @@ DATABASES = {
     },
 }
 
-# TODO [SYSTEM]: Убрать дублирование S3_OPTIONS.
+# TODO [SYSTEM-6/10]: Убрать дублирование S3_OPTIONS.
 #   access_key, secret_key, endpoint_url уже есть в STORAGES["avatars"]["OPTIONS"].
 #   MinioService в core/s3_utils.py читает из S3_OPTIONS, а должен из STORAGES.
 #   Нужно: удалить S3_OPTIONS, перевести MinioService на чтение из STORAGES.
@@ -129,10 +129,10 @@ S3_OPTIONS = {
     "endpoint_url": S3_ENDPOINT,
 }
 
-# TODO [SYSTEM]: Сделать custom_domain динамическим через переменную окружения.
+# TODO [SYSTEM-4/10]: Сделать custom_domain динамическим через переменную окружения.
 #   Сейчас custom_domain жёстко зашит на localhost:9000 — в production не работает.
 #   Нужно: вынести в переменную S3_CUSTOM_DOMAIN или формировать из S3_ENDPOINT.
-# TODO [SYSTEM]: Добавить MINIO_IMAGES_BUCKET_NAME в .env.example.
+# TODO [SYSTEM-5/10]: Добавить MINIO_IMAGES_BUCKET_NAME в .env.example.
 #   Переменная используется в STORAGES["images"], но отсутствует в .env.example.
 STORAGES = {
     "default": {
@@ -199,7 +199,7 @@ ALLOW_IMAGE_SIZE_MB = 10
 AUTH_USER_MODEL = "users.User"
 SITE_ID = 1
 
-# TODO [SYSTEM]: Синхронизировать CORS_ALLOWED_ORIGINS с CSRF_TRUSTED_ORIGINS (строка 20).
+# TODO [SYSTEM-2/10]: Синхронизировать CORS_ALLOWED_ORIGINS с CSRF_TRUSTED_ORIGINS (строка 20).
 #   Сейчас CORS_ALLOWED_ORIGINS парсится через split(','), а CSRF_TRUSTED_ORIGINS — нет.
 #   В .env.example оба параметра должны содержать одни и те же домены.
 CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', '').split(',')
@@ -278,7 +278,7 @@ REST_AUTH = {
     ),
 }
 
-# TODO [SYSTEM]: Уменьшить ACCESS_TOKEN_LIFETIME.
+# TODO [SYSTEM-9/10]: Уменьшить ACCESS_TOKEN_LIFETIME.
 #   Сейчас access token живёт 7 дней — это очень много.
 #   Стандарт: access — 15-30 минут, refresh — 7-30 дней.
 #   Сейчас они равны, что сводит на нет смысл refresh-токенов.

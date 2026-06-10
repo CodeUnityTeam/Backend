@@ -41,7 +41,7 @@ class User(TimestampMixin, AbstractUser):
         EMPLOYER = 'employer', 'Наниматель'
         WORKER = 'worker', 'Работник'
 
-    # TODO [USERS]: Переопределить USERNAME_FIELD или убрать username.
+    # TODO [USERS-1/15]: Переопределить USERNAME_FIELD или убрать username.
     #   Поле username осталось от AbstractUser, но не используется.
     #   REQUIRED_FIELDS содержит email, first_name, last_name,
     #   но USERNAME_FIELD не переопределён (по умолчанию 'username').

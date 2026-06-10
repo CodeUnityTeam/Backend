@@ -1,4 +1,4 @@
-# TODO [QNA]: Файл core/constants/qna.py не используется.
+# TODO [QNA-19/19]: Файл core/constants/qna.py не используется.
 #   Все импорты констант qna идут из core/constants/__init__.py (строка 43-49),
 #   где эти же константы продублированы. При этом в __init__.py нет
 #   MAX_TITLE_QUESTION = 150, который определён здесь (строка 3).

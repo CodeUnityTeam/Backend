@@ -8,7 +8,7 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
 )
 
-# TODO [SYSTEM]: static() для STATIC_URL не нужен.
+# TODO [SYSTEM-10/10]: static() для STATIC_URL не нужен.
 #   static() предназначен для MEDIA_ROOT, а не STATIC_ROOT.
 #   В dev статику раздаёт django.contrib.staticfiles, в production — nginx.
 #   Эта строка может вызвать проблемы. Нужно удалить.

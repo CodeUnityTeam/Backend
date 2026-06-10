@@ -73,7 +73,7 @@ class ProjectFilter(django_filters.FilterSet):
             Q(full_desc__icontains=value),
         )
 
-    # TODO [PROJECTS]: Заменить ручную filter_duration на стандартный
+    # TODO [PROJECTS-3/24]: Заменить ручную filter_duration на стандартный
     #   django-filter NumberFilter с DurationExpression.
     #   Проблема: filter_duration (строка 76) вручную:
     #     1. Извлекает duration_min, duration_max, duration_operator из self.data.
@@ -171,14 +171,14 @@ class ProjectFilter(django_filters.FilterSet):
             duration__range=(min_days, max_days),
         )
 
-    # TODO [PROJECTS]: Обращение к 'status' вместо 'status_project' в filter_my_project.
+    # TODO [PROJECTS-4/24]: Обращение к 'status' вместо 'status_project' в filter_my_project.
     #   В модели Project поле называется status_project (models.py:143),
     #   но в filter_my_project используется:
     #   - .exclude(status='archived') (строка 128)
     #   - status__in=['published', 'recruiting_closed'] (строка 132)
     #   Должно быть status_project='archived' и status_project__in=[...].
     #   Из-за этого фильтрация my_project не работает корректно.
-    # TODO [PROJECTS]: hasattr(user, 'author_projects') и hasattr(user, 'participant_projects')
+    # TODO [PROJECTS-5/24]: hasattr(user, 'author_projects') и hasattr(user, 'participant_projects')
     #   всегда вернут True, т.к. это related_name (строка 128-129).
     #   Логика не разделяет автора и участника — оба условия истинны.
     #   Нужно проверять через user.projects.exists() (автор) или

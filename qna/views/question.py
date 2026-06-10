@@ -43,7 +43,7 @@ from qna.serializers.question import (
 class QuestionViewSet(viewsets.ModelViewSet):
     """Представление для вопросов."""
 
-    # TODO [QNA]: Заменить ручной retrieve на стандартный DRF retrieve
+    # TODO [QNA-14/19]: Заменить ручной retrieve на стандартный DRF retrieve
     #   с аннотациями и prefetch_related.
     #   Проблема: retrieve (строка 86) вручную:
     #     1. Вызывает self.get_object() — получает вопрос без prefetch_related.
@@ -210,7 +210,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED,
         )
 
-    # TODO [QNA]: Заменить ручной подсчёт лайков на F()-инкремент.
+    # TODO [QNA-15/19]: Заменить ручной подсчёт лайков на F()-инкремент.
     #   Проблема: в like (строка 177) после создания/удаления лайка делается
     #   question.likes.count() — отдельный SQL-запрос для подсчёта.
     #   Аналогичная проблема в AnswerViewSet.like.

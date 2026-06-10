@@ -91,13 +91,13 @@ def get_response_feed_queryset(user: User) -> QuerySet:
     ).order_by('-created_at')
 
 
-# TODO [PROJECTS]: Некорректный exclude в get_recommended_projects_queryset.
+# TODO [PROJECTS-11/24]: Некорректный exclude в get_recommended_projects_queryset.
 #   На строке 113: participants__status_participant=[PENDING] — передаётся
 #   список, а должно быть строковое значение 'pending' (константа PENDING).
 #   Из-за этого exclude не срабатывает корректно — проекты, где пользователь
 #   имеет статус PENDING, не исключаются из рекомендаций.
 #   Решение: заменить [PENDING] на PENDING (убрать список).
-# TODO [PROJECTS]: Дублирование логики get_project_or_404.
+# TODO [PROJECTS-12/24]: Дублирование логики get_project_or_404.
 #   Функция (строка 15) дублирует стандартный get_object_or_404 без какой-либо
 #   дополнительной логики. Используется в serializers.py и views.py.
 #   Либо удалить и использовать get_object_or_404 напрямую, либо добавить
@@ -126,7 +126,7 @@ def get_recommended_projects_queryset(user: User) -> QuerySet[Project]:
     )
 
 
-# TODO [PROJECTS]: Заменить ручную apply_sorting на стандартный
+# TODO [PROJECTS-13/24]: Заменить ручную apply_sorting на стандартный
 #   DRF OrderingFilter + django-filter OrderingFilter.
 #   Проблема: apply_sorting (строка 129) вручную:
 #     1. Аннотирует likes_count=Count('likes') для каждого вызова.

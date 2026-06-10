@@ -314,7 +314,7 @@ class ProjectViewSet(ModelViewSet):
             ),
         ],
     )
-    # TODO [PROJECTS]: Заменить ручную фильтрацию + сортировку на стандартный
+    # TODO [PROJECTS-7/24]: Заменить ручную фильтрацию + сортировку на стандартный
     #   django-filter + DRF OrderingFilter.
     #   Проблема: в list() (строка 317) вручную:
     #     1. Создаётся ProjectFilter и применяется к queryset.
@@ -387,7 +387,7 @@ class ProjectViewSet(ModelViewSet):
         )
         return Response(serializer.data)
 
-    # TODO [PROJECTS]: Неверный lookup в destroy (строка 358).
+    # TODO [PROJECTS-8/24]: Неверный lookup в destroy (строка 358).
     #   lookup_field = 'project_id' (строка 117), но в destroy используется
     #   kwargs.get('pk') вместо self.kwargs.get('project_id') или self.get_object().
     #   Из-за этого при DELETE /projects/{project_id}/ будет ошибка:
@@ -407,7 +407,7 @@ class ProjectViewSet(ModelViewSet):
         serializer.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    # TODO [PROJECTS]: Двойной запрос в БД в like (строки 374-378).
+    # TODO [PROJECTS-9/24]: Двойной запрос в БД в like (строки 374-378).
     #   self.get_object() (строка 374) получает проект из БД.
     #   Затем ProjectLikeSerializer.validate_project_id (serializers.py:304)
     #   снова вызывает get_project_or_404(str(project_id)) — второй запрос.
@@ -746,7 +746,7 @@ class ProjectViewSet(ModelViewSet):
         }
         return response
 
-    # TODO [PROJECTS]: Метод filter_queryset_for_responses нигде не вызывается.
+    # TODO [PROJECTS-10/24]: Метод filter_queryset_for_responses нигде не вызывается.
     #   Логика фильтрации дублирована в ResponseFeedFilter (filters.py:137).
     #   Более того, метод содержит баг: при card_type_filter != 'all'
     #   возвращается строка (card_type_filter), а не QuerySet.

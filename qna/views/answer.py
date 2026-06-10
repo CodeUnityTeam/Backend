@@ -22,7 +22,7 @@ from qna.serializers.like import LikeSerializer
 class AnswerViewSet(DestroyModelMixin, GenericViewSet):
     """Представление для ответов."""
 
-    # TODO [QNA]: Отсутствует проверка прав на удаление ответа.
+    # TODO [QNA-16/19]: Отсутствует проверка прав на удаление ответа.
     #   AnswerViewSet (строка 22) использует DestroyModelMixin, но нет
     #   permission_classes и нет проверки, что удалять ответ может только
     #   автор ответа или модератор.
@@ -34,7 +34,7 @@ class AnswerViewSet(DestroyModelMixin, GenericViewSet):
     queryset = Answer.objects.all()
     serializer_class = AnswerDetailSerializer
 
-    # TODO [QNA]: Заменить ручную toggle-логику лайка на единый сервис
+    # TODO [QNA-17/19]: Заменить ручную toggle-логику лайка на единый сервис
     #   с F()-инкрементом и добавить permission_classes.
     #   Проблемы:
     #     1. Дублирование логики с QuestionViewSet.like (question.py:177).

@@ -26,7 +26,7 @@ class CustomProjectPagination(PageNumberPagination):
         })
 
 
-# TODO [PROJECTS]: Дублирование applied_filters в CustomResponseFeedPagination.
+# TODO [PROJECTS-24/24]: Дублирование applied_filters в CustomResponseFeedPagination.
 #   Пагинатор (строка 39) добавляет applied_filters в ответ.
 #   Но в responses_feed (views.py:705-708) applied_filters добавляются снова
 #   для непагинированного ответа. При пагинации filters приходят из пагинатора,

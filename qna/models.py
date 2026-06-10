@@ -2,13 +2,13 @@ import uuid
 
 from django.db import models
 
-# TODO [QNA]: Несоответствие импорта констант.
+# TODO [QNA-1/19]: Несоответствие импорта констант.
 #   qna/models.py импортирует MAX_LEN_TITLE из core.constants (__init__.py:3),
 #   но в core/constants/qna.py:8 определён MAX_LEN_TITLE = 50.
 #   При этом core/constants/qna.py не используется — все константы лежат
 #   в core/constants/__init__.py. Нужно либо удалить core/constants/qna.py,
 #   либо перейти на импорт из core.constants.qna.
-# TODO [QNA]: MAX_LEN_TITLE = 50 для заголовка вопроса — слишком мало.
+# TODO [QNA-2/19]: MAX_LEN_TITLE = 50 для заголовка вопроса — слишком мало.
 #   В core/constants/qna.py:3 есть MAX_TITLE_QUESTION = 150, но модель
 #   Question.title (строка 37) использует MAX_LEN_TITLE = 50.
 #   Заголовок вопроса в 50 символов — это очень мало для осмысленного вопроса.
@@ -68,7 +68,7 @@ class Question(TimestampMixin, models.Model):
         verbose_name='Навыки для вопроса',
     )
 
-    # TODO [QNA]: Question не имеет поля updated_at, хотя поддерживает редактирование.
+    # TODO [QNA-3/19]: Question не имеет поля updated_at, хотя поддерживает редактирование.
     #   В докстринге модели (строка 20) сказано: "Поддерживает редактирование
     #   (обновляется updated_at)", но в модели Question нет поля updated_at.
     #   TimestampMixin (core/models/mixins.py) добавляет created_at и updated_at?
@@ -133,7 +133,7 @@ class Answer(models.Model):
         default=True,
         verbose_name='Активен',
     )
-    # TODO [QNA]: Денормализованное поле likes_count не синхронизируется.
+    # TODO [QNA-4/19]: Денормализованное поле likes_count не синхронизируется.
     #   В модели Answer (строка 117) есть поле likes_count, которое хранит
     #   количество лайков. Но при создании/удалении лайка (views/answer.py:42-53)
     #   это поле НЕ обновляется — используется answer.likes.count().

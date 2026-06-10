@@ -7,13 +7,13 @@ from qna.models import Answer, AnswerImage
 class AnswerDetailSerializer(serializers.ModelSerializer):
     """Сериализатор ответа для детальной страницы вопроса."""
 
-    # TODO [QNA]: N+1 запрос в AnswerDetailSerializer.get_images.
+    # TODO [QNA-10/19]: N+1 запрос в AnswerDetailSerializer.get_images.
     #   obj.images.values_list('image_url', flat=True) — отдельный запрос
     #   для каждого ответа. При загрузке страницы вопроса с 20 ответами
     #   будет 20 дополнительных запросов.
     #   Решение: добавить prefetch_related('images') в queryset
     #   QuestionViewSet.retrieve или в отдельный селектор.
-    # TODO [QNA]: AnswerDetailSerializer использует likes_count из модели,
+    # TODO [QNA-11/19]: AnswerDetailSerializer использует likes_count из модели,
     #   но это поле не синхронизируется (см. models.py:117).
     #   Фактически всегда будет 0.
 
@@ -53,7 +53,7 @@ class AnswerImageMetaSerializer(serializers.Serializer):
 class AnswerCreateSerializer(serializers.ModelSerializer):
     """Сериализатор создания ответа."""
 
-    # TODO [QNA]: Отсутствует валидация parent_answer.
+    # TODO [QNA-12/19]: Отсутствует валидация parent_answer.
     #   Поле parent_answer (ForeignKey на Answer) может быть указано,
     #   но нет проверки, что parent_answer принадлежит тому же вопросу.
     #   Можно создать ответ- reply на ответ из другого вопроса.

@@ -19,7 +19,7 @@ def can_archive_project(user: User, project: Project) -> bool:
     )
 
 
-# TODO [PROJECTS]: has_permission в CanArchiveProject всегда возвращает True.
+# TODO [PROJECTS-2/24]: has_permission в CanArchiveProject всегда возвращает True.
 #   Метод has_permission (строка 25) возвращает True для любого запроса,
 #   независимо от метода и пользователя. Фактическая проверка прав происходит
 #   только в has_object_permission (строка 31), но она вызывается только если

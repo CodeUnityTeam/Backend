@@ -241,7 +241,7 @@ class MeExperienceViewSet(ModelViewSet):
 
     serializer_class = UserExperienceSerializer
     permission_classes = [IsAuthenticated]
-    # TODO [USERS]: Добавить 'get' в http_method_names.
+    # TODO [USERS-7/15]: Добавить 'get' в http_method_names.
     #   В http_method_names указаны ['post', 'put', 'delete'], но нет 'get'.
     #   При этом в @extend_schema_view есть декоратор для list и retrieve.
     #   Это означает, что эндпоинты списка и детального просмотра опыта
@@ -346,7 +346,7 @@ class UserProfileListView(ListAPIView):
                 continue
         return valid_uuids
 
-    # TODO [USERS]: Заменить ручную фильтрацию/поиск на django-filter + SearchVectorField.
+    # TODO [USERS-8/15]: Заменить ручную фильтрацию/поиск на django-filter + SearchVectorField.
     #   Проблема: _parse_and_validate_uuids (строка 334) вручную парсит UUID из строки,
     #   _apply_search_and_sorting (строка 355) вручную строит SearchVector/SearchRank,
     #   а get_queryset (строка 382) вручную применяет фильтры через queryset.filter().
@@ -446,7 +446,7 @@ class UserProfileListView(ListAPIView):
 
         return queryset.order_by('-created_at')
 
-    # TODO [USERS]: Добавить фильтрацию по projects_relation.
+    # TODO [USERS-9/15]: Добавить фильтрацию по projects_relation.
     #   В списке профилей можно фильтровать по специализациям и навыкам,
     #   но нельзя отфильтровать по роли projects_relation (employer/worker).
     #   Решение: добавить query-параметр projects_relation.

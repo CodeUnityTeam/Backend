@@ -9,7 +9,7 @@ from users.models import User
 from users.services import avatar_minio_client
 
 
-# TODO [QNA]: Проблема с lambda внутри on_commit (аналогично users/services.py:39).
+# TODO [QNA-18/19]: Проблема с lambda внутри on_commit (аналогично users/services.py:39).
 #   При множественном удалении QuestionImage/AnswerImage все lambda внутри
 #   on_commit будут использовать последнее значение image_url из цикла,
 #   т.к. lambda захватывает переменную по ссылке, а не по значению.

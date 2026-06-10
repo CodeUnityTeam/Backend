@@ -18,17 +18,17 @@ class QuestionImageMetaSerializer(serializers.Serializer):
 class QuestionCreateSerializer(serializers.ModelSerializer):
     """Сериализатор создания вопроса."""
 
-    # TODO [QNA]: PrimaryKeyRelatedField с Skill.objects.all() загружает все скиллы.
+    # TODO [QNA-5/19]: PrimaryKeyRelatedField с Skill.objects.all() загружает все скиллы.
     #   На строке 21: queryset=Skill.objects.all() — это выполняется при импорте
     #   модуля, а не при каждом запросе. Но если скиллы добавляются в БД после
     #   импорта, они не будут доступны для валидации до перезапуска.
     #   Решение: использовать queryset=Skill.objects.all() в __init__ или
     #   переопределить field с lazy-загрузкой.
-    # TODO [QNA]: Отсутствует валидация title и description.
+    # TODO [QNA-6/19]: Отсутствует валидация title и description.
     #   В модели Question.title (models.py:37) нет MinLengthValidator.
     #   В сериализаторе тоже нет проверки минимальной длины заголовка.
     #   Пустой заголовок или заголовок из 1 символа пройдёт валидацию.
-    # TODO [QNA]: QuestionCreateSerializer используется и для create, и для update.
+    # TODO [QNA-7/19]: QuestionCreateSerializer используется и для create, и для update.
     #   Метод update (строка 66) содержит сложную логику синхронизации
     #   изображений. При этом для update используется тот же сериализатор,
     #   что и для create. Лучше разделить на отдельные сериализаторы.
@@ -143,7 +143,7 @@ class QuestionCreateResponseSerializer(serializers.ModelSerializer):
         fields = ['question_id']
 
 
-# TODO [QNA]: Заменить SerializerMethodField на аннотированные поля.
+# TODO [QNA-8/19]: Заменить SerializerMethodField на аннотированные поля.
 #   Проблема: QuestionListSerializer использует SerializerMethodField для
 #   likes_count и answers_count, что вызывает N+1 запросов:
 #     1. get_likes_count: obj.likes.count() — отдельный запрос на вопрос.
@@ -258,7 +258,7 @@ class QuestionListSerializer(serializers.ModelSerializer):
         return obj.answers.filter(is_active=True).count()
 
 
-# TODO [QNA]: Заменить SerializerMethodField на аннотированные поля.
+# TODO [QNA-9/19]: Заменить SerializerMethodField на аннотированные поля.
 #   Проблема: QuestionDetailSerializer.get_likes_count (строка 244) делает
 #   obj.likes.count() — отдельный запрос для каждого вопроса.
 #   Аналогично QuestionListSerializer.

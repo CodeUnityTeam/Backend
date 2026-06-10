@@ -71,7 +71,7 @@ class CustomRegisterSerializer(RegisterSerializer):
             if field in self.fields:
                 self.fields.pop(field)
 
-    # TODO [USERS]: Убрать сайд-эффекты из validate_email().
+    # TODO [USERS-3/15]: Убрать сайд-эффекты из validate_email().
     #   Метод не только проверяет email, но и:
     #   1. Реактивирует мягко удалённого пользователя (строки 87-88) — мутация БД.
     #   2. Отправляет письмо через ImmediateResponseException (строки 93-95).
@@ -116,7 +116,7 @@ class CustomRegisterSerializer(RegisterSerializer):
 
         return email
 
-    # TODO [USERS]: Убрать создание объекта UserModel для валидации пароля.
+    # TODO [USERS-4/15]: Убрать создание объекта UserModel для валидации пароля.
     #   На строках 115-119 создаётся экземпляр UserModel(...) без сохранения в БД
     #   только для передачи в clean_password. validate_password из Django принимает
     #   user=None, поэтому объект не нужен.
@@ -197,7 +197,7 @@ class EmailChangeSerializer(serializers.Serializer):
         return user
 
 
-# TODO [USERS]: Переименовать поле password в new_password.
+# TODO [USERS-5/15]: Переименовать поле password в new_password.
 #   Фронтенд отправляет password, внутри оно маппится в new_password1/new_password2
 #   (строки 209-210). Это неочевидно и может запутать.
 #   Решение: переименовать поле в new_password для ясности.

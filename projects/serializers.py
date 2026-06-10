@@ -117,7 +117,7 @@ class UserAuthorSerializer(UserAuthorShortSerializer):
         fields = UserAuthorShortSerializer.Meta.fields + ('email', 'phone')
 
 
-# TODO [PROJECTS]: UserParticipantSerializer — полный дубликат UserAuthorSerializer.
+# TODO [PROJECTS-14/24]: UserParticipantSerializer — полный дубликат UserAuthorSerializer.
 #   Класс (строка 120) наследует UserAuthorSerializer и не добавляет никаких
 #   изменений (pass). При этом используется в get_participants (строка 266)
 #   как отдельный сериализатор. Нужно либо удалить и использовать
@@ -131,7 +131,7 @@ class UserParticipantSerializer(UserAuthorSerializer):
 class ProjectCreateSerializer(serializers.ModelSerializer):
     """Сериализатор для создания проекта."""
 
-    # TODO [PROJECTS]: Добавить валидацию, что end_date не в прошлом.
+    # TODO [PROJECTS-15/24]: Добавить валидацию, что end_date не в прошлом.
     #   Сейчас проверяется только start_date > end_date (строка 172),
     #   но нет проверки, что end_date >= today().
     #   Проект с end_date в прошлом не имеет смысла.
@@ -215,7 +215,7 @@ class ProjectShortSerializer(serializers.ModelSerializer):
             'is_liked_by_me', 'skills',
         ]
 
-    # TODO [PROJECTS]: Заменить ручную проверку лайка на аннотацию через Exists.
+    # TODO [PROJECTS-16/24]: Заменить ручную проверку лайка на аннотацию через Exists.
     #   Проблема: get_is_liked_by_me (строка 225) делает отдельный SQL-запрос
     #   ProjectLike.objects.filter(user=user, project=project).exists()
     #   для каждого проекта в списке. Даже при prefetch_related('likes')
@@ -281,7 +281,7 @@ class ProjectDetailSerializer(ProjectShortSerializer):
         """Получаем лайки проекта."""
         return project.likes.count()
 
-    # TODO [PROJECTS]: Заменить ручную проверку членства в participants
+    # TODO [PROJECTS-17/24]: Заменить ручную проверку членства в participants
     #   на аннотацию через Exists.
     #   Проблема: get_participants (строка 271), get_author (строка 289),
     #   get_full_desc (строка 303) многократно вызывают
@@ -383,7 +383,7 @@ class ProjectLikeResponseSerializer(serializers.Serializer):
     likes_count = serializers.IntegerField()
 
 
-# TODO [PROJECTS]: Заменить ручную toggle-логику лайков на стандартный
+# TODO [PROJECTS-18/24]: Заменить ручную toggle-логику лайков на стандартный
 #   ViewSet action с GenericRelation или отдельный LikeAPIView.
 #   Проблема: ProjectLikeSerializer.toggle_like() (строка 342) вручную:
 #     1. Проверяет существование лайка через .exists().
@@ -506,7 +506,7 @@ class ProjectLikeSerializer(serializers.Serializer):
 class ProjectUpdateSerializer(serializers.ModelSerializer):
     """Сериализатор для обновления проекта."""
 
-    # TODO [PROJECTS]: Несоответствие имени поля 'formats' vs 'project_format'.
+    # TODO [PROJECTS-19/24]: Несоответствие имени поля 'formats' vs 'project_format'.
     #   В ProjectCreateSerializer поле называется 'project_format' (строка 141),
     #   а здесь — 'formats' (строка 347). При этом extract_relationship_data
     #   (validators.py:107) ожидает ключ 'project_format', а не 'formats'.
@@ -517,13 +517,13 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
     #   4. Форматы работы не обновляются
     #   Решение: переименовать 'formats' → 'project_format' в этом сериализаторе.
 
-    # TODO [PROJECTS]: Отсутствует валидация дат в ProjectUpdateSerializer.
+    # TODO [PROJECTS-20/24]: Отсутствует валидация дат в ProjectUpdateSerializer.
     #   В ProjectCreateSerializer есть validate (строка 169), который проверяет
     #   start_date > end_date. В этом сериализаторе такой проверки нет.
     #   При обновлении можно передать end_date раньше start_date.
     #   Решение: добавить метод validate с той же логикой.
 
-    # TODO [PROJECTS]: Поле 'status' в validated_data не маппится в 'status_project'.
+    # TODO [PROJECTS-21/24]: Поле 'status' в validated_data не маппится в 'status_project'.
     #   extra_kwargs указывает source='status_project' (строка 380), но DRF
     #   НЕ заменяет ключ в validated_data — там будет 'status', а не 'status_project'.
     #   В update() (строка 398): hasattr(project, 'status') → False (у модели поле
@@ -817,7 +817,7 @@ class ProfileCardConditionalSerializer(serializers.Serializer):
     Используется при фильтрации ленты откликов/приглашений.
     """
 
-    # TODO [PROJECTS]: Несоответствие имени поля 'phone' vs 'phone_number'.
+    # TODO [PROJECTS-22/24]: Несоответствие имени поля 'phone' vs 'phone_number'.
     #   В сериализаторе поле объявлено как 'phone' (строка 686), но в модели
     #   User (users/models/users.py:119) поле называется 'phone_number'.
     #   В to_representation (строка 708) данные берутся из instance.phone_number,
@@ -974,7 +974,7 @@ class FeedbackAndInvitationFeedSerializer(serializers.Serializer):
             return serializer.data
         return None
 
-    # TODO [PROJECTS]: Мутация данных в to_representation (строка 845).
+    # TODO [PROJECTS-23/24]: Мутация данных в to_representation (строка 845).
     #   project_data['status'] = project_data.pop('status_project') изменяет
     #   исходный словарь, который может быть закеширован или переиспользован.
     #   Это может привести к багам при повторной сериализации того же объекта.

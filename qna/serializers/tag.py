@@ -3,7 +3,7 @@ from rest_framework import serializers
 from users.models import Skill
 
 
-# TODO [QNA]: Дублирование SkillSerializer с projects/serializers.py:46.
+# TODO [QNA-13/19]: Дублирование SkillSerializer с projects/serializers.py:46.
 #   В qna/serializers/tag.py определён SkillSerializer, который отличается
 #   от SkillSerializer в projects/serializers.py:46:
 #   - Здесь: fields = ['id', 'name'] (поле 'id' маппится через source='skill_id')

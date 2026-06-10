@@ -7,7 +7,7 @@ from django.core.files.uploadedfile import UploadedFile
 from storages.backends.s3boto3 import S3Boto3Storage
 
 
-# TODO [SYSTEM]: Перевести MinioService на чтение конфигурации из STORAGES,
+# TODO [SYSTEM-7/10]: Перевести MinioService на чтение конфигурации из STORAGES,
 #       а не из S3_OPTIONS. Затем удалить S3_OPTIONS из settings.py.
 #
 #   Сейчас в проекте два источника конфигурации S3:
@@ -89,7 +89,7 @@ class MinioService:
                 Bucket=self.bucket_name,
                 Policy=json.dumps(public_read_policy),
             )
-        # TODO [SYSTEM]: Добавить логирование в except Exception.
+        # TODO [SYSTEM-8/10]: Добавить логирование в except Exception.
         #   Глухое подавление всех исключений при проверке/создании бакета.
         #   Если MinIO недоступен, ошибка будет silently ignored,
         #   и последующий upload_file упадёт с непонятной ошибкой.

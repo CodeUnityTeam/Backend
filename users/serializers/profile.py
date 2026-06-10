@@ -41,7 +41,7 @@ class UserExperienceSerializer(
             'start_date',
             'end_date',
         )
-        # TODO [USERS]: read_only_fields = ('id',) — неверное имя поля.
+        # TODO [USERS-10/15]: read_only_fields = ('id',) — неверное имя поля.
         #   В модели UserExperience (users/models/users.py:214) поле называется exp_id,
         #   а не id. Скорее всего, это не работает.
         #   Решение: read_only_fields = ('pk',) или ('exp_id',).
@@ -107,14 +107,14 @@ class CustomUserDetailsSerializer(UserDetailsSerializer):
             'workformats',
             'experiences',
         )
-        # TODO [USERS]: Убедиться, что фронтенд понимает, почему email read-only.
+        # TODO [USERS-11/15]: Убедиться, что фронтенд понимает, почему email read-only.
         #   Поле email помечено как read-only, но пользователь может захотеть
         #   его изменить (для этого есть отдельный EmailChangeView).
         #   Это корректно, но стоит убедиться, что фронтенд знает о
         #   необходимости использовать отдельный эндпоинт для смены email.
         read_only_fields = ('pk', 'email', 'role', 'experiences')
 
-    # TODO [USERS]: Заменить ручное управление M2M через _set_m2m_relations()
+    # TODO [USERS-12/15]: Заменить ручное управление M2M через _set_m2m_relations()
     #   на стандартный writable Nested Serializer DRF.
     #   Проблема: _set_m2m_relations (строка 126) вручную:
     #     1. Делает N+1 запросов: model_class.objects.get(pk=obj_id) в цикле.
@@ -254,7 +254,7 @@ class CustomUserDetailsSerializer(UserDetailsSerializer):
         return instance
 
 
-# TODO [USERS]: Удалить дубликат EmailChangeSerializer.
+# TODO [USERS-13/15]: Удалить дубликат EmailChangeSerializer.
 #   Этот же сериализатор определён в users/serializers/auth.py:139.
 #   Нужно импортировать его оттуда, а этот класс удалить.
 class EmailChangeSerializer(serializers.Serializer):

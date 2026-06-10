@@ -90,7 +90,7 @@ class Project(TimestampMixin, models.Model):
             ),
         ],
     )
-    # TODO [PROJECTS]: Ошибка в MaxLengthValidator для short_desc.
+    # TODO [PROJECTS-1/24]: Ошибка в MaxLengthValidator для short_desc.
     #   В validators для short_desc (строка 105) в MaxLengthValidator
     #   передан limit_value=MAX_LEN_TITLE (50), хотя должно быть
     #   MAX_SHORT_DESC (500). Из-за этого short_desc ограничен 50 символами,

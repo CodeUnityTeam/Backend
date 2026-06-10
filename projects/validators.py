@@ -26,7 +26,7 @@ def validate_location(location: str) -> str:
         )
 
 
-# TODO [PROJECTS]: Функция validate_dates нигде не используется.
+# TODO [PROJECTS-6/24]: Функция validate_dates нигде не используется.
 #   Валидация дат встроена напрямую в сериализаторы:
 #     - ProjectCreateSerializer.validate (serializers.py:156)
 #     - UserExperienceSerializer.validate (users/serializers/profile.py:55)

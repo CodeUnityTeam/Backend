@@ -35,7 +35,7 @@ from users.serializers.auth import (
 UserModel = get_user_model()
 
 
-# TODO [USERS]: Заменить ручное построение OAuth URL на стандартный allauth OAuth2View.
+# TODO [USERS-2/15]: Заменить ручное построение OAuth URL на стандартный allauth OAuth2View.
 #   Проблема: GoogleAuthUrlView (строка 118), YandexAuthUrlView (строка 168),
 #   MailRuAuthUrlView (строка 219) вручную собирают URL через urlencode:
 #     query_params = {"client_id": ..., "redirect_uri": ...}
@@ -147,7 +147,7 @@ class SocialLogin(SocialLoginView):
         return super().post(request, *args, **kwargs)
 
 
-# TODO [USERS]: Заменить ручное построение OAuth URL на стандартный allauth OAuth2View.
+# TODO [USERS-2/15]: Заменить ручное построение OAuth URL на стандартный allauth OAuth2View.
 #   Проблема: GoogleAuthUrlView (строка 118), YandexAuthUrlView (строка 168),
 #   MailRuAuthUrlView (строка 219) вручную собирают URL через urlencode:
 #     query_params = {"client_id": ..., "redirect_uri": ...}

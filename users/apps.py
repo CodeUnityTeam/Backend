@@ -7,7 +7,7 @@ class UsersConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'users'
 
-    # TODO [USERS]: Написать тесты для users.
+    # TODO [USERS-14/15]: Написать тесты для users.
     #   Во всём приложении users нет ни одного теста.
     #   Критическая бизнес-логика (регистрация, смена email, мягкое удаление,
     #   загрузка аватара, OAuth) никак не проверяется.
