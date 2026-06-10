@@ -7,6 +7,26 @@ from django.core.files.uploadedfile import UploadedFile
 from storages.backends.s3boto3 import S3Boto3Storage
 
 
+# TODO [SYSTEM]: Перевести MinioService на чтение конфигурации из STORAGES,
+#       а не из S3_OPTIONS. Затем удалить S3_OPTIONS из settings.py.
+#
+#   Сейчас в проекте два источника конфигурации S3:
+#
+#   1. settings.S3_OPTIONS (dict) — содержит access_key, secret_key, endpoint_url.
+#      MinioService._init_storage() читает именно отсюда.
+#
+#   2. settings.STORAGES["avatars"]["OPTIONS"] (dict) — содержит те же поля +
+#      bucket_name, custom_domain, querystring_auth, file_overwrite.
+#      Это стандартный Django storage, но MinioService его НЕ использует.
+#
+#   Проблема: S3_OPTIONS дублирует данные из STORAGES["avatars"]["OPTIONS"].
+#   Если поменять endpoint в одном месте, можно забыть поменять в другом.
+#
+#   Как исправить:
+#   - Убрать S3_OPTIONS из settings.py (строки 122-130).
+#   - В _init_storage читать конфигурацию напрямую из STORAGES:
+#       options = settings.STORAGES["avatars"]["OPTIONS"]
+#   - Либо передавать готовый storage instance в конструктор MinioService.
 class MinioService:
     """Транспортный сервис для управления файлами в MinIO/S3."""
 
@@ -69,6 +89,11 @@ class MinioService:
                 Bucket=self.bucket_name,
                 Policy=json.dumps(public_read_policy),
             )
+        # TODO [SYSTEM]: Добавить логирование в except Exception.
+        #   Глухое подавление всех исключений при проверке/создании бакета.
+        #   Если MinIO недоступен, ошибка будет silently ignored,
+        #   и последующий upload_file упадёт с непонятной ошибкой.
+        #   Решение: логировать ошибку через import logging.
         except Exception:  # noqa: BLE001
             pass
 

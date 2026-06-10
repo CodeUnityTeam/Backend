@@ -41,6 +41,11 @@ class User(TimestampMixin, AbstractUser):
         EMPLOYER = 'employer', 'Наниматель'
         WORKER = 'worker', 'Работник'
 
+    # TODO [USERS]: Переопределить USERNAME_FIELD или убрать username.
+    #   Поле username осталось от AbstractUser, но не используется.
+    #   REQUIRED_FIELDS содержит email, first_name, last_name,
+    #   но USERNAME_FIELD не переопределён (по умолчанию 'username').
+    #   Это может вызывать путаницу при createsuperuser.
     REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
 
     user_id = models.UUIDField(

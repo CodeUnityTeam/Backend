@@ -91,6 +91,17 @@ def get_response_feed_queryset(user: User) -> QuerySet:
     ).order_by('-created_at')
 
 
+# TODO [PROJECTS]: Некорректный exclude в get_recommended_projects_queryset.
+#   На строке 113: participants__status_participant=[PENDING] — передаётся
+#   список, а должно быть строковое значение 'pending' (константа PENDING).
+#   Из-за этого exclude не срабатывает корректно — проекты, где пользователь
+#   имеет статус PENDING, не исключаются из рекомендаций.
+#   Решение: заменить [PENDING] на PENDING (убрать список).
+# TODO [PROJECTS]: Дублирование логики get_project_or_404.
+#   Функция (строка 15) дублирует стандартный get_object_or_404 без какой-либо
+#   дополнительной логики. Используется в serializers.py и views.py.
+#   Либо удалить и использовать get_object_or_404 напрямую, либо добавить
+#   select_related/prefetch_related для оптимизации.
 def get_recommended_projects_queryset(user: User) -> QuerySet[Project]:
     """Формирует QuerySet проектов для рекомендаций пользователю.
 
@@ -115,6 +126,58 @@ def get_recommended_projects_queryset(user: User) -> QuerySet[Project]:
     )
 
 
+# TODO [PROJECTS]: Заменить ручную apply_sorting на стандартный
+#   DRF OrderingFilter + django-filter OrderingFilter.
+#   Проблема: apply_sorting (строка 129) вручную:
+#     1. Аннотирует likes_count=Count('likes') для каждого вызова.
+#     2. Проверяет sort_by на 'like', 'relevance', 'published_at'.
+#     3. Вручную строит SearchVector/SearchRank для сортировки по релевантности.
+#     4. Вызывается вручную в ProjectViewSet.list() после фильтрации.
+#   Это дублирует стандартный OrderingFilter из DRF.
+#
+#   Решение через стандартный DRF + django-filter:
+#   1. В ProjectViewSet добавить filter_backends:
+#      from rest_framework.filters import OrderingFilter
+#      from django_filters.rest_framework import DjangoFilterBackend
+#
+#      class ProjectViewSet(ModelViewSet):
+#          filter_backends = [DjangoFilterBackend, OrderingFilter]
+#          filterset_class = ProjectFilter
+#          ordering_fields = ['published_at', 'likes_count']
+#          ordering = ['-published_at']
+#
+#   2. В ProjectFilter добавить кастомный OrderingFilter для 'relevance':
+#      class ProjectFilter(django_filters.FilterSet):
+#          sort_by = django_filters.OrderingFilter(
+#              fields=(
+#                  ('-published_at', 'published_at'),
+#                  ('-likes_count', 'like'),
+#                  ('-rank', 'relevance'),
+#              ),
+#          )
+#
+#          def filter_queryset(self, queryset):
+#              # Если sort_by=relevance и есть search — аннотируем rank
+#              sort_by = self.data.get('sort_by')
+#              search = self.data.get('search')
+#              if sort_by == 'relevance' and search:
+#                  vector = SearchVector('title', weight='A') + SearchVector(
+#                      'short_desc', weight='B',
+#                  )
+#                  queryset = queryset.annotate(
+#                      rank=SearchRank(vector, SearchQuery(search)),
+#                  )
+#              return super().filter_queryset(queryset)
+#
+#   3. Удалить apply_sorting() из selectors.py.
+#   4. Удалить ручной вызов apply_sorting() из ProjectViewSet.list().
+#
+#   Преимущества:
+#     - Декларативное описание через ordering_fields.
+#     - OrderingFilter автоматически валидирует поля сортировки.
+#     - Аннотация likes_count=Count('likes') выносится в get_queryset.
+#     - SearchVector/SearchRank для релевантности — только при необходимости.
+#     - Убирается ручная функция apply_sorting().
 def apply_sorting(
     queryset: QuerySet,
     sort_by: str,

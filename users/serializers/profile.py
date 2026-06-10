@@ -41,6 +41,10 @@ class UserExperienceSerializer(
             'start_date',
             'end_date',
         )
+        # TODO [USERS]: read_only_fields = ('id',) — неверное имя поля.
+        #   В модели UserExperience (users/models/users.py:214) поле называется exp_id,
+        #   а не id. Скорее всего, это не работает.
+        #   Решение: read_only_fields = ('pk',) или ('exp_id',).
         read_only_fields = ('id',)
 
     def validate_start_date(self, value: date) -> date:
@@ -103,8 +107,82 @@ class CustomUserDetailsSerializer(UserDetailsSerializer):
             'workformats',
             'experiences',
         )
+        # TODO [USERS]: Убедиться, что фронтенд понимает, почему email read-only.
+        #   Поле email помечено как read-only, но пользователь может захотеть
+        #   его изменить (для этого есть отдельный EmailChangeView).
+        #   Это корректно, но стоит убедиться, что фронтенд знает о
+        #   необходимости использовать отдельный эндпоинт для смены email.
         read_only_fields = ('pk', 'email', 'role', 'experiences')
 
+    # TODO [USERS]: Заменить ручное управление M2M через _set_m2m_relations()
+    #   на стандартный writable Nested Serializer DRF.
+    #   Проблема: _set_m2m_relations (строка 126) вручную:
+    #     1. Делает N+1 запросов: model_class.objects.get(pk=obj_id) в цикле.
+    #     2. Удаляет все старые связи через .delete() без блокировки — гонка данных.
+    #     3. Игнорирует DoesNotExist через continue — тихая потеря данных.
+    #     4. Не использует стандартный DRF-механизм для вложенных M2M.
+    #
+    #   Решение через стандартный DRF:
+    #   Использовать PrimaryKeyRelatedField + переопределить update() через
+    #   validated_data с прямой передачей ID, а DRF сам сделает set().
+    #
+    #   ВАРИАНТ 1 — через SlugRelatedField (если нужно передавать ID):
+    #   class CustomUserDetailsSerializer(UserDetailsSerializer):
+    #       skills = serializers.SlugRelatedField(
+    #           slug_field='skill_id',
+    #           queryset=Skill.objects.all(),
+    #           many=True,
+    #           required=False,
+    #       )
+    #       specializations = serializers.SlugRelatedField(
+    #           slug_field='spec_id',
+    #           queryset=Specialization.objects.all(),
+    #           many=True,
+    #           required=False,
+    #       )
+    #       workformats = serializers.SlugRelatedField(
+    #           slug_field='format_id',
+    #           queryset=WorkFormat.objects.all(),
+    #           many=True,
+    #           required=False,
+    #       )
+    #
+    #       def update(self, instance, validated_data):
+    #           # DRF сам вызовет .set() для M2M полей, если они есть в validated_data
+    #           skills = validated_data.pop('skills', None)
+    #           specializations = validated_data.pop('specializations', None)
+    #           workformats = validated_data.pop('workformats', None)
+    #
+    #           instance = super().update(instance, validated_data)
+    #
+    #           if skills is not None:
+    #               instance.skills.set(skills)
+    #           if specializations is not None:
+    #               instance.specializations.set(specializations)
+    #           if workformats is not None:
+    #               instance.workformats.set(workformats)
+    #
+    #           return instance
+    #
+    #   ВАРИАНТ 2 — через PrimaryKeyRelatedField (если фронтенд шлёт UUID):
+    #   skills = serializers.PrimaryKeyRelatedField(
+    #       queryset=Skill.objects.all(),
+    #       many=True,
+    #       required=False,
+    #       pk_field=serializers.UUIDField(),
+    #   )
+    #
+    #   Преимущества:
+    #     - DRF сам валидирует существование объектов (возвращает 400 при ошибке).
+    #     - DRF сам делает bulk-запрос (один SELECT вместо N+1).
+    #     - .set() делает атомарную замену через SQL (удаляет старые, добавляет новые).
+    #     - Нет гонки данных — .set() выполняется в рамках одной транзакции.
+    #     - Убирается _set_m2m_relations целиком.
+    #
+    #   Важно: через-модели (UserSkill, UserSpecialization, UserWorkFormat)
+    #   должны иметь корректные Meta.unique_together, чтобы .set() работал.
+    #   Если в through-модели есть дополнительные поля — нужно использовать
+    #   through_defaults или inline-сериализаторы.
     def _set_m2m_relations(
         self,
         instance: Any,
@@ -176,6 +254,9 @@ class CustomUserDetailsSerializer(UserDetailsSerializer):
         return instance
 
 
+# TODO [USERS]: Удалить дубликат EmailChangeSerializer.
+#   Этот же сериализатор определён в users/serializers/auth.py:139.
+#   Нужно импортировать его оттуда, а этот класс удалить.
 class EmailChangeSerializer(serializers.Serializer):
     """Сериализатор для запроса на смену email с сохранением в модель."""
 

@@ -26,6 +26,11 @@ def validate_location(location: str) -> str:
         )
 
 
+# TODO [PROJECTS]: Функция validate_dates нигде не используется.
+#   Валидация дат встроена напрямую в сериализаторы:
+#     - ProjectCreateSerializer.validate (serializers.py:156)
+#     - UserExperienceSerializer.validate (users/serializers/profile.py:55)
+#   Нужно либо удалить, либо переиспользовать во всех сериализаторах.
 def validate_dates(start_date: str, end_date: str) -> None:
     """Валидация дат начала и окончания проекта."""
     if start_date and end_date:

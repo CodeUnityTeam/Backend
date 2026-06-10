@@ -73,6 +73,72 @@ class ProjectFilter(django_filters.FilterSet):
             Q(full_desc__icontains=value),
         )
 
+    # TODO [PROJECTS]: Заменить ручную filter_duration на стандартный
+    #   django-filter NumberFilter с DurationExpression.
+    #   Проблема: filter_duration (строка 76) вручную:
+    #     1. Извлекает duration_min, duration_max, duration_operator из self.data.
+    #     2. Вычисляет длительность через F('end_date') - F('start_date').
+    #     3. Применяет фильтр в зависимости от оператора.
+    #   Это можно заменить на декларативный подход через аннотацию в queryset
+    #   и стандартные NumberFilter с lookup_expr.
+    #
+    #   Решение через стандартный django-filter:
+    #   1. Добавить аннотацию duration в get_optimized_project_queryset:
+    #      from django.db.models import F, DurationField, ExpressionWrapper
+    #
+    #      def get_optimized_project_queryset():
+    #          return Project.objects.annotate(
+    #              duration=ExpressionWrapper(
+    #                  F('end_date') - F('start_date'),
+    #                  output_field=DurationField(),
+    #              ),
+    #          ).select_related('author').prefetch_related(...)
+    #
+    #   2. В ProjectFilter заменить кастомный метод на стандартные фильтры:
+    #      from django_filters import NumberFilter, DurationFilter
+    #
+    #      class ProjectFilter(django_filters.FilterSet):
+    #          duration_min = NumberFilter(
+    #              field_name='duration',
+    #              lookup_expr='gte',
+    #              label='Минимальная длительность (дни)',
+    #          )
+    #          duration_max = NumberFilter(
+    #              field_name='duration',
+    #              lookup_expr='lte',
+    #              label='Максимальная длительность (дни)',
+    #          )
+    #
+    #   3. Если нужен оператор 'less'/'greater'/'between' — использовать
+    #      RangeFilter или кастомный метод, но с использованием
+    #      DurationField для конвертации дней в timedelta:
+    #
+    #      from django.utils import timezone
+    #      from datetime import timedelta
+    #
+    #      duration_range = django_filters.RangeFilter(
+    #          field_name='duration',
+    #          label='Диапазон длительности',
+    #          method='filter_duration_range',
+    #      )
+    #
+    #      def filter_duration_range(self, queryset, name, value):
+    #          if value.start:
+    #              queryset = queryset.filter(
+    #                  duration__gte=timedelta(days=value.start),
+    #              )
+    #          if value.stop:
+    #              queryset = queryset.filter(
+    #                  duration__lte=timedelta(days=value.stop),
+    #              )
+    #          return queryset
+    #
+    #   Преимущества:
+    #     - Декларативное описание фильтров через field_name и lookup_expr.
+    #     - Аннотация duration вычисляется один раз в queryset, а не в каждом filter().
+    #     - DurationField корректно работает с интервалами PostgreSQL.
+    #     - RangeFilter автоматически парсит min/max из query-параметров.
+    #     - Убирается ручное извлечение self.data.get().
     def filter_duration(
         self,
         queryset: QuerySet[Project],
@@ -105,6 +171,18 @@ class ProjectFilter(django_filters.FilterSet):
             duration__range=(min_days, max_days),
         )
 
+    # TODO [PROJECTS]: Обращение к 'status' вместо 'status_project' в filter_my_project.
+    #   В модели Project поле называется status_project (models.py:143),
+    #   но в filter_my_project используется:
+    #   - .exclude(status='archived') (строка 128)
+    #   - status__in=['published', 'recruiting_closed'] (строка 132)
+    #   Должно быть status_project='archived' и status_project__in=[...].
+    #   Из-за этого фильтрация my_project не работает корректно.
+    # TODO [PROJECTS]: hasattr(user, 'author_projects') и hasattr(user, 'participant_projects')
+    #   всегда вернут True, т.к. это related_name (строка 128-129).
+    #   Логика не разделяет автора и участника — оба условия истинны.
+    #   Нужно проверять через user.projects.exists() (автор) или
+    #   user.project_participations.exists() (участник).
     def filter_my_project(
         self,
         queryset: QuerySet[Project],

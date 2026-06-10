@@ -90,6 +90,12 @@ class Project(TimestampMixin, models.Model):
             ),
         ],
     )
+    # TODO [PROJECTS]: Ошибка в MaxLengthValidator для short_desc.
+    #   В validators для short_desc (строка 105) в MaxLengthValidator
+    #   передан limit_value=MAX_LEN_TITLE (50), хотя должно быть
+    #   MAX_SHORT_DESC (500). Из-за этого short_desc ограничен 50 символами,
+    #   а не 500, как указано в max_length поля и в сообщении об ошибке.
+    #   Решение: заменить MAX_LEN_TITLE на MAX_SHORT_DESC.
     short_desc = models.CharField(
         max_length=MAX_SHORT_DESC,
         verbose_name='Краткое описание проекта',

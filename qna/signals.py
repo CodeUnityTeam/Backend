@@ -9,6 +9,14 @@ from users.models import User
 from users.services import avatar_minio_client
 
 
+# TODO [QNA]: Проблема с lambda внутри on_commit (аналогично users/services.py:39).
+#   При множественном удалении QuestionImage/AnswerImage все lambda внутри
+#   on_commit будут использовать последнее значение image_url из цикла,
+#   т.к. lambda захватывает переменную по ссылке, а не по значению.
+#   Решение: использовать лямбду с дефолтным аргументом:
+#     transaction.on_commit(lambda url=image_url: image_minio_client.delete_file(url))
+#   Или вынести в отдельную функцию.
+
 @receiver(post_delete, sender=QuestionImage)
 def delete_question_image_from_minio(
     sender: type,

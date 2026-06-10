@@ -2,6 +2,18 @@ import uuid
 
 from django.db import models
 
+# TODO [QNA]: Несоответствие импорта констант.
+#   qna/models.py импортирует MAX_LEN_TITLE из core.constants (__init__.py:3),
+#   но в core/constants/qna.py:8 определён MAX_LEN_TITLE = 50.
+#   При этом core/constants/qna.py не используется — все константы лежат
+#   в core/constants/__init__.py. Нужно либо удалить core/constants/qna.py,
+#   либо перейти на импорт из core.constants.qna.
+# TODO [QNA]: MAX_LEN_TITLE = 50 для заголовка вопроса — слишком мало.
+#   В core/constants/qna.py:3 есть MAX_TITLE_QUESTION = 150, но модель
+#   Question.title (строка 37) использует MAX_LEN_TITLE = 50.
+#   Заголовок вопроса в 50 символов — это очень мало для осмысленного вопроса.
+#   Решение: использовать MAX_TITLE_QUESTION (150) вместо MAX_LEN_TITLE (50).
+
 from core.constants import (
     MAX_CONTENT_ANSWER,
     MAX_LEN_TITLE,
@@ -56,6 +68,13 @@ class Question(TimestampMixin, models.Model):
         verbose_name='Навыки для вопроса',
     )
 
+    # TODO [QNA]: Question не имеет поля updated_at, хотя поддерживает редактирование.
+    #   В докстринге модели (строка 20) сказано: "Поддерживает редактирование
+    #   (обновляется updated_at)", но в модели Question нет поля updated_at.
+    #   TimestampMixin (core/models/mixins.py) добавляет created_at и updated_at?
+    #   Если да — то ок. Если нет — нужно добавить.
+    #   При этом в Meta.indexes (строка 68) есть индекс по '-updated_at',
+    #   что предполагает наличие такого поля.
     class Meta:
         """Метаданные модели."""
 
@@ -114,6 +133,15 @@ class Answer(models.Model):
         default=True,
         verbose_name='Активен',
     )
+    # TODO [QNA]: Денормализованное поле likes_count не синхронизируется.
+    #   В модели Answer (строка 117) есть поле likes_count, которое хранит
+    #   количество лайков. Но при создании/удалении лайка (views/answer.py:42-53)
+    #   это поле НЕ обновляется — используется answer.likes.count().
+    #   Из-за этого likes_count в БД всегда будет 0 (значение по умолчанию).
+    #   Решение:
+    #   - Либо обновлять likes_count при каждом like/unlike через F-инкремент
+    #   - Либо удалить поле и всегда считать через answer.likes.count()
+    #   - Либо добавить сигнал на post_save/post_delete AnswerLike
     likes_count = models.IntegerField(
         default=ZERO_LIKE_COUNT,
         verbose_name='Количество лайков',

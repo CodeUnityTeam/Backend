@@ -26,6 +26,13 @@ class CustomProjectPagination(PageNumberPagination):
         })
 
 
+# TODO [PROJECTS]: Дублирование applied_filters в CustomResponseFeedPagination.
+#   Пагинатор (строка 39) добавляет applied_filters в ответ.
+#   Но в responses_feed (views.py:705-708) applied_filters добавляются снова
+#   для непагинированного ответа. При пагинации filters приходят из пагинатора,
+#   при отсутствии пагинации — из views.py. Логика размазана по двум местам.
+#   Решение: вынести добавление applied_filters только в пагинатор или только
+#   в views.py, но не в оба места.
 class CustomResponseFeedPagination(PageNumberPagination):
     """Кастомный пагинатор для рекомендованных проектов пользователю.
 

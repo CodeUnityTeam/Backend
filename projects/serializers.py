@@ -117,6 +117,11 @@ class UserAuthorSerializer(UserAuthorShortSerializer):
         fields = UserAuthorShortSerializer.Meta.fields + ('email', 'phone')
 
 
+# TODO [PROJECTS]: UserParticipantSerializer — полный дубликат UserAuthorSerializer.
+#   Класс (строка 120) наследует UserAuthorSerializer и не добавляет никаких
+#   изменений (pass). При этом используется в get_participants (строка 266)
+#   как отдельный сериализатор. Нужно либо удалить и использовать
+#   UserAuthorSerializer напрямую, либо добавить отличия.
 class UserParticipantSerializer(UserAuthorSerializer):
     """Сериализатор для участника проекта — те же поля, что у автора."""
 
@@ -125,6 +130,11 @@ class UserParticipantSerializer(UserAuthorSerializer):
 
 class ProjectCreateSerializer(serializers.ModelSerializer):
     """Сериализатор для создания проекта."""
+
+    # TODO [PROJECTS]: Добавить валидацию, что end_date не в прошлом.
+    #   Сейчас проверяется только start_date > end_date (строка 172),
+    #   но нет проверки, что end_date >= today().
+    #   Проект с end_date в прошлом не имеет смысла.
 
     skills = serializers.ListField(
         child=serializers.DictField(),
@@ -205,6 +215,37 @@ class ProjectShortSerializer(serializers.ModelSerializer):
             'is_liked_by_me', 'skills',
         ]
 
+    # TODO [PROJECTS]: Заменить ручную проверку лайка на аннотацию через Exists.
+    #   Проблема: get_is_liked_by_me (строка 225) делает отдельный SQL-запрос
+    #   ProjectLike.objects.filter(user=user, project=project).exists()
+    #   для каждого проекта в списке. Даже при prefetch_related('likes')
+    #   этот метод НЕ использует prefetched данные.
+    #
+    #   Решение через стандартный DRF + Subquery/Exists:
+    #   1. В get_optimized_project_queryset (selectors.py) добавить аннотацию:
+    #      from django.db.models import Exists, OuterRef
+    #
+    #      def get_optimized_project_queryset(user=None):
+    #          qs = Project.objects.select_related('author').prefetch_related(...)
+    #          if user and user.is_authenticated:
+    #              qs = qs.annotate(
+    #                  is_liked_by_me=Exists(
+    #                      ProjectLike.objects.filter(
+    #                          user=user,
+    #                          project=OuterRef('project_id'),
+    #                      ),
+    #                  ),
+    #              )
+    #          return qs
+    #
+    #   2. В ProjectShortSerializer заменить SerializerMethodField на BooleanField:
+    #      is_liked_by_me = serializers.BooleanField(read_only=True, default=False)
+    #
+    #   Преимущества:
+    #     - Один SQL-запрос вместо N+1.
+    #     - Аннотация выполняется на уровне БД — максимальная производительность.
+    #     - BooleanField вместо SerializerMethodField — меньше кода.
+    #     - Не нужно prefetch_related('likes') для этой проверки.
     def get_is_liked_by_me(self, project: Project) -> bool:
         """Проверяем, лайкнул ли проект авторизированный пользователь."""
         user = self.context.get('request').user
@@ -240,6 +281,50 @@ class ProjectDetailSerializer(ProjectShortSerializer):
         """Получаем лайки проекта."""
         return project.likes.count()
 
+    # TODO [PROJECTS]: Заменить ручную проверку членства в participants
+    #   на аннотацию через Exists.
+    #   Проблема: get_participants (строка 271), get_author (строка 289),
+    #   get_full_desc (строка 303) многократно вызывают
+    #   requesting_user in project.participants.all(), что:
+    #     1. Загружает ВСЕХ участников в память (O(n) по памяти).
+    #     2. Делает полное сканирование списка (O(n) по времени).
+    #     3. Выполняется 3 раза для одного запроса.
+    #
+    #   Решение через стандартный DRF + аннотация:
+    #   1. В get_optimized_project_queryset добавить аннотацию членства:
+    #      from django.db.models import Exists, OuterRef, Q, Value, BooleanField
+    #
+    #      def get_optimized_project_queryset(user=None):
+    #          qs = Project.objects.select_related('author').prefetch_related(...)
+    #          if user and user.is_authenticated:
+    #              qs = qs.annotate(
+    #                  is_participant=Exists(
+    #                      ProjectParticipant.objects.filter(
+    #                          project=OuterRef('project_id'),
+    #                          user=user,
+    #                      ),
+    #                  ),
+    #              )
+    #          return qs
+    #
+    #   2. В ProjectDetailSerializer заменить проверки:
+    #      def get_author(self, project):
+    #          is_participant = getattr(project, 'is_participant', False)
+    #          if is_participant:
+    #              return UserAuthorSerializer(project.author).data
+    #          return UserAuthorShortSerializer(project.author).data
+    #
+    #      def get_full_desc(self, project):
+    #          is_participant = getattr(project, 'is_participant', False)
+    #          if is_participant:
+    #              return project.full_desc
+    #          return None
+    #
+    #   Преимущества:
+    #     - Одна аннотация вместо трёх загрузок всех участников.
+    #     - Проверка на уровне БД через EXISTS (O(1)).
+    #     - Не загружает лишние данные в память.
+    #     - Убирает дублирование логики проверки членства.
     def get_participants(self, project: Project) -> list:
         """Получаем инфу об участниках проекта.
 
@@ -298,6 +383,93 @@ class ProjectLikeResponseSerializer(serializers.Serializer):
     likes_count = serializers.IntegerField()
 
 
+# TODO [PROJECTS]: Заменить ручную toggle-логику лайков на стандартный
+#   ViewSet action с GenericRelation или отдельный LikeAPIView.
+#   Проблема: ProjectLikeSerializer.toggle_like() (строка 342) вручную:
+#     1. Проверяет существование лайка через .exists().
+#     2. Удаляет или создаёт лайк.
+#     3. Считает количество лайков через отдельный запрос.
+#   Это дублируется в QuestionViewSet.like и AnswerViewSet.like.
+#
+#   Решение 1 — через GenericRelation + F():
+#   1. В модель Project добавить GenericRelation:
+#      from django.contrib.contenttypes.fields import GenericRelation
+#
+#      class Project(models.Model):
+#          likes_count = models.IntegerField(default=0)
+#
+#   2. В модели ProjectLike использовать GenericForeignKey:
+#      from django.contrib.contenttypes.fields import GenericForeignKey
+#
+#      class ProjectLike(models.Model):
+#          content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+#          object_id = models.UUIDField()
+#          content_object = GenericForeignKey('content_type', 'object_id')
+#
+#   3. В action like() использовать F() для атомарного инкремента:
+#      @action(detail=True, methods=['post'])
+#      def like(self, request, pk=None):
+#          project = self.get_object()
+#          user = request.user
+#          like, created = ProjectLike.objects.get_or_create(
+#              user=user, project=project,
+#          )
+#          if not created:
+#              like.delete()
+#              Project.objects.filter(pk=project.pk).update(
+#                  likes_count=F('likes_count') - 1,
+#              )
+#              liked = False
+#          else:
+#              Project.objects.filter(pk=project.pk).update(
+#                  likes_count=F('likes_count') + 1,
+#              )
+#              liked = True
+#          project.refresh_from_db()
+#          return Response({
+#              'liked': liked,
+#              'likes_count': project.likes_count,
+#          })
+#
+#   Решение 2 — через отдельный LikeAPIView (если GenericRelation не подходит):
+#   class ProjectLikeToggleView(APIView):
+#       """Единый View для toggle-лайка любого контента."""
+#       permission_classes = [IsAuthenticated]
+#
+#       def post(self, request, content_type_id, object_id):
+#           model_class = {
+#               'project': Project,
+#               'question': Question,
+#               'answer': Answer,
+#           }.get(content_type_id)
+#           if not model_class:
+#               return Response({'error': 'Invalid content type'}, status=400)
+#
+#           obj = get_object_or_404(model_class, pk=object_id)
+#           like_model = {
+#               Project: ProjectLike,
+#               Question: QuestionLike,
+#               Answer: AnswerLike,
+#           }[model_class]
+#
+#           like, created = like_model.objects.get_or_create(
+#               user=request.user,
+#               **{content_type_id: obj},
+#           )
+#           if not created:
+#               like.delete()
+#           return Response({
+#               'liked': created,
+#               'likes_count': like_model.objects.filter(
+#                   **{content_type_id: obj},
+#               ).count(),
+#           })
+#
+#   Преимущества:
+#     - Единая логика для всех типов лайков (Project, Question, Answer).
+#     - F()-инкремент атомарен — нет гонки данных.
+#     - Денормализованное likes_count в модели — не нужно считать каждый раз.
+#     - Убирается дублирование кода в 3-х местах.
 class ProjectLikeSerializer(serializers.Serializer):
     """Сериализатор для лайков."""
 
@@ -333,6 +505,32 @@ class ProjectLikeSerializer(serializers.Serializer):
 
 class ProjectUpdateSerializer(serializers.ModelSerializer):
     """Сериализатор для обновления проекта."""
+
+    # TODO [PROJECTS]: Несоответствие имени поля 'formats' vs 'project_format'.
+    #   В ProjectCreateSerializer поле называется 'project_format' (строка 141),
+    #   а здесь — 'formats' (строка 347). При этом extract_relationship_data
+    #   (validators.py:107) ожидает ключ 'project_format', а не 'formats'.
+    #   Из-за этого:
+    #   1. pop('project_format') не находит данные — relationship_data пустой
+    #   2. 'formats' остаётся в validated_data
+    #   3. hasattr(project, 'formats') → False → поле игнорируется
+    #   4. Форматы работы не обновляются
+    #   Решение: переименовать 'formats' → 'project_format' в этом сериализаторе.
+
+    # TODO [PROJECTS]: Отсутствует валидация дат в ProjectUpdateSerializer.
+    #   В ProjectCreateSerializer есть validate (строка 169), который проверяет
+    #   start_date > end_date. В этом сериализаторе такой проверки нет.
+    #   При обновлении можно передать end_date раньше start_date.
+    #   Решение: добавить метод validate с той же логикой.
+
+    # TODO [PROJECTS]: Поле 'status' в validated_data не маппится в 'status_project'.
+    #   extra_kwargs указывает source='status_project' (строка 380), но DRF
+    #   НЕ заменяет ключ в validated_data — там будет 'status', а не 'status_project'.
+    #   В update() (строка 398): hasattr(project, 'status') → False (у модели поле
+    #   называется status_project). Статус не обновится.
+    #   Решение: в update() обрабатывать 'status' отдельно:
+    #   if 'status' in validated_data:
+    #       project.status_project = validated_data.pop('status')
 
     skills = serializers.ListField(
         child=serializers.DictField(),
@@ -619,6 +817,15 @@ class ProfileCardConditionalSerializer(serializers.Serializer):
     Используется при фильтрации ленты откликов/приглашений.
     """
 
+    # TODO [PROJECTS]: Несоответствие имени поля 'phone' vs 'phone_number'.
+    #   В сериализаторе поле объявлено как 'phone' (строка 686), но в модели
+    #   User (users/models/users.py:119) поле называется 'phone_number'.
+    #   В to_representation (строка 708) данные берутся из instance.phone_number,
+    #   а ключ в response будет 'phone'. Фронтенд должен знать об этом маппинге.
+    #   Для консистентности стоит либо:
+    #   - переименовать поле в 'phone_number' в сериализаторе, либо
+    #   - добавить source='phone_number' и убрать ручное присвоение.
+
     user_id = serializers.UUIDField()
     first_name = serializers.CharField()
     last_name = serializers.CharField()
@@ -767,6 +974,12 @@ class FeedbackAndInvitationFeedSerializer(serializers.Serializer):
             return serializer.data
         return None
 
+    # TODO [PROJECTS]: Мутация данных в to_representation (строка 845).
+    #   project_data['status'] = project_data.pop('status_project') изменяет
+    #   исходный словарь, который может быть закеширован или переиспользован.
+    #   Это может привести к багам при повторной сериализации того же объекта.
+    #   Решение: создать копию project_data перед мутацией или маппить
+    #   через отдельный ключ без изменения исходного словаря.
     def to_representation(self, instance: Any) -> Dict[str, Any]:
         """Форматируем поля для ответа."""
         data = super().to_representation(instance)

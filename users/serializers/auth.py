@@ -71,6 +71,14 @@ class CustomRegisterSerializer(RegisterSerializer):
             if field in self.fields:
                 self.fields.pop(field)
 
+    # TODO [USERS]: Убрать сайд-эффекты из validate_email().
+    #   Метод не только проверяет email, но и:
+    #   1. Реактивирует мягко удалённого пользователя (строки 87-88) — мутация БД.
+    #   2. Отправляет письмо через ImmediateResponseException (строки 93-95).
+    #   Это нарушает принцип разделения ответственности — валидатор не должен
+    #   иметь сайд-эффектов.
+    #   Решение: перенести логику реактивации и отправки письма в services.py
+    #   или в CustomAccountAdapter (users/adapters.py).
     def validate_email(self, email: str) -> str:
         """Валидация email с обработкой удаленных аккаунтов."""
         email = get_adapter().clean_email(email)
@@ -108,6 +116,11 @@ class CustomRegisterSerializer(RegisterSerializer):
 
         return email
 
+    # TODO [USERS]: Убрать создание объекта UserModel для валидации пароля.
+    #   На строках 115-119 создаётся экземпляр UserModel(...) без сохранения в БД
+    #   только для передачи в clean_password. validate_password из Django принимает
+    #   user=None, поэтому объект не нужен.
+    #   Решение: передавать user=None в get_adapter().clean_password().
     def validate(self, attrs: dict) -> dict:
         """Валидировать пароль на соответствие требований надежности."""
         password = attrs.get('password')
@@ -184,6 +197,10 @@ class EmailChangeSerializer(serializers.Serializer):
         return user
 
 
+# TODO [USERS]: Переименовать поле password в new_password.
+#   Фронтенд отправляет password, внутри оно маппится в new_password1/new_password2
+#   (строки 209-210). Это неочевидно и может запутать.
+#   Решение: переименовать поле в new_password для ясности.
 class CustomPasswordChangeSerializer(PasswordChangeSerializer):
     """Сериализатор для смены пароля с одним полем нового пароля."""
 

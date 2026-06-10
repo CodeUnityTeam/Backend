@@ -17,6 +17,13 @@ DEBUG = os.getenv("DEBUG_MODE", default="False").lower() == "true"
 DOMAIN = os.getenv("DOMAIN")
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 
+# TODO [SYSTEM]: Синхронизировать CSRF_TRUSTED_ORIGINS с CORS_ALLOWED_ORIGINS.
+#   Сейчас CSRF_TRUSTED_ORIGINS — список из одного элемента без split(','),
+#   а CORS_ALLOWED_ORIGINS (строка 182) парсится через split(',').
+#   Нужно либо:
+#     1. CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_DOMAIN', '').split(',')
+#     2. Либо вынести оба в одну переменную окружения.
+#   В .env.example оба параметра должны быть синхронизированы.
 CSRF_TRUSTED_ORIGINS = [os.getenv('CSRF_DOMAIN')]
 
 ROOT_URLCONF = "config.urls"
@@ -88,6 +95,10 @@ TEMPLATES = [
 # DATABASES & STORAGES (MINIO)
 # =============================================================================
 
+# TODO [SYSTEM]: Вынести S3_ENDPOINT в переменную окружения.
+#   Сейчас endpoint жёстко зашит: http://localhost:9000 / http://minio:9000.
+#   В production с HTTPS это не сработает.
+#   Нужно: S3_ENDPOINT = os.getenv('S3_ENDPOINT_URL', 'http://minio:9000')
 DB_MODE = os.getenv("DB_MODE")
 
 if DB_MODE == "local":
@@ -108,12 +119,21 @@ DATABASES = {
     },
 }
 
+# TODO [SYSTEM]: Убрать дублирование S3_OPTIONS.
+#   access_key, secret_key, endpoint_url уже есть в STORAGES["avatars"]["OPTIONS"].
+#   MinioService в core/s3_utils.py читает из S3_OPTIONS, а должен из STORAGES.
+#   Нужно: удалить S3_OPTIONS, перевести MinioService на чтение из STORAGES.
 S3_OPTIONS = {
     "access_key": os.environ.get("AWS_ACCESS_KEY_ID"),
     "secret_key": os.environ.get("AWS_SECRET_ACCESS_KEY"),
     "endpoint_url": S3_ENDPOINT,
 }
 
+# TODO [SYSTEM]: Сделать custom_domain динамическим через переменную окружения.
+#   Сейчас custom_domain жёстко зашит на localhost:9000 — в production не работает.
+#   Нужно: вынести в переменную S3_CUSTOM_DOMAIN или формировать из S3_ENDPOINT.
+# TODO [SYSTEM]: Добавить MINIO_IMAGES_BUCKET_NAME в .env.example.
+#   Переменная используется в STORAGES["images"], но отсутствует в .env.example.
 STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
@@ -179,6 +199,9 @@ ALLOW_IMAGE_SIZE_MB = 10
 AUTH_USER_MODEL = "users.User"
 SITE_ID = 1
 
+# TODO [SYSTEM]: Синхронизировать CORS_ALLOWED_ORIGINS с CSRF_TRUSTED_ORIGINS (строка 20).
+#   Сейчас CORS_ALLOWED_ORIGINS парсится через split(','), а CSRF_TRUSTED_ORIGINS — нет.
+#   В .env.example оба параметра должны содержать одни и те же домены.
 CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', '').split(',')
 
 AUTHENTICATION_BACKENDS = [
@@ -255,6 +278,10 @@ REST_AUTH = {
     ),
 }
 
+# TODO [SYSTEM]: Уменьшить ACCESS_TOKEN_LIFETIME.
+#   Сейчас access token живёт 7 дней — это очень много.
+#   Стандарт: access — 15-30 минут, refresh — 7-30 дней.
+#   Сейчас они равны, что сводит на нет смысл refresh-токенов.
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=7),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),

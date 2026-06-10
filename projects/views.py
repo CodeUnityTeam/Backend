@@ -314,6 +314,44 @@ class ProjectViewSet(ModelViewSet):
             ),
         ],
     )
+    # TODO [PROJECTS]: Заменить ручную фильтрацию + сортировку на стандартный
+    #   django-filter + DRF OrderingFilter.
+    #   Проблема: в list() (строка 317) вручную:
+    #     1. Создаётся ProjectFilter и применяется к queryset.
+    #     2. Вызывается apply_sorting() из selectors.py — отдельная функция.
+    #     3. Вручную проверяется page is not None для пагинации.
+    #   Это дублирует стандартное поведение DRF GenericAPIView.list().
+    #
+    #   Решение через стандартный DRF:
+    #   1. Добавить filterset_class и ordering_fields в ProjectViewSet:
+    #      from django_filters.rest_framework import DjangoFilterBackend
+    #      from rest_framework.filters import OrderingFilter
+    #
+    #      class ProjectViewSet(ModelViewSet):
+    #          filter_backends = [DjangoFilterBackend, OrderingFilter]
+    #          filterset_class = ProjectFilter
+    #          ordering_fields = ['published_at', 'likes_count']
+    #          ordering = ['-published_at']
+    #
+    #   2. В ProjectFilter добавить OrderingFilter:
+    #      sort_by = django_filters.OrderingFilter(
+    #          fields=(
+    #              ('-published_at', 'published_at'),
+    #              ('-likes_count', 'like'),
+    #              ('-rank', 'relevance'),
+    #          ),
+    #      )
+    #
+    #   3. Удалить apply_sorting() из selectors.py.
+    #   4. Удалить кастомный list() — DRF сам применит фильтры, сортировку
+    #      и пагинацию через GenericAPIView.list().
+    #
+    #   Преимущества:
+    #     - Декларативное описание через filter_backends.
+    #     - DRF сам применяет фильтры, сортировку и пагинацию.
+    #     - Убирается ручная проверка page is not None.
+    #     - OrderingFilter автоматически валидирует поля сортировки.
+    #     - Убирается apply_sorting() — мёртвый код.
     def list(
         self,
         request: Request,
@@ -349,6 +387,12 @@ class ProjectViewSet(ModelViewSet):
         )
         return Response(serializer.data)
 
+    # TODO [PROJECTS]: Неверный lookup в destroy (строка 358).
+    #   lookup_field = 'project_id' (строка 117), но в destroy используется
+    #   kwargs.get('pk') вместо self.kwargs.get('project_id') или self.get_object().
+    #   Из-за этого при DELETE /projects/{project_id}/ будет ошибка:
+    #   проект не найдётся, т.к. ищется по 'pk', а не по 'project_id'.
+    #   Решение: заменить на self.get_object() или self.kwargs.get('project_id').
     @transaction.atomic
     def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Переводит проект в статус 'archived'. (мягкое удаление).
@@ -363,6 +407,13 @@ class ProjectViewSet(ModelViewSet):
         serializer.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    # TODO [PROJECTS]: Двойной запрос в БД в like (строки 374-378).
+    #   self.get_object() (строка 374) получает проект из БД.
+    #   Затем ProjectLikeSerializer.validate_project_id (serializers.py:304)
+    #   снова вызывает get_project_or_404(str(project_id)) — второй запрос.
+    #   Решение: передавать уже полученный проект через контекст и не делать
+    #   повторный запрос в validate_project_id, либо использовать self.get_object()
+    #   и не передавать project_id в data.
     @extend_schema(
             tags=['Проекты'],
             summary='Лайк/снятие лайка проекта',
@@ -695,6 +746,11 @@ class ProjectViewSet(ModelViewSet):
         }
         return response
 
+    # TODO [PROJECTS]: Метод filter_queryset_for_responses нигде не вызывается.
+    #   Логика фильтрации дублирована в ResponseFeedFilter (filters.py:137).
+    #   Более того, метод содержит баг: при card_type_filter != 'all'
+    #   возвращается строка (card_type_filter), а не QuerySet.
+    #   Решение: удалить мёртвый код.
     def filter_queryset_for_responses(self, queryset: QuerySet) -> QuerySet:
         """Фильтрация для ленты откликов."""
         card_type = self.request.query_params.get('card_type', 'all')

@@ -36,6 +36,11 @@ def avatar_upload_handler(
         user.save(update_fields=["avatar_url"])
 
         # 3. Удаляем старый файл только после успешного коммита транзакции
+        # TODO [USERS]: Исправить lambda внутри on_commit.
+        #   При множественных вызовах avatar_upload_handler lambda внутри on_commit
+        #   будет использовать последнее значение old_avatar_url из замыкания.
+        #   Сейчас это не проблема, т.к. вызов единичный, но потенциально опасно.
+        #   Решение: lambda url=old_avatar_url: avatar_minio_client.delete_file(url).
         if old_avatar_url:
             transaction.on_commit(
                 lambda: avatar_minio_client.delete_file(old_avatar_url),

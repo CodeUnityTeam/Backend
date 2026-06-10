@@ -241,6 +241,12 @@ class MeExperienceViewSet(ModelViewSet):
 
     serializer_class = UserExperienceSerializer
     permission_classes = [IsAuthenticated]
+    # TODO [USERS]: Добавить 'get' в http_method_names.
+    #   В http_method_names указаны ['post', 'put', 'delete'], но нет 'get'.
+    #   При этом в @extend_schema_view есть декоратор для list и retrieve.
+    #   Это означает, что эндпоинты списка и детального просмотра опыта
+    #   недоступны, хотя задокументированы в схеме.
+    #   Решение: добавить 'get' в http_method_names.
     http_method_names = ['post', 'put', 'delete']
 
     def get_queryset(self) -> QuerySet[UserExperience]:
@@ -340,6 +346,83 @@ class UserProfileListView(ListAPIView):
                 continue
         return valid_uuids
 
+    # TODO [USERS]: Заменить ручную фильтрацию/поиск на django-filter + SearchVectorField.
+    #   Проблема: _parse_and_validate_uuids (строка 334) вручную парсит UUID из строки,
+    #   _apply_search_and_sorting (строка 355) вручную строит SearchVector/SearchRank,
+    #   а get_queryset (строка 382) вручную применяет фильтры через queryset.filter().
+    #   Это приводит к:
+    #     1. Дублированию кода фильтрации (аналогичная логика в ProjectFilter).
+    #     2. Отсутствию GIN-индекса — на больших данных запросы медленные.
+    #     3. Ручному парсингу query-параметров вместо декларативного подхода.
+    #
+    #   Решение через стандартный DRF + django-filter:
+    #
+    #   1. Создать UserFilter (django_filters.FilterSet):
+    #      class UserFilter(django_filters.FilterSet):
+    #          spec_id = django_filters.BaseInFilter(
+    #              field_name='specializations__spec_id',
+    #              lookup_expr='in',
+    #          )
+    #          skill_id = django_filters.BaseInFilter(
+    #              field_name='skills__skill_id',
+    #              lookup_expr='in',
+    #          )
+    #          search = django_filters.CharFilter(method='filter_search')
+    #          sort_by = django_filters.OrderingFilter(
+    #              fields=(
+    #                  ('-created_at', 'newest'),
+    #                  ('-rank', 'relevance'),
+    #              ),
+    #          )
+    #
+    #          class Meta:
+    #              model = User
+    #              fields = []
+    #
+    #          def filter_search(self, queryset, name, value):
+    #              vector = (
+    #                  SearchVector('first_name', weight='A')
+    #                  + SearchVector('last_name', weight='A')
+    #                  + SearchVector('country', weight='B')
+    #                  + SearchVector('city', weight='B')
+    #              )
+    #              query = SearchQuery(value)
+    #              return queryset.annotate(
+    #                  rank=SearchRank(vector, query),
+    #              ).filter(rank__gt=0.0)
+    #
+    #   2. В модели User добавить SearchVectorField и GIN-индекс:
+    #      from django.contrib.postgres.indexes import GinIndex
+    #      from django.contrib.postgres.search import SearchVectorField
+    #
+    #      search_vector = SearchVectorField(null=True)
+    #
+    #      class Meta:
+    #          indexes = [
+    #              GinIndex(fields=['search_vector']),
+    #          ]
+    #
+    #   3. Добавить триггер на обновление search_vector (через миграцию):
+    #      CREATE TRIGGER user_search_vector_update
+    #      BEFORE INSERT OR UPDATE ON users
+    #      FOR EACH ROW EXECUTE FUNCTION
+    #      tsvector_update_trigger(search_vector, 'pg_catalog.russian',
+    #          first_name, last_name, country, city);
+    #
+    #   4. В UserProfileListView.get_queryset заменить на:
+    #      filterset = UserFilter(
+    #          self.request.query_params,
+    #          queryset=UserModel.objects.filter(is_active=True),
+    #          request=self.request,
+    #      )
+    #      return filterset.qs
+    #
+    #   Преимущества:
+    #     - Декларативное описание фильтров вместо ручного кода.
+    #     - GIN-индекс для полнотекстового поиска (производительность).
+    #     - OrderingFilter вместо ручной сортировки.
+    #     - BaseInFilter автоматически парсит UUID через запятую.
+    #     - Убирается _parse_and_validate_uuids и _apply_search_and_sorting.
     def _apply_search_and_sorting(
         self, queryset: QuerySet[Any],
         search_query: str,
@@ -363,6 +446,10 @@ class UserProfileListView(ListAPIView):
 
         return queryset.order_by('-created_at')
 
+    # TODO [USERS]: Добавить фильтрацию по projects_relation.
+    #   В списке профилей можно фильтровать по специализациям и навыкам,
+    #   но нельзя отфильтровать по роли projects_relation (employer/worker).
+    #   Решение: добавить query-параметр projects_relation.
     def get_queryset(self) -> QuerySet[Any]:
         """Получить QuerySet с учетом поиска и фильтров."""
         queryset = UserModel.objects.filter(is_active=True).prefetch_related(

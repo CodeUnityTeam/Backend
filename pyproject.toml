@@ -38,6 +38,11 @@ dependencies = [
     "urllib3>=2.7.0",
 ]
 
+# TODO: Устранить дублирование dev-зависимостей.
+#   dev-зависимости указаны дважды:
+#     1. Здесь в [project.optional-dependencies] dev
+#     2. В [dependency-groups] dev (строка 71)
+#   Это разные форматы (setuptools vs uv). Нужно выбрать один.
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0",
