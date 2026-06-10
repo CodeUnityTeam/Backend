@@ -29,19 +29,24 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.viewsets import ModelViewSet
 
 from config import settings
-from users.models.users import User
+from users.models.users import User, UserExperience
 from users.pagination import ProfileListPagination
 from users.serializers.profile import (
     AvatarUploadSerializer,
     CustomUserDetailsSerializer,
+    DetailUserProfileSerializer,
     PublicUserProfileSerializer,
+    UserExperienceSerializer,
 )
 from users.services import avatar_delete_handler, avatar_upload_handler
 
 UserModel = get_user_model()
 
+
+# ============================== MeProfile ===================================
 
 @extend_schema_view(
     get=extend_schema(
@@ -55,7 +60,6 @@ UserModel = get_user_model()
         request=CustomUserDetailsSerializer,
         responses={200: CustomUserDetailsSerializer},
     ),
-    # Добавили описание метода DELETE для Swagger
     delete=extend_schema(
         tags=['profile'],
         summary='Мягкое удаление аккаунта текущего пользователя',
@@ -118,21 +122,155 @@ class MeProfileView(RetrieveUpdateDestroyAPIView):
         )
 
 
+# ================================== Avatar ===================================
+
+@extend_schema_view(
+    post=extend_schema(
+        summary="Загрузить аватар пользователя",
+        description=(
+            "Загрузка изображения (jpeg, jpg, png) размером до 10 МБ. "
+            "Старый файл аватара автоматически удаляется из MinIO."
+        ),
+        request={
+            "multipart/form-data": inline_serializer(
+                name="AvatarUploadRequest",
+                fields={
+                    "file": serializers.ImageField(help_text="Файл аватара"),
+                },
+            ),
+        },
+        responses={
+            status.HTTP_201_CREATED: inline_serializer(
+                name="AvatarUploadResponse",
+                fields={"avatar_url": serializers.URLField()},
+            ),
+            status.HTTP_400_BAD_REQUEST: OpenApiTypes.OBJECT,
+        },
+        tags=["Files"],
+    ),
+    delete=extend_schema(
+        summary="Удалить аватар пользователя",
+        description=(
+            "Удаляет файл аватара из хранилища MinIO и "
+            "очищает поле avatar_url в профиле пользователя."
+        ),
+        responses={
+            status.HTTP_204_NO_CONTENT: None,
+            status.HTTP_400_BAD_REQUEST: OpenApiTypes.OBJECT,
+        },
+        tags=["Files"],
+    ),
+)
+class UserAvatarAPIView(APIView):
+    """API view для загрузки и удаления аватара пользователя."""
+
+    permission_classes: list[type[IsAuthenticated]] = [IsAuthenticated]
+    parser_classes: list[type[MultiPartParser]] = [MultiPartParser]
+    allow_upload_size: int = settings.ALLOW_AVATAR_SIZE_MB * 1024 * 1024
+
+    def post(
+        self,
+        request: HttpRequest,
+        *args: Any,  # noqa: ARG002
+        **kwargs: Any,  # noqa: ARG002
+    ) -> Response:
+        """Загрузить новый аватар и удалить старый при наличии."""
+        serializer: AvatarUploadSerializer = AvatarUploadSerializer(
+            data=request.data,
+        )
+        serializer.is_valid(raise_exception=True)
+
+        user: User = request.user  # type: ignore[valid-type]
+        file_obj: UploadedFile = serializer.validated_data["file"]
+
+        public_url: str = avatar_upload_handler(user, file_obj)
+
+        return Response(
+            {"avatar_url": public_url}, status=status.HTTP_201_CREATED,
+        )
+
+    def delete(
+        self,
+        request: HttpRequest,
+        *args: Any,  # noqa: ARG002
+        **kwargs: Any,  # noqa: ARG002
+    ) -> Response:
+        """Удаленить аватар."""
+        user: User = request.user  # type: ignore[valid-type]
+
+        if not user.avatar_url:
+            return Response(
+                {"detail": "Аватар отсутствует."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        avatar_delete_handler(user)
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# ================================ Experience =================================
+
+@extend_schema_view(
+    list=extend_schema(
+        summary='Получить список своего опыта работы',
+        responses={200: UserExperienceSerializer(many=True)},
+    ),
+    create=extend_schema(
+        summary='Добавить запись об опыте работы',
+        responses={201: UserExperienceSerializer},
+    ),
+    retrieve=extend_schema(
+        summary='Получить детали записи своего опыта',
+        responses={200: UserExperienceSerializer},
+    ),
+    update=extend_schema(
+        summary='Полностью обновить запись своего опыта',
+        responses={200: UserExperienceSerializer},
+    ),
+    destroy=extend_schema(
+        summary='Удалить запись своего опыта',
+        responses={204: None},
+    ),
+)
+class MeExperienceViewSet(ModelViewSet):
+    """Управление опытом работы текущего авторизованного пользователя.
+
+    Исключает метод PATCH, оперирует только своими записями.
+    """
+
+    serializer_class = UserExperienceSerializer
+    permission_classes = [IsAuthenticated]
+    http_method_names = ['post', 'put', 'delete']
+
+    def get_queryset(self) -> QuerySet[UserExperience]:
+        """Возвращает опыт работы только текущего пользователя."""
+        return UserExperience.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer: UserExperienceSerializer) -> None:
+        """Автоматически привязывает опыт к текущему пользователю."""
+        serializer.save(user=self.request.user)
+
+
+# ============================== UserProfile ==================================
+
 @extend_schema_view(
     get=extend_schema(
         tags=['profile'],
         summary='Получить данные профиля неавторизованного пользователя',
         description='Данные доступны по ID пользователя.',
-        responses={200: PublicUserProfileSerializer},
+        responses={200: DetailUserProfileSerializer},
     ),
 )
 class UserProfileView(RetrieveAPIView):
-    """View для просмотра профиля неавторизованного пользователяпо ID."""
+    """View для просмотра профиля пользователя по ID."""
 
     queryset = UserModel.objects.filter(is_active=True)
-    serializer_class = PublicUserProfileSerializer
+    serializer_class = DetailUserProfileSerializer
     permission_classes = [IsAuthenticated]
 
+
+# =============================== ListProfile =================================
 
 @extend_schema_view(
     get=extend_schema(
@@ -253,88 +391,3 @@ class UserProfileListView(ListAPIView):
 
         # Применяем поиск и сортировку
         return self._apply_search_and_sorting(queryset, search_query, sort_by)
-
-
-@extend_schema_view(
-    post=extend_schema(
-        summary="Загрузить аватар пользователя",
-        description=(
-            "Загрузка изображения (jpeg, jpg, png) размером до 10 МБ. "
-            "Старый файл аватара автоматически удаляется из MinIO."
-        ),
-        request={
-            "multipart/form-data": inline_serializer(
-                name="AvatarUploadRequest",
-                fields={
-                    "file": serializers.ImageField(help_text="Файл аватара"),
-                },
-            ),
-        },
-        responses={
-            status.HTTP_201_CREATED: inline_serializer(
-                name="AvatarUploadResponse",
-                fields={"avatar_url": serializers.URLField()},
-            ),
-            status.HTTP_400_BAD_REQUEST: OpenApiTypes.OBJECT,
-        },
-        tags=["Files"],
-    ),
-    delete=extend_schema(
-        summary="Удалить аватар пользователя",
-        description=(
-            "Удаляет файл аватара из хранилища MinIO и "
-            "очищает поле avatar_url в профиле пользователя."
-        ),
-        responses={
-            status.HTTP_204_NO_CONTENT: None,
-            status.HTTP_400_BAD_REQUEST: OpenApiTypes.OBJECT,
-        },
-        tags=["Files"],
-    ),
-)
-class UserAvatarAPIView(APIView):
-    """API view для загрузки и удаления аватара пользователя."""
-
-    permission_classes: list[type[IsAuthenticated]] = [IsAuthenticated]
-    parser_classes: list[type[MultiPartParser]] = [MultiPartParser]
-    allow_upload_size: int = settings.ALLOW_AVATAR_SIZE_MB * 1024 * 1024
-
-    def post(
-        self,
-        request: HttpRequest,
-        *args: Any,  # noqa: ARG002
-        **kwargs: Any,  # noqa: ARG002
-    ) -> Response:
-        """Загрузить новый аватар и удалить старый при наличии."""
-        serializer: AvatarUploadSerializer = AvatarUploadSerializer(
-            data=request.data,
-        )
-        serializer.is_valid(raise_exception=True)
-
-        user: User = request.user  # type: ignore[valid-type]
-        file_obj: UploadedFile = serializer.validated_data["file"]
-
-        public_url: str = avatar_upload_handler(user, file_obj)
-
-        return Response(
-            {"avatar_url": public_url}, status=status.HTTP_201_CREATED,
-        )
-
-    def delete(
-        self,
-        request: HttpRequest,
-        *args: Any,  # noqa: ARG002
-        **kwargs: Any,  # noqa: ARG002
-    ) -> Response:
-        """Удаленить аватар."""
-        user: User = request.user  # type: ignore[valid-type]
-
-        if not user.avatar_url:
-            return Response(
-                {"detail": "Аватар отсутствует."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        avatar_delete_handler(user)
-
-        return Response(status=status.HTTP_204_NO_CONTENT)

@@ -9,7 +9,9 @@ from django.core.validators import (
 from django.db import models
 from django.db.models import Q
 
+from config import settings
 from core.constants.users import (
+    MAX_CHAR_FIELD_LENGTH,
     MAX_PHONE_DIGITS,
     MIN_PHONE_DIGITS,
     PHONE_PATTERN,
@@ -35,6 +37,10 @@ class User(TimestampMixin, AbstractUser):
         MODERATOR = 'moderator', 'Модератор'
         ADMIN = 'admin', 'Администратор'
 
+    class ProjectsRelationChoices(models.TextChoices):
+        EMPLOYER = 'employer', 'Наниматель'
+        WORKER = 'worker', 'Работник'
+
     REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
 
     user_id = models.UUIDField(
@@ -50,6 +56,12 @@ class User(TimestampMixin, AbstractUser):
         choices=RoleChoices.choices,
         default=RoleChoices.USER,
         help_text='Роль пользователя в системе.',
+    )
+    projects_relation = models.CharField(
+        'Роль по отношению к проектам',
+        choices=ProjectsRelationChoices.choices,
+        default=ProjectsRelationChoices.WORKER,
+        help_text='Роль по отношению к проектам (наниматель или исполнитель).',
     )
     email = models.EmailField(
         'Электронная почта',
@@ -132,6 +144,11 @@ class User(TimestampMixin, AbstractUser):
         blank=True,
         default='',
     )
+    soft_skills = models.TextField(
+        'Личные качества',
+        blank=True,
+        default='',
+    )
     about_me = models.TextField(
         'Описание',
         blank=True,
@@ -184,3 +201,54 @@ class User(TimestampMixin, AbstractUser):
 
     def __str__(self) -> str:
         return self.email
+
+
+class UserExperience(TimestampMixin):
+    """Моедль опыта работы пользователя."""
+
+    exp_id = models.UUIDField(
+        'ID записи опыта пользователя',
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+        help_text='Уникальный идентификатор.',
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name='experiences',
+        verbose_name='Пользователь',
+        help_text='Пользователь, опыт которого описывается.',
+    )
+    company = models.CharField(
+        max_length=MAX_CHAR_FIELD_LENGTH,
+        verbose_name='Компания',
+        help_text='Название организации.',
+    )
+    position = models.CharField(
+        max_length=MAX_CHAR_FIELD_LENGTH,
+        verbose_name='Должность',
+        help_text='Занимаемая должность.',
+    )
+    responsibilities = models.TextField(
+        verbose_name='Обязанности',
+        help_text='Описание задач и достижений.',
+        blank=True,
+    )
+    start_date = models.DateField(
+        verbose_name='Дата начала работы',
+    )
+    end_date = models.DateField(
+        verbose_name='Дата окончания работы',
+        blank=True,
+        null=True,
+        help_text='Оставьте пустым, если работаете здесь по настоящее время.',
+    )
+
+    class Meta:
+        verbose_name = 'Опыт работы'
+        verbose_name_plural = 'Опыт работы'
+        ordering = ['-start_date']
+
+    def __str__(self) -> str:
+        return f'{self.user} — {self.position} в {self.company}'
