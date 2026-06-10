@@ -1,0 +1,23 @@
+[
+  {
+    "model": "projects.workformat",
+    "pk": "220ed170-25ab-4026-9cd3-8a817c12348f",
+    "fields": {
+      "name": "В офисе"
+    }
+  },
+  {
+    "model": "projects.workformat",
+    "pk": "450eab94-627f-4805-81b0-e8bcca4a0e7c",
+    "fields": {
+      "name": "Гибрид"
+    }
+  },
+  {
+    "model": "projects.workformat",
+    "pk": "f2b7f6f4-6ebe-4374-b861-977f9297790c",
+    "fields": {
+      "name": "Удалённо"
+    }
+  }
+]
