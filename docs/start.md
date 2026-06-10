@@ -9,14 +9,14 @@
 cp .env.example .env
 ```
 
-Отредактируйте `.env` по необходимости.  
+Отредактируйте `.env` по необходимости. Установите DB_MODE=local
 
 2. **Запуск базы данных** (опционально, если используется Docker):
 
 Убедитесь, что в `config/settings.py` используются переменные окружения из `.env`
 
 ```bash
-docker-compose -f docker-compose.db.yaml up -d
+docker-compose -f docker-compose.local.yaml up -d
 ```
 
 3. **Применение миграций**:

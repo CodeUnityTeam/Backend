@@ -1,4 +1,5 @@
 from django.urls import include, path
+from rest_framework.routers import SimpleRouter
 
 from users.views.auth import (
     EmailChangeView,
@@ -10,10 +11,18 @@ from users.views.auth import (
     YandexLogin,
 )
 from users.views.profile import (
+    MeExperienceViewSet,
     MeProfileView,
     UserAvatarAPIView,
     UserProfileListView,
     UserProfileView,
+)
+
+router = SimpleRouter()
+router.register(
+    r'',
+    MeExperienceViewSet,
+    basename='my-experience',
 )
 
 urlpatterns = [
@@ -21,8 +30,14 @@ urlpatterns = [
         'auth/',
         include([
             # dj-rest-auth для базовой авторизации
-            path('', include('dj_rest_auth.urls')),
-            path('registration/', include('dj_rest_auth.registration.urls')),
+            path(
+                '',
+                include('dj_rest_auth.urls'),
+            ),
+            path(
+                'registration/',
+                include('dj_rest_auth.registration.urls'),
+            ),
 
             # Эндпоинты для получения ссылок авторизации (GET)
             path(
@@ -42,28 +57,59 @@ urlpatterns = [
             ),
 
             # dj-rest-auth для социальных сетей (POST для обмена code на JWT)
-            path('google/', GoogleLogin.as_view(), name='google_login'),
-            path('yandex/', YandexLogin.as_view(), name='yandex_login'),
-            path('mailru/', MailRuLogin.as_view(), name='mailru_login'),
+            path(
+                'google/',
+                GoogleLogin.as_view(),
+                name='google_login',
+            ),
+            path(
+                'yandex/',
+                YandexLogin.as_view(),
+                name='yandex_login',
+            ),
+            path(
+                'mailru/',
+                MailRuLogin.as_view(),
+                name='mailru_login',
+            ),
         ]),
     ),
-
     path(
         'profile/',
         include([
-            path('', UserProfileListView.as_view(), name='profile-list'),
-            path('me/', MeProfileView.as_view(), name='my-profile'),
             path(
-                "me/avatar/",
-                UserAvatarAPIView.as_view(),
-                name="user-avatar",
-            ),
+                '',
+                UserProfileListView.as_view(),
+                name='profile-list'),
             path(
                 'email-change/',
                 EmailChangeView.as_view(),
                 name='email-change',
             ),
-            path('<uuid:pk>/', UserProfileView.as_view(), name='user-profile'),
+            path(
+                '<uuid:pk>/',
+                UserProfileView.as_view(),
+                name='user-profile',
+            ),
+            path(
+                'me/',
+                include([
+                    path(
+                        '',
+                        MeProfileView.as_view(),
+                        name='my-profile',
+                    ),
+                    path(
+                        'avatar/',
+                        UserAvatarAPIView.as_view(),
+                        name='user-avatar',
+                    ),
+                    path(
+                        'experience/',
+                        include(router.urls),
+                    ),
+                ]),
+            ),
         ]),
     ),
 ]
