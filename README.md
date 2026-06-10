@@ -7,6 +7,12 @@
 * [Разработка](docs/development.md)
 * [Авторизация](docs/auth.md)
 
+### Разделы
+* [👤 Пользователи и профили](docs/users.md)
+* [📁 Проекты](docs/projects.md)
+* [❓ Вопросы и ответы (Q&A)](docs/qna.md)
+* [☁️ Хранилище S3 Minio](docs/s3_minio.md)
+
 
 ### Дополнительные ресурсы
 

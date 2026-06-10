@@ -203,7 +203,7 @@ class AvatarUploadSerializer(serializers.Serializer[dict[str, Any]]):
 
     file: serializers.ImageField = serializers.ImageField(
         validators=[file_size_validator(
-            allow_size_mb=settings.ALLOW_AVATAR_SIZE_MB,
+            max_size_mb=settings.ALLOW_AVATAR_SIZE_MB,
         )],
         write_only=True,
     )
