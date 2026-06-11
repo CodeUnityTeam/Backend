@@ -25,6 +25,7 @@ from qna.serializers.question import (
     QuestionCreateSerializer,
     QuestionDetailSerializer,
     QuestionListSerializer,
+    QuestionUpdateSerializer,
 )
 
 
@@ -116,7 +117,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         )
 
     @extend_schema(
-        request=QuestionCreateSerializer,
+        request=QuestionUpdateSerializer,
         responses=QuestionCreateResponseSerializer,
     )
     def partial_update(
@@ -127,7 +128,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
     ) -> Response:
         """Обновляет вопрос частично."""
         question = self.get_object()
-        serializer = QuestionCreateSerializer(
+        serializer = QuestionUpdateSerializer(
             question,
             data=request.data,
             partial=True,

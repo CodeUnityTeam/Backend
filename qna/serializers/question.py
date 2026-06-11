@@ -72,6 +72,20 @@ class QuestionCreateSerializer(serializers.ModelSerializer):
 
         return question
 
+
+class QuestionUpdateSerializer(QuestionCreateSerializer):
+    """Сериализатор обновления вопроса."""
+
+    class Meta:
+        model = Question
+        fields = [
+            'title',
+            'description',
+            'tags',
+            'is_anonymous',
+            'images',
+        ]
+
     def update(self, instance: Question, validated_data: dict) -> Question:
         """Обновление вопроса."""
         tags = validated_data.pop('skills', None)
