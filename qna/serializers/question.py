@@ -55,6 +55,7 @@ class QuestionCreateSerializer(serializers.ModelSerializer):
                 QuestionImage.objects.create(
                     question=question,
                     uploaded_by=user,
+                    image_id=image['image_id'],
                     image_url=image['image_url'],
                     original_name=image['original_name'],
                     file_size=image['file_size'],
@@ -138,8 +139,8 @@ class QuestionListSerializer(serializers.ModelSerializer):
         source='skills',
     )
     author_name = serializers.SerializerMethodField()
-    likes_count = serializers.SerializerMethodField()
-    answers_count = serializers.SerializerMethodField()
+    likes_count = serializers.IntegerField(read_only=True)
+    answers_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Question
@@ -160,14 +161,6 @@ class QuestionListSerializer(serializers.ModelSerializer):
             return 'Аноним'
         return f'{obj.user.first_name} {obj.user.last_name}'.strip()
 
-    def get_likes_count(self, obj: Question) -> int:
-        """Возвращает количество лайков."""
-        return obj.likes.count()
-
-    def get_answers_count(self, obj: Question) -> int:
-        """Возвращает количество активных ответов."""
-        return obj.answers.filter(is_active=True).count()
-
 
 class QuestionDetailSerializer(serializers.ModelSerializer):
     """Сериализатор детальной страницы вопроса."""
@@ -182,7 +175,7 @@ class QuestionDetailSerializer(serializers.ModelSerializer):
         source='user.get_full_name',
         read_only=True,
     )
-    likes_count = serializers.SerializerMethodField()
+    likes_count = serializers.IntegerField(read_only=True)
     images = serializers.SerializerMethodField()
 
     class Meta:
@@ -198,10 +191,6 @@ class QuestionDetailSerializer(serializers.ModelSerializer):
             'images',
         ]
 
-    def get_likes_count(self, obj: Question) -> int:
-        """Возвращает количество лайков."""
-        return obj.likes.count()
-
     def get_images(self, obj: Question) -> list[str]:
         """Возвращает список URL изображений."""
-        return list(obj.images.values_list('image_url', flat=True))
+        return [img.image_url for img in obj.images.all()]

@@ -1,3 +1,4 @@
+from django.db.models import Count, Q, QuerySet
 from drf_spectacular.utils import (
     extend_schema,
     extend_schema_view,
@@ -56,6 +57,20 @@ class QuestionViewSet(viewsets.ModelViewSet):
             return QuestionDetailSerializer
         return QuestionCreateSerializer
 
+    def get_queryset(self) -> QuerySet:
+        """Аннотирует queryset количеством лайков и ответов."""
+        queryset = Question.objects.all()
+        if self.action in ('list', 'retrieve'):
+            queryset = queryset.annotate(
+                likes_count=Count('likes', distinct=True),
+                answers_count=Count(
+                    'answers',
+                    filter=Q(answers__is_active=True),
+                    distinct=True,
+                ),
+            )
+        return queryset
+
     @extend_schema(
         responses=inline_serializer(
             name='QuestionRetrieveResponse',
@@ -73,7 +88,11 @@ class QuestionViewSet(viewsets.ModelViewSet):
     ) -> Response:
         """Возвращает детальную страницу вопроса."""
         question = self.get_object()
-        answers = question.answers.filter(is_active=True)
+        answers = question.answers.filter(
+            is_active=True,
+        ).prefetch_related('images').annotate(
+            likes_count=Count('likes'),
+        )
         return Response({
             'question': QuestionDetailSerializer(question).data,
             'answers': AnswerDetailSerializer(answers, many=True).data,

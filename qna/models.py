@@ -5,7 +5,6 @@ from django.db import models
 from core.constants.qna import (
     MAX_CONTENT_ANSWER,
     MAX_TITLE_QUESTION,
-    ZERO_LIKE_COUNT,
 )
 from core.models.mixins import TimestampMixin
 from users.models import Skill
@@ -114,10 +113,6 @@ class Answer(models.Model):
         default=True,
         verbose_name='Активен',
     )
-    likes_count = models.IntegerField(
-        default=ZERO_LIKE_COUNT,
-        verbose_name='Количество лайков',
-    )
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name='Дата создания',
@@ -135,7 +130,6 @@ class Answer(models.Model):
             models.Index(fields=['parent_answer']),
             models.Index(fields=['-created_at']),
             models.Index(fields=['is_active']),
-            models.Index(fields=['likes_count']),
         ]
 
     def __str__(self) -> str:
