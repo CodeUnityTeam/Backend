@@ -5,6 +5,15 @@ from qna.models import Question, QuestionImage
 from users.models import Skill
 
 
+class LazySkillField(serializers.PrimaryKeyRelatedField):
+    """Поле с ленивой загрузкой queryset для Skill.
+    Используется при создании вопроса.
+    """
+
+    def get_queryset(self):
+        return Skill.objects.all()
+
+
 class QuestionImageMetaSerializer(serializers.Serializer):
     """Метаданные изображения при создании вопроса."""
 
@@ -18,10 +27,9 @@ class QuestionImageMetaSerializer(serializers.Serializer):
 class QuestionCreateSerializer(serializers.ModelSerializer):
     """Сериализатор создания вопроса."""
 
-    tags = serializers.PrimaryKeyRelatedField(
+    tags = LazySkillField(
         many=True,
         source='skills',
-        queryset=Skill.objects.all(),
         label='Навыки',
     )
     images = QuestionImageMetaSerializer(
