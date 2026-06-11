@@ -2,7 +2,7 @@ import uuid
 
 from django.db import models
 
-from core.constants import (
+from core.constants.qna import (
     MAX_CONTENT_ANSWER,
     MAX_LEN_TITLE,
     ZERO_LIKE_COUNT,

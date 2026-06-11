@@ -4,7 +4,7 @@ from django.contrib import admin
 from django.db import models
 from django.utils.safestring import mark_safe
 
-from core.constants import MAX_IMAGE_URL, MAX_MINE_TYPE, MAX_ORIGINAL_NAME
+from core.constants.qna import MAX_IMAGE_URL, MAX_MINE_TYPE, MAX_ORIGINAL_NAME
 
 
 class BaseImageMixin(models.Model):

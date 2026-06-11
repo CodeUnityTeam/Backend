@@ -5,15 +5,13 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils.safestring import mark_safe
 
-from core.constants import (
+from core.constants.feedback import (
     MAX_CONTENT_FEEDBACK,
-    MAX_IMAGE_URL,
     MAX_LEN_STATUS_FEEDBACK,
-    MAX_MINE_TYPE,
-    MAX_ORIGINAL_NAME,
     MAX_SUBJECT_FEEDBACK,
     STATUS_FEEDBACK,
 )
+from core.constants.qna import MAX_IMAGE_URL, MAX_MINE_TYPE, MAX_ORIGINAL_NAME
 from core.models.mixins import TimestampMixin
 
 User = get_user_model()
