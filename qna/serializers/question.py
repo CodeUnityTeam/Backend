@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.db.models import QuerySet
 from rest_framework import serializers
 
 from qna.models import Question, QuestionImage
@@ -7,10 +8,12 @@ from users.models import Skill
 
 class LazySkillField(serializers.PrimaryKeyRelatedField):
     """Поле с ленивой загрузкой queryset для Skill.
+
     Используется при создании вопроса.
     """
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet:
+        """Возвращает queryset с ленивой загрузкой."""
         return Skill.objects.all()
 
 
