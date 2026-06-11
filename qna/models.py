@@ -4,7 +4,7 @@ from django.db import models
 
 from core.constants.qna import (
     MAX_CONTENT_ANSWER,
-    MAX_LEN_TITLE,
+    MAX_TITLE_QUESTION,
     ZERO_LIKE_COUNT,
 )
 from core.models.mixins import TimestampMixin
@@ -35,7 +35,7 @@ class Question(TimestampMixin, models.Model):
         verbose_name='Автор вопроса',
     )
     title = models.CharField(
-        max_length=MAX_LEN_TITLE,
+        max_length=MAX_TITLE_QUESTION,
         verbose_name='Заголовок вопроса',
     )
     description = models.TextField(
@@ -64,8 +64,8 @@ class Question(TimestampMixin, models.Model):
         verbose_name = 'Вопрос'
         verbose_name_plural = 'Вопросы'
         indexes = [
-            models.Index(fields=['-created_at']),
-            models.Index(fields=['-updated_at']),
+            models.Index(fields=['-created_at']),  # поля из миксина
+            models.Index(fields=['-updated_at']),  # поля из миксина
             models.Index(fields=['is_active']),
             models.Index(fields=['is_anonymous']),
         ]
