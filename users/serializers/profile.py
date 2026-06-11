@@ -1,14 +1,11 @@
 from datetime import date
 from typing import Any, Dict, Type
 
-from allauth.account.adapter import get_adapter
-from allauth.account.models import EmailAddress
 from dj_rest_auth.serializers import UserDetailsSerializer
 from django.contrib.auth import get_user_model
 from django.db import models, transaction
 from django.utils import timezone
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
 
 from config import settings
 from core.validators import file_size_validator
@@ -20,7 +17,7 @@ from projects.serializers import (
 )
 from users.models.skills import Skill, UserSkill
 from users.models.specializations import Specialization, UserSpecialization
-from users.models.users import User, UserExperience
+from users.models.users import UserExperience
 from users.models.workformats import UserWorkFormat
 
 UserModel = get_user_model()
@@ -174,54 +171,6 @@ class CustomUserDetailsSerializer(UserDetailsSerializer):
 
         instance.save()
         return instance
-
-
-class EmailChangeSerializer(serializers.Serializer):
-    """Сериализатор для запроса на смену email с сохранением в модель."""
-
-    new_email = serializers.EmailField(required=True)
-
-    def validate_new_email(self, value: str) -> str:
-        """Валидация нового адреса электронной почты."""
-        user = self.context['request'].user
-        value = get_adapter().clean_email(value)
-
-        if value == user.email:
-            raise ValidationError('Этот email уже привязан к вашему аккаунту.')
-
-        # Проверка уникальности по всей базе пользователей
-        if UserModel.objects.filter(email=value).exists():
-            raise ValidationError('Пользователь с таким email уже существует.')
-
-        # Проверка уникальности среди подтвержденных адресов в django-allauth
-        if EmailAddress.objects.filter(email=value, verified=True).exists():
-            raise ValidationError(
-                'Этот email уже занят другим подтвержденным аккаунтом.',
-            )
-
-        return value
-
-    def save(self) -> User:
-        """Сохранить new_emailи отправить письмо для подтверждения."""
-        user = self.context['request'].user
-        request = self.context.get('request')
-        new_email = self.validated_data['new_email']
-
-        user.new_email = new_email
-        user.save(update_fields=['new_email'])
-
-        EmailAddress.objects.filter(user=user, verified=False).delete()
-
-        email_address = EmailAddress.objects.create(
-            user=user,
-            email=new_email,
-            primary=False,
-            verified=False,
-        )
-
-        email_address.send_confirmation(request, signup=False)
-
-        return user
 
 
 class AvatarUploadSerializer(serializers.Serializer[dict[str, Any]]):

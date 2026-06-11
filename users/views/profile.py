@@ -212,23 +212,18 @@ class UserAvatarAPIView(APIView):
 # ================================ Experience =================================
 
 @extend_schema_view(
-    list=extend_schema(
-        summary='Получить список своего опыта работы',
-        responses={200: UserExperienceSerializer(many=True)},
-    ),
     create=extend_schema(
+        tags=['profile'],
         summary='Добавить запись об опыте работы',
         responses={201: UserExperienceSerializer},
     ),
-    retrieve=extend_schema(
-        summary='Получить детали записи своего опыта',
-        responses={200: UserExperienceSerializer},
-    ),
     update=extend_schema(
+        tags=['profile'],
         summary='Полностью обновить запись своего опыта',
         responses={200: UserExperienceSerializer},
     ),
     destroy=extend_schema(
+        tags=['profile'],
         summary='Удалить запись своего опыта',
         responses={204: None},
     ),
