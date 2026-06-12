@@ -41,8 +41,7 @@ class User(TimestampMixin, AbstractUser):
         EMPLOYER = 'employer', 'Наниматель'
         WORKER = 'worker', 'Работник'
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['first_name', 'last_name']
+    REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
 
     username = models.CharField(
         max_length=MAX_CHAR_FIELD_LENGTH,
