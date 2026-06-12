@@ -1,9 +1,9 @@
 from datetime import date
-from typing import Any, Dict, Type
+from typing import Any, Dict
 
 from dj_rest_auth.serializers import UserDetailsSerializer
 from django.contrib.auth import get_user_model
-from django.db import models, transaction
+from django.db import transaction
 from django.utils import timezone
 from rest_framework import serializers
 
@@ -15,10 +15,9 @@ from projects.serializers import (
     SpecializationSerializer,
     WorkFormatSerializer,
 )
-from users.models.skills import Skill, UserSkill
-from users.models.specializations import Specialization, UserSpecialization
+from users.models.skills import Skill
+from users.models.specializations import Specialization
 from users.models.users import UserExperience
-from users.models.workformats import UserWorkFormat
 
 UserModel = get_user_model()
 
@@ -38,7 +37,7 @@ class UserExperienceSerializer(
             'start_date',
             'end_date',
         )
-        read_only_fields = ('id',)
+        read_only_fields = ('pk',)
 
     def validate_start_date(self, value: date) -> date:
         """Проверка, что дата начала работы не в будущем."""
@@ -66,28 +65,33 @@ class UserExperienceSerializer(
         return attrs
 
 
-class CustomUserDetailsSerializer(UserDetailsSerializer):
-    """Сериализатор для отображения и изменения данных пользователя."""
+class MeProfileUpdateSerializer(UserDetailsSerializer):
+    """Сериализатор для изменения данных профиля (PATCH)."""
 
-    experiences = UserExperienceSerializer(
+    skills = serializers.PrimaryKeyRelatedField(
+        queryset=Skill.objects.all(),
         many=True,
-        read_only=True,
+        required=False,
     )
-    skills = SkillSerializer(required=False, many=True)
-    specializations = SpecializationSerializer(required=False, many=True)
-    workformats = WorkFormatSerializer(required=False, many=True)
+    specializations = serializers.PrimaryKeyRelatedField(
+        queryset=Specialization.objects.all(),
+        many=True,
+        required=False,
+    )
+    workformats = serializers.PrimaryKeyRelatedField(
+        queryset=WorkFormat.objects.all(),
+        many=True,
+        required=False,
+    )
 
     class Meta(UserDetailsSerializer.Meta):
         """Конфигурация сериализируемых полей пользователя."""
 
         model = UserModel
         fields = (
-            'pk',
-            'email',
+            'projects_relation',
             'first_name',
             'last_name',
-            'role',
-            'projects_relation',
             'phone_number',
             'additional_contact',
             'country',
@@ -98,79 +102,46 @@ class CustomUserDetailsSerializer(UserDetailsSerializer):
             'skills',
             'specializations',
             'workformats',
-            'experiences',
         )
-        read_only_fields = ('pk', 'email', 'role', 'experiences')
 
-    def _set_m2m_relations(
-        self,
-        instance: Any,
-        data: list[dict[str, Any]],
-        model_class: Type[models.Model],
-        through_model_class: Type[models.Model],
-        fk_field_name: str,
-    ) -> None:
-        """Универсальный метод для добавления M2M связей."""
-        pk_field_name = model_class._meta.pk.name
-
-        objects_to_add = []
-        for item in data:
-            obj_id = item.get(pk_field_name)
-            if not obj_id:
-                continue
-            try:
-                obj = model_class.objects.get(pk=obj_id)
-                if obj not in objects_to_add:
-                    objects_to_add.append(obj)
-            except model_class.DoesNotExist:
-                continue
-
-        # Удаляем старые связи
-        through_model_class.objects.filter(user=instance).delete()
-
-        # Формируем новые связи
-        new_relations = [
-            through_model_class(**{'user': instance, fk_field_name: obj})
-            for obj in objects_to_add
-        ]
-        through_model_class.objects.bulk_create(new_relations)
-
-    def update(self, instance: Any, validated_data: dict[str, Any]) -> Any:
+    def update(self, instance: Any, validated_data: dict) -> Any:
         """Обновить профиль, специализации и навыки пользователя."""
-        format_data = validated_data.pop('workformats', None)
-        skill_data = validated_data.pop('skills', None)
-        spec_data = validated_data.pop('specializations', None)
-
-        instance = super().update(instance, validated_data)
+        skills = validated_data.pop('skills', None)
+        specializations = validated_data.pop('specializations', None)
+        workformats = validated_data.pop('workformats', None)
 
         with transaction.atomic():
-            if format_data is not None:
-                self._set_m2m_relations(
-                    instance=instance,
-                    data=format_data,
-                    model_class=WorkFormat,
-                    through_model_class=UserWorkFormat,
-                    fk_field_name='workformat',
-                )
-            if skill_data is not None:
-                self._set_m2m_relations(
-                    instance=instance,
-                    data=skill_data,
-                    model_class=Skill,
-                    through_model_class=UserSkill,
-                    fk_field_name='skill',
-                )
-            if spec_data is not None:
-                self._set_m2m_relations(
-                    instance=instance,
-                    data=spec_data,
-                    model_class=Specialization,
-                    through_model_class=UserSpecialization,
-                    fk_field_name='specialization',
-                )
+            instance = super().update(instance, validated_data)
 
-        instance.save()
+            if skills is not None:
+                instance.skills.set(skills)
+            if specializations is not None:
+                instance.specializations.set(specializations)
+            if workformats is not None:
+                instance.workformats.set(workformats)
+
         return instance
+
+
+class MeProfileRetrieveSerializer(MeProfileUpdateSerializer):
+    """Сериализатор для просмотра данных профиля (GET)."""
+
+    experiences = UserExperienceSerializer(many=True, read_only=True)
+    skills = SkillSerializer(many=True, read_only=True)
+    specializations = SpecializationSerializer(many=True, read_only=True)
+    workformats = WorkFormatSerializer(many=True, read_only=True)
+
+    class Meta(MeProfileUpdateSerializer.Meta):
+        """Конфигурация полей профиля для чтения."""
+
+        model = UserModel
+        fields = (
+            'pk',
+            'email',
+            'role',
+            'experiences',
+        ) + MeProfileUpdateSerializer.Meta.fields
+        read_only_fields = fields
 
 
 class AvatarUploadSerializer(serializers.Serializer[dict[str, Any]]):

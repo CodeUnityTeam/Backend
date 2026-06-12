@@ -251,7 +251,7 @@ REST_AUTH = {
     ),
     "REGISTER_SERIALIZER": "users.serializers.auth.CustomRegisterSerializer",
     "USER_DETAILS_SERIALIZER": (
-        "users.serializers.profile.CustomUserDetailsSerializer"
+        "users.serializers.profile.MeProfileRetrieveSerializer"
     ),
 }
 
