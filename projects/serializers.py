@@ -487,6 +487,10 @@ class InviteUserProjectSerializer(serializers.ModelSerializer):
             'project',
             'user',
         ]
+        read_only_fields = [
+            'project',
+            'user',
+        ]
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
         """Валидация перед созданием инвайта."""
@@ -521,7 +525,7 @@ class UpdateResponseStatusSerializer(serializers.ModelSerializer):
 
     status = serializers.ChoiceField(
         choices=STATUS_RESPONSE_PROJECT,
-        help_text="Новый статус отклика",
+        help_text='Новый статус отклика',
     )
 
     class Meta:

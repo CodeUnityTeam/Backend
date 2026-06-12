@@ -1,0 +1,32 @@
+[
+  {
+    "email": "stanislav_b@example.com",
+    "first_name": "Stanislav",
+    "last_name": "Barinov",
+    "password": "user887089"
+  },
+  {
+    "email": "oleg_m@example.com",
+    "first_name": "Oleg",
+    "last_name": "Miskhozhev",
+    "password": "user887089"
+  },
+  {
+    "email": "kristina@example.com",
+    "first_name": "Kristina",
+    "last_name": "Alabova",
+    "password": "user887089"
+  },
+  {
+    "email": "evgeniy@example.com",
+    "first_name": "Evgeniy",
+    "last_name": "Tsygankov",
+    "password": "user887089"
+  },
+  {
+    "email": "natalya@example.com",
+    "first_name": "Natalya",
+    "last_name": "Khusnutdinova",
+    "password": "user887089"
+  }
+]
