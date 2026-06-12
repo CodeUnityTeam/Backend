@@ -47,9 +47,9 @@ class BaseImageMixin(models.Model):
 
         abstract = True
 
-    @admin.display(description="Изображение")
+    @admin.display(description='Изображение')
     def post_image(self):  # noqa: ANN201
         """Отображает превью в админке."""
         if self.image_url:
             return mark_safe(f"<img src='{self.image_url}' width=50>")
-        return "Без фото"
+        return 'Без фото'

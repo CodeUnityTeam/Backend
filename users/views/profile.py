@@ -133,39 +133,39 @@ class MeProfileView(RetrieveUpdateDestroyAPIView):
 
 @extend_schema_view(
     post=extend_schema(
-        summary="Загрузить аватар пользователя",
+        summary='Загрузить аватар пользователя',
         description=(
-            "Загрузка изображения (jpeg, jpg, png) размером до 10 МБ. "
-            "Старый файл аватара автоматически удаляется из MinIO."
+            'Загрузка изображения (jpeg, jpg, png) размером до 10 МБ. '
+            'Старый файл аватара автоматически удаляется из MinIO.'
         ),
         request={
-            "multipart/form-data": inline_serializer(
-                name="AvatarUploadRequest",
+            'multipart/form-data': inline_serializer(
+                name='AvatarUploadRequest',
                 fields={
-                    "file": serializers.ImageField(help_text="Файл аватара"),
+                    'file': serializers.ImageField(help_text='Файл аватара'),
                 },
             ),
         },
         responses={
             status.HTTP_201_CREATED: inline_serializer(
-                name="AvatarUploadResponse",
-                fields={"avatar_url": serializers.URLField()},
+                name='AvatarUploadResponse',
+                fields={'avatar_url': serializers.URLField()},
             ),
             status.HTTP_400_BAD_REQUEST: OpenApiTypes.OBJECT,
         },
-        tags=["Files"],
+        tags=['Files'],
     ),
     delete=extend_schema(
-        summary="Удалить аватар пользователя",
+        summary='Удалить аватар пользователя',
         description=(
-            "Удаляет файл аватара из хранилища MinIO и "
-            "очищает поле avatar_url в профиле пользователя."
+            'Удаляет файл аватара из хранилища MinIO и '
+            'очищает поле avatar_url в профиле пользователя.'
         ),
         responses={
             status.HTTP_204_NO_CONTENT: None,
             status.HTTP_400_BAD_REQUEST: OpenApiTypes.OBJECT,
         },
-        tags=["Files"],
+        tags=['Files'],
     ),
 )
 class UserAvatarAPIView(APIView):
@@ -188,12 +188,12 @@ class UserAvatarAPIView(APIView):
         serializer.is_valid(raise_exception=True)
 
         user: User = request.user  # type: ignore[valid-type]
-        file_obj: UploadedFile = serializer.validated_data["file"]
+        file_obj: UploadedFile = serializer.validated_data['file']
 
         public_url: str = avatar_upload_handler(user, file_obj)
 
         return Response(
-            {"avatar_url": public_url}, status=status.HTTP_201_CREATED,
+            {'avatar_url': public_url}, status=status.HTTP_201_CREATED,
         )
 
     def delete(
@@ -207,7 +207,7 @@ class UserAvatarAPIView(APIView):
 
         if not user.avatar_url:
             return Response(
-                {"detail": "Аватар отсутствует."},
+                {'detail': 'Аватар отсутствует.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 

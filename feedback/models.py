@@ -121,9 +121,9 @@ class FeedbackImage(TimestampMixin, models.Model):
     def __str__(self) -> str:
         return f'Изображение: {self.original_name} для {self.feedback.subject}'
 
-    @admin.display(description="Изображение")
+    @admin.display(description='Изображение')
     def post_image(self):   # noqa: ANN201
         """Отображает превью в админке."""
         if self.image_url:
             return mark_safe(f"<img src='{self.image_url}' width=50>")
-        return "Без фото"
+        return 'Без фото'
