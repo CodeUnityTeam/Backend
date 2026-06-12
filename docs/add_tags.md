@@ -37,7 +37,8 @@ bash create_obj.sh
 ```bash
 BASE_URL="https://dev.code-unity.ru/api/v1" bash fixtures/test_data/create_obj.sh
 ```
-* Получаем токены
+Что делает скрипт:
+* Получает токены
 * Обновляется профиль автора - меняем статус, информацию, скиллы; загружается автатар для автора.
 * Создаются проекты с данными из projects.json
 * Создаются вопросы с данными из questions.json
