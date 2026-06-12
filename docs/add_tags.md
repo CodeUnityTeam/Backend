@@ -24,7 +24,7 @@ bash create_users.sh
 BASE_URL="https://dev.code-unity.ru/api/v1" bash fixtures/test_data/create_users.sh
 ```
 
-> **Важно:** Нужно подтвердить email пользователей. Через админку проще всего.
+> **Важно:** Для запуска следующего скрипта нужно подтвердить email пользователей. Через админку проще всего.
 
 Или можно проверить эндпоинт `user/auth/registration/verify-email/` и подтвердить email через него для каждого пользователя.
 > **Важно:** `ACCOUNT_EMAIL_VERIFICATION = "mandatory"` — подтверждение email обязательно. Письмо приходит в консоль Django (на dev-сервере `EMAIL_BACKEND=console`). Ссылка для подтверждения имеет формат: `{HOST_URL}/{key}`.
