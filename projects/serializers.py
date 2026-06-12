@@ -487,6 +487,10 @@ class InviteUserProjectSerializer(serializers.ModelSerializer):
             'project',
             'user',
         ]
+        read_only_fields = [
+            'project',
+            'user',
+        ]
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
         """Валидация перед созданием инвайта."""
