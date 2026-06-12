@@ -3,7 +3,9 @@ import uuid
 from django.conf import settings
 from django.db import models
 
-from core.constants.users import SPECIALIZATION_NAME_LENGTH
+from core.constants.users import (
+    SPECIALIZATION_NAME_LENGTH,  # стоит импортировать из пакета core
+)
 
 
 class Specialization(models.Model):
@@ -25,7 +27,7 @@ class Specialization(models.Model):
 
     class Meta:
         db_table = 'specialization'
-        verbose_name = 'Специализация'
+        verbose_name = 'специализация'
         verbose_name_plural = 'Специализации'
         ordering = ('name',)
 
@@ -45,7 +47,7 @@ class UserSpecialization(models.Model):
     )
     specialization = models.ForeignKey(
         Specialization,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name='user_specializations',
         verbose_name='Специализация',
         help_text='Специализация пользователя.',
@@ -53,7 +55,7 @@ class UserSpecialization(models.Model):
 
     class Meta:
         db_table = 'user_specialization'
-        verbose_name = 'Специализация пользователя'
+        verbose_name = 'специализация пользователя'
         verbose_name_plural = 'Специализации пользователей'
         constraints = (
             models.UniqueConstraint(

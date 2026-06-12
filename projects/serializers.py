@@ -147,11 +147,18 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = [
-            'title', 'short_desc', 'full_desc',
-            'location', 'start_date', 'end_date',
-            'status_project', 'skills', 'specializations', 'project_format',
-        ]
+        fields = (
+            'title',
+            'short_desc',
+            'full_desc',
+            'location',
+            'start_date',
+            'end_date',
+            'status_project',
+            'skills',
+            'specializations',
+            'project_format',
+        )
 
     def validate(self, data: dict) -> dict:
         """Дополнительная валидация дат начала и окончания проекта."""
@@ -199,11 +206,17 @@ class ProjectShortSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = [
-            'project_id', 'title', 'short_desc', 'location',
-            'status_project', 'published_at', 'participants_count',
-            'is_liked_by_me', 'skills',
-        ]
+        fields = (
+            'project_id',
+            'title',
+            'short_desc',
+            'location',
+            'status_project',
+            'published_at',
+            'participants_count',
+            'is_liked_by_me',
+            'skills',
+        )
 
     def get_is_liked_by_me(self, project: Project) -> bool:
         """Проверяем, лайкнул ли проект авторизированный пользователь."""
@@ -231,10 +244,16 @@ class ProjectDetailSerializer(ProjectShortSerializer):
     full_desc = serializers.SerializerMethodField()
 
     class Meta(ProjectShortSerializer.Meta):
-        fields = ProjectShortSerializer.Meta.fields + [
-            'full_desc', 'end_date', 'specializations',
-            'project_format', 'likes_count', 'participants', 'author',
-        ]
+        fields = (
+            *ProjectShortSerializer.Meta.fields,
+            'full_desc',
+            'end_date',
+            'specializations',
+            'project_format',
+            'likes_count',
+            'participants',
+            'author',
+        )
 
     def get_likes_count(self, project: Project) -> int:
         """Получаем лайки проекта."""
@@ -275,7 +294,7 @@ class ProjectDetailSerializer(ProjectShortSerializer):
     def get_full_desc(self, project: Project) -> str | None:
         """Условное поле: показывается только для автора и участников."""
         requesting_user = self.context.get('request').user
-        if (requesting_user in project.participants.all()):
+        if requesting_user in project.participants.all():
             return project.full_desc
         return None
 
@@ -352,11 +371,18 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = [
-            'title', 'short_desc', 'full_desc',
-            'location', 'start_date', 'end_date',
-            'status', 'skills', 'specializations', 'formats',
-        ]
+        fields = (
+            'title',
+            'short_desc',
+            'full_desc',
+            'location',
+            'start_date',
+            'end_date',
+            'status',
+            'skills',
+            'specializations',
+            'formats',
+        )
         extra_kwargs = {
             'title': {'required': False},
             'short_desc': {'required': False},
@@ -404,12 +430,21 @@ class ProjectUpdateResponseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = [
-            'project_id', 'title', 'short_desc', 'full_desc',
-            'location', 'start_date', 'end_date',
-            'status', 'published_at', 'created_at',
-            'skills', 'specializations', 'formats',
-        ]
+        fields = (
+            'project_id',
+            'title',
+            'short_desc',
+            'full_desc',
+            'location',
+            'start_date',
+            'end_date',
+            'status',
+            'published_at',
+            'created_at',
+            'skills',
+            'specializations',
+            'formats',
+        )
 
 
 class ResponseUserProjectSerializer(serializers.ModelSerializer):
@@ -417,20 +452,20 @@ class ResponseUserProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Response
-        fields = [
+        fields = (
             'response_id',
             'project',
             'user',
             'initiator_type',
             'status_resp',
-        ]
-        read_only_fields = [
+        )
+        read_only_fields = (
             'response_id',
             'project',
             'user',
             'initiator_type',
             'status_resp',
-        ]
+        )
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
         """Валидация перед созданием отклика."""
@@ -475,7 +510,7 @@ class ResponseResponseCreateProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Response
-        fields = ['project_id', 'user_id', 'status', 'created_at']
+        fields = ('project_id', 'user_id', 'status', 'created_at')
 
 
 class InviteUserProjectSerializer(serializers.ModelSerializer):
@@ -483,10 +518,10 @@ class InviteUserProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Response
-        fields = [
+        fields = (
             'project',
             'user',
-        ]
+        )
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
         """Валидация перед созданием инвайта."""
@@ -521,12 +556,12 @@ class UpdateResponseStatusSerializer(serializers.ModelSerializer):
 
     status = serializers.ChoiceField(
         choices=STATUS_RESPONSE_PROJECT,
-        help_text="Новый статус отклика",
+        help_text='Новый статус отклика',
     )
 
     class Meta:
         model = Response
-        fields = ['status']
+        fields = ('status',)
 
     def validate_status(self, status: str) -> str:
         """Валидация нового статуса."""
@@ -549,32 +584,32 @@ class UpdateResponseStatusSerializer(serializers.ModelSerializer):
         permissions = {
             APPROVED: [
                 (
-                    user_response.initiator_type == AUTHOR and
-                    user_response.user == user
+                    user_response.initiator_type == AUTHOR
+                    and user_response.user == user
                 ),  # пользователь принимает приглашение
                 (
-                    user_response.initiator_type == APPLICANT and
-                    user_response.project.author == user
+                    user_response.initiator_type == APPLICANT
+                    and user_response.project.author == user
                 ),  # автор одобряет отклик
             ],
             REJECTED: [
                 (
-                    user_response.initiator_type == AUTHOR and
-                    user_response.user == user
+                    user_response.initiator_type == AUTHOR
+                    and user_response.user == user
                 ),  # пользователь отклоняет приглашение
                 (
-                    user_response.initiator_type == APPLICANT and
-                    user_response.project.author == user
+                    user_response.initiator_type == APPLICANT
+                    and user_response.project.author == user
                 ),  # автор отклоняет отклик
             ],
             WITHDRAWN: [
                 (
-                    user_response.initiator_type == APPLICANT and
-                    user_response.user == user
+                    user_response.initiator_type == APPLICANT
+                    and user_response.user == user
                 ),  # пользователь отзывает отклик
                 (
-                    user_response.initiator_type == AUTHOR and
-                    user_response.project.author == user
+                    user_response.initiator_type == AUTHOR
+                    and user_response.project.author == user
                 ),  # автор отменяет приглашение
             ],
         }
@@ -585,10 +620,13 @@ class UpdateResponseStatusSerializer(serializers.ModelSerializer):
                 WITHDRAWN: 'Инициатор может отозвать свой отклик/приглашение',
             }
             raise serializers.ValidationError(error_messages[new_status])
-        if new_status == APPROVED and ProjectParticipant.objects.filter(
-            project=user_response.project,
-            user=user_response.user,
-        ).exists():
+        if (
+            new_status == APPROVED
+            and ProjectParticipant.objects.filter(
+                project=user_response.project,
+                user=user_response.user,
+            ).exists()
+        ):
             raise serializers.ValidationError(
                 'Пользователь уже является участником проекта',
             )
@@ -647,9 +685,13 @@ class ProfileCardConditionalSerializer(serializers.Serializer):
         # Добавляем контакты только если:
         # response_status == 'approved'
         # текущий пользователь — автор проекта
-        if (response and response.status_resp == APPROVED and
-                hasattr(response, 'project') and response.project and
-                response.project.author_id == user.id):
+        if (
+            response
+            and response.status_resp == APPROVED
+            and hasattr(response, 'project')
+            and response.project
+            and response.project.author_id == user.id
+        ):
             data['email'] = instance.email
             data['phone'] = instance.phone_number
         else:
@@ -678,10 +720,11 @@ class ProjectCardConditionalSerializer(ProjectShortSerializer):
     )
 
     class Meta(ProjectShortSerializer.Meta):
-        fields = ProjectShortSerializer.Meta.fields + [
+        fields = (
+            *ProjectShortSerializer.Meta.fields,
             'author_email',
             'author_phone',
-        ]
+        )
 
     def to_representation(self, instance: Any) -> Dict[str, Any]:
         """Форматируем поля для ответа."""
@@ -692,8 +735,10 @@ class ProjectCardConditionalSerializer(ProjectShortSerializer):
         # response_status == 'approved'
         # текущий пользователь — участник проекта (соискатель)
         if not (
-            response and response.status_resp == APPROVED and
-            user and user.id == response.user_id
+            response
+            and response.status_resp == APPROVED
+            and user
+            and user.id == response.user_id
         ):
             data.pop('author_email', None)
             data.pop('author_phone', None)
@@ -727,10 +772,14 @@ class FeedbackAndInvitationFeedSerializer(serializers.Serializer):
         Если пользователь участник проекта, то возвращаем project.
         """
         user = self.context.get('user')
-        if hasattr(
-            instance,
-            'project',
-        ) and instance.project and instance.project.author_id == user.id:
+        if (
+            hasattr(
+                instance,
+                'project',
+            )
+            and instance.project
+            and instance.project.author_id == user.id
+        ):
             return 'profile'
         return 'project'
 
@@ -753,9 +802,14 @@ class FeedbackAndInvitationFeedSerializer(serializers.Serializer):
 
     def get_profile(self, instance: Response) -> Optional[Dict[str, Any]]:
         """Получаем профили пользователей, кто откликнулся."""
-        if self.get_card_type(
-            instance,
-        ) == 'profile' and hasattr(instance, 'user') and instance.user:
+        if (
+            self.get_card_type(
+                instance,
+            )
+            == 'profile'
+            and hasattr(instance, 'user')
+            and instance.user
+        ):
             serializer = ProfileCardConditionalSerializer(
                 instance.user,
                 context={

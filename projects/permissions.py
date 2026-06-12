@@ -12,10 +12,10 @@ User = get_user_model()
 def can_archive_project(user: User, project: Project) -> bool:
     """Проверяет, может ли пользователь архивировать проект."""
     return (
-        user.is_superuser or
-        user.is_staff or
-        project.author == user or
-        user.role == 'admin'
+        user.is_superuser
+        or user.is_staff
+        or project.author == user
+        or user.role == 'admin'
     )
 
 

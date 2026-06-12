@@ -28,13 +28,18 @@ def get_project_with_relations(project_id: uuid) -> Project:
     - author (через select_related)
     - skills, specializations, project_format (через prefetch_related)
     """
-    return Project.objects.select_related(
-        'author',
-    ).prefetch_related(
-        'skills',
-        'specializations',
-        'project_format',
-    ).get(project_id=project_id)
+    return (
+        Project.objects
+        .select_related(
+            'author',
+        )
+        .prefetch_related(
+            'skills',
+            'specializations',
+            'project_format',
+        )
+        .get(project_id=project_id)
+    )
 
 
 def create_response(

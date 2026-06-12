@@ -11,7 +11,6 @@ from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from allauth.socialaccount.providers.oauth2.views import OAuth2View
 from allauth.socialaccount.providers.yandex.views import YandexOAuth2Adapter
 from dj_rest_auth.registration.views import SocialLoginView
-from django.contrib.auth import get_user_model
 from django.http import HttpRequest
 from drf_spectacular.utils import (
     OpenApiExample,
@@ -32,25 +31,27 @@ from users.serializers.auth import (
     SocialAuthUrlResponseSerializer,
 )
 
-UserModel = get_user_model()
-
 
 class SocialAuthUrlView(APIView):
     """Базовый класс для генерации URL авторизации сторонних сервисов."""
 
     permission_classes = [AllowAny]
     provider_id: str | None = None
-    adapter_class: any = None
+    adapter_class: Any = None
 
     def get(
-        self, request: HttpRequest, *args: any, **kwargs: any,
+        self,
+        request: HttpRequest,
+        *args,
+        **kwargs,
     ) -> Response:
         """Обрабатывает GET-запрос и возвращает URL для авторизации."""
         adapter = get_adapter()
         app: SocialApp = adapter.get_app(request, provider=self.provider_id)
 
         provider: Provider = registry.get_class(self.provider_id)(
-            request, app=app,
+            request,
+            app=app,
         )
 
         # Создаем OAuth2View и привязываем к нему наш request и адаптер
@@ -59,13 +60,13 @@ class SocialAuthUrlView(APIView):
         view.adapter = self.adapter_class(request)
 
         # Подменяем get_callback_url у view, чтобы пропустить NoReverseMatch
-        callback_url: str = app.settings.get("CALLBACK_URL", "")
+        callback_url: str = app.settings.get('CALLBACK_URL', '')
         view.get_callback_url = lambda req, app: callback_url
 
         # Получаем сконфигурированный клиент напрямую из allauth OAuth2View
         client = view.get_client(request, app)
 
-        action = "login"
+        action = 'login'
         auth_params = provider.get_auth_params(request, action)
         state = provider.get_login_state(request, next_url=action)
 
@@ -76,7 +77,7 @@ class SocialAuthUrlView(APIView):
         )
 
         return Response(
-            {"authorization_url": auth_url},
+            {'authorization_url': auth_url},
             status=status.HTTP_200_OK,
         )
 
@@ -90,21 +91,24 @@ class SocialLogin(SocialLoginView):
     client_class = OAuth2Client
 
     def post(
-        self, request: HttpRequest, *args: any, **kwargs: any,
+        self,
+        request: HttpRequest,
+        *args,
+        **kwargs,
     ) -> Response:
         """Перехватывает запрос и очищает URL-кодированный code."""
-        if request.data and "code" in request.data:
+        if request.data and 'code' in request.data:
             # Извлекаем сырой код, очищаем его и записываем обратно
-            raw_code: str = request.data.get("code", "")
-            request.data["code"] = unquote(raw_code)
+            raw_code: str = request.data.get('code', '')
+            request.data['code'] = unquote(raw_code)
 
         return super().post(request, *args, **kwargs)
 
 
 @extend_schema_view(
     get=extend_schema(
-        tags=["social_auth"],
-        summary="Получить ссылку для авторизации через Google",
+        tags=['social_auth'],
+        summary='Получить ссылку для авторизации через Google',
         responses={200: SocialAuthUrlResponseSerializer},
     ),
 )
@@ -114,25 +118,28 @@ class GoogleAuthUrlView(APIView):
     permission_classes = [AllowAny]
 
     def get(
-        self, request: HttpRequest, *args: any, **kwargs: any,
+        self,
+        request: HttpRequest,
+        *args,
+        **kwargs,
     ) -> Response:
         """Обрабатывает GET-запрос и формирует прямую ссылку для Google."""
-        config: dict[str, any] = SOCIALACCOUNT_PROVIDERS["google"]
+        config: dict[str, Any] = SOCIALACCOUNT_PROVIDERS['google']
 
         query_params: dict[str, str] = {
-            "client_id": config["APP"]["client_id"],
-            "redirect_uri": config["CALLBACK_URL"],
-            "response_type": "code",
-            "scope": "openid email profile",
-            "access_type": "offline",
-            "prompt": "consent",
+            'client_id': config['APP']['client_id'],
+            'redirect_uri': config['CALLBACK_URL'],
+            'response_type': 'code',
+            'scope': 'openid email profile',
+            'access_type': 'offline',
+            'prompt': 'consent',
         }
 
-        base_url = "https://accounts.google.com/o/oauth2/v2/auth"
-        auth_url = f"{base_url}?{urlencode(query_params)}"
+        base_url = 'https://accounts.google.com/o/oauth2/v2/auth'
+        auth_url = f'{base_url}?{urlencode(query_params)}'
 
         return Response(
-            {"authorization_url": auth_url},
+            {'authorization_url': auth_url},
             status=status.HTTP_200_OK,
         )
 
@@ -145,7 +152,7 @@ class GoogleAuthUrlView(APIView):
     ),
 )
 class GoogleLogin(SocialLogin):
-    """View для обработки запросов авторизации через Google."""
+    """View для обработки запросов авторизации через Google."""  # Удаляем?
 
     adapter_class = GoogleOAuth2Adapter
     callback_url = SOCIALACCOUNT_PROVIDERS['google']['CALLBACK_URL']
@@ -153,8 +160,8 @@ class GoogleLogin(SocialLogin):
 
 @extend_schema_view(
     get=extend_schema(
-        tags=["social_auth"],
-        summary="Получить ссылку для авторизации через Yandex",
+        tags=['social_auth'],
+        summary='Получить ссылку для авторизации через Yandex',
         responses={200: SocialAuthUrlResponseSerializer},
     ),
 )
@@ -164,26 +171,29 @@ class YandexAuthUrlView(APIView):
     permission_classes = [AllowAny]
 
     def get(
-        self, request: HttpRequest, *args: any, **kwargs: any,
+        self,
+        request: HttpRequest,
+        *args,
+        **kwargs,
     ) -> Response:
         """Обрабатывает GET-запрос и формирует прямую ссылку для Yandex."""
-        config: dict[str, any] = SOCIALACCOUNT_PROVIDERS["yandex"]
+        config: dict[str, Any] = SOCIALACCOUNT_PROVIDERS['yandex']
 
         # Если фронтенд передает свой state для защиты или контекста
-        state: str = request.GET.get("state", "AAA")
+        state: str = request.GET.get('state', 'AAA')
 
         query_params: dict[str, str] = {
-            "response_type": "code",
-            "client_id": config["APP"]["client_id"],
-            "redirect_uri": config["CALLBACK_URL"],
-            "state": state,
+            'response_type': 'code',
+            'client_id': config['APP']['client_id'],
+            'redirect_uri': config['CALLBACK_URL'],
+            'state': state,
         }
 
-        base_url = "https://oauth.yandex.ru/authorize"
-        auth_url = f"{base_url}?{urlencode(query_params)}"
+        base_url = 'https://oauth.yandex.ru/authorize'
+        auth_url = f'{base_url}?{urlencode(query_params)}'
 
         return Response(
-            {"authorization_url": auth_url},
+            {'authorization_url': auth_url},
             status=status.HTTP_200_OK,
         )
 
@@ -204,8 +214,8 @@ class YandexLogin(SocialLogin):
 
 @extend_schema_view(
     get=extend_schema(
-        tags=["social_auth"],
-        summary="Получить ссылку для авторизации через Mail.ru",
+        tags=['social_auth'],
+        summary='Получить ссылку для авторизации через Mail.ru',
         responses={200: SocialAuthUrlResponseSerializer},
     ),
 )
@@ -215,22 +225,25 @@ class MailRuAuthUrlView(APIView):
     permission_classes = [AllowAny]
 
     def get(
-        self, request: HttpRequest, *args: any, **kwargs: any,
+        self,
+        request: HttpRequest,
+        *args,
+        **kwargs,
     ) -> Response:
         """Обрабатывает GET-запрос и формирует прямую ссылку для Mail.ru."""
-        config: dict[str, any] = SOCIALACCOUNT_PROVIDERS["mailru"]
+        config: dict[str, Any] = SOCIALACCOUNT_PROVIDERS['mailru']
 
         query_params: dict[str, str] = {
-            "client_id": config["APP"]["client_id"],
-            "response_type": "code",
-            "redirect_uri": config["CALLBACK_URL"],
+            'client_id': config['APP']['client_id'],
+            'response_type': 'code',
+            'redirect_uri': config['CALLBACK_URL'],
         }
 
-        base_url = "https://connect.mail.ru/oauth/authorize"
-        auth_url = f"{base_url}?{urlencode(query_params)}"
+        base_url = 'https://connect.mail.ru/oauth/authorize'
+        auth_url = f'{base_url}?{urlencode(query_params)}'
 
         return Response(
-            {"authorization_url": auth_url},
+            {'authorization_url': auth_url},
             status=status.HTTP_200_OK,
         )
 
@@ -272,8 +285,8 @@ class MailRuLogin(SocialLogin):
             OpenApiExample(
                 name='Успешный запрос',
                 value={
-                    "detail": (
-                        "Ссылка для подтверждения отправлена на новый email."
+                    'detail': (
+                        'Ссылка для подтверждения отправлена на новый email.'
                     ),
                 },
                 response_only=True,

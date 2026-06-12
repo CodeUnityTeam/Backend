@@ -15,7 +15,7 @@ class AnswerDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Answer
-        fields = [
+        fields = (
             'answer_id',
             'parent_answer_id',
             'content',
@@ -23,7 +23,7 @@ class AnswerDetailSerializer(serializers.ModelSerializer):
             'created_at',
             'likes_count',
             'images',
-        ]
+        )
 
     def get_images(self, obj: Answer) -> list[str]:
         """Возвращает список URL изображений."""
@@ -52,7 +52,7 @@ class AnswerCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Answer
-        fields = ['content', 'parent_answer', 'images']
+        fields = ('content', 'parent_answer', 'images')
 
     def create(self, validated_data: dict) -> Answer:
         """Создаёт ответ с изображениями."""
@@ -85,4 +85,4 @@ class AnswerCreateResponseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Answer
-        fields = ['answer_id']
+        fields = ('answer_id',)

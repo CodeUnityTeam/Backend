@@ -63,11 +63,16 @@ def collect_detail(id):
     if cache_data is not None:
         return cache_data
     try:
-        data = Collect.objects.select_related('author').prefetch_related(
-            'payments__user').annotate(
-            current_price=Coalesce(Sum('payments__amount'), 0),
-            donators_count=Count('payments__user', distinct=True),
-        ).get(id=id)
+        data = (
+            Collect.objects
+            .select_related('author')
+            .prefetch_related('payments__user')
+            .annotate(
+                current_price=Coalesce(Sum('payments__amount'), 0),
+                donators_count=Count('payments__user', distinct=True),
+            )
+            .get(id=id)
+        )
         cache_collect_detail(id, data)
         return data
     except Collect.DoesNotExist:

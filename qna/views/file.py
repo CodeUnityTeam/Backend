@@ -45,15 +45,15 @@ class FileUploadView(APIView):
         serializer = FileUploadSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        file: UploadedFile = serializer.validated_data["file"]
+        file: UploadedFile = serializer.validated_data['file']
         public_url: str = image_upload_handler(file_obj=file)
 
         return Response(
             {
-                "image_url": public_url,
-                "original_name": file.name,
-                "file_size": file.size,
-                "mime_type": file.content_type or "image/jpeg",
+                'image_url': public_url,
+                'original_name': file.name,
+                'file_size': file.size,
+                'mime_type': file.content_type or 'image/jpeg',
             },
             status=status.HTTP_201_CREATED,
         )

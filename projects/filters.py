@@ -68,9 +68,9 @@ class ProjectFilter(django_filters.FilterSet):
     ) -> QuerySet[Project]:
         """Поиск по названию, описанию проекта."""
         return queryset.filter(
-            Q(title__icontains=value) |
-            Q(short_desc__icontains=value) |
-            Q(full_desc__icontains=value),
+            Q(title__icontains=value)
+            | Q(short_desc__icontains=value)
+            | Q(full_desc__icontains=value),
         )
 
     def filter_duration(
@@ -151,7 +151,7 @@ class ResponseFeedFilter(django_filters.FilterSet):
 
     class Meta:
         model = Response
-        fields = ['card_type', 'status', 'project_id']
+        fields = ('card_type', 'status', 'project_id')
 
     def __init__(
         self,
@@ -165,7 +165,7 @@ class ResponseFeedFilter(django_filters.FilterSet):
         self.request = request
 
     def filter_queryset(self, queryset: QuerySet) -> QuerySet:
-        """"Фильтруем QuerySet по времени создания."""
+        """Фильтруем QuerySet по времени создания."""
         queryset = super().filter_queryset(queryset)
         sort_by = self.data.get('sort_by', 'created_at')
         sort_order = self.data.get('sort_order', 'desc')

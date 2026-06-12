@@ -3,11 +3,11 @@ from django.db import models
 
 
 class UserWorkFormat(models.Model):
-    """Связь пользователя с навыком."""
+    """Связь пользователя с форматом работы."""
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name='user_workformat',
         verbose_name='Пользователь',
         help_text='Пользователь, которому назначен формат работы.',
@@ -22,7 +22,7 @@ class UserWorkFormat(models.Model):
 
     class Meta:
         db_table = 'user_workformat'
-        verbose_name = 'Формат работы пользователя.'
+        verbose_name = 'формат работы пользователя.'
         verbose_name_plural = 'Форматы работы пользователя.'
         constraints = (
             models.UniqueConstraint(

@@ -26,15 +26,15 @@ class AnswerViewSet(DestroyModelMixin, GenericViewSet):
     serializer_class = AnswerDetailSerializer
 
     @extend_schema(
-            tags=['Answers'],
-            summary='Лайк/снятие лайка ответа',
-        )
+        tags=['Answers'],
+        summary='Лайк/снятие лайка ответа',
+    )
     @action(detail=True, methods=['post'], url_path='like')
     def like(
         self,
         request: Request,
-        *args,  # noqa ANN:002
-        **kwargs  # noqa ANN:003
+        *args,
+        **kwargs,
     ) -> Response:
         """Ставит или снимает лайк на ответ."""
         answer = self.get_object()

@@ -33,13 +33,13 @@ class QuestionCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Question
-        fields = [
+        fields = (
             'title',
             'description',
             'tags',
             'is_anonymous',
             'images',
-        ]
+        )
 
     def create(self, validated_data: dict) -> Question:
         """Создание вопроса."""
@@ -125,7 +125,7 @@ class QuestionCreateResponseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Question
-        fields = ['question_id']
+        fields = ('question_id',)
 
 
 class QuestionListSerializer(serializers.ModelSerializer):
@@ -143,7 +143,7 @@ class QuestionListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Question
-        fields = [
+        fields = (
             'question_id',
             'title',
             'description',
@@ -152,7 +152,7 @@ class QuestionListSerializer(serializers.ModelSerializer):
             'created_at',
             'likes_count',
             'answers_count',
-        ]
+        )
 
     def get_author_name(self, obj: Question) -> str:
         """Возвращает имя автора или Аноним."""
@@ -187,7 +187,7 @@ class QuestionDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Question
-        fields = [
+        fields = (
             'question_id',
             'title',
             'description',
@@ -196,7 +196,7 @@ class QuestionDetailSerializer(serializers.ModelSerializer):
             'created_at',
             'likes_count',
             'images',
-        ]
+        )
 
     def get_likes_count(self, obj: Question) -> int:
         """Возвращает количество лайков."""

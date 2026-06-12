@@ -29,12 +29,14 @@ class StrictXParser(MultiPartParser):
 
     def parse(self, stream: Any, media_type: Any, parser_context: Any) -> Any:
         """Парсит запрос, динамически ограничивая размер потока из View."""
-        req = parser_context["request"]
-        view = parser_context.get("view")
+        req = parser_context['request']
+        view = parser_context.get('view')
 
         # Или ограничение из View, или дефолтное из класса
         max_bytes: int = getattr(
-            view, "allow_upload_size", self.default_file_size,
+            view,
+            'allow_upload_size',
+            self.default_file_size,
         )
 
         req.upload_handlers = [

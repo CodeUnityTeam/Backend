@@ -48,6 +48,7 @@ UserModel = get_user_model()
 
 # ============================== MeProfile ===================================
 
+
 @extend_schema_view(
     get=extend_schema(
         tags=['profile'],
@@ -117,48 +118,49 @@ class MeProfileView(RetrieveUpdateDestroyAPIView):
         """Мягко далить аккаунт и вернуть статус HTTP 200 с сообщением."""
         self.destroy(request, *args, **kwargs)
         return Response(
-            {"detail": "Аккаунт успешно удален."},
+            {'detail': 'Аккаунт успешно удален.'},
             status=status.HTTP_200_OK,
         )
 
 
 # ================================== Avatar ===================================
 
+
 @extend_schema_view(
     post=extend_schema(
-        summary="Загрузить аватар пользователя",
+        summary='Загрузить аватар пользователя',
         description=(
-            "Загрузка изображения (jpeg, jpg, png) размером до 10 МБ. "
-            "Старый файл аватара автоматически удаляется из MinIO."
+            'Загрузка изображения (jpeg, jpg, png) размером до 10 МБ. '
+            'Старый файл аватара автоматически удаляется из MinIO.'
         ),
         request={
-            "multipart/form-data": inline_serializer(
-                name="AvatarUploadRequest",
+            'multipart/form-data': inline_serializer(
+                name='AvatarUploadRequest',
                 fields={
-                    "file": serializers.ImageField(help_text="Файл аватара"),
+                    'file': serializers.ImageField(help_text='Файл аватара'),
                 },
             ),
         },
         responses={
             status.HTTP_201_CREATED: inline_serializer(
-                name="AvatarUploadResponse",
-                fields={"avatar_url": serializers.URLField()},
+                name='AvatarUploadResponse',
+                fields={'avatar_url': serializers.URLField()},
             ),
             status.HTTP_400_BAD_REQUEST: OpenApiTypes.OBJECT,
         },
-        tags=["Files"],
+        tags=['Files'],
     ),
     delete=extend_schema(
-        summary="Удалить аватар пользователя",
+        summary='Удалить аватар пользователя',
         description=(
-            "Удаляет файл аватара из хранилища MinIO и "
-            "очищает поле avatar_url в профиле пользователя."
+            'Удаляет файл аватара из хранилища MinIO и '
+            'очищает поле avatar_url в профиле пользователя.'
         ),
         responses={
             status.HTTP_204_NO_CONTENT: None,
             status.HTTP_400_BAD_REQUEST: OpenApiTypes.OBJECT,
         },
-        tags=["Files"],
+        tags=['Files'],
     ),
 )
 class UserAvatarAPIView(APIView):
@@ -171,8 +173,8 @@ class UserAvatarAPIView(APIView):
     def post(
         self,
         request: HttpRequest,
-        *args: Any,  # noqa: ARG002
-        **kwargs: Any,  # noqa: ARG002
+        *args,
+        **kwargs,
     ) -> Response:
         """Загрузить новый аватар и удалить старый при наличии."""
         serializer: AvatarUploadSerializer = AvatarUploadSerializer(
@@ -181,26 +183,27 @@ class UserAvatarAPIView(APIView):
         serializer.is_valid(raise_exception=True)
 
         user: User = request.user  # type: ignore[valid-type]
-        file_obj: UploadedFile = serializer.validated_data["file"]
+        file_obj: UploadedFile = serializer.validated_data['file']
 
         public_url: str = avatar_upload_handler(user, file_obj)
 
         return Response(
-            {"avatar_url": public_url}, status=status.HTTP_201_CREATED,
+            {'avatar_url': public_url},
+            status=status.HTTP_201_CREATED,
         )
 
     def delete(
         self,
         request: HttpRequest,
-        *args: Any,  # noqa: ARG002
-        **kwargs: Any,  # noqa: ARG002
+        *args,
+        **kwargs,
     ) -> Response:
         """Удаленить аватар."""
         user: User = request.user  # type: ignore[valid-type]
 
         if not user.avatar_url:
             return Response(
-                {"detail": "Аватар отсутствует."},
+                {'detail': 'Аватар отсутствует.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -210,6 +213,7 @@ class UserAvatarAPIView(APIView):
 
 
 # ================================ Experience =================================
+
 
 @extend_schema_view(
     list=extend_schema(
@@ -254,6 +258,7 @@ class MeExperienceViewSet(ModelViewSet):
 
 # ============================== UserProfile ==================================
 
+
 @extend_schema_view(
     get=extend_schema(
         tags=['profile'],
@@ -271,6 +276,7 @@ class UserProfileView(RetrieveAPIView):
 
 
 # =============================== ListProfile =================================
+
 
 @extend_schema_view(
     get=extend_schema(
@@ -341,7 +347,8 @@ class UserProfileListView(ListAPIView):
         return valid_uuids
 
     def _apply_search_and_sorting(
-        self, queryset: QuerySet[Any],
+        self,
+        queryset: QuerySet[Any],
         search_query: str,
         sort_by: str,
     ) -> QuerySet[Any]:

@@ -51,7 +51,7 @@ class WorkFormat(models.Model):
         """Метаданные модели."""
 
         db_table = 'work_format'
-        verbose_name = 'Формат работы'
+        verbose_name = 'формат работы'
         verbose_name_plural = 'Форматы работы'
 
 
@@ -127,7 +127,7 @@ class Project(TimestampMixin, models.Model):
     location = models.CharField(
         max_length=MAX_LEN_LOCATION,
         verbose_name='Локация проекта',
-        validators=[validate_location],
+        validators=(validate_location,),
     )
     start_date = models.DateField(
         verbose_name='Дата начала проекта',
@@ -192,7 +192,7 @@ class Project(TimestampMixin, models.Model):
         """Метаданные модели."""
 
         db_table = 'projects'
-        verbose_name = 'Проект'
+        verbose_name = 'проект'
         verbose_name_plural = 'Проекты'
 
     def __str__(self) -> str:
@@ -211,7 +211,7 @@ class ProjectParticipant(models.Model):
     )
     user = models.ForeignKey(
         'users.User',
-        on_delete=models.CASCADE,
+        on_delete=models.CASCADE,  # Что делать, если удалится владелец проекта
         db_column='user_id',
         related_name='project_participations',
         verbose_name='Пользователь',
@@ -227,14 +227,14 @@ class ProjectParticipant(models.Model):
 
         db_table = 'project_participant'
         unique_together = ('project', 'user')
-        verbose_name = 'Участник проекта'
+        verbose_name = 'участник проекта'
         verbose_name_plural = 'Участники проекта'
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
                 fields=['project', 'user'],
                 name='unique_project_participant',
             ),
-        ]
+        )
 
     def __str__(self) -> str:
         return (
@@ -274,23 +274,21 @@ class ProjectLike(CreatedAtMixin, models.Model):
 
         db_table = 'project_likes'
         unique_together = ('user', 'project')
-        verbose_name = 'Лайк проекта'
+        verbose_name = 'лайк проекта'
         verbose_name_plural = 'Лайки проектов'
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
                 fields=['user', 'project'],
                 name='unique_user_project_like',
             ),
-        ]
+        )
         indexes = [
             models.Index(fields=['created_at']),
             models.Index(fields=['user', 'project']),
         ]
 
     def __str__(self) -> str:
-        return (
-            f'Лайк пользователя {self.user} на проект {self.project.title}'
-        )
+        return f'Лайк пользователя {self.user} на проект {self.project.title}'
 
 
 class Response(CreatedAtMixin, models.Model):
@@ -338,14 +336,14 @@ class Response(CreatedAtMixin, models.Model):
 
         db_table = 'response'
         unique_together = ('project', 'user')
-        verbose_name = 'Отклик'
+        verbose_name = 'отклик'
         verbose_name_plural = 'Отклики'
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
                 fields=['project', 'user'],
                 name='unique_response_per_project_user',
             ),
-        ]
+        )
         indexes = [
             models.Index(fields=['status_resp']),
             models.Index(fields=['initiator_type']),

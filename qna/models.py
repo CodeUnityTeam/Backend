@@ -57,11 +57,9 @@ class Question(TimestampMixin, models.Model):
     )
 
     class Meta:
-        """Метаданные модели."""
-
         ordering = ('-created_at',)
         db_table = 'questions'
-        verbose_name = 'Вопрос'
+        verbose_name = 'вопрос'
         verbose_name_plural = 'Вопросы'
         indexes = [
             models.Index(fields=['-created_at']),
@@ -124,10 +122,8 @@ class Answer(models.Model):
     )
 
     class Meta:
-        """Метаданные модели."""
-
         db_table = 'answers'
-        verbose_name = 'Ответ'
+        verbose_name = 'ответ'
         verbose_name_plural = 'Ответы'
         indexes = [
             models.Index(fields=['question', 'created_at']),
@@ -166,18 +162,16 @@ class QuestionLike(models.Model):
     )
 
     class Meta:
-        """Метаданные модели."""
-
         db_table = 'question_likes'
         unique_together = ('user', 'question')
-        verbose_name = 'Лайк вопроса'
+        verbose_name = 'лайк вопроса'
         verbose_name_plural = 'Лайки вопросов'
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
                 fields=['user', 'question'],
                 name='unique_user_question_like',
             ),
-        ]
+        )
         indexes = [
             models.Index(fields=['created_at']),
         ]
@@ -212,18 +206,16 @@ class AnswerLike(models.Model):
     )
 
     class Meta:
-        """Метаданные модели."""
-
         db_table = 'answer_likes'
         unique_together = ('user', 'answer')
-        verbose_name = 'Лайк ответа'
+        verbose_name = 'лайк ответа'
         verbose_name_plural = 'Лайки ответов'
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
                 fields=['user', 'answer'],
                 name='unique_user_answer_like',
             ),
-        ]
+        )
         indexes = [
             models.Index(fields=['created_at']),
         ]
@@ -248,10 +240,8 @@ class QuestionImage(BaseImageMixin):
     )
 
     class Meta:
-        """Метаданные модели."""
-
         db_table = 'question_image'
-        verbose_name = 'Изображение вопроса'
+        verbose_name = 'изображение вопроса'
         verbose_name_plural = 'Изображения вопроса'
         indexes = [
             models.Index(fields=['question']),
@@ -279,10 +269,8 @@ class AnswerImage(BaseImageMixin):
     )
 
     class Meta:
-        """Метаданные модели."""
-
         db_table = 'answer_image'
-        verbose_name = 'Изображение ответа'
+        verbose_name = 'изображение ответа'
         verbose_name_plural = 'Изображения ответов'
         indexes = [
             models.Index(fields=['answer']),

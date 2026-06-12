@@ -59,7 +59,7 @@ class FeedbackForm(TimestampMixin, models.Model):
         """Метаданные модели."""
 
         db_table = 'feedback_form'
-        verbose_name = 'Форма обратной связи'
+        verbose_name = 'форма обратной связи'
         verbose_name_plural = 'Формы обратной связи'
         indexes = [
             models.Index(fields=['user']),
@@ -111,7 +111,7 @@ class FeedbackImage(TimestampMixin, models.Model):
         """Метаданные модели."""
 
         db_table = 'feedback_form_image'
-        verbose_name = 'Изображение для обратной связи'
+        verbose_name = 'изображение для обратной связи'
         verbose_name_plural = 'Изображения обратной связи'
         indexes = [
             models.Index(fields=['feedback']),
@@ -121,9 +121,9 @@ class FeedbackImage(TimestampMixin, models.Model):
     def __str__(self) -> str:
         return f'Изображение: {self.original_name} для {self.feedback.subject}'
 
-    @admin.display(description="Изображение")
-    def post_image(self):   # noqa: ANN201
+    @admin.display(description='Изображение')
+    def post_image(self):  # noqa: ANN201
         """Отображает превью в админке."""
         if self.image_url:
             return mark_safe(f"<img src='{self.image_url}' width=50>")
-        return "Без фото"
+        return 'Без фото'

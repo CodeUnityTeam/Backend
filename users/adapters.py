@@ -14,9 +14,9 @@ from users.utils import get_frontend_url
 
 UserModel = get_user_model()
 
-MSG_SUCCESS = "Письмо с подтверждением успешно отправлено на ваш email."
+MSG_SUCCESS = 'Письмо с подтверждением успешно отправлено на ваш email.'
 MSG_RESENT = (
-    "Письмо с подтверждением успешно отправлено на ваш email повторно."
+    'Письмо с подтверждением успешно отправлено на ваш email повторно.'
 )
 
 
@@ -55,7 +55,7 @@ class CustomAccountAdapter(DefaultAccountAdapter):
         emailconfirmation: EmailConfirmation,
     ) -> str:
         """Получить url для формирования ссылки на подтверждение email."""
-        return get_frontend_url("email", emailconfirmation.key)
+        return get_frontend_url('email', emailconfirmation.key)
 
     def respond_email_verification_sent(
         self,
@@ -64,6 +64,6 @@ class CustomAccountAdapter(DefaultAccountAdapter):
     ) -> Response:
         """Сформировать ответ на запрос регистрации в сервисе."""
         return Response(
-            {"detail": MSG_SUCCESS},
+            {'detail': MSG_SUCCESS},
             status=status.HTTP_201_CREATED,
         )

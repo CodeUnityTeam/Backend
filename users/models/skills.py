@@ -25,7 +25,7 @@ class Skill(models.Model):
 
     class Meta:
         db_table = 'skills'
-        verbose_name = 'Навык'
+        verbose_name = 'навык'
         verbose_name_plural = 'Навыки'
         ordering = ('name',)
 
@@ -53,7 +53,7 @@ class UserSkill(models.Model):
 
     class Meta:
         db_table = 'user_skills'
-        verbose_name = 'Навык пользователя'
+        verbose_name = 'навык пользователя'
         verbose_name_plural = 'Навыки пользователей'
         constraints = (
             models.UniqueConstraint(

@@ -1,16 +1,12 @@
 import uuid
 
-from django.contrib.auth.models import (
-    AbstractUser,
-)
-from django.core.validators import (
-    RegexValidator,
-)
+from django.contrib.auth.models import AbstractUser
+from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models import Q
 
 from config import settings
-from core.constants.users import (
+from core.constants.users import (  # стоит импортировать из пакета core
     MAX_CHAR_FIELD_LENGTH,
     MAX_PHONE_DIGITS,
     MIN_PHONE_DIGITS,
@@ -32,16 +28,17 @@ from core.models.mixins import TimestampMixin
 class User(TimestampMixin, AbstractUser):
     """Кастомная модель пользователя на базе стандартного AbstractUser."""
 
-    class RoleChoices(models.TextChoices):
+    class RoleChoices(models.TextChoices):  # Стоит взять из core/constants
         USER = 'user', 'Пользователь'
         MODERATOR = 'moderator', 'Модератор'
         ADMIN = 'admin', 'Администратор'
 
+    # Стоит вынести в core/constants:
     class ProjectsRelationChoices(models.TextChoices):
         EMPLOYER = 'employer', 'Наниматель'
         WORKER = 'worker', 'Работник'
 
-    REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
+    REQUIRED_FIELDS = ('email', 'first_name', 'last_name')
 
     user_id = models.UUIDField(
         'ID пользователя',
@@ -74,14 +71,14 @@ class User(TimestampMixin, AbstractUser):
         default=False,
         help_text='Отмечает, подтверждён ли основной email пользователя.',
     )
-    new_email = models.EmailField(
+    new_email = models.EmailField(  # Зачем это поле?
         'Новая электронная почта',
         max_length=USER_EMAIL_LENGTH,
         help_text=USER_EMAIL_HELP,
         blank=True,
         default='',
     )
-    is_password_confirmed = models.BooleanField(
+    is_password_confirmed = models.BooleanField(  # Зачем это поле?
         'Пароль подтверждён',
         default=False,
         help_text='Отмечает, подтверждён ли пароль пользователя.',
@@ -183,7 +180,7 @@ class User(TimestampMixin, AbstractUser):
 
     class Meta:
         db_table = 'users'
-        verbose_name = 'Пользователь'
+        verbose_name = 'пользователь'
         verbose_name_plural = 'Пользователи'
         ordering = ('-created_at',)
         constraints = (
@@ -204,7 +201,7 @@ class User(TimestampMixin, AbstractUser):
 
 
 class UserExperience(TimestampMixin):
-    """Моедль опыта работы пользователя."""
+    """Модель опыта работы пользователя."""
 
     exp_id = models.UUIDField(
         'ID записи опыта пользователя',
@@ -246,9 +243,9 @@ class UserExperience(TimestampMixin):
     )
 
     class Meta:
-        verbose_name = 'Опыт работы'
+        verbose_name = 'опыт работы'
         verbose_name_plural = 'Опыт работы'
-        ordering = ['-start_date']
+        ordering = ('-start_date',)
 
     def __str__(self) -> str:
         return f'{self.user} — {self.position} в {self.company}'

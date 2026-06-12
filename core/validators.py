@@ -10,10 +10,10 @@ def file_size_validator(
     """Валидировать размер файла."""
     max_bytes: int = allow_size_mb * 1024 * 1024
 
-    def validator(file_obj: UploadedFile) -> UploadedFile:
-        if file_obj.size > max_bytes:
-            msg: str = f"Размер файла не должен превышать {allow_size_mb} МБ."
+    def validator(file: UploadedFile) -> UploadedFile:
+        if file.size > max_bytes:
+            msg: str = f'Размер файла не должен превышать {allow_size_mb} МБ.'
             raise ValidationError(msg)
-        return file_obj
+        return file
 
     return validator

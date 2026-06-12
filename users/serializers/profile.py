@@ -20,15 +20,13 @@ from projects.serializers import (
 )
 from users.models.skills import Skill, UserSkill
 from users.models.specializations import Specialization, UserSpecialization
-from users.models.users import User, UserExperience
+from users.models.users import UserExperience
 from users.models.workformats import UserWorkFormat
 
-UserModel = get_user_model()
+User = get_user_model()
 
 
-class UserExperienceSerializer(
-    serializers.ModelSerializer[UserExperience],
-):
+class UserExperienceSerializer(serializers.ModelSerializer[UserExperience]):
     """Сериализатор для модели опыта работы пользователя."""
 
     class Meta:
@@ -49,6 +47,7 @@ class UserExperienceSerializer(
         if value > current_date:
             raise serializers.ValidationError(
                 'Дата начала работы не может быть позже текущей даты.',
+                # Стоит вынести в константы
             )
         return value
 
@@ -61,8 +60,7 @@ class UserExperienceSerializer(
             raise serializers.ValidationError(
                 {
                     'end_date': (
-                        'Дата окончания не может быть '
-                        'раньше даты начала.'
+                        'Дата окончания не может быть раньше даты начала.'
                     ),
                 },
             )
@@ -83,7 +81,7 @@ class CustomUserDetailsSerializer(UserDetailsSerializer):
     class Meta(UserDetailsSerializer.Meta):
         """Конфигурация сериализируемых полей пользователя."""
 
-        model = UserModel
+        model = User
         fields = (
             'pk',
             'email',
@@ -190,7 +188,7 @@ class EmailChangeSerializer(serializers.Serializer):
             raise ValidationError('Этот email уже привязан к вашему аккаунту.')
 
         # Проверка уникальности по всей базе пользователей
-        if UserModel.objects.filter(email=value).exists():
+        if User.objects.filter(email=value).exists():
             raise ValidationError('Пользователь с таким email уже существует.')
 
         # Проверка уникальности среди подтвержденных адресов в django-allauth
@@ -202,7 +200,7 @@ class EmailChangeSerializer(serializers.Serializer):
         return value
 
     def save(self) -> User:
-        """Сохранить new_emailи отправить письмо для подтверждения."""
+        """Сохранить new_email и отправить письмо для подтверждения."""
         user = self.context['request'].user
         request = self.context.get('request')
         new_email = self.validated_data['new_email']
@@ -228,9 +226,11 @@ class AvatarUploadSerializer(serializers.Serializer[dict[str, Any]]):
     """Сериализатор для валидации загружаемого файла аватара."""
 
     file: serializers.ImageField = serializers.ImageField(
-        validators=[file_size_validator(
-            allow_size_mb=settings.ALLOW_AVATAR_SIZE_MB,
-        )],
+        validators=[
+            file_size_validator(
+                allow_size_mb=settings.ALLOW_AVATAR_SIZE_MB,
+            )
+        ],
         write_only=True,
     )
 
@@ -239,13 +239,11 @@ class PublicUserProfileSerializer(serializers.ModelSerializer):
     """Сериализатор для списочного отображения профилей."""
 
     skills = SkillSerializer(many=True, read_only=True)
-    specializations = SpecializationSerializer(
-        many=True, read_only=True,
-    )
+    specializations = SpecializationSerializer(many=True, read_only=True)
     workformats = WorkFormatSerializer(many=True, read_only=True)
 
     class Meta:
-        model = UserModel
+        model = User
         fields = (
             'pk',
             'first_name',
@@ -262,9 +260,7 @@ class PublicUserProfileSerializer(serializers.ModelSerializer):
 class DetailUserProfileSerializer(PublicUserProfileSerializer):
     """Сериализатор для детального просмотра чужого профиля."""
 
-    experiences = UserExperienceSerializer(
-        many=True, read_only=True,
-    )
+    experiences = UserExperienceSerializer(many=True, read_only=True)
 
     class Meta(PublicUserProfileSerializer.Meta):
         fields = PublicUserProfileSerializer.Meta.fields + (

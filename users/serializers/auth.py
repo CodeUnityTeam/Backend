@@ -15,17 +15,16 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from users.adapters import MSG_RESENT, ImmediateResponseException
-from users.models.users import User
 from users.utils import get_frontend_url
 
-UserModel = get_user_model()
+User = get_user_model()
 
 
 class SocialAuthUrlResponseSerializer(serializers.Serializer):
     """Сериализатор для возврата URL авторизации."""
 
     authorization_url = serializers.URLField(
-        help_text="Url перенаправления пользователя на сторону провайдера.",
+        help_text='Url перенаправления пользователя на сторону провайдера.',
     )
 
 
@@ -42,7 +41,7 @@ class SocialAuthCodeRequestSerializer(serializers.Serializer):
 
 
 class CustomLoginSerializer(LoginSerializer):
-    """Сериализатор для запроса на вход в сревис."""
+    """Сериализатор для запроса на вход в сервис."""
 
     username = None
     email = serializers.EmailField(required=True)
@@ -65,7 +64,10 @@ class CustomRegisterSerializer(RegisterSerializer):
         super().__init__(*args, **kwargs)
 
         fields_to_pop = [
-            'username', 'password_confirm', 'password1', 'password2',
+            'username',
+            'password_confirm',
+            'password1',
+            'password2',
         ]
         for field in fields_to_pop:
             if field in self.fields:
@@ -74,12 +76,13 @@ class CustomRegisterSerializer(RegisterSerializer):
     def validate_email(self, email: str) -> str:
         """Валидация email с обработкой удаленных аккаунтов."""
         email = get_adapter().clean_email(email)
-        user = UserModel.objects.filter(email__iexact=email).first()
+        user = User.objects.filter(email__iexact=email).first()
 
         if user:
             request = self.context.get('request')
             email_address = EmailAddress.objects.filter(
-                user=user, email__iexact=email,
+                user=user,
+                email__iexact=email,
             ).first()
 
             # Пользователь мягко удален
@@ -91,34 +94,34 @@ class CustomRegisterSerializer(RegisterSerializer):
                     email_address.send_confirmation(request, signup=True)
 
                 raise ImmediateResponseException(
-                    detail={"detail": MSG_RESENT},
+                    detail={'detail': MSG_RESENT},
                 )
 
             # Пользователь активен, но email не подтвержден
             if email_address and not email_address.verified:
                 email_address.send_confirmation(request, signup=True)
                 raise ImmediateResponseException(
-                    detail={"detail": MSG_RESENT},
+                    detail={'detail': MSG_RESENT},
                 )
 
             # Активный подтвержденный пользователь
             raise serializers.ValidationError(
-                "Пользователь с таким email уже зарегистрирован.",
+                'Пользователь с таким email уже зарегистрирован.',
             )
 
         return email
 
-    def validate(self, attrs: dict) -> dict:
+    def validate(self, user_data: dict) -> dict:
         """Валидировать пароль на соответствие требований надежности."""
-        password = attrs.get('password')
+        password = user_data.get('password')
 
-        user = UserModel(
-            email=attrs.get('email'),
-            first_name=attrs.get('first_name'),
-            last_name=attrs.get('last_name'),
+        user = User(
+            email=user_data.get('email'),
+            first_name=user_data.get('first_name'),
+            last_name=user_data.get('last_name'),
         )
         get_adapter().clean_password(password, user=user)
-        return attrs
+        return user_data
 
     def get_cleaned_data(self) -> dict:
         """Переопределить поля стандартной настройки dj-rest-auth."""
@@ -143,14 +146,14 @@ class EmailChangeSerializer(serializers.Serializer):
 
     def validate_new_email(self, value: str) -> str:
         """Валидация нового адреса электронной почты."""
-        user = self.context['request'].user
+        user = self.context['request'].user  # Неавторизованный вызовет ошибку
         value = get_adapter().clean_email(value)
 
         if value == user.email:
             raise ValidationError('Этот email уже привязан к вашему аккаунту.')
 
         # Проверка уникальности по всей базе пользователей
-        if UserModel.objects.filter(email=value).exists():
+        if User.objects.filter(email=value).exists():
             raise ValidationError('Пользователь с таким email уже существует.')
 
         # Проверка уникальности среди подтвержденных адресов в django-allauth
@@ -162,9 +165,12 @@ class EmailChangeSerializer(serializers.Serializer):
         return value
 
     def save(self) -> User:
-        """Сохранить new_emailи отправить письмо для подтверждения."""
-        user = self.context['request'].user
+        """Сохранить new_email и отправить письмо для подтверждения."""
         request = self.context.get('request')
+        # Ниже аналогично стоит исправить:
+        if not request or not request.user.is_authenticated:
+            raise ValidationError('Требуется авторизация')
+        user = request.user
         new_email = self.validated_data['new_email']
 
         user.new_email = new_email
@@ -192,7 +198,7 @@ class CustomPasswordChangeSerializer(PasswordChangeSerializer):
         write_only=True,
     )
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         """Удалить стандартные поля подтверждения пароля из формы."""
         super().__init__(*args, **kwargs)
         self.fields.pop('new_password1', None)
@@ -200,7 +206,7 @@ class CustomPasswordChangeSerializer(PasswordChangeSerializer):
 
     def validate_password(self, value: str) -> str:
         """Проверить надежность нового пароля по стандартам Django."""
-        user = self.context['request'].user
+        user = self.context['request'].user  # Неавторизованный вызовет ошибку
         validate_password(value, user=user)
         return value
 
@@ -215,9 +221,9 @@ class CustomPasswordChangeSerializer(PasswordChangeSerializer):
 class CustomPasswordResetSerializer(PasswordResetSerializer):
     """Кастомный сериализатор для сброса пароля."""
 
-    def get_email_options(self) -> dict[str, any]:
+    def get_email_options(self) -> dict[str, Any]:
         """Переопределяет генератор ссылок внутри опций формы."""
-        options: dict[str, any] = super().get_email_options()
+        options: dict[str, Any] = super().get_email_options()
 
         def custom_url_generator(
             request: HttpRequest,
@@ -225,7 +231,7 @@ class CustomPasswordResetSerializer(PasswordResetSerializer):
             temp_key: str,
         ) -> str:
             """Формирует прямую ссылку на фронтенд."""
-            return get_frontend_url("password", temp_key)
+            return get_frontend_url('password', temp_key)
 
-        options["url_generator"] = custom_url_generator
+        options['url_generator'] = custom_url_generator
         return options

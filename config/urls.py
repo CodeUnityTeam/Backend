@@ -8,40 +8,31 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
 )
 
+v1_urlpatterns = [
+    path('user/', include(('users.urls', 'users'), namespace='users')),
+    path('qna/', include(('qna.urls', 'qna'), namespace='qna')),
+    path(
+        'projects/',
+        include(('projects.urls', 'projects'), namespace='projects'),
+    ),
+    path(
+        'schema/',
+        SpectacularAPIView.as_view(),
+        name='schema',
+    ),
+    path(
+        'docs/swagger/',
+        SpectacularSwaggerView.as_view(url_name='schema'),
+        name='swagger-ui',
+    ),
+    path(
+        'docs/redoc/',
+        SpectacularRedocView.as_view(url_name='schema'),
+        name='redoc',
+    ),
+]
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path(
-        'api/v1/',
-        include(
-            [
-                path(
-                    'user/',
-                    include(('users.urls', 'users'), namespace='users'),
-                ),
-
-                path('qna/', include(('qna.urls', 'qna'), namespace='qna')),
-                path(
-                    'projects/',
-                    include(
-                        ('projects.urls', 'projects'), namespace='projects',
-                    ),
-                ),
-                path(
-                    'schema/',
-                    SpectacularAPIView.as_view(),
-                    name='schema',
-                ),
-                path(
-                    'docs/swagger/',
-                    SpectacularSwaggerView.as_view(url_name='schema'),
-                    name='swagger-ui',
-                ),
-                path(
-                    'docs/redoc/',
-                    SpectacularRedocView.as_view(url_name='schema'),
-                    name='redoc',
-                ),
-            ],
-        ),
-    ),
+    path('api/v1/', include(v1_urlpatterns)),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

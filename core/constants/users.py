@@ -1,4 +1,4 @@
-# --- Users ---
+# Users
 USER_ROLE_LENGTH = 20
 USER_FIRST_NAME_LENGTH = 35
 USER_LAST_NAME_LENGTH = 64
@@ -14,14 +14,14 @@ PHONE_PATTERN = r'^\+\d{10,20}$'
 MAX_CHAR_FIELD_LENGTH = 127
 
 
-# --- Specialization ---
+# Specialization
 SPECIALIZATION_NAME_LENGTH = 50
 
-# --- Skill ---
+# Skill
 SKILL_NAME_LENGTH = 50
 
 
-# --- Help texts для моделей приложения users ---
+# Help texts для моделей приложения users
 USER_EMAIL_HELP = (
     'Действующий и уникальный адрес электронной почты, используемый для входа.'
 )

@@ -21,8 +21,7 @@ def validate_location(location: str) -> str:
         raise ValidationError('Локация не может быть пустым.')
     if not re.match(r'^[a-zA-Zа-яА-Я0-9\s\-]+$', stripped_loc):
         raise ValidationError(
-            'Локация может содержать '
-            'только буквы, цифры, пробелы, дефисы.',
+            'Локация может содержать только буквы, цифры, пробелы, дефисы.'
         )
 
 
@@ -87,8 +86,7 @@ def _validate_formats(formats_data: list) -> list:
     if missing_ids:
         raise serializers.ValidationError({
             'formats': (
-                f'Формат(ы) работы с ID '
-                f'{", ".join(missing_ids)} не найден(ы)'
+                f'Формат(ы) работы с ID {", ".join(missing_ids)} не найден(ы)'
             ),
         })
     return list(existing_formats)

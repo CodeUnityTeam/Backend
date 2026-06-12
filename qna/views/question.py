@@ -80,9 +80,9 @@ class QuestionViewSet(viewsets.ModelViewSet):
         })
 
     @extend_schema(
-            request=QuestionCreateSerializer,
-            responses=QuestionCreateResponseSerializer,
-        )
+        request=QuestionCreateSerializer,
+        responses=QuestionCreateResponseSerializer,
+    )
     def create(self, request: Request) -> Response:
         """Создаёт вопрос."""
         serializer = QuestionCreateSerializer(
@@ -103,8 +103,8 @@ class QuestionViewSet(viewsets.ModelViewSet):
     def partial_update(
         self,
         request: Request,
-        *args,  # noqa: ANN002
-        **kwargs,  # noqa: ANN003
+        *args,
+        **kwargs,
     ) -> Response:
         """Обновляет вопрос частично."""
         question = self.get_object()
@@ -131,8 +131,8 @@ class QuestionViewSet(viewsets.ModelViewSet):
     def add_answer(
         self,
         request: Request,
-        *args,  # noqa ANN:002
-        **kwargs  # noqa ANN:003
+        *args,
+        **kwargs,
     ) -> Response:
         """Создаёт ответ на вопрос."""
         question = self.get_object()
@@ -157,8 +157,8 @@ class QuestionViewSet(viewsets.ModelViewSet):
     def like(
         self,
         request: Request,
-        *args,  # noqa ANN:002
-        **kwargs  # noqa ANN:003
+        *args,
+        **kwargs,
     ) -> Response:
         """Ставит или снимает лайк на вопрос."""
         question = self.get_object()

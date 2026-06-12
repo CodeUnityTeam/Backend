@@ -7,7 +7,8 @@ class CreatedAtMixin(models.Model):
     created_at = models.DateTimeField(
         'Создано',
         auto_now_add=True,
-        help_text='Дата и время создания записи.',
+        help_text='Дата и время создания записи.',  # Точки нужны?
+                                        # В части приложений они отсутствуют
     )
 
     class Meta:

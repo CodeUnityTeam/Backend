@@ -1,6 +1,6 @@
 # Контанты моделей приложения 'qna'
 ZERO_LIKE_COUNT = 0
-MAX_TITLE_QUESTION = 150
+MAX_TITLE_QUESTION = 150  # Не используется в проекте
 MAX_CONTENT_ANSWER = 2000
 MAX_ORIGINAL_NAME = 255
 MAX_MINE_TYPE = 100

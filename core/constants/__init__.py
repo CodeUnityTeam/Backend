@@ -1,4 +1,4 @@
-# Конастанты моделей приложения 'projects'
+# Константы моделей приложения 'projects'
 MIN_LEN_TITLE = 10
 MAX_LEN_TITLE = 50
 MIN_SHORT_DESC = 20
@@ -30,6 +30,7 @@ INITIATOR_RESPONSE = [
     ('applicant', 'Отклик соискателя'),
     ('author', 'Приглашение от автора'),
 ]
+
 # Статус отклика пользователя
 STATUS_RESPONSE_PROJECT = [
     ('pending', 'Ожидает'),
@@ -64,8 +65,8 @@ MAX_LEN_STATUS_FEEDBACK = 50
 MAX_CONTENT_FEEDBACK = 1000
 MAX_SUBJECT_FEEDBACK = 50
 
-# Константы модели 'users'
-
+# Константы модели 'users'  -- Не используются в проекте, не добавлены в
+# ./users или имеют другие названия
 MAX_USERNAME_LENGTH = 40
 MAX_FIRST_NAME_LENGTH = 35
 MAX_LAST_NAME_LENGTH = 64
@@ -74,6 +75,7 @@ MAX_ROLE_LENGTH = 50
 ROLE_USER = 'user'
 ROLE_MODERATOR = 'moderator'
 ROLE_ADMIN = 'admin'
+
 ROLE_CHOICES_LIST = [
     (ROLE_USER, 'Пользователь'),
     (ROLE_MODERATOR, 'Модератор'),

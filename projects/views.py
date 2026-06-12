@@ -98,11 +98,11 @@ from .serializers import (
                 'Success',
                 summary='Успешный ответ',
                 value={
-                    "items": [],
-                    "total": 0,
-                    "page": 1,
-                    "limit": 20,
-                    "has_more": False,
+                    'items': [],
+                    'total': 0,
+                    'page': 1,
+                    'limit': 20,
+                    'has_more': False,
                 },
             ),
         ],
@@ -115,7 +115,7 @@ class ProjectViewSet(ModelViewSet):
     http_method_names = ('get', 'post', 'patch', 'delete')
     pagination_class = CustomProjectPagination
     lookup_field = 'project_id'
-    ordering = ['-published_at']
+    ordering = ('-published_at',)
 
     def get_queryset(self) -> QuerySet[Project]:
         """Оптимизированный queryset с предзагрузкой связанных данных."""
@@ -305,11 +305,11 @@ class ProjectViewSet(ModelViewSet):
                 'Success',
                 summary='Успешный ответ',
                 value={
-                    "items": [],
-                    "total": 0,
-                    "page": 1,
-                    "limit": 20,
-                    "has_more": False,
+                    'items': [],
+                    'total': 0,
+                    'page': 1,
+                    'limit': 20,
+                    'has_more': False,
                 },
             ),
         ],
@@ -364,9 +364,9 @@ class ProjectViewSet(ModelViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @extend_schema(
-            tags=['Проекты'],
-            summary='Лайк/снятие лайка проекта',
-        )
+        tags=['Проекты'],
+        summary='Лайк/снятие лайка проекта',
+    )
     @action(detail=True, methods=['post'], url_path='like')
     @transaction.atomic
     def like(self, request: Request, pk: str | None = None) -> Response:
@@ -434,11 +434,11 @@ class ProjectViewSet(ModelViewSet):
                 'Success',
                 summary='Успешный ответ',
                 value={
-                    "items": [],
-                    "total": 0,
-                    "page": 1,
-                    "limit": 20,
-                    "has_more": False,
+                    'items': [],
+                    'total': 0,
+                    'page': 1,
+                    'limit': 20,
+                    'has_more': False,
                 },
             ),
         ],

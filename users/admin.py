@@ -74,7 +74,7 @@ class UserAdmin(DjangoUserAdmin):
         'first_name',
         'last_name',
         'role',
-        'is_email_confirmed',
+        'is_email_confirmed',  # Это поле не изменяется нигде в коде
     )
     list_filter = ('role', 'is_email_confirmed')
     search_fields = ('email', 'first_name', 'last_name', 'phone_number')
