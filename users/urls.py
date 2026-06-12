@@ -1,4 +1,3 @@
-from django.urls import include, path
 from dj_rest_auth.views import (
     LoginView,
     LogoutView,
@@ -6,6 +5,7 @@ from dj_rest_auth.views import (
     PasswordResetConfirmView,
     PasswordResetView,
 )
+from django.urls import include, path
 from drf_spectacular.utils import extend_schema
 from rest_framework.routers import SimpleRouter
 from rest_framework_simplejwt.views import (
@@ -74,7 +74,7 @@ urlpatterns = [
             path(
                 'password/reset/confirm/',
                 extend_schema(tags=['auth'])(
-                    PasswordResetConfirmView
+                    PasswordResetConfirmView,
                 ).as_view(),
                 name='rest_password_reset_confirm',
             ),

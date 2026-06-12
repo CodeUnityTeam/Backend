@@ -37,8 +37,8 @@ from users.pagination import ProfileListPagination
 from users.serializers.profile import (
     AvatarUploadSerializer,
     DetailUserProfileSerializer,
-    MeProfileUpdateSerializer,
     MeProfileRetrieveSerializer,
+    MeProfileUpdateSerializer,
     PublicUserProfileSerializer,
     UserExperienceSerializer,
 )
