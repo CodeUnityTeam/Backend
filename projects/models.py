@@ -102,7 +102,7 @@ class Project(TimestampMixin, models.Model):
                 ),
             ),
             MaxLengthValidator(
-                limit_value=MAX_LEN_TITLE,
+                limit_value=MAX_SHORT_DESC,
                 message=(
                     'Краткое описание проекта не должно превышать '
                     f'{MAX_SHORT_DESC} символов.'

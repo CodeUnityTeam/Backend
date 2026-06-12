@@ -369,7 +369,7 @@ class ProjectViewSet(ModelViewSet):
         )
     @action(detail=True, methods=['post'], url_path='like')
     @transaction.atomic
-    def like(self, request: Request, pk: str | None = None) -> Response:
+    def like(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Эндпоинт для постановки/снятия лайка проекту."""
         project = self.get_object()
         input_serializer = ProjectLikeSerializer(
