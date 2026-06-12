@@ -29,7 +29,7 @@ BASE_URL="https://dev.code-unity.ru/api/v1" bash fixtures/test_data/create_users
 Или можно проверить эндпоинт `user/auth/registration/verify-email/` и подтвердить email через него для каждого пользователя.
 > **Важно:** `ACCOUNT_EMAIL_VERIFICATION = "mandatory"` — подтверждение email обязательно. Письмо приходит в консоль Django (на dev-сервере `EMAIL_BACKEND=console`). Ссылка для подтверждения имеет формат: `{HOST_URL}/{key}`.
 
-**Для добавления данных в проект запущенный локально используем команду**
+**Для добавления данных в проект, запущенный локально, используем команду**
 ```bash
 bash create_obj.sh
 ```
