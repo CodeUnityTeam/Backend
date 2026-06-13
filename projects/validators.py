@@ -1,39 +1,111 @@
+from datetime import date
 import re
 
+from dateutil.relativedelta import relativedelta
 from django.apps import apps
-from django.core.exceptions import ValidationError
 from django.db.models import Model
 from rest_framework import serializers
 
-from core.constants import ZERO_SYMBOL
+from core.constants import ZERO_SYMBOL, MIN_LEN_TITLE, MAX_LEN_TITLE, MAX_LEN_FULL_DESC, MAX_LEN_LOCATION
 
 
-def validate_location(location: str) -> str:
-    """Валидатор для локации проекта (location).
+# Проверенные валидаторы
+
+def validate_title_project(value: str) -> str:
+    """Валидатор для названия проекта."""
+    cleaned_value: str = value.strip()
+    if not cleaned_value:
+        raise serializers.ValidationError(
+            'Поле названия проекта не должно быть пустым.',
+        )
+    if not MIN_LEN_TITLE <= len(cleaned_value) <= MAX_LEN_TITLE:
+        raise serializers.ValidationError(
+            f'Длина названия проекта должна быть от {MIN_LEN_TITLE} '
+            f'до {MAX_LEN_TITLE} символов. Сейчас {len(cleaned_value)}',
+        )
+    return cleaned_value
+
+
+def validate_short_desc_project(value: str) -> str:
+    """Валидатор для поля 'short_desc' проекта."""
+    cleaned_value: str = value.strip()
+    if not cleaned_value:
+        raise serializers.ValidationError(
+            'Поле описания проекта не должно быть пустым.',
+        )
+    if not MIN_LEN_TITLE <= len(cleaned_value) <= MAX_LEN_TITLE:
+        raise serializers.ValidationError(
+            f'Описание проекта не может быть короче {MIN_LEN_TITLE} '
+            f'и более {MAX_LEN_TITLE} символов. '
+            f'Текущая длина: {len(cleaned_value)}',
+        )
+    if re.search(r'<[^>]+>', cleaned_value):
+        raise serializers.ValidationError(
+            'В кратком описании проекта запрещены HTML-теги: символы "<" и '
+            '">". ',
+        )
+    return cleaned_value
+
+
+def validate_full_desc_project(value: str) -> str:
+    """Валидатор для поля 'full_desc' проекта."""
+    cleaned_value: str = value.strip()
+    if len(cleaned_value) > MAX_LEN_FULL_DESC:
+        raise serializers.ValidationError(
+            f'Описание проекта не должно превышать {MAX_LEN_FULL_DESC} '
+            'символов.',
+        )
+    return cleaned_value
+
+
+def validate_location_project(value: str) -> str:
+    """Валидатор для местоположения проекта.
 
     - буквы (A-Za-z, А-Яа-я)
     - цифры (0-9)
     - пробелы
     - дефисы (-)
     """
-    stripped_loc = location.strip()
-    if len(stripped_loc) == ZERO_SYMBOL:
-        raise ValidationError('Локация не может быть пустым.')
-    if not re.match(r'^[a-zA-Zа-яА-Я0-9\s\-]+$', stripped_loc):
-        raise ValidationError(
+    cleaned_value = value.strip()
+    if len(cleaned_value) > MAX_LEN_LOCATION:
+        raise serializers.ValidationError(
+            f'Описание проекта не должно превышать {MAX_LEN_FULL_DESC} '
+            'символов.',
+        )
+    if not re.match(r'^[a-zA-Zа-яА-Я0-9\s\-]*$', cleaned_value):
+        raise serializers.ValidationError(
             'Локация может содержать '
             'только буквы, цифры, пробелы, дефисы.',
         )
+    return cleaned_value
 
 
-def validate_dates(start_date: str, end_date: str) -> None:
-    """Валидация дат начала и окончания проекта."""
-    if start_date and end_date:
-        if start_date > end_date:
-            raise serializers.ValidationError({
-                'end_date': 'Дата начала не может быть позже даты окончания',
-            })
+def validate_project_start_date(start_date: date) -> date:
+    """Валидация даты начала проекта."""
+    current_date = date.today()
+    if start_date >= current_date:
+        raise serializers.ValidationError(
+            'Дата начала проекта не может быть раньше текущей даты '
+            f'Сегодня: {current_date}',
+        )
+    return start_date
 
+
+def validate_project_end_date(start_date: date, end_date: date) -> date:
+    """Валидация даты окончания проекта."""
+    if end_date < start_date:
+        raise serializers.ValidationError(
+            'Дата окончания работ не может быть раньше даты начала проекта',
+        )
+    max_end_date = start_date + relativedelta(years=1)
+    if end_date > max_end_date:
+        raise serializers.ValidationError(
+            'Дата окончания проекта не может превышать 1 год с начала проекта',
+        )
+    return end_date
+
+
+# Непроверенные валидаторы
 
 def _validate_skills(skills_data: list[dict]) -> list:
     """Валидирует существование навыков и возвращает объекты."""

@@ -1,7 +1,9 @@
 import uuid
+from datetime import date
+from typing import Any
 
 from django.conf import settings
-from django.core.validators import MaxLengthValidator, MinLengthValidator
+from django.core.validators import MinLengthValidator
 from django.db import models
 
 from core.constants.projects import (
@@ -22,8 +24,6 @@ from core.constants.projects import (
     STATUS_RESPONSE_PROJECT,
 )
 from core.models.mixins import CreatedAtMixin, TimestampMixin
-
-from .validators import validate_location
 
 User = settings.AUTH_USER_MODEL
 
@@ -66,7 +66,7 @@ class Project(TimestampMixin, models.Model):
     )
     author = models.ForeignKey(
         User,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         to_field='user_id',
         related_name='projects',
         verbose_name='Автор проекта',
@@ -74,81 +74,40 @@ class Project(TimestampMixin, models.Model):
     )
     title = models.CharField(
         max_length=MAX_LEN_TITLE,
+        validators=[MinLengthValidator(MIN_LEN_TITLE)],
         verbose_name='Название проекта',
-        validators=[
-            MinLengthValidator(
-                limit_value=MIN_LEN_TITLE,
-                message=(
-                    f'Название должно быть не короче {MIN_LEN_TITLE} символов.'
-                ),
-            ),
-            MaxLengthValidator(
-                limit_value=MAX_LEN_TITLE,
-                message=(
-                    f'Название не должно превышать {MAX_LEN_TITLE} символов.'
-                ),
-            ),
-        ],
     )
     short_desc = models.CharField(
         max_length=MAX_SHORT_DESC,
+        validators=[MinLengthValidator(MIN_SHORT_DESC)],
         verbose_name='Краткое описание проекта',
-        validators=[
-            MinLengthValidator(
-                limit_value=MIN_SHORT_DESC,
-                message=(
-                    'Краткое описание проекта должно быть не короче '
-                    f'{MIN_SHORT_DESC} символов.'
-                ),
-            ),
-            MaxLengthValidator(
-                limit_value=MAX_SHORT_DESC,
-                message=(
-                    'Краткое описание проекта не должно превышать '
-                    f'{MAX_SHORT_DESC} символов.'
-                ),
-            ),
-        ],
     )
     full_desc = models.TextField(
+        max_length=MAX_LEN_FULL_DESC,
         verbose_name='Полное описание проекта',
         blank=True,
         null=True,
-        validators=[
-            MaxLengthValidator(
-                limit_value=MAX_LEN_FULL_DESC,
-                message=(
-                    'Полное описание не должно превышать '
-                    f'{MAX_LEN_FULL_DESC} символов.'
-                ),
-            ),
-        ],
     )
     location = models.CharField(
         max_length=MAX_LEN_LOCATION,
-        verbose_name='Локация проекта',
-        validators=[validate_location],
+        verbose_name='Местоположение',
+        blank=True,
+        null=True,
     )
     start_date = models.DateField(
+        default=date.today,
+        help_text='Если не указана - подставляется текущая дата.',
+        blank=True,
         verbose_name='Дата начала проекта',
-        help_text='Если не указана — подставляется текущая дата.',
-        null=False,
-        blank=False,
     )
     end_date = models.DateField(
         verbose_name='Дата окончания проекта',
-        null=False,
-        blank=False,
     )
     status_project = models.CharField(
         max_length=MAX_LEN_STATUS,
         verbose_name='Статус проекта',
         choices=STATUS_PROJECT,
         default='draft',
-        help_text=(
-            'draft → published: публикация.'
-            'Из published в draft запрещено.'
-        ),
     )
     published_at = models.DateTimeField(
         verbose_name='Дата первой публикации',
@@ -156,7 +115,7 @@ class Project(TimestampMixin, models.Model):
         blank=True,
         editable=False,
         help_text=(
-            'Заполняется при первом переходе draft → published. '
+            'Заполняется при первом переходе черновик → опубликовано. '
             'Не меняется при републикации.'
         ),
     )
@@ -179,15 +138,6 @@ class Project(TimestampMixin, models.Model):
         verbose_name='Специализации (роли в проекте)',
     )
 
-    @property
-    def participants_count(self) -> int:
-        """Вычисляемое поле: количество участников.
-
-        - включает автора и всех подтверждённых участников.
-        - не включает ожидающих (pending) и отклонённых (rejected).
-        """
-        return self.participants.count()
-
     class Meta:
         """Метаданные модели."""
 
@@ -195,8 +145,22 @@ class Project(TimestampMixin, models.Model):
         verbose_name = 'Проект'
         verbose_name_plural = 'Проекты'
 
+        ordering = ('-published_at',)
+        constraints = (
+            models.UniqueConstraint(
+                fields=['author', 'title'],
+                name='uniq_project_title_for_author',
+            ),
+        )
+
     def __str__(self) -> str:
         return f'Проект {self.project_id} - {self.title}.'
+
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        """Тримминг пробелов в названии проектов."""
+        if self.title:
+            self.title = self.title.strip()
+        super().save(*args, **kwargs)
 
 
 class ProjectParticipant(models.Model):
@@ -226,7 +190,6 @@ class ProjectParticipant(models.Model):
         """Метаданные модели."""
 
         db_table = 'project_participant'
-        unique_together = ('project', 'user')
         verbose_name = 'Участник проекта'
         verbose_name_plural = 'Участники проекта'
         constraints = [
@@ -238,9 +201,9 @@ class ProjectParticipant(models.Model):
 
     def __str__(self) -> str:
         return (
-            f'Пользоваетель {self.user}.'
-            f'Статус отклика {self.status_participant}.'
             f'Проект {self.project.title}.'
+            f'Пользователь {self.user}.'
+            f'Статус отклика {self.status_participant}.'
         )
 
 
@@ -273,7 +236,6 @@ class ProjectLike(CreatedAtMixin, models.Model):
         """Метаданные модели."""
 
         db_table = 'project_likes'
-        unique_together = ('user', 'project')
         verbose_name = 'Лайк проекта'
         verbose_name_plural = 'Лайки проектов'
         constraints = [
@@ -284,13 +246,10 @@ class ProjectLike(CreatedAtMixin, models.Model):
         ]
         indexes = [
             models.Index(fields=['created_at']),
-            models.Index(fields=['user', 'project']),
         ]
 
     def __str__(self) -> str:
-        return (
-            f'Лайк пользователя {self.user} на проект {self.project.title}'
-        )
+        return f'Лайк пользователя {self.user} на проект {self.project.title}'
 
 
 class Response(CreatedAtMixin, models.Model):
@@ -337,7 +296,6 @@ class Response(CreatedAtMixin, models.Model):
         """Мeтаданные модели."""
 
         db_table = 'response'
-        unique_together = ('project', 'user')
         verbose_name = 'Отклик'
         verbose_name_plural = 'Отклики'
         constraints = [
@@ -348,9 +306,7 @@ class Response(CreatedAtMixin, models.Model):
         ]
         indexes = [
             models.Index(fields=['status_resp']),
-            models.Index(fields=['initiator_type']),
             models.Index(fields=['created_at']),
-            models.Index(fields=['project', 'user']),
         ]
 
     def __str__(self) -> str:
