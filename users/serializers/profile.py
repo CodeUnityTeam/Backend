@@ -195,3 +195,21 @@ class DetailUserProfileSerializer(PublicUserProfileSerializer):
             'experiences',
         )
         read_only_fields = fields
+
+
+class UserResponseListSerializer(PublicUserProfileSerializer):
+    """Сериализатор соискателей с данными их откликов."""
+
+    initiator_type: serializers.CharField = serializers.CharField(
+        source='annotated_initiator_type', read_only=True,
+    )
+    status_resp: serializers.CharField = serializers.CharField(
+        source='annotated_status_resp', read_only=True,
+    )
+
+    class Meta(PublicUserProfileSerializer.Meta):
+        fields = PublicUserProfileSerializer.Meta.fields + (
+            'initiator_type',
+            'status_resp',
+        )
+        read_only_fields = fields
