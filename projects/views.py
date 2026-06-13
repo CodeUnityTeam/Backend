@@ -355,9 +355,11 @@ class ProjectViewSet(ModelViewSet):
     def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Переводит проект в статус 'archived'. (мягкое удаление).
 
-        - Доступ только для автора проекта и админов.
+        - Доступ только для автора-нанимателя, админа или суперюзера.
+        - Проверка прав осуществляется через CanArchiveProject
+          (has_object_permission).
         """
-        project = get_object_or_404(Project, project_id=kwargs.get('pk'))
+        project = self.get_object()
         serializer = self.get_serializer(
             instance=project,
             context={'request': request},
