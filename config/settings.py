@@ -249,9 +249,9 @@ REST_AUTH = {
     'PASSWORD_RESET_SERIALIZER': (
         'users.serializers.auth.CustomPasswordResetSerializer'
     ),
-    "REGISTER_SERIALIZER": "users.serializers.auth.CustomRegisterSerializer",
-    "USER_DETAILS_SERIALIZER": (
-        "users.serializers.profile.MeProfileRetrieveSerializer"
+    'REGISTER_SERIALIZER': 'users.serializers.auth.CustomRegisterSerializer',
+    'USER_DETAILS_SERIALIZER': (
+        'users.serializers.profile.MeProfileRetrieveSerializer'
     ),
 }
 

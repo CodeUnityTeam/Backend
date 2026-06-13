@@ -130,35 +130,10 @@ echo ""
 # =============================================================================
 echo -e "${YELLOW}[2/11] Обновление профиля пользователя...${NC}"
 
-python -c "
-import json, os
-
-data_dir = 'fixtures/test_data'
-user_path_file = os.path.join(data_dir, 'user_path.json')
-
-with open(user_path_file, 'r', encoding='utf-8') as f:
-    data = json.load(f)
-
-result = {
-    'projects_relation': data.get('projects_relation'),
-    'additional_contact': data.get('additional_contact'),
-    'country': data.get('country'),
-    'city': data.get('city'),
-    'soft_skills': data.get('soft_skills'),
-    'about_me': data.get('about_me'),
-    'skills': data.get('skills', []),
-    'specializations': data.get('specializations', []),
-    'workformats': data.get('workformats', []),
-}
-
-with open(os.path.join(data_dir, 'temp_project_data.json'), 'w', encoding='utf-8') as f:
-    json.dump(result, f, ensure_ascii=False)
-"
-
 profile_response=$(curl -s -w "\nHTTP_CODE:%{http_code}" -X PATCH "$BASE_URL/user/profile/me/" \
   -H "Content-Type: application/json; charset=utf-8" \
   -H "Authorization: Bearer $access_token" \
-  --data-binary "@$TEMP_JSON")
+  --data-binary "@$DATA_DIR/user_path.json")
 
 profile_code=$(echo "$profile_response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
 profile_body=$(echo "$profile_response" | sed -n '/^{/,/^HTTP_CODE:/p' | grep -v "HTTP_CODE:")

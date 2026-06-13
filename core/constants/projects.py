@@ -61,3 +61,8 @@ MAX_PAGE_SIZE = 100
 PAGE_SIZE_QUERY_PARAM = 'page_size'
 
 ALLOWED_STATUSED_FOR_LIKE = (PUBLISHED, RECRUITING_CLOSED)
+
+# Максимальное количество навыков в проекте
+MAX_SKILLS_COUNT = 10
+# Максимальное количество проектов у пользователя
+MAX_PROJECTS_PER_USER = 10

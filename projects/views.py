@@ -24,11 +24,10 @@ from rest_framework.viewsets import ModelViewSet
 from .filters import ProjectFilter, ResponseFeedFilter
 from .models import Project
 from .paginations import CustomProjectPagination, CustomResponseFeedPagination
-from .permissions import CanArchiveProject
+from .permissions import CanArchiveProject, IsEmployer
 from .selectors import (
     apply_sorting,
     get_optimized_project_queryset,
-    get_project_or_404,
     get_recommended_projects_queryset,
     get_response_feed_queryset,
 )
@@ -125,11 +124,14 @@ class ProjectViewSet(ModelViewSet):
         """Переопределяем разрешения для разных действий.
 
         - Для list — AllowAny, для остальных — стандартные.
+        - Для create — только наниматели.
         """
         if self.action == 'list':
             return [AllowAny()]
         if self.action == 'destroy':
             return [CanArchiveProject()]
+        if self.action == 'create':
+            return [IsAuthenticated(), IsEmployer()]
         return super().get_permissions()
 
     def get_serializer_class(self) -> type[serializers.Serializer]:
@@ -355,7 +357,7 @@ class ProjectViewSet(ModelViewSet):
 
         - Доступ только для автора проекта и админов.
         """
-        project = get_project_or_404(kwargs.get('pk'))
+        project = get_object_or_404(Project, project_id=kwargs.get('pk'))
         serializer = self.get_serializer(
             instance=project,
             context={'request': request},
@@ -495,7 +497,7 @@ class ProjectViewSet(ModelViewSet):
         project_id: str | None = None,
     ) -> Response:
         """Эндпоинт для отклика пользователя на проект."""
-        project = get_project_or_404(project_id=project_id)
+        project = get_object_or_404(Project, project_id=project_id)
         serializer = ResponseUserProjectSerializer(
             data={},
             context={'request': request, 'project': project},
@@ -534,7 +536,7 @@ class ProjectViewSet(ModelViewSet):
         user_id: str,
     ) -> Response:
         """Пригласить пользователя в проект."""
-        project = get_project_or_404(project_id=project_id)
+        project = get_object_or_404(Project, project_id=project_id)
         if project.author != request.user:
             return Response(
                 {'detail': 'У вас нет прав для приглашения в этот проект'},

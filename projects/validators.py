@@ -1,12 +1,30 @@
-from datetime import date
 import re
+from datetime import date
 
 from dateutil.relativedelta import relativedelta
 from django.apps import apps
+from django.contrib.auth import get_user_model
 from django.db.models import Model
 from rest_framework import serializers
 
-from core.constants import ZERO_SYMBOL, MIN_LEN_TITLE, MAX_LEN_TITLE, MAX_LEN_FULL_DESC, MAX_LEN_LOCATION
+from core.constants import (
+    MAX_LEN_FULL_DESC,
+    MAX_LEN_LOCATION,
+    MAX_LEN_TITLE,
+    MAX_SHORT_DESC,
+    MIN_LEN_TITLE,
+    MIN_SHORT_DESC,
+)
+from core.constants.projects import (
+    ARCHIVED,
+    BLOCKED,
+    DRAFT,
+    MAX_PROJECTS_PER_USER,
+    MAX_SKILLS_COUNT,
+    PUBLISHED,
+)
+
+User = get_user_model()
 
 
 # Проверенные валидаторы
@@ -20,7 +38,7 @@ def validate_title_project(value: str) -> str:
         )
     if not MIN_LEN_TITLE <= len(cleaned_value) <= MAX_LEN_TITLE:
         raise serializers.ValidationError(
-            f'Длина названия проекта должна быть от {MIN_LEN_TITLE} '
+            f'Длина названия проекта должна быть от {MIN_SHORT_DESC} '
             f'до {MAX_LEN_TITLE} символов. Сейчас {len(cleaned_value)}',
         )
     return cleaned_value
@@ -33,10 +51,10 @@ def validate_short_desc_project(value: str) -> str:
         raise serializers.ValidationError(
             'Поле описания проекта не должно быть пустым.',
         )
-    if not MIN_LEN_TITLE <= len(cleaned_value) <= MAX_LEN_TITLE:
+    if not MIN_SHORT_DESC <= len(cleaned_value) <= MAX_SHORT_DESC:
         raise serializers.ValidationError(
-            f'Описание проекта не может быть короче {MIN_LEN_TITLE} '
-            f'и более {MAX_LEN_TITLE} символов. '
+            f'Описание проекта не может быть короче {MIN_SHORT_DESC} '
+            f'и более {MAX_SHORT_DESC} символов. '
             f'Текущая длина: {len(cleaned_value)}',
         )
     if re.search(r'<[^>]+>', cleaned_value):
@@ -79,99 +97,29 @@ def validate_location_project(value: str) -> str:
         )
     return cleaned_value
 
-
-def validate_project_start_date(start_date: date) -> date:
-    """Валидация даты начала проекта."""
-    current_date = date.today()
-    if start_date >= current_date:
-        raise serializers.ValidationError(
-            'Дата начала проекта не может быть раньше текущей даты '
-            f'Сегодня: {current_date}',
-        )
-    return start_date
-
-
-def validate_project_end_date(start_date: date, end_date: date) -> date:
-    """Валидация даты окончания проекта."""
-    if end_date < start_date:
-        raise serializers.ValidationError(
-            'Дата окончания работ не может быть раньше даты начала проекта',
-        )
-    max_end_date = start_date + relativedelta(years=1)
-    if end_date > max_end_date:
-        raise serializers.ValidationError(
-            'Дата окончания проекта не может превышать 1 год с начала проекта',
-        )
-    return end_date
-
-
 # Непроверенные валидаторы
-
-def _validate_skills(skills_data: list[dict]) -> list:
-    """Валидирует существование навыков и возвращает объекты."""
-    if not skills_data:
-        return []
-    skill_ids = [item.get('skill_id') for item in skills_data]
-    if None in skill_ids:
-        raise serializers.ValidationError(
-            'В данных навыков отсутствует поле "skill_id"',
-        )
-    Skill = apps.get_model('users', 'Skill')
-    existing_skills = Skill.objects.filter(skill_id__in=skill_ids)
-    existing_ids = {str(skill.skill_id) for skill in existing_skills}
-    missing_ids = set(skill_ids) - existing_ids
-    if missing_ids:
-        raise serializers.ValidationError(
-            f'Навык(и) с ID {", ".join(missing_ids)} не найден(ы)',
-        )
-    return list(existing_skills)
-
-
-def _validate_specializations(specializations_data: list[dict]) -> list:
-    """Валидирует существование специализаций и возвращает объекты."""
-    if not specializations_data:
-        return []
-    spec_ids = [item.get('spec_id') for item in specializations_data]
-    if None in spec_ids:
-        raise serializers.ValidationError(
-            'В данных специализаций отсутствует поле "spec_id"',
-        )
-    Specialization = apps.get_model('users', 'Specialization')
-    existing_specs = Specialization.objects.filter(spec_id__in=spec_ids)
-    existing_ids = {str(spec.spec_id) for spec in existing_specs}
-    missing_ids = set(spec_ids) - existing_ids
-    if missing_ids:
-        raise serializers.ValidationError(
-            f'Специализация(и) с ID {", ".join(missing_ids)} не найдена(ы)',
-        )
-    return list(existing_specs)
-
-
-def _validate_formats(formats_data: list) -> list:
-    """Валидирует существование форматов работы и возвращает объекты."""
-    if not formats_data:
-        return []
-    WorkFormat = apps.get_model('projects', 'WorkFormat')
-    format_ids_str = [str(uuid_obj) for uuid_obj in formats_data]
-    existing_formats = WorkFormat.objects.filter(format_id__in=format_ids_str)
-    existing_ids = {str(fmt.format_id) for fmt in existing_formats}
-    missing_ids = set(format_ids_str) - existing_ids
-    if missing_ids:
-        raise serializers.ValidationError({
-            'formats': (
-                f'Формат(ы) работы с ID '
-                f'{", ".join(missing_ids)} не найден(ы)'
-            ),
-        })
-    return list(existing_formats)
 
 
 def extract_relationship_data(validated_data: dict) -> dict:
-    """Извлекает данные связей и возвращает их в словаре."""
+    """Извлекает данные связей и возвращает их в словаре.
+
+    Забирает уже проверенные объекты из _validated_*,
+    которые добавляет validate_project_data.
+    Также удаляет оригинальные ключи (skills, specializations,
+    project_format), чтобы они не попали в Project.objects.create.
+    Если ключей нет — возвращает пустые списки.
+    """
+    # Удаляем оригинальные ключи, чтобы не ломать Project.objects.create
+    validated_data.pop('skills', None)
+    validated_data.pop('specializations', None)
+    validated_data.pop('project_format', None)
     return {
-        'skills': validated_data.pop('skills', []),
-        'specializations': validated_data.pop('specializations', []),
-        'formats': validated_data.pop('project_format', []),
+        'skills': validated_data.pop('_validated_skills', []),
+        'specializations': validated_data.pop(
+            '_validated_specializations',
+            [],
+        ),
+        'formats': validated_data.pop('_validated_formats', []),
     }
 
 
@@ -179,15 +127,206 @@ def add_relationships_to_project(
     project: Model,
     relationship_data: dict,
 ) -> None:
-    """Присваивает связанные объекты проекту после валидации."""
-    skills = _validate_skills(relationship_data.get('skills', []))
-    specializations = _validate_specializations(
-        relationship_data.get('specializations', []),
-    )
-    formats = _validate_formats(relationship_data.get('formats', []))
-    if 'skills' in relationship_data and skills:
+    """Присваивает связанные объекты проекту после валидации.
+
+    Объекты уже проверены на этапе validate_project_data,
+    дополнительные запросы к БД не требуются.
+    """
+    skills = relationship_data.get('skills', [])
+    specializations = relationship_data.get('specializations', [])
+    formats = relationship_data.get('formats', [])
+    if skills:
         project.skills.set(skills)
-    if 'specializations' in relationship_data and specializations:
+    if specializations:
         project.specializations.set(specializations)
-    if 'formats' in relationship_data and formats:
+    if formats:
         project.project_format.set(formats)
+
+
+def validate_project_dates(start_date: date, end_date: date) -> None:
+    """Валидация дат начала и окончания проекта.
+
+    - Дата начала не может быть раньше текущей даты.
+    - Дата окончания не может быть раньше даты начала.
+    - Длительность проекта не может превышать 1 год.
+    """
+    current_date = date.today()
+    if start_date < current_date:
+        raise serializers.ValidationError(
+            'Дата начала проекта не может быть раньше текущей даты. '
+            f'Сегодня: {current_date}',
+        )
+    if end_date < start_date:
+        raise serializers.ValidationError(
+            'Дата окончания работ не может быть раньше даты начала проекта.',
+        )
+    max_end_date = start_date + relativedelta(years=1)
+    if end_date > max_end_date:
+        raise serializers.ValidationError(
+            'Дата окончания проекта не может '
+            'превышать 1 год с начала проекта.',
+        )
+
+
+def validate_project_count(user: User) -> None:
+    """Валидация количества проектов у пользователя.
+
+    Проверяет, что у пользователя не больше MAX_PROJECTS_PER_USER
+    активных проектов (draft, published, recruiting_closed).
+    """
+    from projects.models import Project
+
+    active_projects_count = Project.objects.filter(
+        author=user,
+    ).exclude(
+        status_project__in=[ARCHIVED, BLOCKED],
+    ).count()
+    if active_projects_count >= MAX_PROJECTS_PER_USER:
+        raise serializers.ValidationError(
+            f'У пользователя не может быть больше '
+            f'{MAX_PROJECTS_PER_USER} активных проектов. '
+            f'Текущее количество: {active_projects_count}.',
+        )
+    
+    
+def validate_unique_project_title(title: str, user) -> None:
+    """Проверяет, что у пользователя нет проекта с таким же названием.
+
+    Использует регистронезависимое сравнение (__iexact),
+    чтобы 'Проект' и 'проект' считались дубликатами.
+    """
+    Project = apps.get_model('projects', 'Project')
+    if Project.objects.filter(
+        author=user,
+        title__iexact=title,
+    ).exists():
+        raise serializers.ValidationError({
+            'title': 'Проект с таким названием у вас уже существует.',
+        })
+
+
+def _validate_related_ids(
+    data_items: list,
+    id_field: str,
+    model_class: Model,
+    error_label: str,
+) -> list:
+    """Универсальная валидация существования связанных объектов.
+
+    Принимает список словарей с ID, извлекает ID по id_field,
+    проверяет их существование в БД.
+    Возвращает список найденных объектов.
+    """
+    if not data_items:
+        return []
+    ids = [item.get(id_field) for item in data_items]
+    if None in ids:
+        raise serializers.ValidationError(
+            f'В данных {error_label} отсутствует поле "{id_field}"',
+        )
+    existing_objects = list(model_class.objects.filter(pk__in=ids))
+    existing_ids = {str(obj.pk) for obj in existing_objects}
+    missing_ids = set(ids) - existing_ids
+    if missing_ids:
+        raise serializers.ValidationError(
+            f'{error_label.capitalize()} с ID '
+            f'{", ".join(missing_ids)} не найден(ы)',
+        )
+    return existing_objects
+
+
+def _validate_formats_by_uuid_list(format_ids: list) -> list:
+    """Валидация форматов работы, переданных как список UUID."""
+    if not format_ids:
+        return []
+    WorkFormat = apps.get_model('projects', 'WorkFormat')
+    format_ids_str = [str(uuid_obj) for uuid_obj in format_ids]
+    existing_formats = WorkFormat.objects.filter(
+        format_id__in=format_ids_str,
+    )
+    existing_ids = {str(fmt.format_id) for fmt in existing_formats}
+    missing_ids = set(format_ids_str) - existing_ids
+    if missing_ids:
+        raise serializers.ValidationError({
+            'project_format': (
+                f'Формат(ы) работы с ID '
+                f'{", ".join(missing_ids)} не найден(ы)'
+            ),
+        })
+    return list(existing_formats)
+
+
+def validate_create_project_status(status_project: str) -> None:
+    """Валидация статуса для создания проекта."""
+    if status_project not in (DRAFT, PUBLISHED):
+        raise serializers.ValidationError({
+            'status_project': (
+                f'Статус проекта должен быть "{DRAFT}" или "{PUBLISHED}". '
+                f'Получено: "{status_project}".'
+            ),
+        })
+
+
+def validate_project_data(data: dict, user: User) -> dict:
+    """Единая валидация всех данных для создания проекта.
+
+    Проверяет:
+    - количество активных проектов у пользователя
+      не более MAX_PROJECTS_PER_USER
+    - даты начала и окончания
+    - количество навыков (не более MAX_SKILLS_COUNT)
+    - существование всех переданных skills, specializations, work formats
+    - текстовые поля title, short_desc, full_desc, location
+
+    Возвращает data с добавленными ключами _validated_*,
+    содержащими готовые объекты для создания связей.
+    """
+    # 1. Лимит проектов у автора
+    validate_project_count(user)
+    # 2. Даты
+    start_date = data.get('start_date')
+    end_date = data.get('end_date')
+    if start_date and end_date:
+        validate_project_dates(start_date, end_date)
+    # 3. Валидация текстовых полей
+    title = data.get('title')
+    if title:
+        data['title'] = validate_title_project(title)
+        validate_unique_project_title(data['title'], user)
+    short_desc = data.get('short_desc')
+    if short_desc:
+        data['short_desc'] = validate_short_desc_project(short_desc)
+    full_desc = data.get('full_desc')
+    if full_desc:
+        data['full_desc'] = validate_full_desc_project(full_desc)
+    location = data.get('location')
+    if location:
+        data['location'] = validate_location_project(location)
+    # 4. Количество навыков
+    skills_data = data.get('skills', [])
+    if skills_data and len(skills_data) > MAX_SKILLS_COUNT:
+        raise serializers.ValidationError({
+            'skills': (
+                f'Количество навыков не должно превышать '
+                f'{MAX_SKILLS_COUNT}. Сейчас: {len(skills_data)}.'
+            ),
+        })
+    Skill = apps.get_model('users', 'Skill')
+    Specialization = apps.get_model('users', 'Specialization')
+    validated_skills = _validate_related_ids(
+        skills_data, 'skill_id', Skill, 'навыки',
+    )
+    validated_specializations = _validate_related_ids(
+        data.get('specializations', []),
+        'spec_id',
+        Specialization,
+        'специализации',
+    )
+    # Форматы приходят как список UUID ["uuid", "uuid"]
+    validated_formats = _validate_formats_by_uuid_list(
+        data.get('project_format', []),
+    )
+    data['_validated_skills'] = validated_skills
+    data['_validated_specializations'] = validated_specializations
+    data['_validated_formats'] = validated_formats
+    return data

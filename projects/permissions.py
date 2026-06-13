@@ -1,31 +1,42 @@
 from typing import Any
 
-from django.contrib.auth import get_user_model
+from django.apps import apps
 from rest_framework import permissions
 from rest_framework.request import Request
 
 from .models import Project
 
-User = get_user_model()
+User = apps.get_model('users', 'User')
 
 
 def can_archive_project(user: User, project: Project) -> bool:
-    """Проверяет, может ли пользователь архивировать проект."""
+    """Проверяет, может ли пользователь архивировать проект.
+
+    Разрешено:
+    - суперюзеру
+    - администратору (user.role == 'admin')
+    - автору проекта, если он наниматель (EMPLOYER)
+    """
+    if user.is_superuser or user.role == 'admin':
+        return True
     return (
-        user.is_superuser or
-        user.is_staff or
-        project.author == user or
-        user.role == 'admin'
+        project.author == user
+        and user.projects_relation == User.ProjectsRelationChoices.EMPLOYER
     )
 
 
 class CanArchiveProject(permissions.BasePermission):
-    """Разрешает архивировать проект: суперюзеру, админу или автору."""
+    """Разрешает архивировать проект: суперюзеру, админу
+    или автору-нанимателю."""
 
     def has_permission(self, request: Request, view: Any) -> bool:
-        """Проверяет возможность выполнения действия."""
+        """Проверяет возможность выполнения действия.
+
+        Для DELETE — только авторизованные пользователи.
+        Дальнейшая проверка прав на объект — в has_object_permission.
+        """
         if request.method == 'DELETE':
-            return True
+            return request.user.is_authenticated
         return True
 
     def has_object_permission(
@@ -38,3 +49,17 @@ class CanArchiveProject(permissions.BasePermission):
         if request.method != 'DELETE':
             return False
         return can_archive_project(request.user, obj)
+
+
+class IsEmployer(permissions.BasePermission):
+    """Только наниматели могут создавать проекты."""
+
+    def has_permission(self, request: Request, view: Any) -> bool:
+        """Проверяем что юзер авторизован и является нанимателем."""
+        if view.action == 'create':
+            return (
+                request.user.is_authenticated
+                and request.user.projects_relation
+                == User.ProjectsRelationChoices.EMPLOYER
+            )
+        return True

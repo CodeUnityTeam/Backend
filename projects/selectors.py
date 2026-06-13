@@ -3,23 +3,12 @@ import uuid
 from django.contrib.auth import get_user_model
 from django.contrib.postgres.search import SearchRank, SearchVector
 from django.db.models import Count, QuerySet
-from django.shortcuts import get_object_or_404
 
 from core.constants.projects import APPLICANT, MEMBER, PENDING, PUBLISHED
 
 from .models import Project, ProjectParticipant, Response
 
 User = get_user_model()
-
-
-def get_project_or_404(project_id: str) -> Project:
-    """Получает проект по ID или выбрасывает 404, если не найден."""
-    return get_object_or_404(Project, project_id=project_id)
-
-
-def get_user_or_404(user_id: uuid) -> User:
-    """Получает юзера по ID или выбрасывает 404, если не найден."""
-    return get_object_or_404(User, user_id=user_id)
 
 
 def get_project_with_relations(project_id: uuid) -> Project:
