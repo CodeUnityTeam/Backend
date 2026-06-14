@@ -9,7 +9,8 @@ from rest_framework import serializers
 
 from config import settings
 from core.validators import file_size_validator
-from projects.models import Response as ProjectResponse, WorkFormat
+from projects.models import Response as ProjectResponse
+from projects.models import WorkFormat
 from projects.serializers import (
     SkillSerializer,
     SpecializationSerializer,
@@ -24,8 +25,9 @@ UserModel = get_user_model()
 
 class DRFErrorResponseSerializer(serializers.Serializer):
     """Стандартная структура ошибки Django REST Framework."""
+
     detail = serializers.CharField(
-        help_text='Текстовое сообщение с деталями ошибки.'
+        help_text='Текстовое сообщение с деталями ошибки.',
     )
 
 
@@ -208,13 +210,13 @@ class UserResponseCardSerializer(serializers.ModelSerializer):
     """Сериализатор карточки отклика с вложенным профилем соискателя."""
 
     response_id: serializers.UUIDField = serializers.UUIDField(
-        read_only=True
+        read_only=True,
     )
     project_id: serializers.UUIDField = serializers.UUIDField(
-        source='project.project_id', read_only=True
+        source='project.project_id', read_only=True,
     )
     project_title: serializers.CharField = serializers.CharField(
-        source='project.title', read_only=True
+        source='project.title', read_only=True,
     )
     profile: PublicUserProfileSerializer = (
         PublicUserProfileSerializer(source='user', read_only=True)

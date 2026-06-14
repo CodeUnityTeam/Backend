@@ -1,6 +1,8 @@
 from typing import Any, Union
+
 from django.db.models import Count, OuterRef, Q, QuerySet, Subquery
 from django.db.models.functions import Coalesce
+
 from projects.models import Response as ProjectResponse
 from users.models.users import User
 
@@ -38,15 +40,15 @@ def get_employer_profiles_selector(
         User.objects.filter(pk=OuterRef(outer_ref_field))
         .annotate(
             c=Count(
-                'specializations', filter=Q(specializations__in=spec_ids)
-            )
+                'specializations', filter=Q(specializations__in=spec_ids),
+            ),
         )
         .values('c')
     )
     sub_formats = (
         User.objects.filter(pk=OuterRef(outer_ref_field))
         .annotate(
-            c=Count('workformats', filter=Q(workformats__in=format_ids))
+            c=Count('workformats', filter=Q(workformats__in=format_ids)),
         )
         .values('c')
     )
@@ -55,7 +57,7 @@ def get_employer_profiles_selector(
     queryset = queryset.annotate(
         match_count=Coalesce(Subquery(sub_skills[:1]), 0)
         + Coalesce(Subquery(sub_specs[:1]), 0)
-        + Coalesce(Subquery(sub_formats[:1]), 0)
+        + Coalesce(Subquery(sub_formats[:1]), 0),
     )
 
     if skill_ids or spec_ids or format_ids:

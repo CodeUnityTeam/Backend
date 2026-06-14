@@ -9,8 +9,7 @@ from config import settings
 from core.s3_utils import MinioService
 from projects.models import Response as ProjectResponse
 from users.models.users import User
-from users.selectors import get_employer_profiles_selector\
-
+from users.selectors import get_employer_profiles_selector
 
 avatar_minio_client = MinioService(
     bucket_name=settings.STORAGES['avatars']['OPTIONS']['bucket_name'],
@@ -73,7 +72,7 @@ def _is_valid_uuid(val: str) -> bool:
 
 
 def get_profiles_for_employer_service(
-    current_user: Any, query_params: dict[str, Any]
+    current_user: Any, query_params: dict[str, Any],
 ) -> Union[QuerySet[ProjectResponse], QuerySet[User]]:
     """Бизнес-логика фильтрации параметров и защиты от DataError СУБД."""
     responses_param: str = query_params.get('responses', '').lower()

@@ -1,4 +1,5 @@
 from typing import Any
+
 import django_filters
 from django.db.models import Q, QuerySet
 
@@ -11,13 +12,13 @@ class UserFilter(django_filters.FilterSet):
     """
 
     skill_ids: django_filters.CharFilter = django_filters.CharFilter(
-        method='filter_noop'
+        method='filter_noop',
     )
     spec_ids: django_filters.CharFilter = django_filters.CharFilter(
-        method='filter_noop'
+        method='filter_noop',
     )
     format_ids: django_filters.CharFilter = django_filters.CharFilter(
-        method='filter_noop'
+        method='filter_noop',
     )
     search: django_filters.CharFilter = django_filters.CharFilter(
         method='filter_by_search',
@@ -27,7 +28,7 @@ class UserFilter(django_filters.FilterSet):
         django_filters.BooleanFilter(method='filter_noop')
     )
     sort_by: django_filters.CharFilter = django_filters.CharFilter(
-        method='filter_noop'
+        method='filter_noop',
     )
 
     class Meta:
@@ -38,7 +39,7 @@ class UserFilter(django_filters.FilterSet):
         return 'user__' if queryset.model.__name__ == 'Response' else ''
 
     def filter_by_search(
-        self, queryset: QuerySet[Any], name: str, value: Any
+        self, queryset: QuerySet[Any], name: str, value: Any,
     ) -> QuerySet[Any]:
         """Ищет по вхождению подстроки (icontains) в 4 текстовых поля."""
         if not value:
@@ -49,11 +50,11 @@ class UserFilter(django_filters.FilterSet):
             Q(**{f'{pfx}first_name__icontains': value})
             | Q(**{f'{pfx}last_name__icontains': value})
             | Q(**{f'{pfx}country__icontains': value})
-            | Q(**{f'{pfx}city__icontains': value})
+            | Q(**{f'{pfx}city__icontains': value}),
         ).distinct()
 
     def filter_noop(
-        self, queryset: QuerySet[Any], name: str, value: Any
+        self, queryset: QuerySet[Any], name: str, value: Any,
     ) -> QuerySet[Any]:
         """Заглушка. Параметры обрабатываются на уровне селектора."""
         return queryset

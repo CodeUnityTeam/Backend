@@ -7,13 +7,13 @@ from django.db.models import QuerySet
 from django.http import HttpRequest
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import (
-    extend_schema,
-    extend_schema_view,
-    inline_serializer,
     OpenApiExample,
     OpenApiParameter,
     OpenApiTypes,
     PolymorphicProxySerializer,
+    extend_schema,
+    extend_schema_view,
+    inline_serializer,
 )
 from rest_framework import serializers, status
 from rest_framework.generics import (
@@ -23,7 +23,7 @@ from rest_framework.generics import (
 )
 from rest_framework.pagination import BasePagination
 from rest_framework.parsers import MultiPartParser
-from rest_framework.permissions import IsAuthenticated, BasePermission
+from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import BaseSerializer
@@ -37,8 +37,8 @@ from users.pagination import ProfileListPagination
 from users.permissions import IsEmployer
 from users.serializers.profile import (
     AvatarUploadSerializer,
-    DetailUserProfileSerializer,
     DRFErrorResponseSerializer,
+    DetailUserProfileSerializer,
     MeProfileRetrieveSerializer,
     MeProfileUpdateSerializer,
     PublicUserProfileSerializer,
@@ -48,7 +48,7 @@ from users.serializers.profile import (
 from users.services import (
     avatar_delete_handler,
     avatar_upload_handler,
-    get_profiles_for_employer_service
+    get_profiles_for_employer_service,
 )
 
 UserModel = get_user_model()
@@ -354,12 +354,12 @@ class UserProfileView(RetrieveAPIView):
             OpenApiExample(
                 name='Пример ошибки 403 (Пользователь не EMPLOYER)',
                 value={
-                    'detail': 'У вас нет прав для выполнения этого действия.'
+                    'detail': 'У вас нет прав для выполнения этого действия.',
                 },
                 status_codes=['403'],
             ),
         ],
-    )
+    ),
 )
 class UserProfileListView(ListAPIView):
     """View для получения списка профилей пользователей."""
