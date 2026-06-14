@@ -3,10 +3,10 @@ from typing import Any, List
 from django.db import transaction
 from django.db.models import QuerySet
 from django.shortcuts import get_object_or_404
+from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import (
     OpenApiExample,
     OpenApiParameter,
-    OpenApiTypes,
     extend_schema,
     extend_schema_view,
 )
@@ -18,11 +18,11 @@ from rest_framework.permissions import (
     IsAuthenticated,
 )
 from rest_framework.request import Request
-from rest_framework.response import Response
+from rest_framework.response import Response as DRFResponse
 from rest_framework.viewsets import ModelViewSet
 
 from .filters import ProjectFilter, ResponseFeedFilter
-from .models import Project
+from .models import Project, Response
 from .paginations import CustomProjectPagination, CustomResponseFeedPagination
 from .permissions import CanArchiveProject, IsEmployer
 from .selectors import (
@@ -111,7 +111,7 @@ class ProjectViewSet(ModelViewSet):
     """Вьюсет для работы с проектами."""
 
     permission_classes = (IsAuthenticated,)
-    http_method_names = ('get', 'post', 'patch', 'delete')
+    http_method_names = ['get', 'post', 'patch', 'delete']
     pagination_class = CustomProjectPagination
     lookup_field = 'project_id'
     ordering = ['-published_at']
@@ -158,12 +158,12 @@ class ProjectViewSet(ModelViewSet):
             return FeedbackAndInvitationFeedSerializer
         return ProjectDetailSerializer
 
-    def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+    def create(self, request: Request, *args: Any, **kwargs: Any) -> DRFResponse:
         """Создание проекта."""
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         project = serializer.save()
-        return Response(
+        return DRFResponse(
             ProjectCreationResponseSerializer(project).data,
             status=status.HTTP_201_CREATED,
         )
@@ -321,13 +321,13 @@ class ProjectViewSet(ModelViewSet):
         request: Request,
         *args: Any,
         **kwargs: Any,
-    ) -> Response[Project]:
+    ) -> DRFResponse[Project]:
         """Список проектов с фильтрацией и сортировкой (только для list)."""
         queryset = self.get_queryset()
         filter_instance = ProjectFilter(
             request.query_params,
             queryset=queryset,
-            request=request,
+            request=request._request,
         )
         filtered_queryset = filter_instance.qs
         sort_by = request.query_params.get('sort_by', 'published_at')
@@ -349,10 +349,15 @@ class ProjectViewSet(ModelViewSet):
             many=True,
             context={'request': request},
         )
-        return Response(serializer.data)
+        return DRFResponse(serializer.data)
 
     @transaction.atomic
-    def destroy(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+    def destroy(
+        self,
+        request: Request,
+        *args: Any,
+        **kwargs: Any,
+    ) -> DRFResponse:
         """Переводит проект в статус 'archived'. (мягкое удаление).
 
         - Доступ только для автора-нанимателя, админа или суперюзера.
@@ -365,7 +370,7 @@ class ProjectViewSet(ModelViewSet):
             context={'request': request},
         )
         serializer.save()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return DRFResponse(status=status.HTTP_204_NO_CONTENT)
 
     @extend_schema(
         tags=['Проекты'],
@@ -373,7 +378,7 @@ class ProjectViewSet(ModelViewSet):
     )
     @action(detail=True, methods=['post'], url_path='like')
     @transaction.atomic
-    def like(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+    def like(self, request: Request, *args: Any, **kwargs: Any) -> DRFResponse:
         """Эндпоинт для постановки/снятия лайка проекту."""
         project = self.get_object()
         input_serializer = ProjectLikeSerializer(
@@ -382,13 +387,18 @@ class ProjectViewSet(ModelViewSet):
         )
         input_serializer.is_valid(raise_exception=True)
         result = input_serializer.toggle_like()
-        return Response(
+        return DRFResponse(
             ProjectLikeResponseSerializer(result).data,
             status=status.HTTP_200_OK,
         )
 
     @transaction.atomic
-    def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+    def update(
+        self,
+        request: Request,
+        *args: Any,
+        **kwargs: Any,
+    ) -> DRFResponse:
         """Обновление проекта, возможно  частичное."""
         project = self.get_object()
         serializer = self.get_serializer(
@@ -398,7 +408,7 @@ class ProjectViewSet(ModelViewSet):
         )
         serializer.is_valid(raise_exception=True)
         project = serializer.save()
-        return Response(
+        return DRFResponse(
             ProjectUpdateResponseSerializer(project).data,
             status=status.HTTP_200_OK,
         )
@@ -451,10 +461,10 @@ class ProjectViewSet(ModelViewSet):
     def recommendations(
         self,
         request: Request,
-    ) -> Response:
+    ) -> DRFResponse:
         """Эндпоинт для получения рекомендаций по проектам."""
-        page = request.query_params.get('page', 1)
-        limit = request.query_params.get('limit', 20)
+        page = int(request.query_params.get('page', 1))
+        limit = int(request.query_params.get('limit', 20))
         user = request.user
         user_skills = list(user.skills.all())
         if not user_skills:
@@ -497,7 +507,7 @@ class ProjectViewSet(ModelViewSet):
         self,
         request: Request,
         project_id: str | None = None,
-    ) -> Response:
+    ) -> DRFResponse:
         """Эндпоинт для отклика пользователя на проект."""
         project = get_object_or_404(Project, project_id=project_id)
         serializer = ResponseUserProjectSerializer(
@@ -506,7 +516,7 @@ class ProjectViewSet(ModelViewSet):
         )
         serializer.is_valid(raise_exception=True)
         response = serializer.save()
-        return Response(
+        return DRFResponse(
             ResponseResponseCreateProjectSerializer(response).data,
             status=status.HTTP_201_CREATED,
         )
@@ -536,11 +546,11 @@ class ProjectViewSet(ModelViewSet):
         request: Request,
         project_id: str,
         user_id: str,
-    ) -> Response:
+    ) -> DRFResponse:
         """Пригласить пользователя в проект."""
         project = get_object_or_404(Project, project_id=project_id)
         if project.author != request.user:
-            return Response(
+            return DRFResponse(
                 {'detail': 'У вас нет прав для приглашения в этот проект'},
                 status=status.HTTP_403_FORBIDDEN,
             )
@@ -554,7 +564,7 @@ class ProjectViewSet(ModelViewSet):
         )
         create_serializer.is_valid(raise_exception=True)
         response_instance = create_serializer.save()
-        return Response(
+        return DRFResponse(
             self.get_serializer(response_instance).data,
             status=status.HTTP_200_OK,
         )
@@ -591,7 +601,7 @@ class ProjectViewSet(ModelViewSet):
         self,
         request: Request,
         response_id: str | None = None,
-    ) -> Response:
+    ) -> DRFResponse:
         """Изменить статус отклика/приглашения."""
         response = get_object_or_404(Response, response_id=response_id)
         serializer = UpdateResponseStatusSerializer(
@@ -601,7 +611,7 @@ class ProjectViewSet(ModelViewSet):
         )
         serializer.is_valid(raise_exception=True)
         update_status = serializer.save()
-        return Response(
+        return DRFResponse(
             self.get_serializer(update_status).data,
             status=status.HTTP_200_OK,
         )
@@ -671,7 +681,7 @@ class ProjectViewSet(ModelViewSet):
         request: Request,
         *args: Any,
         **kwargs: Any,
-    ) -> Response:
+    ) -> DRFResponse:
         """Действие для получения ленты откликов/приглашений."""
         queryset = get_response_feed_queryset(request.user)
         filterset = ResponseFeedFilter(
@@ -692,7 +702,7 @@ class ProjectViewSet(ModelViewSet):
         )
         if page is not None:
             return paginator.get_paginated_response(serializer.data)
-        response = Response(serializer.data)
+        response = DRFResponse(serializer.data)
         response.data['applied_filters'] = {
             'card_type': request.query_params.get('card_type', 'all'),
             'status': request.query_params.get('status', 'all'),
