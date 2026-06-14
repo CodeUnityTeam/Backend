@@ -1,10 +1,13 @@
 import uuid
 
+from django.core.validators import MinLengthValidator
 from django.db import models
 
 from core.constants.qna import (
     MAX_CONTENT_ANSWER,
     MAX_TITLE_QUESTION,
+    MIN_DESC_QUESTION,
+    MIN_TITLE_QUESTION,
 )
 from core.models.mixins import TimestampMixin
 from users.models import Skill
@@ -35,9 +38,11 @@ class Question(TimestampMixin, models.Model):
     )
     title = models.CharField(
         max_length=MAX_TITLE_QUESTION,
+        validators=[MinLengthValidator(MIN_TITLE_QUESTION)],
         verbose_name='Заголовок вопроса',
     )
     description = models.TextField(
+        validators=[MinLengthValidator(MIN_DESC_QUESTION)],
         verbose_name='Полное описание вопроса',
     )
     is_anonymous = models.BooleanField(

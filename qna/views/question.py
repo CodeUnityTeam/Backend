@@ -1,6 +1,7 @@
 from django.db.models import (
     Case,
     Count,
+    Prefetch,
     Q,
     Value,
     When,
@@ -9,7 +10,6 @@ from django.db.models.functions import Concat
 from drf_spectacular.utils import (
     extend_schema,
     extend_schema_view,
-    inline_serializer,
 )
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
@@ -17,22 +17,19 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from qna.models import (
-    Question,
-    QuestionLike,
-)
+from qna.models import Answer, Question, QuestionLike
+from qna.services import toggle_like
 from qna.serializers.answer import (
     AnswerCreateResponseSerializer,
     AnswerCreateSerializer,
-    AnswerDetailSerializer,
 )
 from qna.serializers.like import LikeSerializer
 from qna.serializers.question import (
     QuestionCreateResponseSerializer,
     QuestionCreateSerializer,
-    QuestionDetailSerializer,
     QuestionListSerializer,
     QuestionUpdateSerializer,
+    QuestionWithAnswersSerializer,
 )
 
 
@@ -52,12 +49,20 @@ from qna.serializers.question import (
 class QuestionViewSet(viewsets.ModelViewSet):
     """Представление для вопросов."""
 
-    queryset = Question.objects.select_related('user').annotate(
+    queryset = Question.objects.select_related('user').prefetch_related(
+        Prefetch(
+            'answers',
+            queryset=Answer.objects.select_related('user').prefetch_related(
+                'images',
+            ).filter(is_active=True),
+        ),
+        'likes',
+        'images',
+    ).annotate(
         likes_count=Count('likes', distinct=True),
         answers_count=Count(
             'answers',
             filter=Q(answers__is_active=True),
-            distinct=True,
         ),
         author_name=Case(
             When(
@@ -70,7 +75,10 @@ class QuestionViewSet(viewsets.ModelViewSet):
                 'user__last_name',
             ),
         ),
-    ).prefetch_related('skills', 'images')
+    )
+    # Лёгкий queryset для actions, где не нужны prefetch (add_answer, like)
+    _light_queryset = Question.objects.only('pk')
+
     serializer_class = QuestionCreateSerializer
     permission_classes = [IsAuthenticated]
     http_method_names = ['get', 'post', 'patch', 'delete']
@@ -80,35 +88,14 @@ class QuestionViewSet(viewsets.ModelViewSet):
         if self.action == 'list':
             return QuestionListSerializer
         if self.action == 'retrieve':
-            return QuestionDetailSerializer
+            return QuestionWithAnswersSerializer
         return QuestionCreateSerializer
 
-    @extend_schema(
-        responses=inline_serializer(
-            name='QuestionRetrieveResponse',
-            fields={
-                'question': QuestionDetailSerializer(),
-                'answers': AnswerDetailSerializer(many=True),
-            },
-        ),
-    )
-    def retrieve(
-        self,
-        request: Request,
-        *args,  # noqa: ANN002
-        **kwargs,  # noqa: ANN003
-    ) -> Response:
-        """Возвращает детальную страницу вопроса."""
-        question = self.get_object()
-        answers = question.answers.filter(
-            is_active=True,
-        ).prefetch_related('images').annotate(
-            likes_count=Count('likes'),
-        )
-        return Response({
-            'question': QuestionDetailSerializer(question).data,
-            'answers': AnswerDetailSerializer(answers, many=True).data,
-        })
+    def get_queryset(self):
+        """Возвращает оптимизированный queryset в зависимости от action."""
+        if self.action in ('add_answer', 'like'):
+            return self._light_queryset
+        return super().get_queryset()
 
     @extend_schema(
             request=QuestionCreateSerializer,
@@ -193,17 +180,10 @@ class QuestionViewSet(viewsets.ModelViewSet):
     ) -> Response:
         """Ставит или снимает лайк на вопрос."""
         question = self.get_object()
-        user = request.user
-        like, created = QuestionLike.objects.get_or_create(
-            question=question,
-            user=user,
+        result = toggle_like(
+            like_model=QuestionLike,
+            target_obj=question,
+            user=request.user,
+            target_field='question',
         )
-        if not created:
-            like.delete()
-            liked = False
-        else:
-            liked = True
-        return Response({
-            'liked': liked,
-            'likes_count': question.likes.count(),
-        })
+        return Response(result)

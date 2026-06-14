@@ -2,7 +2,13 @@ from django.db import transaction
 from django.db.models import QuerySet
 from rest_framework import serializers
 
+from core.constants.qna import (
+    MAX_TITLE_QUESTION,
+    MIN_DESC_QUESTION,
+    MIN_TITLE_QUESTION,
+)
 from qna.models import Question, QuestionImage
+from qna.serializers.answer import AnswerDetailSerializer
 from users.models import Skill
 
 
@@ -40,6 +46,13 @@ class QuestionCreateSerializer(serializers.ModelSerializer):
         required=False,
         write_only=True,
         label='Изображения',
+    )
+    title = serializers.CharField(
+        min_length=MIN_TITLE_QUESTION,
+        max_length=MAX_TITLE_QUESTION,
+    )
+    description = serializers.CharField(
+        min_length=MIN_DESC_QUESTION,
     )
 
     class Meta:
@@ -163,10 +176,7 @@ class QuestionListSerializer(serializers.ModelSerializer):
         slug_field='name',
         source='skills',
     )
-    author_name = serializers.CharField(
-        source='author_name',
-        read_only=True,
-    )
+    author_name = serializers.ReadOnlyField()
     likes_count = serializers.IntegerField(read_only=True)
     answers_count = serializers.IntegerField(read_only=True)
 
@@ -193,10 +203,7 @@ class QuestionDetailSerializer(serializers.ModelSerializer):
         slug_field='name',
         source='skills',
     )
-    author_name = serializers.CharField(
-        source='author_name',
-        read_only=True,
-    )
+    author_name = serializers.ReadOnlyField()
     likes_count = serializers.IntegerField(read_only=True)
     images = serializers.SerializerMethodField()
 
@@ -216,3 +223,15 @@ class QuestionDetailSerializer(serializers.ModelSerializer):
     def get_images(self, obj: Question) -> list[str]:
         """Возвращает список URL изображений."""
         return [img.image_url for img in obj.images.all()]
+
+
+class QuestionWithAnswersSerializer(QuestionDetailSerializer):
+    """Объединяет вопрос и ответы в один ответ.
+
+    Наследует все поля от QuestionDetailSerializer и добавляет ответы.
+    """
+
+    answers = AnswerDetailSerializer(many=True, read_only=True)
+
+    class Meta(QuestionDetailSerializer.Meta):
+        fields = QuestionDetailSerializer.Meta.fields + ['answers']
