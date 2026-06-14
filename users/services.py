@@ -1,3 +1,4 @@
+from functools import partial
 from typing import Any, Union
 from uuid import UUID, uuid4
 
@@ -42,7 +43,7 @@ def avatar_upload_handler(
         # 3. Удаляем старый файл только после успешного коммита транзакции
         if old_avatar_url:
             transaction.on_commit(
-                lambda: avatar_minio_client.delete_file(old_avatar_url),
+                partial(avatar_minio_client.delete_file, old_avatar_url),
             )
 
     return public_url
