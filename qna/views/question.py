@@ -1,4 +1,11 @@
-from django.db.models import Count, Q, QuerySet
+from django.db.models import (
+    Case,
+    Count,
+    Q,
+    Value,
+    When,
+)
+from django.db.models.functions import Concat
 from drf_spectacular.utils import (
     extend_schema,
     extend_schema_view,
@@ -45,7 +52,25 @@ from qna.serializers.question import (
 class QuestionViewSet(viewsets.ModelViewSet):
     """Представление для вопросов."""
 
-    queryset = Question.objects.all()
+    queryset = Question.objects.select_related('user').annotate(
+        likes_count=Count('likes', distinct=True),
+        answers_count=Count(
+            'answers',
+            filter=Q(answers__is_active=True),
+            distinct=True,
+        ),
+        author_name=Case(
+            When(
+                is_anonymous=True,
+                then=Value('Аноним'),
+            ),
+            default=Concat(
+                'user__first_name',
+                Value(' '),
+                'user__last_name',
+            ),
+        ),
+    ).prefetch_related('skills', 'images')
     serializer_class = QuestionCreateSerializer
     permission_classes = [IsAuthenticated]
     http_method_names = ['get', 'post', 'patch', 'delete']
@@ -57,20 +82,6 @@ class QuestionViewSet(viewsets.ModelViewSet):
         if self.action == 'retrieve':
             return QuestionDetailSerializer
         return QuestionCreateSerializer
-
-    def get_queryset(self) -> QuerySet:
-        """Аннотирует queryset количеством лайков и ответов."""
-        queryset = Question.objects.all()
-        if self.action in ('list', 'retrieve'):
-            queryset = queryset.annotate(
-                likes_count=Count('likes', distinct=True),
-                answers_count=Count(
-                    'answers',
-                    filter=Q(answers__is_active=True),
-                    distinct=True,
-                ),
-            )
-        return queryset
 
     @extend_schema(
         responses=inline_serializer(

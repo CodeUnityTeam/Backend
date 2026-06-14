@@ -12,7 +12,7 @@ class LazySkillField(serializers.PrimaryKeyRelatedField):
     Используется при создании вопроса.
     """
 
-    def get_queryset(self) -> QuerySet:
+    def get_queryset(self) -> QuerySet[Skill]:
         """Возвращает queryset с ленивой загрузкой."""
         return Skill.objects.all()
 
@@ -163,7 +163,10 @@ class QuestionListSerializer(serializers.ModelSerializer):
         slug_field='name',
         source='skills',
     )
-    author_name = serializers.SerializerMethodField()
+    author_name = serializers.CharField(
+        source='author_name',
+        read_only=True,
+    )
     likes_count = serializers.IntegerField(read_only=True)
     answers_count = serializers.IntegerField(read_only=True)
 
@@ -180,12 +183,6 @@ class QuestionListSerializer(serializers.ModelSerializer):
             'answers_count',
         ]
 
-    def get_author_name(self, obj: Question) -> str:
-        """Возвращает имя автора или Аноним."""
-        if obj.is_anonymous:
-            return 'Аноним'
-        return f'{obj.user.first_name} {obj.user.last_name}'.strip()
-
 
 class QuestionDetailSerializer(serializers.ModelSerializer):
     """Сериализатор детальной страницы вопроса."""
@@ -197,7 +194,7 @@ class QuestionDetailSerializer(serializers.ModelSerializer):
         source='skills',
     )
     author_name = serializers.CharField(
-        source='user.get_full_name',
+        source='author_name',
         read_only=True,
     )
     likes_count = serializers.IntegerField(read_only=True)
