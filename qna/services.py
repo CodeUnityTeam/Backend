@@ -44,6 +44,7 @@ def toggle_like(
 
     Returns:
         dict: {'liked': bool, 'likes_count': int}
+
     """
     like, created = like_model.objects.get_or_create(
         **{target_field: target_obj, 'user': user},

@@ -3,6 +3,7 @@ from django.db.models import (
     Count,
     Prefetch,
     Q,
+    QuerySet,
     Value,
     When,
 )
@@ -18,7 +19,6 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from qna.models import Answer, Question, QuestionLike
-from qna.services import toggle_like
 from qna.serializers.answer import (
     AnswerCreateResponseSerializer,
     AnswerCreateSerializer,
@@ -31,6 +31,7 @@ from qna.serializers.question import (
     QuestionUpdateSerializer,
     QuestionWithAnswersSerializer,
 )
+from qna.services import toggle_like
 
 
 @extend_schema_view(
@@ -91,7 +92,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
             return QuestionWithAnswersSerializer
         return QuestionCreateSerializer
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet:
         """Возвращает оптимизированный queryset в зависимости от action."""
         if self.action in ('add_answer', 'like'):
             return self._light_queryset
