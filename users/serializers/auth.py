@@ -25,7 +25,7 @@ class SocialAuthUrlResponseSerializer(serializers.Serializer):
     """Сериализатор для возврата URL авторизации."""
 
     authorization_url = serializers.URLField(
-        help_text="Url перенаправления пользователя на сторону провайдера.",
+        help_text='Url перенаправления пользователя на сторону провайдера.',
     )
 
 
@@ -223,7 +223,7 @@ class CustomPasswordResetSerializer(PasswordResetSerializer):
             temp_key: str,
         ) -> str:
             """Формирует прямую ссылку на фронтенд."""
-            return get_frontend_url("password", temp_key)
+            return get_frontend_url('password', temp_key)
 
-        options["url_generator"] = custom_url_generator
+        options['url_generator'] = custom_url_generator
         return options

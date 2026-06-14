@@ -1,5 +1,5 @@
 import uuid
-from typing import Any
+from typing import Any, Type
 
 from allauth.account.models import EmailAddress
 from django.contrib.auth import get_user_model
@@ -36,8 +36,9 @@ from users.models.users import User, UserExperience
 from users.pagination import ProfileListPagination
 from users.serializers.profile import (
     AvatarUploadSerializer,
-    CustomUserDetailsSerializer,
     DetailUserProfileSerializer,
+    MeProfileRetrieveSerializer,
+    MeProfileUpdateSerializer,
     PublicUserProfileSerializer,
     UserExperienceSerializer,
 )
@@ -52,21 +53,28 @@ UserModel = get_user_model()
     get=extend_schema(
         tags=['profile'],
         summary='Получить данные профиля авторизованного пользователя',
-        responses={200: CustomUserDetailsSerializer},
+        responses={200: MeProfileRetrieveSerializer},
+        description=(
+            'Возвращает полную информацию о профиле. Поле experiences '
+            'доступно только для чтения. Для изменения опыта работы '
+            'используйте эндпоинт: /profile/me/experience/'
+        ),
     ),
     patch=extend_schema(
         tags=['profile'],
         summary='Частично обновить данные авторизованного пользователя',
-        request=CustomUserDetailsSerializer,
-        responses={200: CustomUserDetailsSerializer},
+        request=MeProfileUpdateSerializer,
+        responses={200: MeProfileRetrieveSerializer},
+        description=(
+            'Позволяет изменить доступные текстовые поля и списки ID '
+            'навыков, специализаций и форматов. Не обновляет email '
+            '(для него есть /profile/email-change/) и опыт работы '
+            '(для него есть /profile/me/experience/).'
+        ),
     ),
     delete=extend_schema(
         tags=['profile'],
         summary='Мягкое удаление аккаунта текущего пользователя',
-        description=(
-            'Переводит флаги is_active и is_agreed_to_terms в False. '
-            'Пользователь деактивируется, но запись в БД сохраняется.'
-        ),
         request=None,
         responses={
             200: inline_serializer(
@@ -77,30 +85,24 @@ UserModel = get_user_model()
                     ),
                 },
             ),
-            401: inline_serializer(
-                name='CurrentUserDeleteUnauthorizedResponse',
-                fields={
-                    'detail': serializers.CharField(
-                        default='Учетные данные не были предоставлены.',
-                    ),
-                },
-            ),
         },
     ),
 )
 class MeProfileView(RetrieveUpdateDestroyAPIView):
-    """View для работы с профилем авторизованного пользователя.
-
-    Поддерживает просмотр, редактирование и мягкое удаление.
-    """
+    """View для работы с профилем авторизованного пользователя."""
 
     http_method_names = ['get', 'patch', 'delete', 'head', 'options']
-    serializer_class = CustomUserDetailsSerializer
     permission_classes = [IsAuthenticated]
 
     def get_object(self) -> User:
         """Вернуть объект текущего авторизованного пользователя."""
         return self.request.user
+
+    def get_serializer_class(self) -> Type[serializers.Serializer]:
+        """Возвращать разные сериализаторы для чтения и записи."""
+        if self.request.method == 'PATCH':
+            return MeProfileUpdateSerializer
+        return MeProfileRetrieveSerializer
 
     def perform_destroy(self, instance: User) -> None:
         """Перевести флаги активности и согласия в False."""
@@ -113,11 +115,16 @@ class MeProfileView(RetrieveUpdateDestroyAPIView):
             email__iexact=instance.email,
         ).update(verified=False)
 
-    def delete(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        """Мягко далить аккаунт и вернуть статус HTTP 200 с сообщением."""
+    def delete(
+        self,
+        request: Request,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Response:
+        """Мягко удалить аккаунт и вернуть статус HTTP 200."""
         self.destroy(request, *args, **kwargs)
         return Response(
-            {"detail": "Аккаунт успешно удален."},
+            {'detail': 'Аккаунт успешно удален.'},
             status=status.HTTP_200_OK,
         )
 
@@ -126,39 +133,39 @@ class MeProfileView(RetrieveUpdateDestroyAPIView):
 
 @extend_schema_view(
     post=extend_schema(
-        summary="Загрузить аватар пользователя",
+        summary='Загрузить аватар пользователя',
         description=(
-            "Загрузка изображения (jpeg, jpg, png) размером до 10 МБ. "
-            "Старый файл аватара автоматически удаляется из MinIO."
+            'Загрузка изображения (jpeg, jpg, png) размером до 10 МБ. '
+            'Старый файл аватара автоматически удаляется из MinIO.'
         ),
         request={
-            "multipart/form-data": inline_serializer(
-                name="AvatarUploadRequest",
+            'multipart/form-data': inline_serializer(
+                name='AvatarUploadRequest',
                 fields={
-                    "file": serializers.ImageField(help_text="Файл аватара"),
+                    'file': serializers.ImageField(help_text='Файл аватара'),
                 },
             ),
         },
         responses={
             status.HTTP_201_CREATED: inline_serializer(
-                name="AvatarUploadResponse",
-                fields={"avatar_url": serializers.URLField()},
+                name='AvatarUploadResponse',
+                fields={'avatar_url': serializers.URLField()},
             ),
             status.HTTP_400_BAD_REQUEST: OpenApiTypes.OBJECT,
         },
-        tags=["Files"],
+        tags=['Files'],
     ),
     delete=extend_schema(
-        summary="Удалить аватар пользователя",
+        summary='Удалить аватар пользователя',
         description=(
-            "Удаляет файл аватара из хранилища MinIO и "
-            "очищает поле avatar_url в профиле пользователя."
+            'Удаляет файл аватара из хранилища MinIO и '
+            'очищает поле avatar_url в профиле пользователя.'
         ),
         responses={
             status.HTTP_204_NO_CONTENT: None,
             status.HTTP_400_BAD_REQUEST: OpenApiTypes.OBJECT,
         },
-        tags=["Files"],
+        tags=['Files'],
     ),
 )
 class UserAvatarAPIView(APIView):
@@ -181,12 +188,12 @@ class UserAvatarAPIView(APIView):
         serializer.is_valid(raise_exception=True)
 
         user: User = request.user  # type: ignore[valid-type]
-        file_obj: UploadedFile = serializer.validated_data["file"]
+        file_obj: UploadedFile = serializer.validated_data['file']
 
         public_url: str = avatar_upload_handler(user, file_obj)
 
         return Response(
-            {"avatar_url": public_url}, status=status.HTTP_201_CREATED,
+            {'avatar_url': public_url}, status=status.HTTP_201_CREATED,
         )
 
     def delete(
@@ -200,7 +207,7 @@ class UserAvatarAPIView(APIView):
 
         if not user.avatar_url:
             return Response(
-                {"detail": "Аватар отсутствует."},
+                {'detail': 'Аватар отсутствует.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
