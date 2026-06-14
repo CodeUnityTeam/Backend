@@ -9,7 +9,7 @@ from rest_framework import serializers
 
 from config import settings
 from core.validators import file_size_validator
-from projects.models import WorkFormat
+from projects.models import Response as ProjectResponse, WorkFormat
 from projects.serializers import (
     SkillSerializer,
     SpecializationSerializer,
@@ -20,6 +20,13 @@ from users.models.specializations import Specialization
 from users.models.users import UserExperience
 
 UserModel = get_user_model()
+
+
+class DRFErrorResponseSerializer(serializers.Serializer):
+    """Стандартная структура ошибки Django REST Framework."""
+    detail = serializers.CharField(
+        help_text='Текстовое сообщение с деталями ошибки.'
+    )
 
 
 class UserExperienceSerializer(
@@ -197,19 +204,30 @@ class DetailUserProfileSerializer(PublicUserProfileSerializer):
         read_only_fields = fields
 
 
-class UserResponseListSerializer(PublicUserProfileSerializer):
-    """Сериализатор соискателей с данными их откликов."""
+class UserResponseCardSerializer(serializers.ModelSerializer):
+    """Сериализатор карточки отклика с вложенным профилем соискателя."""
 
-    initiator_type: serializers.CharField = serializers.CharField(
-        source='annotated_initiator_type', read_only=True,
+    response_id: serializers.UUIDField = serializers.UUIDField(
+        read_only=True
     )
-    status_resp: serializers.CharField = serializers.CharField(
-        source='annotated_status_resp', read_only=True,
+    project_id: serializers.UUIDField = serializers.UUIDField(
+        source='project.project_id', read_only=True
+    )
+    project_title: serializers.CharField = serializers.CharField(
+        source='project.title', read_only=True
+    )
+    profile: PublicUserProfileSerializer = (
+        PublicUserProfileSerializer(source='user', read_only=True)
     )
 
-    class Meta(PublicUserProfileSerializer.Meta):
-        fields = PublicUserProfileSerializer.Meta.fields + (
+    class Meta:
+        model = ProjectResponse
+        fields = (
+            'response_id',
+            'project_id',
+            'project_title',
             'initiator_type',
             'status_resp',
+            'profile',
         )
         read_only_fields = fields

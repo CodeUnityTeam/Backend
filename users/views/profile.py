@@ -3,14 +3,17 @@ from typing import Any, Type
 from allauth.account.models import EmailAddress
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import UploadedFile
-from django.db.models import OuterRef, QuerySet, Subquery
+from django.db.models import QuerySet
 from django.http import HttpRequest
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import (
-    OpenApiTypes,
     extend_schema,
     extend_schema_view,
     inline_serializer,
+    OpenApiExample,
+    OpenApiParameter,
+    OpenApiTypes,
+    PolymorphicProxySerializer,
 )
 from rest_framework import serializers, status
 from rest_framework.generics import (
@@ -18,8 +21,9 @@ from rest_framework.generics import (
     RetrieveAPIView,
     RetrieveUpdateDestroyAPIView,
 )
+from rest_framework.pagination import BasePagination
 from rest_framework.parsers import MultiPartParser
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, BasePermission
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import BaseSerializer
@@ -27,20 +31,25 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from config import settings
-from projects.models import Response as ProjectResponse
 from users.filters import UserFilter
 from users.models.users import User, UserExperience
 from users.pagination import ProfileListPagination
+from users.permissions import IsEmployer
 from users.serializers.profile import (
     AvatarUploadSerializer,
     DetailUserProfileSerializer,
+    DRFErrorResponseSerializer,
     MeProfileRetrieveSerializer,
     MeProfileUpdateSerializer,
     PublicUserProfileSerializer,
     UserExperienceSerializer,
-    UserResponseListSerializer,
+    UserResponseCardSerializer,
 )
-from users.services import avatar_delete_handler, avatar_upload_handler
+from users.services import (
+    avatar_delete_handler,
+    avatar_upload_handler,
+    get_profiles_for_employer_service
+)
 
 UserModel = get_user_model()
 
@@ -273,14 +282,93 @@ class UserProfileView(RetrieveAPIView):
 # =============================== ListProfile =================================
 
 
+@extend_schema_view(
+    get=extend_schema(
+        summary='Получение списка профилей пользователей для автора проекта',
+        description=(
+            'Возвращает список пользователей. При `responses=true` '
+            'возвращает список карточек откликов пользователей на проекты '
+            'текущего автора, дублируя карточки под каждый отклик.'
+        ),
+        tags=['profile'],
+        parameters=[
+            OpenApiParameter(
+                name='responses',
+                type=OpenApiTypes.BOOL,
+                location=OpenApiParameter.QUERY,
+                description=(
+                    'При `true` переключает выдачу в режим карточек '
+                    'откликов соискателей.'
+                ),
+            ),
+            OpenApiParameter(
+                name='sort_by',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                enum=('newest', 'relevance'),
+                description='Критерий сортировки выдачи.',
+            ),
+            OpenApiParameter(
+                name='skill_ids',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='Список UUID навыков через запятую.',
+            ),
+            OpenApiParameter(
+                name='spec_ids',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='Список UUID специализаций через запятую.',
+            ),
+            OpenApiParameter(
+                name='format_ids',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='Список UUID форматов работы через запятую.',
+            ),
+            OpenApiParameter(
+                name='search',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='Поиск по подстроке ФИО, стране и городу.',
+            ),
+        ],
+        responses={
+            200: PolymorphicProxySerializer(
+                component_name='UserProfileUnion',
+                serializers=[
+                    PublicUserProfileSerializer,
+                    UserResponseCardSerializer,
+                ],
+                resource_type_field_name=None,
+            ),
+            401: DRFErrorResponseSerializer,
+            403: DRFErrorResponseSerializer,
+        },
+        examples=[
+            OpenApiExample(
+                name='Пример ошибки 401 (Нет токена)',
+                value={'detail': 'Учетные данные не были предоставлены.'},
+                status_codes=['401'],
+            ),
+            OpenApiExample(
+                name='Пример ошибки 403 (Пользователь не EMPLOYER)',
+                value={
+                    'detail': 'У вас нет прав для выполнения этого действия.'
+                },
+                status_codes=['403'],
+            ),
+        ],
+    )
+)
 class UserProfileListView(ListAPIView):
     """View для получения списка профилей пользователей."""
 
-    permission_classes: list[Type[IsAuthenticated]] = [IsAuthenticated]
-    pagination_class = ProfileListPagination
-    filter_backends: list[Type[DjangoFilterBackend]] = [
+    permission_classes: tuple[Type[BasePermission], ...] = (IsEmployer,)
+    pagination_class: Type[BasePagination] = ProfileListPagination
+    filter_backends: tuple[Type[DjangoFilterBackend], ...] = (
         DjangoFilterBackend,
-    ]
+    )
     filterset_class: Type[UserFilter] = UserFilter
 
     def get_serializer_class(self) -> Type[BaseSerializer]:
@@ -289,42 +377,13 @@ class UserProfileListView(ListAPIView):
         responses_param: str = params.get('responses', '').lower()
 
         if responses_param == 'true':
-            return UserResponseListSerializer
+            return UserResponseCardSerializer
 
         return PublicUserProfileSerializer
 
     def get_queryset(self) -> QuerySet[User]:
-        """Возвращает аннотированный список пользователей для нанимателя."""
-        current_user: Any = self.request.user
-
-        if (
-            current_user.projects_relation
-            != User.ProjectsRelationChoices.EMPLOYER
-        ):
-            return User.objects.none()
-
-        queryset: QuerySet[User] = User.objects.exclude(
-            pk=current_user.pk,
-        )
-        params: dict[str, str] = self.request.query_params
-        responses_param: str = params.get('responses', '').lower()
-
-        if responses_param == 'true':
-            user_responses: QuerySet[ProjectResponse] = (
-                ProjectResponse.objects.filter(
-                    user_id=OuterRef('pk'), project__author=current_user,
-                )
-            )
-
-            queryset = queryset.annotate(
-                annotated_initiator_type=Subquery(
-                    user_responses.values('initiator_type')[:1],
-                ),
-                annotated_status_resp=Subquery(
-                    user_responses.values('status_resp')[:1],
-                ),
-            )
-
-        return queryset.prefetch_related(
-            'skills', 'specializations', 'workformats', 'experiences',
+        """Делегирует получение и фильтрацию QuerySet слою сервисов."""
+        return get_profiles_for_employer_service(
+            current_user=self.request.user,
+            query_params=self.request.query_params,
         )

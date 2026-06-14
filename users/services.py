@@ -1,11 +1,16 @@
-from uuid import uuid4
+from typing import Any, Union
+from uuid import UUID, uuid4
 
 from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
+from django.db.models import QuerySet
 
 from config import settings
 from core.s3_utils import MinioService
+from projects.models import Response as ProjectResponse
 from users.models.users import User
+from users.selectors import get_employer_profiles_selector\
+
 
 avatar_minio_client = MinioService(
     bucket_name=settings.STORAGES['avatars']['OPTIONS']['bucket_name'],
@@ -56,3 +61,49 @@ def avatar_delete_handler(user: User) -> None:
             transaction.on_commit(
                 lambda: avatar_minio_client.delete_file(old_avatar_url),
             )
+
+
+def _is_valid_uuid(val: str) -> bool:
+    """Проверяет, является ли строка валидным UUID."""
+    try:
+        UUID(val)
+        return True
+    except ValueError:
+        return False
+
+
+def get_profiles_for_employer_service(
+    current_user: Any, query_params: dict[str, Any]
+) -> Union[QuerySet[ProjectResponse], QuerySet[User]]:
+    """Бизнес-логика фильтрации параметров и защиты от DataError СУБД."""
+    responses_param: str = query_params.get('responses', '').lower()
+    sort_by: str = query_params.get('sort_by', 'newest').lower()
+
+    raw_skills: str = query_params.get('skill_ids', '')
+    raw_specs: str = query_params.get('spec_ids', '')
+    raw_formats: str = query_params.get('format_ids', '')
+
+    skill_ids: tuple[str, ...] = (
+        tuple(filter(_is_valid_uuid, raw_skills.split(',')))
+        if raw_skills
+        else ()
+    )
+    spec_ids: tuple[str, ...] = (
+        tuple(filter(_is_valid_uuid, raw_specs.split(',')))
+        if raw_specs
+        else ()
+    )
+    format_ids: tuple[str, ...] = (
+        tuple(filter(_is_valid_uuid, raw_formats.split(',')))
+        if raw_formats
+        else ()
+    )
+
+    return get_employer_profiles_selector(
+        current_user=current_user,
+        responses_param=responses_param,
+        sort_by=sort_by,
+        skill_ids=skill_ids,
+        spec_ids=spec_ids,
+        format_ids=format_ids,
+    )

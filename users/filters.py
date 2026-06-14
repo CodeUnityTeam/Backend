@@ -1,48 +1,59 @@
 from typing import Any
-
 import django_filters
-from django.db.models import QuerySet
-
-from .models import User
-
-
-class UUIDInFilter(
-    django_filters.BaseInFilter, django_filters.UUIDFilter,
-):
-    """Фильтр для валидации и парсинга списка UUID через запятую."""
-
-    pass
+from django.db.models import Q, QuerySet
 
 
 class UserFilter(django_filters.FilterSet):
-    """Фильтр для поиска пользователей по m2m связям и откликам."""
+    """Фильтр профилей соискателей.
 
-    skill_ids: UUIDInFilter = UUIDInFilter(
-        field_name='skills', lookup_expr='in',
+    Валидирует параметры. Фильтрация m2m связей и сортировка
+    делегированы слою селекторов, чтобы избежать сброса порядка.
+    """
+
+    skill_ids: django_filters.CharFilter = django_filters.CharFilter(
+        method='filter_noop'
     )
-    spec_ids: UUIDInFilter = UUIDInFilter(
-        field_name='specializations', lookup_expr='in',
+    spec_ids: django_filters.CharFilter = django_filters.CharFilter(
+        method='filter_noop'
     )
-    format_ids: UUIDInFilter = UUIDInFilter(
-        field_name='workformats', lookup_expr='in',
+    format_ids: django_filters.CharFilter = django_filters.CharFilter(
+        method='filter_noop'
+    )
+    search: django_filters.CharFilter = django_filters.CharFilter(
+        method='filter_by_search',
+        help_text='Поиск по частичному совпадению ФИО, страны и города',
     )
     responses: django_filters.BooleanFilter = (
-        django_filters.BooleanFilter(method='filter_responses')
+        django_filters.BooleanFilter(method='filter_noop')
+    )
+    sort_by: django_filters.CharFilter = django_filters.CharFilter(
+        method='filter_noop'
     )
 
     class Meta:
-        model = User
         fields = []
 
-    def filter_responses(
-        self, queryset: QuerySet[User], name: str, value: Any,
-    ) -> QuerySet[User]:
-        """Фильтрует пользователей по откликам на проекты автора."""
-        if value is not True:
+    def _get_prefix(self, queryset: QuerySet[Any]) -> str:
+        """Определяет префикс пути в зависимости от модели QuerySet."""
+        return 'user__' if queryset.model.__name__ == 'Response' else ''
+
+    def filter_by_search(
+        self, queryset: QuerySet[Any], name: str, value: Any
+    ) -> QuerySet[Any]:
+        """Ищет по вхождению подстроки (icontains) в 4 текстовых поля."""
+        if not value:
             return queryset
 
-        user: Any = self.request.user
-        if not user or user.is_anonymous:
-            return queryset.none()
+        pfx: str = self._get_prefix(queryset)
+        return queryset.filter(
+            Q(**{f'{pfx}first_name__icontains': value})
+            | Q(**{f'{pfx}last_name__icontains': value})
+            | Q(**{f'{pfx}country__icontains': value})
+            | Q(**{f'{pfx}city__icontains': value})
+        ).distinct()
 
-        return queryset.filter(responses__project__author=user).distinct()
+    def filter_noop(
+        self, queryset: QuerySet[Any], name: str, value: Any
+    ) -> QuerySet[Any]:
+        """Заглушка. Параметры обрабатываются на уровне селектора."""
+        return queryset
