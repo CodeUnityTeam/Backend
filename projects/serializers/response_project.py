@@ -18,7 +18,7 @@ from core.constants.projects import (
     WITHDRAWN,
 )
 from projects.models import Project, ProjectParticipant, Response
-from projects.selectors import (
+from projects.services import (
     add_user_to_project_participants,
     create_response,
 )

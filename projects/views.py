@@ -26,7 +26,6 @@ from .models import Project
 from .paginations import CustomProjectPagination, CustomResponseFeedPagination
 from .permissions import CanArchiveProject, IsEmployer
 from .selectors import (
-    apply_sorting,
     get_optimized_project_queryset,
     get_recommended_projects_queryset,
     get_response_feed_queryset,
@@ -47,6 +46,7 @@ from .serializers import (
     ResponseUserProjectSerializer,
     UpdateResponseStatusSerializer,
 )
+from .services import apply_sorting
 
 
 @extend_schema_view(
@@ -368,9 +368,9 @@ class ProjectViewSet(ModelViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @extend_schema(
-            tags=['Проекты'],
-            summary='Лайк/снятие лайка проекта',
-        )
+        tags=['Проекты'],
+        summary='Лайк/снятие лайка проекта',
+    )
     @action(detail=True, methods=['post'], url_path='like')
     @transaction.atomic
     def like(self, request: Request, *args: Any, **kwargs: Any) -> Response:
