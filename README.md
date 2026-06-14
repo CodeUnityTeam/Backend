@@ -6,7 +6,8 @@
 * [Запуск проекта](docs/start.md)
 * [Разработка](docs/development.md)
 * [Авторизация](docs/auth.md)
-
+* [Наполнение БД](docs/add_tags.md)
+* [Docker](docs/docker.md)
 ### Разделы
 * [👤 Пользователи и профили](docs/users.md)
 * [📁 Проекты](docs/projects.md)

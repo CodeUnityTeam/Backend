@@ -43,6 +43,12 @@ class User(TimestampMixin, AbstractUser):
 
     REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
 
+    username = models.CharField(
+        max_length=MAX_CHAR_FIELD_LENGTH,
+        unique=False,
+        blank=True,
+        null=True,
+    )
     user_id = models.UUIDField(
         'ID пользователя',
         primary_key=True,
