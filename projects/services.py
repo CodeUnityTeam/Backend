@@ -1,10 +1,13 @@
 from django.contrib.auth import get_user_model
-from django.contrib.postgres.search import SearchRank, SearchVector
-from django.db.models import Count, QuerySet
 
-from core.constants.projects import APPLICANT, MEMBER, PENDING
+from core.constants.projects import (
+    ALLOWED_STATUSED_FOR_LIKE,
+    APPLICANT,
+    MEMBER,
+    PENDING,
+)
 
-from .models import Project, ProjectParticipant, Response
+from .models import Project, ProjectLike, ProjectParticipant, Response
 
 User = get_user_model()
 
@@ -38,31 +41,28 @@ def add_user_to_project_participants(
     return participant
 
 
-def apply_sorting(
-    queryset: QuerySet,
-    sort_by: str,
-    search_query: str | None = None,
-) -> QuerySet:
-    """Применяет сортировку к queryset в зависимости от параметра sort_by.
+def toggle_project_like(project: Project, user: User) -> dict:
+    """Переключает лайк проекта: создаёт или удаляет.
 
-    queryset: исходный queryset проектов.
-    sort_by: параметр сортировки ('like', 'relevance', 'published_at').
-    search_query: поисковый запрос (используется для релевантности).
+    Возвращает {'liked': bool, 'likes_count': int}.
+
+    Ограничения:
+    - Нельзя лайкнуть свой проект.
+    - Можно лайкать только PUBLISHED или RECRUITING_CLOSED.
     """
-    annotated_qs = queryset.annotate(likes_count=Count('likes'))
-    if sort_by == 'like':
-        return annotated_qs.order_by('-likes_count')
-    if sort_by == 'relevance' and search_query:
-        search_vector = SearchVector('title', weight='A') + SearchVector(
-            'short_desc',
-            weight='B',
+    if project.author == user:
+        raise ValueError('Нельзя лайкнуть свой проект.')
+
+    if project.status_project not in ALLOWED_STATUSED_FOR_LIKE:
+        raise ValueError(
+            'Нельзя лайкать проект с текущим статусом.',
         )
-        annotated_qs = annotated_qs.annotate(
-            search=search_vector,
-            rank=SearchRank(search_vector, search_query),
-        )
-        return annotated_qs.order_by('-rank')
-    if sort_by == 'published_at':
-        # Сортировка по дате публикации (сначала новые)
-        return annotated_qs.order_by('-published_at')
-    return annotated_qs.order_by('-published_at')
+
+    like, created = ProjectLike.objects.get_or_create(
+        project=project,
+        user=user,
+    )
+    if not created:
+        like.delete()
+    likes_count = ProjectLike.objects.filter(project=project).count()
+    return {'liked': created, 'likes_count': likes_count}

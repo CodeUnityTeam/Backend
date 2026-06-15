@@ -38,7 +38,7 @@ def validate_title_project(value: str) -> str:
         )
     if not MIN_LEN_TITLE <= len(cleaned_value) <= MAX_LEN_TITLE:
         raise serializers.ValidationError(
-            f'Длина названия проекта должна быть от {MIN_SHORT_DESC} '
+            f'Длина названия проекта должна быть от {MAX_LEN_TITLE} '
             f'до {MAX_LEN_TITLE} символов. Сейчас {len(cleaned_value)}',
         )
     return cleaned_value
@@ -187,9 +187,9 @@ def validate_project_count(user: User) -> None:
             f'{MAX_PROJECTS_PER_USER} активных проектов. '
             f'Текущее количество: {active_projects_count}.',
         )
-    
-    
-def validate_unique_project_title(title: str, user) -> None:
+
+
+def validate_unique_project_title(title: str, user: User) -> None:
     """Проверяет, что у пользователя нет проекта с таким же названием.
 
     Использует регистронезависимое сравнение (__iexact),

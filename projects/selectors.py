@@ -76,5 +76,5 @@ def get_recommended_projects_queryset(user: User) -> QuerySet[Project]:
     ).distinct()
     return recommended.exclude(
         participants__user=user,
-        participants__status_participant=[PENDING],
+        participants__status_participant=PENDING,
     )

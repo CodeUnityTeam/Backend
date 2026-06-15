@@ -42,7 +42,3 @@ class UserAuthorSerializer(UserAuthorShortSerializer):
         fields = UserAuthorShortSerializer.Meta.fields + ('email', 'phone')
 
 
-class UserParticipantSerializer(UserAuthorSerializer):
-    """Сериализатор для участника проекта — те же поля, что у автора."""
-
-    pass

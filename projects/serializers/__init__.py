@@ -1,8 +1,5 @@
 # ruff: noqa
-from .like_project import (
-    ProjectLikeResponseSerializer,
-    ProjectLikeSerializer,
-)
+from .like_project import ProjectLikeResponseSerializer
 from .project import (
     ProjectArchiveSerializer,
     ProjectCreateSerializer,
@@ -30,7 +27,6 @@ from .user import (
     UserAuthorSerializer,
     UserAuthorShortSerializer,
     UserBaseSerializer,
-    UserParticipantSerializer,
 )
 
 from .work_format import WorkFormatSerializer

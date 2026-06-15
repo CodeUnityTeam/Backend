@@ -1,6 +1,5 @@
-from django.utils import timezone
-
 from django.db import transaction
+from django.utils import timezone
 from rest_framework import serializers
 
 from projects.models import Project, ProjectLike
@@ -18,7 +17,6 @@ from .user import (
     UserAuthorSerializer,
     UserAuthorShortSerializer,
     UserBaseSerializer,
-    UserParticipantSerializer,
 )
 from .work_format import WorkFormatSerializer
 
@@ -158,7 +156,7 @@ class ProjectDetailSerializer(ProjectShortSerializer):
         requesting_user = self.context.get('request').user
         is_author = project.author == requesting_user
         if is_author:
-            participant_serializer = UserParticipantSerializer
+            participant_serializer = UserAuthorSerializer
         else:
             participant_serializer = UserBaseSerializer
         return participant_serializer(

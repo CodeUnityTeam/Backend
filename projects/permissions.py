@@ -9,33 +9,23 @@ from .models import Project
 User = apps.get_model('users', 'User')
 
 
-def can_archive_project(user: User, project: Project) -> bool:
-    """Проверяет, может ли пользователь архивировать проект.
+class IsEmployer(permissions.BasePermission):
+    """Единый permission для действий над проектами.
 
-    Разрешено:
-    - суперюзеру
-    - администратору (user.role == 'admin')
-    - автору проекта, если он наниматель (EMPLOYER)
+    - create: только аутентифицированный наниматель.
+    - update/partial_update: автор-наниматель, суперюзер, админ.
+    - destroy (архивация): автор-наниматель, суперюзер, админ.
     """
-    if user.is_superuser or user.role == 'admin':
-        return True
-    return (
-        project.author == user
-        and user.projects_relation == User.ProjectsRelationChoices.EMPLOYER
-    )
-
-
-class CanArchiveProject(permissions.BasePermission):
-    """Разрешает архивировать проект: суперюзеру, админу
-    или автору-нанимателю."""
 
     def has_permission(self, request: Request, view: Any) -> bool:
-        """Проверяет возможность выполнения действия.
-
-        Для DELETE — только авторизованные пользователи.
-        Дальнейшая проверка прав на объект — в has_object_permission.
-        """
-        if request.method == 'DELETE':
+        """Проверяет возможность выполнения действия."""
+        if view.action == 'create':
+            return (
+                request.user.is_authenticated
+                and request.user.projects_relation
+                == User.ProjectsRelationChoices.EMPLOYER
+            )
+        if view.action in ('update', 'partial_update', 'destroy'):
             return request.user.is_authenticated
         return True
 
@@ -45,21 +35,19 @@ class CanArchiveProject(permissions.BasePermission):
         view: Any,
         obj: Project,
     ) -> bool:
-        """Проверяет права доступа к объекту для DELETE‑запросов."""
-        if request.method != 'DELETE':
-            return False
-        return can_archive_project(request.user, obj)
+        """Проверяет права на объект.
 
-
-class IsEmployer(permissions.BasePermission):
-    """Только наниматели могут создавать проекты."""
-
-    def has_permission(self, request: Request, view: Any) -> bool:
-        """Проверяем что юзер авторизован и является нанимателем."""
-        if view.action == 'create':
-            return (
-                request.user.is_authenticated
-                and request.user.projects_relation
-                == User.ProjectsRelationChoices.EMPLOYER
-            )
-        return True
+        Для update/partial_update/destroy:
+        - суперюзер или админ — всегда разрешено.
+        - автор-наниматель — разрешено.
+        """
+        if view.action not in ('update', 'partial_update', 'destroy'):
+            return True
+        user = request.user
+        if user.is_superuser or user.role == 'admin':
+            return True
+        return (
+            obj.author == user
+            and user.projects_relation
+            == User.ProjectsRelationChoices.EMPLOYER
+        )
