@@ -1,13 +1,34 @@
 from uuid import UUID
 
 from django.contrib.auth import get_user_model
-from django.db.models import QuerySet
+from django.db.models import Exists, OuterRef, QuerySet
 
 from core.constants.projects import PENDING, PUBLISHED
 
-from .models import Project, Response
+from .models import Project, ProjectLike, Response
 
 User = get_user_model()
+
+
+def _annotate_is_liked_by_me(
+    qs: QuerySet[Project],
+    user: User | None,
+) -> QuerySet[Project]:
+    """Аннотирует queryset проектов полем is_liked_by_me.
+
+    Добавляет булево поле is_liked_by_me на уровне БД через подзапрос Exists.
+    Если user не передан или не аутентифицирован — аннотирует False.
+    """
+    if user is not None and user.is_authenticated:
+        return qs.annotate(
+            is_liked_by_me=Exists(
+                ProjectLike.objects.filter(
+                    user=user,
+                    project=OuterRef('project_id'),
+                ),
+            ),
+        )
+    return qs.annotate(is_liked_by_me=Exists(ProjectLike.objects.none()))
 
 
 def get_project_with_relations(project_id: UUID) -> Project:
@@ -30,9 +51,15 @@ def get_project_with_relations(project_id: UUID) -> Project:
     )
 
 
-def get_optimized_project_queryset() -> QuerySet[Project]:
-    """Возвращает оптимизированный queryset проектов с связанными данными."""
-    return Project.objects.select_related(
+def get_optimized_project_queryset(
+    user: User | None = None,
+) -> QuerySet[Project]:
+    """Возвращает оптимизированный queryset проектов с связанными данными.
+
+    Используется для list и retrieve запросов.
+    Аннотирует is_liked_by_me через Exists-подзапрос для переданного user.
+    """
+    qs = Project.objects.select_related(
         'author',
     ).prefetch_related(
         'skills',
@@ -42,6 +69,7 @@ def get_optimized_project_queryset() -> QuerySet[Project]:
         'likes',
         'responses',
     )
+    return _annotate_is_liked_by_me(qs, user)
 
 
 def get_response_feed_queryset(user: User) -> QuerySet:

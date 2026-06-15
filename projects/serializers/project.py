@@ -2,13 +2,14 @@ from django.db import transaction
 from django.utils import timezone
 from rest_framework import serializers
 
-from projects.models import Project, ProjectLike
+from projects.models import Project
 from projects.selectors import get_project_with_relations
 from projects.validators import (
     add_relationships_to_project,
     extract_relationship_data,
     validate_create_project_status,
     validate_project_data,
+    validate_update_project_status,
 )
 
 from .skill import SkillSerializer
@@ -65,7 +66,6 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
         status_project = data.get('status_project')
         if status_project:
             validate_create_project_status(status_project)
-
         user = self.context['request'].user
         return validate_project_data(data, user)
 
@@ -100,7 +100,11 @@ class ProjectShortSerializer(serializers.ModelSerializer):
     """Сериализатор для краткой информации о проекте (для списка проектов)."""
 
     skills = SkillSerializer(many=True, read_only=True)
-    is_liked_by_me = serializers.SerializerMethodField()
+    is_liked_by_me = serializers.BooleanField(
+        read_only=True,
+        default=False,
+        help_text='Лайкнул ли проект текущий пользователь (аннотация БД).',
+    )
     participants_count = serializers.SerializerMethodField()
 
     class Meta:
@@ -111,18 +115,11 @@ class ProjectShortSerializer(serializers.ModelSerializer):
             'is_liked_by_me', 'skills',
         ]
 
-    def get_is_liked_by_me(self, project: Project) -> bool:
-        """Проверяем, лайкнул ли проект авторизированный пользователь."""
-        user = self.context.get('request').user
-        if not user.is_authenticated:
-            return False
-        return ProjectLike.objects.filter(
-            user=user,
-            project=project,
-        ).exists()
-
     def get_participants_count(self, project: Project) -> int:
-        """Получаем количество участников проекта."""
+        """Получаем количество участников проекта.
+
+        Использует prefetch_related('participants') — без доп. запроса.
+        """
         return project.participants.count()
 
 
@@ -143,7 +140,10 @@ class ProjectDetailSerializer(ProjectShortSerializer):
         ]
 
     def get_likes_count(self, project: Project) -> int:
-        """Получаем лайки проекта."""
+        """Получаем количество лайков проекта.
+
+        Использует prefetch_related('likes') — без дополнительного запроса.
+        """
         return project.likes.count()
 
     def get_participants(self, project: Project) -> list:
@@ -155,33 +155,42 @@ class ProjectDetailSerializer(ProjectShortSerializer):
         """
         requesting_user = self.context.get('request').user
         is_author = project.author == requesting_user
-        if is_author:
-            participant_serializer = UserAuthorSerializer
-        else:
-            participant_serializer = UserBaseSerializer
-        return participant_serializer(
+        serializer_class = (
+            UserAuthorSerializer if is_author else UserBaseSerializer
+        )
+        return serializer_class(
             project.participants.all(),
             many=True,
         ).data
 
-    def get_author(self, project: Project) -> list:
+    def get_author(self, project: Project) -> dict:
         """Метод для показа информации о авторе проекта.
 
         - Участник проекта может видеть всю информацию об авторе.
         - Обычный пользователь и автор видят краткую инфу об авторе.
+
+        Использует кэшированный набор participants из prefetch_related.
         """
         requesting_user = self.context.get('request').user
-        is_participant = requesting_user in project.participants.all()
-        if is_participant:
-            author_serializer = UserAuthorSerializer
-        else:
-            author_serializer = UserAuthorShortSerializer
-        return author_serializer(project.author).data
+        is_participant = project.participants.filter(
+            user=requesting_user,
+        ).exists()
+        serializer_class = (
+            UserAuthorSerializer if is_participant
+            else UserAuthorShortSerializer
+        )
+        return serializer_class(project.author).data
 
     def get_full_desc(self, project: Project) -> str | None:
-        """Условное поле: показывается только для автора и участников."""
+        """Условное поле: показывается только для автора и участников.
+
+        Использует кэшированный набор participants из prefetch_related.
+        """
         requesting_user = self.context.get('request').user
-        if (requesting_user in project.participants.all()):
+        is_participant = project.participants.filter(
+            user=requesting_user,
+        ).exists()
+        if is_participant:
             return project.full_desc
         return None
 
@@ -210,7 +219,7 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
         required=False,
         allow_empty=True,
     )
-    formats = serializers.ListField(
+    project_format = serializers.ListField(
         child=serializers.UUIDField(),
         required=False,
         allow_empty=True,
@@ -221,7 +230,7 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
         fields = [
             'title', 'short_desc', 'full_desc',
             'location', 'start_date', 'end_date',
-            'status', 'skills', 'specializations', 'formats',
+            'status_project', 'skills', 'specializations', 'project_format',
         ]
         extra_kwargs = {
             'title': {'required': False},
@@ -230,10 +239,10 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
             'location': {'required': False},
             'start_date': {'required': False},
             'end_date': {'required': False},
-            'status': {'required': False, 'source': 'status_project'},
+            'status_project': {'required': False},
         }
 
-    def validate_status(self, status_project: str) -> str:
+    def validate_status_project(self, status_project: str) -> str:
         """Валидация статуса проекта."""
         if status_project is None:
             return status_project
@@ -242,6 +251,13 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 f'Статус должен быть одним из: {", ".join(valid_statuses)}.',
             )
+        # Проверяем правильно ли переключаем статус проекта.
+        project = self.instance
+        if project is not None:
+            validate_update_project_status(
+                current_status=project.status_project,
+                new_status=status_project,
+            )
         return status_project
 
     @transaction.atomic
@@ -249,9 +265,8 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
         """Метод для обновления проекта."""
         relationship_data = extract_relationship_data(validated_data)
         for attr, value in validated_data.items():
-            if hasattr(project, attr):
-                setattr(project, attr, value)
-        project.save()
+            setattr(project, attr, value)
+        project.save(update_fields=validated_data.keys())
         add_relationships_to_project(project, relationship_data)
         return get_project_with_relations(project.project_id)
 
@@ -259,20 +274,16 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
 class ProjectUpdateResponseSerializer(serializers.ModelSerializer):
     """Сериализатор для формирования ответа после обновления проекта."""
 
-    status = serializers.CharField(source='status_project', read_only=True)
+    status_project = serializers.CharField(read_only=True)
     skills = SkillSerializer(many=True, read_only=True)
     specializations = SpecializationSerializer(many=True, read_only=True)
-    formats = WorkFormatSerializer(
-        many=True,
-        read_only=True,
-        source='project_format',
-    )
+    project_format = WorkFormatSerializer(many=True, read_only=True)
 
     class Meta:
         model = Project
         fields = [
             'project_id', 'title', 'short_desc', 'full_desc',
             'location', 'start_date', 'end_date',
-            'status', 'published_at', 'created_at',
-            'skills', 'specializations', 'formats',
+            'status_project', 'published_at', 'created_at',
+            'skills', 'specializations', 'project_format',
         ]

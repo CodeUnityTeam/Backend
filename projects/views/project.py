@@ -256,16 +256,19 @@ class ProjectViewSet(ModelViewSet):
     """Вьюсет для работы с проектами."""
 
     permission_classes = (IsAuthenticated,)
-    http_method_names = ['get', 'post', 'patch', 'delete']
+    http_method_names = ('get', 'post', 'patch', 'delete',)
     lookup_field = 'project_id'
-    ordering = ['-published_at']
+    ordering = ('-published_at',)
     pagination_class = CustomProjectPagination
 
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = (DjangoFilterBackend,)
     filterset_class = ProjectFilter
 
     def get_queryset(self) -> QuerySet[Project]:
         """Оптимизированный queryset с предзагрузкой связанных данных.
+
+        Аннотирует is_liked_by_me через Exists-подзапрос
+        для текущего пользователя — на уровне БД, без N+1.
 
         Логика фильтрации по статусу в зависимости от action:
         - list (без my_project): исключаем DRAFT, BLOCKED, ARCHIVED.
@@ -276,8 +279,8 @@ class ProjectViewSet(ModelViewSet):
           RECRUITING_CLOSED.
         - Остальные действия: все проекты.
         """
-        qs = get_optimized_project_queryset()
-
+        user = self.request.user
+        qs = get_optimized_project_queryset(user=user)
         if self.action == 'list':
             # Для list без my_project исключаем черновики, заблокированные,
             # архивные. Если my_project=true — filter_my_project сам управляет.
@@ -286,9 +289,7 @@ class ProjectViewSet(ModelViewSet):
                     status_project__in=[DRAFT, BLOCKED, ARCHIVED],
                 )
             return qs
-
         if self.action == 'retrieve':
-            user = self.request.user
             if (
                 user.is_authenticated
                 and user.projects_relation
@@ -308,12 +309,12 @@ class ProjectViewSet(ModelViewSet):
         """Переопределяем разрешения для разных действий.
 
         - list — AllowAny.
-        - create, update, partial_update, destroy — IsEmployer.
+        - create, partial_update, destroy — IsEmployer.
         """
         match self.action:
             case 'list':
                 return [AllowAny()]
-            case 'create' | 'update' | 'partial_update' | 'destroy':
+            case 'create' | 'partial_update' | 'destroy':
                 return [IsEmployer()]
             case _:
                 return super().get_permissions()
@@ -402,13 +403,13 @@ class ProjectViewSet(ModelViewSet):
         )
 
     @transaction.atomic
-    def update(
+    def partial_update(
         self,
         request: Request,
         *args: Any,
         **kwargs: Any,
     ) -> DRFResponse:
-        """Обновление проекта, возможно  частичное."""
+        """Частичное обновление проекта (PATCH)."""
         project = self.get_object()
         serializer = self.get_serializer(
             instance=project,

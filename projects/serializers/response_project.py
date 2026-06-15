@@ -244,11 +244,13 @@ class ProfileCardConditionalSerializer(serializers.Serializer):
     avatar_url = serializers.URLField(required=False, allow_null=True)
     skills = serializers.SerializerMethodField()
     email = serializers.EmailField(
+        source='email',
         read_only=True,
         required=False,
         allow_null=True,
     )
     phone = serializers.CharField(
+        source='phone_number',
         read_only=True,
         required=False,
         allow_null=True,
@@ -259,19 +261,20 @@ class ProfileCardConditionalSerializer(serializers.Serializer):
         return [skill.name for skill in user.skills.all()]
 
     def to_representation(self, instance: Any) -> Dict[str, Any]:
-        """Форматируем поля для ответа."""
+        """Форматируем поля для ответа.
+
+        Контакты (email, phone) добавляются только если:
+        - response_status == 'approved'
+        - текущий пользователь — автор проекта
+        """
         data = super().to_representation(instance)
         response = self.context.get('response')
         user = self.context.get('user')
-        # Добавляем контакты только если:
-        # response_status == 'approved'
-        # текущий пользователь — автор проекта
-        if (response and response.status_resp == APPROVED and
-                hasattr(response, 'project') and response.project and
-                response.project.author_id == user.id):
-            data['email'] = instance.email
-            data['phone'] = instance.phone_number
-        else:
+        if not (
+            response
+            and response.status_resp == APPROVED
+            and response.project.author_id == user.id
+        ):
             data.pop('email', None)
             data.pop('phone', None)
         return data

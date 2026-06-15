@@ -20,6 +20,7 @@ from core.constants.projects import (
     MIN_LEN_TITLE,
     MIN_SHORT_DESC,
     PUBLISHED,
+    RECRUITING_CLOSED,
 )
 
 from .models import Project, WorkFormat
@@ -260,6 +261,37 @@ def validate_create_project_status(status_project: str) -> None:
             'status_project': (
                 f'Статус проекта должен быть "{DRAFT}" или "{PUBLISHED}". '
                 f'Получено: "{status_project}".'
+            ),
+        })
+
+
+def validate_update_project_status(
+    current_status: str,
+    new_status: str,
+) -> None:
+    """Валидация смены статуса проекта при обновлении.
+
+    Разрешённые переходы:
+      - draft → published
+      - published → recruiting_closed
+      - recruiting_closed → published
+
+    Запрещено:
+      - draft → recruiting_closed
+      - published → draft
+      - recruiting_closed → draft
+    """
+    allowed_transitions = {
+        DRAFT: (PUBLISHED,),
+        PUBLISHED: (RECRUITING_CLOSED,),
+        RECRUITING_CLOSED: (PUBLISHED,),
+    }
+    allowed = allowed_transitions.get(current_status, ())
+    if new_status not in allowed:
+        raise serializers.ValidationError({
+            'status_project': (
+                f'Переход из статуса "{current_status}" '
+                f'в статус "{new_status}" запрещён.'
             ),
         })
 
