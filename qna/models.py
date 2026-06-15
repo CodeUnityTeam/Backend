@@ -122,6 +122,10 @@ class Answer(models.Model):
         auto_now_add=True,
         verbose_name='Дата создания',
     )
+    likes_count = models.IntegerField(
+        default=0,
+        verbose_name='Количество лайков',
+    )
 
     class Meta:
         """Метаданные модели."""
