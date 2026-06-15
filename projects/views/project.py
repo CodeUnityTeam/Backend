@@ -2,16 +2,6 @@ from typing import Any, List
 
 from django.db import transaction
 from django.db.models import Q, QuerySet
-
-from core.constants.projects import (
-    ARCHIVED,
-    BLOCKED,
-    DRAFT,
-    PUBLISHED,
-    RECRUITING_CLOSED,
-)
-from users.models import User as UserModel
-
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import (
     OpenApiExample,
@@ -32,6 +22,13 @@ from rest_framework.request import Request
 from rest_framework.response import Response as DRFResponse
 from rest_framework.viewsets import ModelViewSet
 
+from core.constants.projects import (
+    ARCHIVED,
+    BLOCKED,
+    DRAFT,
+    PUBLISHED,
+    RECRUITING_CLOSED,
+)
 from projects.filters import ProjectFilter
 from projects.models import Project
 from projects.paginations import CustomProjectPagination
@@ -51,6 +48,7 @@ from projects.serializers import (
     ProjectUpdateSerializer,
 )
 from projects.services import toggle_project_like
+from users.models import User as UserModel
 
 
 @extend_schema_view(

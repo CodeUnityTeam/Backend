@@ -7,20 +7,18 @@ from django.contrib.auth import get_user_model
 from django.db.models import Model
 from rest_framework import serializers
 
-from core.constants import (
-    MAX_LEN_FULL_DESC,
-    MAX_LEN_LOCATION,
-    MAX_LEN_TITLE,
-    MAX_SHORT_DESC,
-    MIN_LEN_TITLE,
-    MIN_SHORT_DESC,
-)
 from core.constants.projects import (
     ARCHIVED,
     BLOCKED,
     DRAFT,
+    MAX_LEN_FULL_DESC,
+    MAX_LEN_LOCATION,
+    MAX_LEN_TITLE,
     MAX_PROJECTS_PER_USER,
+    MAX_SHORT_DESC,
     MAX_SKILLS_COUNT,
+    MIN_LEN_TITLE,
+    MIN_SHORT_DESC,
     PUBLISHED,
 )
 

@@ -40,5 +40,3 @@ class UserAuthorSerializer(UserAuthorShortSerializer):
     class Meta:
         model = User
         fields = UserAuthorShortSerializer.Meta.fields + ('email', 'phone')
-
-
