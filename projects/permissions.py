@@ -26,8 +26,7 @@ def can_archive_project(user: User, project: Project) -> bool:
 
 
 class CanArchiveProject(permissions.BasePermission):
-    """Разрешает архивировать проект: суперюзеру, админу
-    или автору-нанимателю."""
+    """Разрешает архивировать проект: суперюзеру/админу/автору-нанимателю."""
 
     def has_permission(self, request: Request, view: Any) -> bool:
         """Проверяет возможность выполнения действия.

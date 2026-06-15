@@ -126,39 +126,44 @@ class ProjectViewSet(ModelViewSet):
         - Для list — AllowAny, для остальных — стандартные.
         - Для create — только наниматели.
         """
-        if self.action == 'list':
-            return [AllowAny()]
-        if self.action == 'destroy':
-            return [CanArchiveProject()]
-        if self.action == 'create':
-            return [IsAuthenticated(), IsEmployer()]
-        return super().get_permissions()
+        match self.action:
+            case 'list':
+                return [AllowAny()]
+            case 'destroy':
+                return [CanArchiveProject()]
+            case 'create':
+                return [IsAuthenticated(), IsEmployer()]
+            case _:
+                return super().get_permissions()
 
     def get_serializer_class(self) -> type[serializers.Serializer]:
         """Динамический выбор сериализатора в зависимости от действия."""
-        if self.action == 'retrieve':
-            return ProjectDetailSerializer
-        if self.action == 'create':
-            return ProjectCreateSerializer
-        if self.action == 'destroy':
-            return ProjectArchiveSerializer
-        if self.action in ('list', 'recommendations'):
-            return ProjectShortSerializer
-        if self.action == 'like':
-            return ProjectLikeSerializer
-        if self.action == 'partial_update':
-            return ProjectUpdateSerializer
-        if self.action in (
-            'responses',
-            'invite_user',
-            'update_response_status',
-        ):
-            return ResponseResponseCreateProjectSerializer
-        if self.action == 'responses_feed':
-            return FeedbackAndInvitationFeedSerializer
-        return ProjectDetailSerializer
+        match self.action:
+            case 'retrieve':
+                return ProjectDetailSerializer
+            case 'create':
+                return ProjectCreateSerializer
+            case 'destroy':
+                return ProjectArchiveSerializer
+            case 'list' | 'recommendations':
+                return ProjectShortSerializer
+            case 'like':
+                return ProjectLikeSerializer
+            case 'partial_update':
+                return ProjectUpdateSerializer
+            case 'responses' | 'invite_user' | 'update_response_status':
+                return ResponseResponseCreateProjectSerializer
+            case 'responses_feed':
+                return FeedbackAndInvitationFeedSerializer
+            case _:
+                return ProjectDetailSerializer
 
-    def create(self, request: Request, *args: Any, **kwargs: Any) -> DRFResponse:
+    def create(
+            self,
+            request: Request,
+            *args: Any,
+            **kwargs: Any,
+        ) -> DRFResponse:
         """Создание проекта."""
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)

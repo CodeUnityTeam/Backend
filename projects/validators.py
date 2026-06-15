@@ -24,6 +24,8 @@ from core.constants.projects import (
     PUBLISHED,
 )
 
+from .models import Project, WorkFormat
+
 User = get_user_model()
 
 
@@ -38,7 +40,7 @@ def validate_title_project(value: str) -> str:
         )
     if not MIN_LEN_TITLE <= len(cleaned_value) <= MAX_LEN_TITLE:
         raise serializers.ValidationError(
-            f'Длина названия проекта должна быть от {MIN_SHORT_DESC} '
+            f'Длина названия проекта должна быть от {MIN_LEN_TITLE} '
             f'до {MAX_LEN_TITLE} символов. Сейчас {len(cleaned_value)}',
         )
     return cleaned_value
@@ -124,7 +126,7 @@ def extract_relationship_data(validated_data: dict) -> dict:
 
 
 def add_relationships_to_project(
-    project: Model,
+    project: Project,
     relationship_data: dict,
 ) -> None:
     """Присваивает связанные объекты проекту после валидации.
@@ -174,8 +176,6 @@ def validate_project_count(user: User) -> None:
     Проверяет, что у пользователя не больше MAX_PROJECTS_PER_USER
     активных проектов (draft, published, recruiting_closed).
     """
-    from projects.models import Project
-
     active_projects_count = Project.objects.filter(
         author=user,
     ).exclude(
@@ -187,16 +187,16 @@ def validate_project_count(user: User) -> None:
             f'{MAX_PROJECTS_PER_USER} активных проектов. '
             f'Текущее количество: {active_projects_count}.',
         )
-    
-    
+
+
 def validate_unique_project_title(title: str, user) -> None:
     """Проверяет, что у пользователя нет проекта с таким же названием.
 
     Использует регистронезависимое сравнение (__iexact),
     чтобы 'Проект' и 'проект' считались дубликатами.
     """
-    Project = apps.get_model('projects', 'Project')
-    if Project.objects.filter(
+    project_model = apps.get_model('projects', 'Project')
+    if project_model.objects.filter(
         author=user,
         title__iexact=title,
     ).exists():
@@ -208,7 +208,7 @@ def validate_unique_project_title(title: str, user) -> None:
 def _validate_related_ids(
     data_items: list,
     id_field: str,
-    model_class: Model,
+    model_class: type[Model],
     error_label: str,
 ) -> list:
     """Универсальная валидация существования связанных объектов.
@@ -239,7 +239,6 @@ def _validate_formats_by_uuid_list(format_ids: list) -> list:
     """Валидация форматов работы, переданных как список UUID."""
     if not format_ids:
         return []
-    WorkFormat = apps.get_model('projects', 'WorkFormat')
     format_ids_str = [str(uuid_obj) for uuid_obj in format_ids]
     existing_formats = WorkFormat.objects.filter(
         format_id__in=format_ids_str,
