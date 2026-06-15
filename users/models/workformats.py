@@ -30,6 +30,9 @@ class UserWorkFormat(models.Model):
                 name='unique_user_workformat',
             ),
         )
+        indexes = [
+            models.Index(fields=['workformat', 'user']),
+        ]
 
     def __str__(self) -> str:
         return f'{self.user} - {self.workformat}'

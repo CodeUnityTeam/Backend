@@ -255,6 +255,9 @@ class UserExperience(TimestampMixin):
         verbose_name = 'Опыт работы'
         verbose_name_plural = 'Опыт работы'
         ordering = ['-start_date']
+        indexes = [
+            models.Index(fields=['user', '-start_date']),
+        ]
 
     def __str__(self) -> str:
         return f'{self.user} — {self.position} в {self.company}'
