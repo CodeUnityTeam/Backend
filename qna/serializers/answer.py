@@ -12,6 +12,7 @@ class AnswerDetailSerializer(serializers.ModelSerializer):
         read_only=True,
     )
     images = serializers.SerializerMethodField()
+    likes_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Answer
@@ -27,7 +28,7 @@ class AnswerDetailSerializer(serializers.ModelSerializer):
 
     def get_images(self, obj: Answer) -> list[str]:
         """Возвращает список URL изображений."""
-        return list(obj.images.values_list('image_url', flat=True))
+        return [img.image_url for img in obj.images.all()]
 
 
 class AnswerImageMetaSerializer(serializers.Serializer):
@@ -53,6 +54,17 @@ class AnswerCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Answer
         fields = ['content', 'parent_answer', 'images']
+
+    def validate_parent_answer(self, value: Answer | None) -> Answer | None:
+        """Проверяет, что parent_answer относится к тому же вопросу."""
+        if value is None:
+            return value
+        question = self.context.get('question')
+        if question and value.question_id != question.pk:
+            raise serializers.ValidationError(
+                'Родительский ответ должен относиться к тому же вопросу.',
+            )
+        return value
 
     def create(self, validated_data: dict) -> Answer:
         """Создаёт ответ с изображениями."""

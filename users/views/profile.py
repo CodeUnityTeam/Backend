@@ -1,19 +1,16 @@
-import uuid
 from typing import Any, Type
 
 from allauth.account.models import EmailAddress
 from django.contrib.auth import get_user_model
-from django.contrib.postgres.search import (
-    SearchQuery,
-    SearchRank,
-    SearchVector,
-)
 from django.core.files.uploadedfile import UploadedFile
 from django.db.models import QuerySet
 from django.http import HttpRequest
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import (
+    OpenApiExample,
     OpenApiParameter,
     OpenApiTypes,
+    PolymorphicProxySerializer,
     extend_schema,
     extend_schema_view,
     inline_serializer,
@@ -24,25 +21,35 @@ from rest_framework.generics import (
     RetrieveAPIView,
     RetrieveUpdateDestroyAPIView,
 )
+from rest_framework.pagination import BasePagination
 from rest_framework.parsers import MultiPartParser
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.serializers import BaseSerializer
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from config import settings
+from users.filters import UserFilter
 from users.models.users import User, UserExperience
 from users.pagination import ProfileListPagination
+from users.permissions import IsEmployer
 from users.serializers.profile import (
     AvatarUploadSerializer,
+    DRFErrorResponseSerializer,
     DetailUserProfileSerializer,
     MeProfileRetrieveSerializer,
     MeProfileUpdateSerializer,
     PublicUserProfileSerializer,
     UserExperienceSerializer,
+    UserResponseCardSerializer,
 )
-from users.services import avatar_delete_handler, avatar_upload_handler
+from users.services import (
+    avatar_delete_handler,
+    avatar_upload_handler,
+    get_profiles_for_employer_service,
+)
 
 UserModel = get_user_model()
 
@@ -274,122 +281,109 @@ class UserProfileView(RetrieveAPIView):
 
 # =============================== ListProfile =================================
 
+
 @extend_schema_view(
     get=extend_schema(
-        tags=['profile'],
-        summary='Получить список профилей пользователей',
+        summary='Получение списка профилей пользователей для автора проекта',
         description=(
-            'Возвращает пагинированный список публичных профилей с фильтрацией'
-            ' по специализациям, навыкам, текстовым поиском и сортировкой. '
-            'Все параметры не обязательны.'
+            'Возвращает список пользователей. При `responses=true` '
+            'возвращает список карточек откликов пользователей на проекты '
+            'текущего автора, дублируя карточки под каждый отклик.'
         ),
+        tags=['profile'],
         parameters=[
             OpenApiParameter(
-                name='spec_id',
-                type=str,
-                required=False,
+                name='responses',
+                type=OpenApiTypes.BOOL,
                 location=OpenApiParameter.QUERY,
-                description='Список ID специализаций через запятую (UUID).',
-            ),
-            OpenApiParameter(
-                name='skill_id',
-                type=str,
-                required=False,
-                location=OpenApiParameter.QUERY,
-                description='Список ID навыков через запятую (UUID).',
-            ),
-            OpenApiParameter(
-                name='search',
-                type=str,
-                required=False,
-                location=OpenApiParameter.QUERY,
-                description='Поиск по имени, фамилии, стране или городу.',
+                description=(
+                    'При `true` переключает выдачу в режим карточек '
+                    'откликов соискателей.'
+                ),
             ),
             OpenApiParameter(
                 name='sort_by',
-                type=str,
-                required=False,
+                type=OpenApiTypes.STR,
                 location=OpenApiParameter.QUERY,
-                enum=['newest', 'relevance'],
-                description=(
-                    'Сортировка: newest (по умолчанию) или relevance (только '
-                    'при наличии search).',
-                ),
+                enum=('newest', 'relevance'),
+                description='Критерий сортировки выдачи.',
+            ),
+            OpenApiParameter(
+                name='skill_ids',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='Список UUID навыков через запятую.',
+            ),
+            OpenApiParameter(
+                name='spec_ids',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='Список UUID специализаций через запятую.',
+            ),
+            OpenApiParameter(
+                name='format_ids',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='Список UUID форматов работы через запятую.',
+            ),
+            OpenApiParameter(
+                name='search',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description='Поиск по подстроке ФИО, стране и городу.',
             ),
         ],
-        responses={200: PublicUserProfileSerializer(many=True)},
+        responses={
+            200: PolymorphicProxySerializer(
+                component_name='UserProfileUnion',
+                serializers=[
+                    PublicUserProfileSerializer,
+                    UserResponseCardSerializer,
+                ],
+                resource_type_field_name=None,
+            ),
+            401: DRFErrorResponseSerializer,
+            403: DRFErrorResponseSerializer,
+        },
+        examples=[
+            OpenApiExample(
+                name='Пример ошибки 401 (Нет токена)',
+                value={'detail': 'Учетные данные не были предоставлены.'},
+                status_codes=['401'],
+            ),
+            OpenApiExample(
+                name='Пример ошибки 403 (Пользователь не EMPLOYER)',
+                value={
+                    'detail': 'У вас нет прав для выполнения этого действия.',
+                },
+                status_codes=['403'],
+            ),
+        ],
     ),
 )
 class UserProfileListView(ListAPIView):
     """View для получения списка профилей пользователей."""
 
-    serializer_class = PublicUserProfileSerializer
-    pagination_class = ProfileListPagination
-    permission_classes = [IsAuthenticated]
+    permission_classes: tuple[Type[BasePermission], ...] = (IsEmployer,)
+    pagination_class: Type[BasePagination] = ProfileListPagination
+    filter_backends: tuple[Type[DjangoFilterBackend], ...] = (
+        DjangoFilterBackend,
+    )
+    filterset_class: Type[UserFilter] = UserFilter
 
-    def _parse_and_validate_uuids(self, raw_string: str | None) -> list[str]:
-        """Распарсить строку через запятую и оставить только валидные UUID."""
-        if not raw_string:
-            return []
+    def get_serializer_class(self) -> Type[BaseSerializer]:
+        """Динамически выбирает сериализатор на основе query-параметров."""
+        params: dict[str, str] = self.request.query_params
+        responses_param: str = params.get('responses', '').lower()
 
-        valid_uuids = []
-        for item in raw_string.split(','):
-            cleaned = item.strip()
-            try:
-                uuid.UUID(cleaned)
-                valid_uuids.append(cleaned)
-            except ValueError:
-                continue
-        return valid_uuids
+        if responses_param == 'true':
+            return UserResponseCardSerializer
 
-    def _apply_search_and_sorting(
-        self, queryset: QuerySet[Any],
-        search_query: str,
-        sort_by: str,
-    ) -> QuerySet[Any]:
-        """Применить полнотекстовый поиск PostgreSQL и условную сортировку."""
-        if search_query:
-            vector = (
-                SearchVector('first_name', weight='A')
-                + SearchVector('last_name', weight='A')
-                + SearchVector('country', weight='B')
-                + SearchVector('city', weight='B')
-            )
-            query = SearchQuery(search_query)
-            queryset = queryset.annotate(
-                rank=SearchRank(vector, query),
-            ).filter(rank__gt=0.0)
+        return PublicUserProfileSerializer
 
-            if sort_by == 'relevance':
-                return queryset.order_by('-rank', '-created_at')
-
-        return queryset.order_by('-created_at')
-
-    def get_queryset(self) -> QuerySet[Any]:
-        """Получить QuerySet с учетом поиска и фильтров."""
-        queryset = UserModel.objects.filter(is_active=True).prefetch_related(
-            'specializations',
-            'skills',
+    def get_queryset(self) -> QuerySet[User]:
+        """Делегирует получение и фильтрацию QuerySet слою сервисов."""
+        return get_profiles_for_employer_service(
+            current_user=self.request.user,
+            query_params=self.request.query_params,
         )
-
-        # Извлекаем параметры
-        spec_str = self.request.query_params.get('spec_id')
-        skill_str = self.request.query_params.get('skill_id')
-        search_query = self.request.query_params.get('search', '').strip()
-        sort_by = self.request.query_params.get('sort_by', 'newest')
-
-        # Фильтруем M2M связи
-        spec_ids = self._parse_and_validate_uuids(spec_str)
-        if spec_ids:
-            queryset = queryset.filter(
-                specializations__spec_id__in=spec_ids,
-            ).distinct()
-
-        skill_ids = self._parse_and_validate_uuids(skill_str)
-        if skill_ids:
-            queryset = queryset.filter(
-                skills__skill_id__in=skill_ids,
-            ).distinct()
-
-        # Применяем поиск и сортировку
-        return self._apply_search_and_sorting(queryset, search_query, sort_by)

@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 from django.core.files.uploadedfile import UploadedFile
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
@@ -50,6 +52,7 @@ class FileUploadView(APIView):
 
         return Response(
             {
+                'image_id': uuid4(),
                 'image_url': public_url,
                 'original_name': file.name,
                 'file_size': file.size,

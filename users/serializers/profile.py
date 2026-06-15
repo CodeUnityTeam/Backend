@@ -9,6 +9,7 @@ from rest_framework import serializers
 
 from config import settings
 from core.validators import file_size_validator
+from projects.models import Response as ProjectResponse
 from projects.models import WorkFormat
 from projects.serializers import (
     SkillSerializer,
@@ -20,6 +21,14 @@ from users.models.specializations import Specialization
 from users.models.users import UserExperience
 
 UserModel = get_user_model()
+
+
+class DRFErrorResponseSerializer(serializers.Serializer):
+    """Стандартная структура ошибки Django REST Framework."""
+
+    detail = serializers.CharField(
+        help_text='Текстовое сообщение с деталями ошибки.',
+    )
 
 
 class UserExperienceSerializer(
@@ -193,5 +202,34 @@ class DetailUserProfileSerializer(PublicUserProfileSerializer):
             'soft_skills',
             'about_me',
             'experiences',
+        )
+        read_only_fields = fields
+
+
+class UserResponseCardSerializer(serializers.ModelSerializer):
+    """Сериализатор карточки отклика с вложенным профилем соискателя."""
+
+    response_id: serializers.UUIDField = serializers.UUIDField(
+        read_only=True,
+    )
+    project_id: serializers.UUIDField = serializers.UUIDField(
+        source='project.project_id', read_only=True,
+    )
+    project_title: serializers.CharField = serializers.CharField(
+        source='project.title', read_only=True,
+    )
+    profile: PublicUserProfileSerializer = (
+        PublicUserProfileSerializer(source='user', read_only=True)
+    )
+
+    class Meta:
+        model = ProjectResponse
+        fields = (
+            'response_id',
+            'project_id',
+            'project_title',
+            'initiator_type',
+            'status_resp',
+            'profile',
         )
         read_only_fields = fields

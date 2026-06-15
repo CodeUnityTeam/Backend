@@ -17,7 +17,8 @@ DEBUG = os.getenv('DEBUG_MODE', default='False').lower() == 'true'
 DOMAIN = os.getenv('DOMAIN')
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 
-CSRF_TRUSTED_ORIGINS = [os.getenv('CSRF_DOMAIN')]
+TRUSTED_ORIGINS = os.getenv('ALLOWED_ORIGINS', '').split(',')
+CSRF_TRUSTED_ORIGINS = TRUSTED_ORIGINS
 
 ROOT_URLCONF = 'config.urls'
 WSGI_APPLICATION = 'config.wsgi.application'
@@ -92,10 +93,8 @@ DB_MODE = os.getenv('DB_MODE')
 
 if DB_MODE == 'local':
     DB_HOST = os.getenv('DB_HOST_LOCAL')
-    S3_ENDPOINT = 'http://localhost:9000'
 else:
     DB_HOST = os.getenv('DB_HOST')
-    S3_ENDPOINT = 'http://minio:9000'
 
 DATABASES = {
     'default': {
@@ -108,11 +107,7 @@ DATABASES = {
     },
 }
 
-S3_OPTIONS = {
-    'access_key': os.environ.get('AWS_ACCESS_KEY_ID'),
-    'secret_key': os.environ.get('AWS_SECRET_ACCESS_KEY'),
-    'endpoint_url': S3_ENDPOINT,
-}
+S3_ENDPOINT = os.getenv('S3_ENDPOINT_URL', 'http://minio:9000')
 
 STORAGES = {
     'default': {
@@ -130,7 +125,7 @@ STORAGES = {
             'bucket_name': os.environ.get('AWS_STORAGE_BUCKET_NAME'),
             'endpoint_url': S3_ENDPOINT,  # Динамический хост
             'custom_domain': (
-                f"localhost:9000/{os.environ.get('AWS_STORAGE_BUCKET_NAME')}"
+                f'{os.environ.get("S3_ENDPOINT")}/{os.environ.get("AWS_STORAGE_BUCKET_NAME")}'
             ),
             'querystring_auth': False,
             'file_overwrite': False,
@@ -146,8 +141,8 @@ STORAGES = {
             ),
             'endpoint_url': S3_ENDPOINT,
             'custom_domain': (
-                f"localhost:9000/"
-                f"{os.environ.get('MINIO_IMAGES_BUCKET_NAME', 'images')}"
+                f'{os.environ.get("S3_ENDPOINT")}'
+                f'{os.environ.get("MINIO_IMAGES_BUCKET_NAME", "images")}'
             ),
             'querystring_auth': False,
             'file_overwrite': False,
@@ -179,7 +174,7 @@ ALLOW_IMAGE_SIZE_MB = 10
 AUTH_USER_MODEL = 'users.User'
 SITE_ID = 1
 
-CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', '').split(',')
+CORS_ALLOWED_ORIGINS = TRUSTED_ORIGINS
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
@@ -257,7 +252,7 @@ REST_AUTH = {
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=3),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'UPDATE_LAST_LOGIN': True,
@@ -267,7 +262,7 @@ SIMPLE_JWT = {
 ACCOUNT_ADAPTER = 'users.adapters.CustomAccountAdapter'
 ACCOUNT_CHANGE_EMAIL = True
 ACCOUNT_LOGIN_METHODS = {'email'}
-ACCOUNT_SIGNUP_FIELDS = ['first_name*', 'last_name*', 'email*', 'password1*']
+ACCOUNT_SIGNUP_FIELDS = ('first_name*', 'last_name*', 'email*', 'password1*')
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
