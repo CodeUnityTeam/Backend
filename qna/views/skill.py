@@ -5,7 +5,7 @@ from drf_spectacular.utils import (
 from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet
 
-from qna.serializers.tag import SkillSerializer
+from projects.serializers import SkillSerializer
 from users.models import Skill
 
 

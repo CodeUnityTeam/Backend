@@ -1,11 +1,13 @@
 import uuid
 
+from django.core.validators import MinLengthValidator
 from django.db import models
 
-from core.constants import (
+from core.constants.qna import (
     MAX_CONTENT_ANSWER,
-    MAX_LEN_TITLE,
-    ZERO_LIKE_COUNT,
+    MAX_TITLE_QUESTION,
+    MIN_DESC_QUESTION,
+    MIN_TITLE_QUESTION,
 )
 from core.models.mixins import TimestampMixin
 from users.models import Skill
@@ -35,10 +37,12 @@ class Question(TimestampMixin, models.Model):
         verbose_name='Автор вопроса',
     )
     title = models.CharField(
-        max_length=MAX_LEN_TITLE,
+        max_length=MAX_TITLE_QUESTION,
+        validators=[MinLengthValidator(MIN_TITLE_QUESTION)],
         verbose_name='Заголовок вопроса',
     )
     description = models.TextField(
+        validators=[MinLengthValidator(MIN_DESC_QUESTION)],
         verbose_name='Полное описание вопроса',
     )
     is_anonymous = models.BooleanField(
@@ -64,8 +68,8 @@ class Question(TimestampMixin, models.Model):
         verbose_name = 'Вопрос'
         verbose_name_plural = 'Вопросы'
         indexes = [
-            models.Index(fields=['-created_at']),
-            models.Index(fields=['-updated_at']),
+            models.Index(fields=['-created_at']),  # поля из миксина
+            models.Index(fields=['-updated_at']),  # поля из миксина
             models.Index(fields=['is_active']),
             models.Index(fields=['is_anonymous']),
         ]
@@ -114,10 +118,6 @@ class Answer(models.Model):
         default=True,
         verbose_name='Активен',
     )
-    likes_count = models.IntegerField(
-        default=ZERO_LIKE_COUNT,
-        verbose_name='Количество лайков',
-    )
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name='Дата создания',
@@ -135,7 +135,6 @@ class Answer(models.Model):
             models.Index(fields=['parent_answer']),
             models.Index(fields=['-created_at']),
             models.Index(fields=['is_active']),
-            models.Index(fields=['likes_count']),
         ]
 
     def __str__(self) -> str:

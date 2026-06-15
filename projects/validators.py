@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from django.db.models import Model
 from rest_framework import serializers
 
-from core.constants import ZERO_SYMBOL
+from core.constants.projects import ZERO_SYMBOL
 
 
 def validate_location(location: str) -> str:
