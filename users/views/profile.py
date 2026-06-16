@@ -334,9 +334,10 @@ class ProfileLikeAPIView(APIView):
     get=extend_schema(
         summary='Получение списка профилей пользователей для автора проекта',
         description=(
-            'Возвращает список пользователей. При `responses=true` '
-            'возвращает список карточек откликов пользователей на проекты '
-            'текущего автора, дублируя карточки под каждый отклик.'
+            'Возвращает пагинированный список пользователей по сценариям: '
+            'полный список, избранное или отклики на проекты автора запроса. '
+            'Поддерживает фильтрацию по m2m-связям, текстовый поиск и '
+            'различные стратегии сортировки.'
         ),
         tags=['profile'],
         parameters=[
@@ -345,16 +346,31 @@ class ProfileLikeAPIView(APIView):
                 type=OpenApiTypes.BOOL,
                 location=OpenApiParameter.QUERY,
                 description=(
-                    'При `true` переключает выдачу в режим карточек '
-                    'откликов соискателей.'
+                    '`true` возвращает режим карточек откликов соискателей. '
+                    'Взаимно исключает параметр `favourites`.'
+                ),
+            ),
+            OpenApiParameter(
+                name='favourites',
+                type=OpenApiTypes.BOOL,
+                location=OpenApiParameter.QUERY,
+                description=(
+                    '`true` возвращает только избранных соискателей, '
+                    'которых лайкнул текущий наниматель. '
+                    'Взаимно исключает параметр `responses`.'
                 ),
             ),
             OpenApiParameter(
                 name='sort_by',
                 type=OpenApiTypes.STR,
                 location=OpenApiParameter.QUERY,
-                enum=('newest', 'relevance'),
-                description='Критерий сортировки выдачи.',
+                enum=('newest', 'relevance', 'popularity'),
+                description=(
+                    'Критерий сортировки выдачи: '
+                    'newest — по дате создания (значение по умолчанию), '
+                    'relevance — по совпадению m2m-фильтров, '
+                    'popularity — по количеству лайков соискателя.'
+                ),
             ),
             OpenApiParameter(
                 name='skill_ids',
@@ -378,7 +394,9 @@ class ProfileLikeAPIView(APIView):
                 name='search',
                 type=OpenApiTypes.STR,
                 location=OpenApiParameter.QUERY,
-                description='Поиск по подстроке ФИО, стране и городу.',
+                description=(
+                    'Текстовый поиск по подстроке по ФИО, стране и городу.'
+                ),
             ),
         ],
         responses={
@@ -395,7 +413,7 @@ class ProfileLikeAPIView(APIView):
         },
         examples=[
             OpenApiExample(
-                name='Пример ошибки 401 (Нет токена)',
+                name='Пример ошибки 401 (Нет или недействительный токен)',
                 value={'detail': 'Учетные данные не были предоставлены.'},
                 status_codes=['401'],
             ),
