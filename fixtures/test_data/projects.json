@@ -1,0 +1,149 @@
+[
+  {
+    "title": "OlegCo обучение с нуля",
+    "short_desc": "Создание платформы для проведения онлайн‑курсов с интерактивными заданиями",
+    "full_desc": "Проект включает разработку: веб‑интерфейса для студентов и преподавателей; системы управления курсами; модуля интерактивных заданий; интеграции с платёжными системами.Требуется команда разработчиков, дизайнеров и тестировщиков.",
+    "location": "Москва",
+    "start_date": "2026-08-01",
+    "end_date": "2026-10-01",
+    "status_project": "draft",
+    "skills": [
+        {"skill_id": "07931edf-4f66-43e9-b6a4-e358f90bce26"},
+        {"skill_id": "0820ac05-16b0-49f0-9f91-d169eb43a7bc"}
+    ],
+    "specializations": [
+        {"spec_id": "0ba44169-978a-45a7-8dd5-244a59822a95"},
+        {"spec_id": "0bf36e2c-a5a3-4011-9e45-e2856b750fb7"}
+    ],
+    "project_format": [
+      "450eab94-627f-4805-81b0-e8bcca4a0e7c"
+    ]
+  },
+  {
+    "title": "Kristina фитнесс приложение",
+    "short_desc": "Разработка кроссплатформенного приложения с трекингом тренировок и питанием",
+    "full_desc": "Проект предполагает создание мобильного приложения для iOS и Android: трекер тренировок с видеоинструкциями; дневник питания с распознаванием продуктов по фото; интеграция с фитнес‑браслетами; система мотивации и достижений. Необходимы разработчики мобильных приложений, UX/UI дизайнеры, специалисты по анализу данных.",
+    "location": "Петербург",
+    "start_date": "2026-09-15",
+    "end_date": "2027-02-15",
+    "status_project": "published",
+    "skills": [
+      {"skill_id": "170fe229-d52c-467d-b60e-e7cd13b29261"},
+      {"skill_id": "1b5014d0-b007-49ce-8d23-4df5896c47c7"}
+    ],
+    "specializations": [
+      {"spec_id": "111b86ff-5e30-4cf4-ba98-087b3ca77d4a"},
+      {"spec_id": "147d5cab-d565-44dc-855b-c93ee5c98778"}
+    ],
+    "project_format": [
+      "f2b7f6f4-6ebe-4374-b861-977f9297790c"
+    ]
+  },
+  {
+    "title": "Маркетплейс BarinoV",
+    "short_desc": "Создание онлайн‑площадки для продажи товаров местных производителей",
+    "full_desc": "Разработка маркетплейса с:\n- каталогом товаров и фильтров;\n- системой отзывов и рейтингов;\n- интеграцией с логистическими службами;\n- личным кабинетом продавца;\n- аналитикой продаж.\n\nНужны full‑stack разработчики, маркетологи, специалисты по UX.",
+    "location": "Казань",
+    "start_date": "2026-10-01",
+    "end_date": "2027-03-31",
+    "status_project": "draft",
+    "skills": [
+      {"skill_id": "24220f1e-5546-4d59-a10b-def49eedd008"},
+      {"skill_id": "29dbd3f7-5a24-4541-b693-829f57d57b11"},
+      {"skill_id": "88e1bddc-1fc7-4bd5-8c01-5289fad5159e"}
+    ],
+    "specializations": [
+      {"spec_id": "f534b34c-225c-40d8-ac27-aadff06d998b"},
+      {"spec_id": "f833788d-5218-419a-98c4-676300eecbe1"}
+    ],
+    "project_format": [
+      "220ed170-25ab-4026-9cd3-8a817c12348f"
+    ]
+  },
+  {
+    "title": "Хитрый Евгений",
+    "short_desc": "Внедрение электронного документооборота с электронной подписью, законное уклонение от налогов",
+    "full_desc": "Проект по созданию защищённой системы документооборота для госструктур: электронный архив документов;  workflow‑процессы согласования; интеграция с ЭЦП; ролевая модель доступа; отчётность и аудит.",
+    "location": "Екатеринбург",
+    "start_date": "2026-11-01",
+    "end_date": "2027-05-01",
+    "status_project": "published",
+    "skills": [
+      {"skill_id": "055bb186-da44-4de2-8b2a-39ef9523f62c"},
+      {"skill_id": "07931edf-4f66-43e9-b6a4-e358f90bce26"}
+    ],
+    "specializations": [
+      {"spec_id": "f2a4022c-eb6c-4a03-8c72-511715165494"},
+      {"spec_id": "ebf19476-218f-491b-bd3b-b8cc8877321d"}
+    ],
+    "project_format": [
+      "450eab94-627f-4805-81b0-e8bcca4a0e7c"
+    ]
+  },
+  {
+    "title": "Сервис книг от Натальи",
+    "short_desc": "Платформа с алгоритмами рекомендаций на основе предпочтений пользователя",
+    "full_desc": "Разработка онлайн‑сервиса для любителей чтения и аудиокниг с  персонализированной системой рекомендаций (на основе ML); каталог книг с аннотациями, рейтингами и рецензиями; интеграция с сервисами аудиокниг; личный кабинет с историей чтения/прослушивания; система сообществ и обсуждений.",
+    "location": "Нижний Новгород",
+    "start_date": "2026-11-15",
+    "end_date": "2027-05-15",
+    "status_project": "published",
+    "skills": [
+      {"skill_id": "0adaba4a-e582-4e30-af84-5ecf7957f595"},
+      {"skill_id": "0b96fe31-f8c2-4750-ad92-946ce0ea71f0"}
+    ],
+    "specializations": [
+      {"spec_id": "eb943c2d-0859-4363-8884-c51d42b4a587"},
+      {"spec_id": "ebf19476-218f-491b-bd3b-b8cc8877321d"}
+    ],
+    "project_format": [
+      "450eab94-627f-4805-81b0-e8bcca4a0e7c"
+    ]
+  },
+  {
+    "title": "E-Commerce Platform",
+    "short_desc": "Building a scalable online store with product catalog, cart, payment integration, and admin panel",
+    "full_desc": "Full-featured e-commerce platform development:\n- Product catalog with search and filters;\n- Shopping cart and checkout flow;\n- Payment gateway integration (Stripe/PayPal);\n- User accounts with order history;\n- Admin dashboard for inventory management.\n\nTech stack: Python, Django, PostgreSQL, React.",
+    "location": "Moscow",
+    "start_date": "2026-12-01",
+    "end_date": "2027-06-01",
+    "status_project": "draft",
+    "skills": [
+      {"skill_id": "3cd43ce5-ed0d-4430-a494-857f11a9c70f"},
+      {"skill_id": "dfa6d262-aea2-479c-86de-e3aa4622fd8b"},
+      {"skill_id": "e2504e26-5a3c-4f8a-8f0d-030e6d3a8bde"},
+      {"skill_id": "9edeec3e-171a-4b13-9f0a-c10d02fbfbf6"}
+    ],
+    "specializations": [
+      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
+      {"spec_id": "43f449e6-c978-4248-86f7-dac3d7b9cece"},
+      {"spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"}
+    ],
+    "project_format": [
+      "f2b7f6f4-6ebe-4374-b861-977f9297790c"
+    ]
+  },
+  {
+    "title": "DevOps Infrastructure Automation",
+    "short_desc": "Automating cloud infrastructure deployment with CI/CD pipelines and monitoring",
+    "full_desc": "Project to build complete DevOps infrastructure:\n- Infrastructure as Code (Terraform);\n- CI/CD pipelines with GitHub Actions;\n- Docker containerization and Kubernetes orchestration;\n- Monitoring with Prometheus and Grafana;\n- Log aggregation with ELK stack.\n\nTech stack: Python, Docker, AWS, PostgreSQL.",
+    "location": "Saint Petersburg",
+    "start_date": "2027-01-15",
+    "end_date": "2027-07-15",
+    "status_project": "published",
+    "skills": [
+      {"skill_id": "3cd43ce5-ed0d-4430-a494-857f11a9c70f"},
+      {"skill_id": "f301c3b0-91c3-4f4f-97e7-5a466efcaab0"},
+      {"skill_id": "86498eee-1938-476f-a945-3247438ae539"},
+      {"skill_id": "e2504e26-5a3c-4f8a-8f0d-030e6d3a8bde"}
+    ],
+    "specializations": [
+      {"spec_id": "d1618b1e-bbf3-4fa2-9b4b-89fd343e6456"},
+      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
+      {"spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"}
+    ],
+    "project_format": [
+      "f2b7f6f4-6ebe-4374-b861-977f9297790c"
+    ]
+  }
+]

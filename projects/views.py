@@ -98,11 +98,11 @@ from .serializers import (
                 'Success',
                 summary='Успешный ответ',
                 value={
-                    "items": [],
-                    "total": 0,
-                    "page": 1,
-                    "limit": 20,
-                    "has_more": False,
+                    'items': [],
+                    'total': 0,
+                    'page': 1,
+                    'limit': 20,
+                    'has_more': False,
                 },
             ),
         ],
@@ -305,11 +305,11 @@ class ProjectViewSet(ModelViewSet):
                 'Success',
                 summary='Успешный ответ',
                 value={
-                    "items": [],
-                    "total": 0,
-                    "page": 1,
-                    "limit": 20,
-                    "has_more": False,
+                    'items': [],
+                    'total': 0,
+                    'page': 1,
+                    'limit': 20,
+                    'has_more': False,
                 },
             ),
         ],
@@ -369,7 +369,7 @@ class ProjectViewSet(ModelViewSet):
         )
     @action(detail=True, methods=['post'], url_path='like')
     @transaction.atomic
-    def like(self, request: Request, pk: str | None = None) -> Response:
+    def like(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Эндпоинт для постановки/снятия лайка проекту."""
         project = self.get_object()
         input_serializer = ProjectLikeSerializer(
@@ -434,11 +434,11 @@ class ProjectViewSet(ModelViewSet):
                 'Success',
                 summary='Успешный ответ',
                 value={
-                    "items": [],
-                    "total": 0,
-                    "page": 1,
-                    "limit": 20,
-                    "has_more": False,
+                    'items': [],
+                    'total': 0,
+                    'page': 1,
+                    'limit': 20,
+                    'has_more': False,
                 },
             ),
         ],

@@ -19,7 +19,7 @@ def delete_question_image_from_minio(
     if instance.image_url:
         image_url: str = instance.image_url
         transaction.on_commit(
-            lambda: image_minio_client.delete_file(image_url),
+            lambda url=image_url: image_minio_client.delete_file(url),
         )
 
 
@@ -33,7 +33,7 @@ def delete_answer_image_from_minio(
     if instance.image_url:
         image_url: str = instance.image_url
         transaction.on_commit(
-            lambda: image_minio_client.delete_file(image_url),
+            lambda url=image_url: image_minio_client.delete_file(url),
         )
 
 
@@ -47,7 +47,7 @@ def delete_feedback_image_from_minio(
     if instance.image_url:
         image_url: str = instance.image_url
         transaction.on_commit(
-            lambda: image_minio_client.delete_file(image_url),
+            lambda url=image_url: image_minio_client.delete_file(url),
         )
 
 

@@ -1,8 +1,26 @@
 from django.db import transaction
+from django.db.models import QuerySet
 from rest_framework import serializers
 
+from core.constants.qna import (
+    MAX_TITLE_QUESTION,
+    MIN_DESC_QUESTION,
+    MIN_TITLE_QUESTION,
+)
 from qna.models import Question, QuestionImage
+from qna.serializers.answer import AnswerDetailSerializer
 from users.models import Skill
+
+
+class LazySkillField(serializers.PrimaryKeyRelatedField):
+    """Поле с ленивой загрузкой queryset для Skill.
+
+    Используется при создании вопроса.
+    """
+
+    def get_queryset(self) -> QuerySet[Skill]:
+        """Возвращает queryset с ленивой загрузкой."""
+        return Skill.objects.all()
 
 
 class QuestionImageMetaSerializer(serializers.Serializer):
@@ -18,10 +36,9 @@ class QuestionImageMetaSerializer(serializers.Serializer):
 class QuestionCreateSerializer(serializers.ModelSerializer):
     """Сериализатор создания вопроса."""
 
-    tags = serializers.PrimaryKeyRelatedField(
+    tags = LazySkillField(
         many=True,
         source='skills',
-        queryset=Skill.objects.all(),
         label='Навыки',
     )
     images = QuestionImageMetaSerializer(
@@ -29,6 +46,13 @@ class QuestionCreateSerializer(serializers.ModelSerializer):
         required=False,
         write_only=True,
         label='Изображения',
+    )
+    title = serializers.CharField(
+        min_length=MIN_TITLE_QUESTION,
+        max_length=MAX_TITLE_QUESTION,
+    )
+    description = serializers.CharField(
+        min_length=MIN_DESC_QUESTION,
     )
 
     class Meta:
@@ -55,6 +79,7 @@ class QuestionCreateSerializer(serializers.ModelSerializer):
                 QuestionImage.objects.create(
                     question=question,
                     uploaded_by=user,
+                    image_id=image['image_id'],
                     image_url=image['image_url'],
                     original_name=image['original_name'],
                     file_size=image['file_size'],
@@ -62,6 +87,20 @@ class QuestionCreateSerializer(serializers.ModelSerializer):
                 )
 
         return question
+
+
+class QuestionUpdateSerializer(QuestionCreateSerializer):
+    """Сериализатор обновления вопроса."""
+
+    class Meta:
+        model = Question
+        fields = [
+            'title',
+            'description',
+            'tags',
+            'is_anonymous',
+            'images',
+        ]
 
     def update(self, instance: Question, validated_data: dict) -> Question:
         """Обновление вопроса."""
@@ -137,9 +176,9 @@ class QuestionListSerializer(serializers.ModelSerializer):
         slug_field='name',
         source='skills',
     )
-    author_name = serializers.SerializerMethodField()
-    likes_count = serializers.SerializerMethodField()
-    answers_count = serializers.SerializerMethodField()
+    author_name = serializers.ReadOnlyField()
+    likes_count = serializers.IntegerField(read_only=True)
+    answers_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Question
@@ -154,20 +193,6 @@ class QuestionListSerializer(serializers.ModelSerializer):
             'answers_count',
         ]
 
-    def get_author_name(self, obj: Question) -> str:
-        """Возвращает имя автора или Аноним."""
-        if obj.is_anonymous:
-            return 'Аноним'
-        return f'{obj.user.first_name} {obj.user.last_name}'.strip()
-
-    def get_likes_count(self, obj: Question) -> int:
-        """Возвращает количество лайков."""
-        return obj.likes.count()
-
-    def get_answers_count(self, obj: Question) -> int:
-        """Возвращает количество активных ответов."""
-        return obj.answers.filter(is_active=True).count()
-
 
 class QuestionDetailSerializer(serializers.ModelSerializer):
     """Сериализатор детальной страницы вопроса."""
@@ -178,11 +203,8 @@ class QuestionDetailSerializer(serializers.ModelSerializer):
         slug_field='name',
         source='skills',
     )
-    author_name = serializers.CharField(
-        source='user.get_full_name',
-        read_only=True,
-    )
-    likes_count = serializers.SerializerMethodField()
+    author_name = serializers.ReadOnlyField()
+    likes_count = serializers.IntegerField(read_only=True)
     images = serializers.SerializerMethodField()
 
     class Meta:
@@ -198,10 +220,18 @@ class QuestionDetailSerializer(serializers.ModelSerializer):
             'images',
         ]
 
-    def get_likes_count(self, obj: Question) -> int:
-        """Возвращает количество лайков."""
-        return obj.likes.count()
-
     def get_images(self, obj: Question) -> list[str]:
         """Возвращает список URL изображений."""
-        return list(obj.images.values_list('image_url', flat=True))
+        return [img.image_url for img in obj.images.all()]
+
+
+class QuestionWithAnswersSerializer(QuestionDetailSerializer):
+    """Объединяет вопрос и ответы в один ответ.
+
+    Наследует все поля от QuestionDetailSerializer и добавляет ответы.
+    """
+
+    answers = AnswerDetailSerializer(many=True, read_only=True)
+
+    class Meta(QuestionDetailSerializer.Meta):
+        fields = QuestionDetailSerializer.Meta.fields + ['answers']

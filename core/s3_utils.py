@@ -1,4 +1,5 @@
 import json
+import logging
 from typing import Any
 
 from botocore.exceptions import ClientError
@@ -14,21 +15,22 @@ class MinioService:
         """Инициализировать имя бакета и настройки хранилища."""
         self.bucket_name: str = bucket_name
         self.storage: S3Boto3Storage = self._init_storage()
+        self._bucket_configured: bool = False
         self._ensure_bucket_templated()
 
     def _init_storage(self) -> S3Boto3Storage:
         """Внутренний метод инициализации S3-хранилища."""
-        options: dict[str, Any] = settings.S3_OPTIONS
-        endpoint_url: str = options.get("endpoint_url", "")
+        options: dict[str, Any] = settings.STORAGES['avatars']['OPTIONS']
+        endpoint_url: str = options.get('endpoint_url', '')
 
         clean_domain: str = endpoint_url.replace(
-            "http://", "",
-        ).replace("https://", "")
-        custom_domain: str = f"{clean_domain}/{self.bucket_name}"
+            'http://', '',
+        ).replace('https://', '')
+        custom_domain: str = f'{clean_domain}/{self.bucket_name}'
 
         return S3Boto3Storage(
-            access_key=options.get("access_key"),
-            secret_key=options.get("secret_key"),
+            access_key=options.get('access_key'),
+            secret_key=options.get('secret_key'),
             bucket_name=self.bucket_name,
             endpoint_url=endpoint_url,
             custom_domain=custom_domain,
@@ -38,6 +40,9 @@ class MinioService:
 
     def _ensure_bucket_templated(self) -> None:
         """Проверить наличие бакета и сделать его публичным на чтение."""
+        if self._bucket_configured:
+            return
+
         try:
             s3_client: Any = self.storage.connection.meta.client
 
@@ -45,21 +50,21 @@ class MinioService:
             try:
                 s3_client.head_bucket(Bucket=self.bucket_name)
             except ClientError as e:
-                if e.response.get("Error", {}).get("Code") == "404":
+                if e.response.get('Error', {}).get('Code') == '404':
                     s3_client.create_bucket(Bucket=self.bucket_name)
                 else:
                     raise e
 
             # 2. Формируем политику анонимного чтения файлов
             public_read_policy = {
-                "Version": "2012-10-17",
-                "Statement": [
+                'Version': '2012-10-17',
+                'Statement': [
                     {
-                        "Sid": "PublicReadGetObject",
-                        "Effect": "Allow",
-                        "Principal": "*",
-                        "Action": ["s3:GetObject"],
-                        "Resource": [f"arn:aws:s3:::{self.bucket_name}/*"],
+                        'Sid': 'PublicReadGetObject',
+                        'Effect': 'Allow',
+                        'Principal': '*',
+                        'Action': ['s3:GetObject'],
+                        'Resource': [f'arn:aws:s3:::{self.bucket_name}/*'],
                     },
                 ],
             }
@@ -69,21 +74,27 @@ class MinioService:
                 Bucket=self.bucket_name,
                 Policy=json.dumps(public_read_policy),
             )
-        except Exception:  # noqa: BLE001
-            pass
+
+            # 4. Устанавливаем флаг, что бакет настроен
+            self._bucket_configured = True
+
+        except Exception as err:
+            logger = logging.getLogger(__name__)
+            logger.error(f'Ошибка настройки бакета {self.bucket_name}: {err}')
 
     def upload_file(self, cloud_path: str, file_obj: UploadedFile) -> str:
         """Загружает файл и возвращает его полный публичный URL."""
         saved_name: str = self.storage.save(cloud_path, file_obj)
-        return f"http://{self.storage.custom_domain}/{saved_name}"
+        return f'http://{self.storage.custom_domain}/{saved_name}'
 
     def delete_file(self, file_url: str) -> None:
         """Удаляет файл из бакета по его полному URL."""
         try:
-            bucket_part: str = f"{self.storage.custom_domain}/"
+            bucket_part: str = f'{self.storage.custom_domain}/'
 
             if bucket_part in file_url:
                 file_path: str = file_url.split(bucket_part)[-1]
                 self.storage.delete(file_path)
-        except Exception:  # noqa: BLE001
-            pass
+        except Exception as err:
+            logger = logging.getLogger(__name__)
+            logger.error(f'Ошибка удаления файла {file_url}: {err}')

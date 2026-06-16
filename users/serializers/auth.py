@@ -25,7 +25,7 @@ class SocialAuthUrlResponseSerializer(serializers.Serializer):
     """Сериализатор для возврата URL авторизации."""
 
     authorization_url = serializers.URLField(
-        help_text="Url перенаправления пользователя на сторону провайдера.",
+        help_text='Url перенаправления пользователя на сторону провайдера.',
     )
 
 
@@ -63,61 +63,35 @@ class CustomRegisterSerializer(RegisterSerializer):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Переопределить инициализатор класса, убрав ненужные поля."""
         super().__init__(*args, **kwargs)
-
         fields_to_pop = [
-            'username', 'password_confirm', 'password1', 'password2',
+            'username',
+            'password_confirm',
+            'password1',
+            'password2',
         ]
         for field in fields_to_pop:
             if field in self.fields:
                 self.fields.pop(field)
 
     def validate_email(self, email: str) -> str:
-        """Валидация email с обработкой удаленных аккаунтов."""
+        """Чистая валидация email на уникальность среди активных."""
         email = get_adapter().clean_email(email)
         user = UserModel.objects.filter(email__iexact=email).first()
-
-        if user:
-            request = self.context.get('request')
+        if user and user.is_active:
             email_address = EmailAddress.objects.filter(
-                user=user, email__iexact=email,
+                user=user,
+                email__iexact=email,
             ).first()
-
-            # Пользователь мягко удален
-            if not user.is_active:
-                user.is_active = True
-                user.save(update_fields=['is_active'])
-
-                if email_address:
-                    email_address.send_confirmation(request, signup=True)
-
-                raise ImmediateResponseException(
-                    detail={"detail": MSG_RESENT},
+            if email_address and email_address.verified:
+                raise serializers.ValidationError(
+                    'Пользователь с таким email уже зарегистрирован.',
                 )
-
-            # Пользователь активен, но email не подтвержден
-            if email_address and not email_address.verified:
-                email_address.send_confirmation(request, signup=True)
-                raise ImmediateResponseException(
-                    detail={"detail": MSG_RESENT},
-                )
-
-            # Активный подтвержденный пользователь
-            raise serializers.ValidationError(
-                "Пользователь с таким email уже зарегистрирован.",
-            )
-
         return email
 
     def validate(self, attrs: dict) -> dict:
         """Валидировать пароль на соответствие требований надежности."""
         password = attrs.get('password')
-
-        user = UserModel(
-            email=attrs.get('email'),
-            first_name=attrs.get('first_name'),
-            last_name=attrs.get('last_name'),
-        )
-        get_adapter().clean_password(password, user=user)
+        get_adapter().clean_password(password, user=None)
         return attrs
 
     def get_cleaned_data(self) -> dict:
@@ -134,6 +108,30 @@ class CustomRegisterSerializer(RegisterSerializer):
         user.first_name = self.validated_data.get('first_name')
         user.last_name = self.validated_data.get('last_name')
         user.save()
+
+    def save(self, request: HttpRequest) -> Any:
+        """Управление реактивацией мягко удаленных учетных записей."""
+        email = self.validated_data.get('email')
+        user = UserModel.objects.filter(email__iexact=email).first()
+        if user:
+            email_address = EmailAddress.objects.filter(
+                user=user,
+                email__iexact=email,
+            ).first()
+            if not user.is_active:
+                user.is_active = True
+                user.save(update_fields=['is_active'])
+                if email_address:
+                    email_address.send_confirmation(request, signup=True)
+                raise ImmediateResponseException(
+                    detail={'detail': MSG_RESENT},
+                )
+            if email_address and not email_address.verified:
+                email_address.send_confirmation(request, signup=True)
+                raise ImmediateResponseException(
+                    detail={'detail': MSG_RESENT},
+                )
+        return super().save(request)
 
 
 class EmailChangeSerializer(serializers.Serializer):
@@ -187,7 +185,7 @@ class EmailChangeSerializer(serializers.Serializer):
 class CustomPasswordChangeSerializer(PasswordChangeSerializer):
     """Сериализатор для смены пароля с одним полем нового пароля."""
 
-    password = serializers.CharField(
+    new_password = serializers.CharField(
         style={'input_type': 'password'},
         write_only=True,
     )
@@ -206,8 +204,8 @@ class CustomPasswordChangeSerializer(PasswordChangeSerializer):
 
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
         """Перераспределить данные для стандартных методов dj-rest-auth."""
-        attrs['new_password1'] = attrs.get('password')
-        attrs['new_password2'] = attrs.get('password')
+        attrs['new_password1'] = attrs.get('new_password')
+        attrs['new_password2'] = attrs.get('new_password')
 
         return super().validate(attrs)
 
@@ -225,7 +223,7 @@ class CustomPasswordResetSerializer(PasswordResetSerializer):
             temp_key: str,
         ) -> str:
             """Формирует прямую ссылку на фронтенд."""
-            return get_frontend_url("password", temp_key)
+            return get_frontend_url('password', temp_key)
 
-        options["url_generator"] = custom_url_generator
+        options['url_generator'] = custom_url_generator
         return options

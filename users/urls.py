@@ -1,5 +1,17 @@
+from dj_rest_auth.views import (
+    LoginView,
+    LogoutView,
+    PasswordChangeView,
+    PasswordResetConfirmView,
+    PasswordResetView,
+)
 from django.urls import include, path
+from drf_spectacular.utils import extend_schema
 from rest_framework.routers import SimpleRouter
+from rest_framework_simplejwt.views import (
+    TokenRefreshView,
+    TokenVerifyView,
+)
 
 from users.views.auth import (
     EmailChangeView,
@@ -13,6 +25,7 @@ from users.views.auth import (
 from users.views.profile import (
     MeExperienceViewSet,
     MeProfileView,
+    ProfileLikeAPIView,
     UserAvatarAPIView,
     UserProfileListView,
     UserProfileView,
@@ -29,17 +42,47 @@ urlpatterns = [
     path(
         'auth/',
         include([
-            # dj-rest-auth для базовой авторизации
             path(
-                '',
-                include('dj_rest_auth.urls'),
+                'login/',
+                extend_schema(tags=['auth'])(LoginView).as_view(),
+                name='rest_login',
+            ),
+            path(
+                'logout/',
+                extend_schema(tags=['auth'])(LogoutView).as_view(),
+                name='rest_logout',
+            ),
+            path(
+                'token/refresh/',
+                extend_schema(tags=['auth'])(TokenRefreshView).as_view(),
+                name='token_refresh',
+            ),
+            path(
+                'token/verify/',
+                extend_schema(tags=['auth'])(TokenVerifyView).as_view(),
+                name='token_verify',
+            ),
+            path(
+                'password/change/',
+                extend_schema(tags=['auth'])(PasswordChangeView).as_view(),
+                name='rest_password_change',
+            ),
+            path(
+                'password/reset/',
+                extend_schema(tags=['auth'])(PasswordResetView).as_view(),
+                name='rest_password_reset',
+            ),
+            path(
+                'password/reset/confirm/',
+                extend_schema(tags=['auth'])(
+                    PasswordResetConfirmView,
+                ).as_view(),
+                name='rest_password_reset_confirm',
             ),
             path(
                 'registration/',
                 include('dj_rest_auth.registration.urls'),
             ),
-
-            # Эндпоинты для получения ссылок авторизации (GET)
             path(
                 'google/url/',
                 GoogleAuthUrlView.as_view(),
@@ -55,8 +98,6 @@ urlpatterns = [
                 MailRuAuthUrlView.as_view(),
                 name='mailru_auth_url',
             ),
-
-            # dj-rest-auth для социальных сетей (POST для обмена code на JWT)
             path(
                 'google/',
                 GoogleLogin.as_view(),
@@ -80,7 +121,8 @@ urlpatterns = [
             path(
                 '',
                 UserProfileListView.as_view(),
-                name='profile-list'),
+                name='profile-list',
+            ),
             path(
                 'email-change/',
                 EmailChangeView.as_view(),
@@ -90,6 +132,11 @@ urlpatterns = [
                 '<uuid:pk>/',
                 UserProfileView.as_view(),
                 name='user-profile',
+            ),
+            path(
+                '<uuid:worker_id>/like',
+                ProfileLikeAPIView.as_view(),
+                name='profile-like',
             ),
             path(
                 'me/',
