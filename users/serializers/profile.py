@@ -185,6 +185,7 @@ class PublicUserProfileSerializer(serializers.ModelSerializer):
             'specializations',
             'workformats',
             'avatar_url',
+            'is_liked',
         )
         read_only_fields = fields
 
