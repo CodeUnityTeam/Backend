@@ -9,9 +9,6 @@ from core.constants.projects import (
     PUBLISHED,
     RECRUITING_CLOSED,
 )
-from users.models.skills import Skill
-from users.models.specializations import Specialization
-
 from projects.models import Project
 from projects.selectors import get_project_with_relations
 from projects.validators import (
@@ -25,6 +22,8 @@ from projects.validators import (
     validate_published_project_dates,
     validate_update_project_status,
 )
+from users.models.skills import Skill
+from users.models.specializations import Specialization
 
 from .skill import SkillSerializer
 from .specialization import SpecializationSerializer
