@@ -55,5 +55,8 @@ jobs:
             sudo docker compose -f docker-compose.dev.yaml up -d
             sudo docker compose -f docker-compose.dev.yaml exec backend python manage.py makemigrations
             sudo docker compose -f docker-compose.dev.yaml exec backend python manage.py migrate
+            sudo docker compose -f docker-compose.dev.yaml exec backend python manage.py loaddata fixtures/tags/formats.json
+            sudo docker compose -f docker-compose.dev.yaml exec backend python manage.py loaddata fixtures/tags/specializations.json
+            sudo docker compose -f docker-compose.dev.yaml exec backend python manage.py loaddata fixtures/tags/skills.json
             sudo docker compose -f docker-compose.dev.yaml exec backend python manage.py collectstatic --noinput
             sudo docker image prune -a -f
