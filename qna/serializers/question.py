@@ -7,7 +7,17 @@ from core.constants.qna import (
     MIN_DESC_QUESTION,
     MIN_TITLE_QUESTION,
 )
-from qna.models import Question, QuestionImage
+from qna.models import Question
+from qna.selectors import (
+    create_question,
+    create_question_image,
+    delete_question_image,
+    get_all_skills,
+    get_question_images,
+    get_question_images_excluding,
+    set_question_skills,
+    update_question_image,
+)
 from qna.serializers.answer import AnswerDetailSerializer
 from users.models import Skill
 
@@ -20,7 +30,7 @@ class LazySkillField(serializers.PrimaryKeyRelatedField):
 
     def get_queryset(self) -> QuerySet[Skill]:
         """Возвращает queryset с ленивой загрузкой."""
-        return Skill.objects.all()
+        return get_all_skills()
 
 
 class QuestionImageMetaSerializer(serializers.Serializer):
@@ -72,11 +82,11 @@ class QuestionCreateSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
 
         with transaction.atomic():
-            question = Question.objects.create(user=user, **validated_data)
-            question.skills.set(tags)
+            question = create_question(user=user, **validated_data)
+            set_question_skills(question, tags)
 
             for image in images:
-                QuestionImage.objects.create(
+                create_question_image(
                     question=question,
                     uploaded_by=user,
                     image_id=image['image_id'],
@@ -111,12 +121,12 @@ class QuestionUpdateSerializer(QuestionCreateSerializer):
             instance = super().update(instance, validated_data)
 
             if tags is not None:
-                instance.skills.set(tags)
+                set_question_skills(instance, tags)
 
             if images is not None:
                 existing_images = {
                     str(image.image_id): image
-                    for image in instance.images.all()
+                    for image in get_question_images(instance)
                 }
                 incoming_ids: set[str] = set()
                 user = self.context['request'].user
@@ -128,20 +138,15 @@ class QuestionUpdateSerializer(QuestionCreateSerializer):
                         image_obj = existing_images[str(image_id)]
                         incoming_ids.add(str(image_id))
 
-                        image_obj.image_url = image_data['image_url']
-                        image_obj.original_name = image_data['original_name']
-                        image_obj.file_size = image_data['file_size']
-                        image_obj.mime_type = image_data['mime_type']
-                        image_obj.save(
-                            update_fields=[
-                                'image_url',
-                                'original_name',
-                                'file_size',
-                                'mime_type',
-                            ],
+                        update_question_image(
+                            image=image_obj,
+                            image_url=image_data['image_url'],
+                            original_name=image_data['original_name'],
+                            file_size=image_data['file_size'],
+                            mime_type=image_data['mime_type'],
                         )
                     else:
-                        new_image = QuestionImage.objects.create(
+                        new_image = create_question_image(
                             question=instance,
                             uploaded_by=user,
                             image_url=image_data['image_url'],
@@ -151,10 +156,11 @@ class QuestionUpdateSerializer(QuestionCreateSerializer):
                         )
                         incoming_ids.add(str(new_image.image_id))
 
-                for image in instance.images.exclude(
-                    image_id__in=incoming_ids,
+                for image in get_question_images_excluding(
+                    instance,
+                    exclude_ids=incoming_ids,
                 ):
-                    image.delete()
+                    delete_question_image(image)
 
         return instance
 

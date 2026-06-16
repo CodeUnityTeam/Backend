@@ -1,13 +1,4 @@
-from django.db.models import (
-    Case,
-    Count,
-    Prefetch,
-    Q,
-    QuerySet,
-    Value,
-    When,
-)
-from django.db.models.functions import Concat
+from django.db.models import QuerySet
 from drf_spectacular.utils import (
     extend_schema,
     extend_schema_view,
@@ -18,7 +9,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from qna.models import Answer, Question, QuestionLike
+from qna.models import QuestionLike
+from qna.selectors import (
+    get_light_question_queryset,
+    get_question_detail_queryset,
+    get_question_or_404,
+)
 from qna.serializers.answer import (
     AnswerCreateResponseSerializer,
     AnswerCreateSerializer,
@@ -50,35 +46,9 @@ from qna.services import toggle_like
 class QuestionViewSet(viewsets.ModelViewSet):
     """Представление для вопросов."""
 
-    queryset = Question.objects.select_related('user').prefetch_related(
-        Prefetch(
-            'answers',
-            queryset=Answer.objects.select_related('user').prefetch_related(
-                'images',
-            ).filter(is_active=True),
-        ),
-        'likes',
-        'images',
-    ).annotate(
-        likes_count=Count('likes', distinct=True),
-        answers_count=Count(
-            'answers',
-            filter=Q(answers__is_active=True),
-        ),
-        author_name=Case(
-            When(
-                is_anonymous=True,
-                then=Value('Аноним'),
-            ),
-            default=Concat(
-                'user__first_name',
-                Value(' '),
-                'user__last_name',
-            ),
-        ),
-    )
+    queryset = get_question_detail_queryset()
     # Лёгкий queryset для actions, где не нужны prefetch (add_answer, like)
-    _light_queryset = Question.objects.only('pk')
+    _light_queryset = get_light_question_queryset()
 
     serializer_class = QuestionCreateSerializer
     permission_classes = [IsAuthenticated]
@@ -154,7 +124,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         **kwargs  # noqa ANN:003
     ) -> Response:
         """Создаёт ответ на вопрос."""
-        question = self.get_object()
+        question = get_question_or_404(question_id=self.kwargs['pk'])
         serializer = AnswerCreateSerializer(
             data=request.data,
             context={'request': request, 'question': question},
@@ -180,7 +150,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         **kwargs  # noqa ANN:003
     ) -> Response:
         """Ставит или снимает лайк на вопрос."""
-        question = self.get_object()
+        question = get_question_or_404(question_id=self.kwargs['pk'])
         result = toggle_like(
             like_model=QuestionLike,
             target_obj=question,

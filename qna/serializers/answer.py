@@ -1,7 +1,8 @@
 from django.db import transaction
 from rest_framework import serializers
 
-from qna.models import Answer, AnswerImage
+from qna.models import Answer
+from qna.selectors import create_answer, create_answer_image
 
 
 class AnswerDetailSerializer(serializers.ModelSerializer):
@@ -73,14 +74,14 @@ class AnswerCreateSerializer(serializers.ModelSerializer):
         question = self.context['question']
 
         with transaction.atomic():
-            answer = Answer.objects.create(
+            answer = create_answer(
                 user=user,
                 question=question,
                 **validated_data,
             )
 
             for image in images:
-                AnswerImage.objects.create(
+                create_answer_image(
                     answer=answer,
                     uploaded_by=user,
                     image_url=image['image_url'],
