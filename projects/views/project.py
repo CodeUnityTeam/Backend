@@ -282,9 +282,10 @@ class ProjectViewSet(ModelViewSet):
         user = self.request.user
         qs = get_optimized_project_queryset(user=user)
         if self.action == 'list':
-            # Для list без my_project исключаем черновики, заблокированные,
-            # архивные. Если my_project=true — filter_my_project сам управляет.
-            if not self.request.query_params.get('my_project'):
+            # Для list без my_project или my_project=false
+            # исключаем черновики, заблокированные, архивные.
+            my_project = self.request.query_params.get('my_project')
+            if not my_project or my_project.lower() == 'false':
                 qs = qs.exclude(
                     status_project__in=[DRAFT, BLOCKED, ARCHIVED],
                 )
@@ -470,36 +471,20 @@ class ProjectViewSet(ModelViewSet):
         self,
         request: Request,
     ) -> DRFResponse:
-        """Эндпоинт для получения рекомендаций по проектам."""
-        page = int(request.query_params.get('page', 1))
-        limit = int(request.query_params.get('limit', 20))
+        """Эндпоинт для получения рекомендаций по проектам.
+
+        На основе навыков пользователя находит проекты со статусом PUBLISHED,
+        сортирует по убыванию количества совпадающих навыков (релевантность).
+
+        - Если у пользователя нет навыков — пустой список (200 OK).
+        - Исключаются проекты автора и проекты, где пользователь участник.
+        """
         user = request.user
-        user_skills = list(user.skills.all())
-        if not user_skills:
-            paginator = self.pagination_class()
-            paginator.page_size = limit
-            paginator.paginate_queryset([], request)
-            return paginator.get_paginated_response({
-                'items': [],
-                'page': page,
-                'limit': limit,
-            })
         recommended_projects = get_recommended_projects_queryset(user)
-        # Применяем пагинацию с использованием кастомного пагинатора
-        paginator = self.pagination_class()
-        paginator.page_size = limit
-        paginated_projects = paginator.paginate_queryset(
-            recommended_projects,
-            request,
-        )
-        # Сериализация проектов
-        project_serializer = ProjectShortSerializer(
-            paginated_projects,
+        page = self.paginate_queryset(recommended_projects)
+        serializer = ProjectShortSerializer(
+            page,
             many=True,
             context={'request': request},
         )
-        return paginator.get_paginated_response({
-            'items': project_serializer.data,
-            'page': page,
-            'limit': limit,
-        })
+        return self.get_paginated_response(serializer.data)

@@ -19,6 +19,7 @@ from core.constants.projects import (
     APPROVED,
     BLOCKED,
     MAX_FILTER_DAYS,
+    MEMBER,
     MIN_FILTER_DAYS,
     PENDING,
     PUBLISHED,
@@ -233,7 +234,7 @@ class ProjectFilter(django_filters.FilterSet):
           со статусом published или recruiting_closed.
         - Админам и суперюзеру видно всё.
         """
-        if not value:
+        if not value or value == 'false':
             return queryset
         user = self.request.user
         if user.is_superuser or user.is_staff or user.role == 'admin':
@@ -245,10 +246,10 @@ class ProjectFilter(django_filters.FilterSet):
                 author=user,
             ).exclude(status_project=BLOCKED)
 
-        # Работник — проекты, где он участник с APPROVED
+        # Работник — проекты, где он участник
         return queryset.filter(
             participants__user=user,
-            participants__status_participant=APPROVED,
+            participants__status_participant=MEMBER,
             status_project__in=[PUBLISHED, RECRUITING_CLOSED],
         )
 

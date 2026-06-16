@@ -25,11 +25,6 @@ urlpatterns = [
         name='project-responses-create',
     ),
     path(
-        '<uuid:project_id>/responses/invite/<uuid:user_id>/',
-        ProjectResponseViewSet.as_view({'post': 'invite'}),
-        name='project-responses-invite',
-    ),
-    path(
         '<uuid:project_id>/invite/<uuid:user_id>/',
         ProjectResponseViewSet.as_view({'post': 'invite'}),
         name='project-invite',

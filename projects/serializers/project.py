@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils import timezone
 from rest_framework import serializers
@@ -11,7 +12,12 @@ from projects.validators import (
     validate_project_data,
     validate_update_project_status,
 )
-
+from core.constants.projects import (
+    ARCHIVED,
+    DRAFT,
+    PUBLISHED,
+    RECRUITING_CLOSED,
+)
 from .skill import SkillSerializer
 from .specialization import SpecializationSerializer
 from .user import (
@@ -20,6 +26,8 @@ from .user import (
     UserBaseSerializer,
 )
 from .work_format import WorkFormatSerializer
+
+User = get_user_model()
 
 
 class ProjectCreateSerializer(serializers.ModelSerializer):
@@ -124,7 +132,10 @@ class ProjectShortSerializer(serializers.ModelSerializer):
 
 
 class ProjectDetailSerializer(ProjectShortSerializer):
-    """Сериализатор детальной карточки проекта."""
+    """Сериализатор детальной карточки проекта.
+
+    Логика видимости полей в зависимости от роли пользователя.
+    """
 
     specializations = SpecializationSerializer(many=True, read_only=True)
     project_format = WorkFormatSerializer(many=True, read_only=True)
@@ -139,6 +150,20 @@ class ProjectDetailSerializer(ProjectShortSerializer):
             'project_format', 'likes_count', 'participants', 'author',
         ]
 
+    def _is_author_employer(self, project: Project) -> bool:
+        """Проверяет, является ли текущий пользователь автором-нанимателем.
+
+        Возвращает True, если пользователь:
+        - является автором проекта
+        - имеет роль projects_relation = EMPLOYER
+        """
+        requesting_user = self.context.get('request').user
+        return (
+            project.author == requesting_user
+            and requesting_user.projects_relation
+            == User.ProjectsRelationChoices.EMPLOYER
+        )
+
     def get_likes_count(self, project: Project) -> int:
         """Получаем количество лайков проекта.
 
@@ -147,36 +172,41 @@ class ProjectDetailSerializer(ProjectShortSerializer):
         return project.likes.count()
 
     def get_participants(self, project: Project) -> list:
-        """Получаем инфу об участниках проекта.
+        """Получает инфу об участниках проекта.
 
-        Информация отображается в зависимости от роли пользователя в проекте:
-        - Обычный и участник видят только ID, full_name, аватар участников.
-        - Автор видит ID, full_name, аватар, email, phone участников.
+        - Автор-наниматель видит ID, full_name, аватар,
+          email, phone участников.
+        - Участник и обычный пользователь видят только
+          ID, full_name, аватар участников.
         """
-        requesting_user = self.context.get('request').user
-        is_author = project.author == requesting_user
+        is_author_employer = self._is_author_employer(project)
         serializer_class = (
-            UserAuthorSerializer if is_author else UserBaseSerializer
+            UserAuthorSerializer if is_author_employer else UserBaseSerializer
         )
+        participants_qs = project.participants.select_related('user')
+        if is_author_employer:
+            participants_qs = participants_qs.exclude(user=project.author)
+        users = [p.user for p in participants_qs]
         return serializer_class(
-            project.participants.all(),
+            users,
             many=True,
         ).data
 
     def get_author(self, project: Project) -> dict:
-        """Метод для показа информации о авторе проекта.
+        """Метод для показа информации об авторе проекта.
 
-        - Участник проекта может видеть всю информацию об авторе.
-        - Обычный пользователь и автор видят краткую инфу об авторе.
+        - Автор-наниматель видит полную информацию о себе (email, phone).
+        - Участник проекта видит полную информацию об авторе (email, phone).
+        - Обычный пользователь видит краткую информацию.
 
-        Использует кэшированный набор participants из prefetch_related.
+        Использует аннотацию is_participant из get_optimized_project_queryset
+        — без дополнительного запроса к БД.
         """
-        requesting_user = self.context.get('request').user
-        is_participant = project.participants.filter(
-            user=requesting_user,
-        ).exists()
+        is_author_employer = self._is_author_employer(project)
+        is_participant = getattr(project, 'is_participant', False)
         serializer_class = (
-            UserAuthorSerializer if is_participant
+            UserAuthorSerializer
+            if is_author_employer or is_participant
             else UserAuthorShortSerializer
         )
         return serializer_class(project.author).data
@@ -184,15 +214,24 @@ class ProjectDetailSerializer(ProjectShortSerializer):
     def get_full_desc(self, project: Project) -> str | None:
         """Условное поле: показывается только для автора и участников.
 
-        Использует кэшированный набор participants из prefetch_related.
+        Использует аннотацию is_participant из get_optimized_project_queryset
         """
-        requesting_user = self.context.get('request').user
-        is_participant = project.participants.filter(
-            user=requesting_user,
-        ).exists()
-        if is_participant:
+        is_author_employer = self._is_author_employer(project)
+        is_participant = getattr(project, 'is_participant', False)
+        if is_author_employer or is_participant:
             return project.full_desc
         return None
+
+    def to_representation(self, instance: Project) -> dict:
+        """Удаляет full_desc из ответа, если пользователь не участник/автор.
+
+        SerializerMethodField всегда добавляет поле в вывод.
+        Перехватываем вывод и убираем ключ, если значение None.
+        """
+        data = super().to_representation(instance)
+        if data.get('full_desc') is None:
+            data.pop('full_desc', None)
+        return data
 
 
 class ProjectArchiveSerializer(serializers.Serializer):
@@ -201,7 +240,7 @@ class ProjectArchiveSerializer(serializers.Serializer):
     def save(self, **kwargs: dict) -> Project:
         """Архивирует проект: переводит в статус 'archived'."""
         project = self.instance
-        project.status_project = 'archived'
+        project.status_project = ARCHIVED
         project.save(update_fields=['status_project'])
         return project
 
@@ -246,7 +285,7 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
         """Валидация статуса проекта."""
         if status_project is None:
             return status_project
-        valid_statuses = ['draft', 'published', 'recruiting_closed']
+        valid_statuses = [DRAFT, PUBLISHED, RECRUITING_CLOSED]
         if status_project not in valid_statuses:
             raise serializers.ValidationError(
                 f'Статус должен быть одним из: {", ".join(valid_statuses)}.',
@@ -264,6 +303,14 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
     def update(self, project: Project, validated_data: dict) -> Project:
         """Метод для обновления проекта."""
         relationship_data = extract_relationship_data(validated_data)
+        # Если статус меняется с draft → published, проставляем дату публикации
+        new_status = validated_data.get('status_project')
+        if (
+            new_status == PUBLISHED
+            and project.status_project == DRAFT
+            and project.published_at is None
+        ):
+            validated_data['published_at'] = timezone.now()
         for attr, value in validated_data.items():
             setattr(project, attr, value)
         project.save(update_fields=validated_data.keys())

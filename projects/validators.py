@@ -108,7 +108,6 @@ def extract_relationship_data(validated_data: dict) -> dict:
     которые добавляет validate_project_data.
     Также удаляет оригинальные ключи (skills, specializations,
     project_format), чтобы они не попали в Project.objects.create.
-    Если ключей нет — возвращает пустые списки.
     """
     # Удаляем оригинальные ключи, чтобы не ломать Project.objects.create
     validated_data.pop('skills', None)
@@ -302,22 +301,15 @@ def validate_project_data(data: dict, user: User) -> dict:
     Проверяет:
     - количество активных проектов у пользователя
       не более MAX_PROJECTS_PER_USER
-    - даты начала и окончания
     - количество навыков (не более MAX_SKILLS_COUNT)
     - существование всех переданных skills, specializations, work formats
     - текстовые поля title, short_desc, full_desc, location
-
     Возвращает data с добавленными ключами _validated_*,
     содержащими готовые объекты для создания связей.
     """
     # 1. Лимит проектов у автора
     validate_project_count(user)
-    # 2. Даты
-    start_date = data.get('start_date')
-    end_date = data.get('end_date')
-    if start_date and end_date:
-        validate_project_dates(start_date, end_date)
-    # 3. Валидация текстовых полей
+    # 2. Валидация текстовых полей
     title = data.get('title')
     if title:
         data['title'] = validate_title_project(title)
@@ -331,7 +323,7 @@ def validate_project_data(data: dict, user: User) -> dict:
     location = data.get('location')
     if location:
         data['location'] = validate_location_project(location)
-    # 4. Количество навыков
+    # 3. Количество навыков
     skills_data = data.get('skills', [])
     if skills_data and len(skills_data) > MAX_SKILLS_COUNT:
         raise serializers.ValidationError({

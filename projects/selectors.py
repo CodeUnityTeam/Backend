@@ -1,11 +1,19 @@
 from uuid import UUID
 
 from django.contrib.auth import get_user_model
-from django.db.models import Exists, OuterRef, QuerySet
+from django.db.models import (
+    BooleanField,
+    Count,
+    Exists,
+    OuterRef,
+    Q,
+    QuerySet,
+    Value,
+)
 
-from core.constants.projects import PENDING, PUBLISHED
+from core.constants.projects import PUBLISHED
 
-from .models import Project, ProjectLike, Response
+from .models import Project, ProjectLike, ProjectParticipant, Response
 
 User = get_user_model()
 
@@ -57,7 +65,9 @@ def get_optimized_project_queryset(
     """Возвращает оптимизированный queryset проектов с связанными данными.
 
     Используется для list и retrieve запросов.
-    Аннотирует is_liked_by_me через Exists-подзапрос для переданного user.
+    Аннотирует:
+      - is_liked_by_me через Exists-подзапрос для переданного user.
+      - is_participant через Exists-подзапрос членства в проекте.
     """
     qs = Project.objects.select_related(
         'author',
@@ -69,7 +79,31 @@ def get_optimized_project_queryset(
         'likes',
         'responses',
     )
-    return _annotate_is_liked_by_me(qs, user)
+    qs = _annotate_is_liked_by_me(qs, user)
+    return _annotate_is_participant(qs, user)
+
+
+def _annotate_is_participant(
+    qs: QuerySet[Project],
+    user: User | None,
+) -> QuerySet[Project]:
+    """Аннотирует queryset проектов полем is_participant.
+
+    Добавляет булево поле is_participant на уровне БД через подзапрос Exists.
+    Если user не передан или не аутентифицирован — аннотирует False.
+    """
+    if user is not None and user.is_authenticated:
+        return qs.annotate(
+            is_participant=Exists(
+                ProjectParticipant.objects.filter(
+                    project=OuterRef('project_id'),
+                    user=user,
+                ),
+            ),
+        )
+    return qs.annotate(
+        is_participant=Value(False, output_field=BooleanField()),
+    )
 
 
 def get_response_feed_queryset(user: User) -> QuerySet:
@@ -86,23 +120,37 @@ def get_response_feed_queryset(user: User) -> QuerySet:
 
 def get_recommended_projects_queryset(user: User) -> QuerySet[Project]:
     """Формирует QuerySet проектов для рекомендаций пользователю.
-
-    Формируется на основе скиллов пользователя, которые совпадают с скиллами,
-    требуемыми для выполнения проекта.
-
-    - Показываем проекты со статусом PUBLISHED.
-    - Исключаем проекты пользователя.
-     - Исключаем проекты, где пользователь уже участник.
+    На основе навыков пользователя находит проекты со статусом PUBLISHED,
+    сортирует по убыванию количества совпадающих навыков (релевантность).
+    - Исключаются проекты, где пользователь является автором.
+    - Исключаются проекты, где пользователь уже участник (любой статус).
+    - Если у пользователя нет навыков — возвращается пустой QuerySet.
     """
-    user_skill_ids = [skill.skill_id for skill in user.skills.all()]
+    user_skill_ids = list(
+        user.skills.values_list('skill_id', flat=True),
+    )
     if not user_skill_ids:
         return Project.objects.none()
-    # queryset с подсчётом совпадающих навыков
-    recommended = Project.objects.filter(
-        skills__skill_id__in=user_skill_ids,
-        status_project=PUBLISHED,
-    ).distinct()
-    return recommended.exclude(
-        participants__user=user,
-        participants__status_participant=PENDING,
+    return (
+        Project.objects
+        .filter(
+            skills__skill_id__in=user_skill_ids,
+            status_project=PUBLISHED,
+        )
+        .annotate(
+            relevance=Count(
+                'skills',
+                filter=Q(skills__skill_id__in=user_skill_ids),
+            ),
+        )
+        .exclude(author=user)
+        .exclude(participants__user=user)
+        .select_related('author')
+        .prefetch_related(
+            'skills',
+            'participants',
+            'likes',
+        )
+        .distinct()
+        .order_by('-relevance')
     )
