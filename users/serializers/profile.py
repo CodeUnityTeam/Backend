@@ -18,7 +18,7 @@ from projects.serializers import (
 )
 from users.models.skills import Skill
 from users.models.specializations import Specialization
-from users.models.users import UserExperience
+from users.models.users import User, UserExperience, UserLike
 
 UserModel = get_user_model()
 
@@ -167,6 +167,7 @@ class AvatarUploadSerializer(serializers.Serializer[dict[str, Any]]):
 class PublicUserProfileSerializer(serializers.ModelSerializer):
     """Сериализатор для списочного отображения профилей."""
 
+    is_liked = serializers.SerializerMethodField()
     skills = SkillSerializer(many=True, read_only=True)
     specializations = SpecializationSerializer(
         many=True, read_only=True,
@@ -186,6 +187,26 @@ class PublicUserProfileSerializer(serializers.ModelSerializer):
             'avatar_url',
         )
         read_only_fields = fields
+
+    def get_is_liked(self, obj: User) -> bool:
+        """Определяет, лайкнул ли текущий пользователь этот профиль."""
+        request = self.context['request']
+        employer: User = request.user
+
+        # Проверка кэша prefetch_related для исключения N+1 запросов
+        if hasattr(obj, 'employers_likes'):
+            prefetch_cache = getattr(obj, '_prefetched_objects_cache', {})
+            if 'employers_likes' in prefetch_cache:
+                return any(
+                    like.employer_id == employer.user_id
+                    for like in obj.employers_likes.all()
+                )
+
+        # fallback-запрос, если данные не были предварительно подгружены
+        return UserLike.objects.filter(
+            employer=employer,
+            worker=obj,
+        ).exists()
 
 
 class DetailUserProfileSerializer(PublicUserProfileSerializer):

@@ -125,7 +125,8 @@ STORAGES = {
             'bucket_name': os.environ.get('AWS_STORAGE_BUCKET_NAME'),
             'endpoint_url': S3_ENDPOINT,  # Динамический хост
             'custom_domain': (
-                f'{os.environ.get("S3_ENDPOINT")}/{os.environ.get("AWS_STORAGE_BUCKET_NAME")}'
+                f'{os.environ.get("S3_ENDPOINT")}'
+                f'/{os.environ.get("AWS_STORAGE_BUCKET_NAME")}'
             ),
             'querystring_auth': False,
             'file_overwrite': False,
