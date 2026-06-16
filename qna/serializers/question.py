@@ -176,7 +176,7 @@ class QuestionListSerializer(serializers.ModelSerializer):
         slug_field='name',
         source='skills',
     )
-    author_name = serializers.ReadOnlyField()
+    author_name = serializers.SerializerMethodField()
     likes_count = serializers.IntegerField(read_only=True)
     answers_count = serializers.IntegerField(read_only=True)
 
@@ -193,6 +193,12 @@ class QuestionListSerializer(serializers.ModelSerializer):
             'answers_count',
         ]
 
+    def get_author_name(self, obj: Question) -> str:
+        """Возвращает имя автора или 'Аноним'."""
+        if obj.is_anonymous:
+            return 'Аноним'
+        return f'{obj.user.first_name} {obj.user.last_name}'.strip() or obj.user.email
+
 
 class QuestionDetailSerializer(serializers.ModelSerializer):
     """Сериализатор детальной страницы вопроса."""
@@ -203,7 +209,7 @@ class QuestionDetailSerializer(serializers.ModelSerializer):
         slug_field='name',
         source='skills',
     )
-    author_name = serializers.ReadOnlyField()
+    author_name = serializers.SerializerMethodField()
     likes_count = serializers.IntegerField(read_only=True)
     images = serializers.SerializerMethodField()
 
@@ -219,6 +225,12 @@ class QuestionDetailSerializer(serializers.ModelSerializer):
             'likes_count',
             'images',
         ]
+
+    def get_author_name(self, obj: Question) -> str:
+        """Возвращает имя автора или 'Аноним'."""
+        if obj.is_anonymous:
+            return 'Аноним'
+        return f'{obj.user.first_name} {obj.user.last_name}'.strip() or obj.user.email
 
     def get_images(self, obj: Question) -> list[str]:
         """Возвращает список URL изображений."""

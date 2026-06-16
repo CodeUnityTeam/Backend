@@ -25,6 +25,7 @@ from users.views.auth import (
 from users.views.profile import (
     MeExperienceViewSet,
     MeProfileView,
+    ProfileLikeAPIView,
     UserAvatarAPIView,
     UserProfileListView,
     UserProfileView,
@@ -131,6 +132,11 @@ urlpatterns = [
                 '<uuid:pk>/',
                 UserProfileView.as_view(),
                 name='user-profile',
+            ),
+            path(
+                '<uuid:worker_id>/like',
+                ProfileLikeAPIView.as_view(),
+                name='profile-like',
             ),
             path(
                 'me/',

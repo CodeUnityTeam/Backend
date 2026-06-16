@@ -1,8 +1,10 @@
 import uuid
+from typing import Any
 
 from django.contrib.auth.models import (
     AbstractUser,
 )
+from django.core.exceptions import ValidationError
 from django.core.validators import (
     RegexValidator,
 )
@@ -26,7 +28,7 @@ from core.constants.users import (
     USER_NAME_PATTERN,
     USER_ROLE_LENGTH,
 )
-from core.models.mixins import TimestampMixin
+from core.models.mixins import CreatedAtMixin, TimestampMixin
 
 
 class User(TimestampMixin, AbstractUser):
@@ -41,7 +43,7 @@ class User(TimestampMixin, AbstractUser):
         EMPLOYER = 'employer', 'Наниматель'
         WORKER = 'worker', 'Работник'
 
-    REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
+    REQUIRED_FIELDS = ('email', 'first_name', 'last_name')
 
     username = models.CharField(
         max_length=MAX_CHAR_FIELD_LENGTH,
@@ -100,29 +102,29 @@ class User(TimestampMixin, AbstractUser):
     first_name = models.CharField(
         'Имя',
         max_length=USER_FIRST_NAME_LENGTH,
-        validators=[
+        validators=(
             RegexValidator(
                 regex=USER_NAME_PATTERN,
                 message=USER_NAME_HELP,
             ),
-        ],
+        ),
     )
     last_name = models.CharField(
         'Фамилия',
         max_length=USER_LAST_NAME_LENGTH,
-        validators=[
+        validators=(
             RegexValidator(
                 regex=USER_NAME_PATTERN,
                 message=USER_NAME_HELP,
             ),
-        ],
+        ),
     )
     phone_number = models.CharField(
         'Номер телефона',
         max_length=MAX_PHONE_DIGITS,
         blank=True,
         default='',
-        validators=[
+        validators=(
             RegexValidator(
                 regex=PHONE_PATTERN,
                 message=(
@@ -130,7 +132,7 @@ class User(TimestampMixin, AbstractUser):
                     f'{MIN_PHONE_DIGITS} до {MAX_PHONE_DIGITS} цифр.'
                 ),
             ),
-        ],
+        ),
     )
     additional_contact = models.CharField(
         'Дополнительный контакт',
@@ -254,10 +256,75 @@ class UserExperience(TimestampMixin):
     class Meta:
         verbose_name = 'Опыт работы'
         verbose_name_plural = 'Опыт работы'
-        ordering = ['-start_date']
-        indexes = [
-            models.Index(fields=['user', '-start_date']),
-        ]
+        ordering = ('-start_date',)
+        indexes = (
+            models.Index(fields=('user', '-start_date')),
+        )
 
     def __str__(self) -> str:
         return f'{self.user} — {self.position} в {self.company}'
+
+
+class UserLike(CreatedAtMixin, models.Model):
+    """Лайки, поставленные автором проекта другим пользователям."""
+
+    employer = models.ForeignKey(
+        User,
+        on_delete=models.RESTRICT,
+        db_column='employer_id',
+        related_name='liked_workers',
+        verbose_name='Автор лайка',
+    )
+    worker = models.ForeignKey(
+        User,
+        on_delete=models.RESTRICT,
+        db_column='worker_id',
+        related_name='employers_likes',
+        verbose_name='Лайкнутый пользователь',
+    )
+
+    class Meta:
+        db_table = 'user_likes'
+        verbose_name = 'Лайк пользователя'
+        verbose_name_plural = 'Лайки пользователя'
+        constraints = (
+            models.UniqueConstraint(
+                fields=('employer', 'worker'),
+                name='unique_like_employer_worker',
+            ),
+        )
+        indexes = (
+            models.Index(fields=('created_at',)),
+        )
+
+    def clean(self) -> None:
+        """Проверка бизнес-логики перед сохранением."""
+        super().clean()
+
+        if self.employer_id == self.worker_id:
+            raise ValidationError('Нельзя лайкнуть свой профиль.')
+
+        if hasattr(self, 'worker') and not self.worker.is_active:
+            raise ValidationError(
+                'Можно лайкать только активных пользователей.',
+            )
+
+        if hasattr(self, 'employer') and (
+            self.employer.projects_relation !=
+            User.ProjectsRelationChoices.EMPLOYER
+        ):
+            raise ValidationError(
+                'Чтобы поставить лайк пользователь должен быть '
+                'автором проекта.',
+            )
+
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        """Принудительный запуск валидации перед записью в БД."""
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+    def __str__(self) -> str:
+        return (
+            f'Лайк пользователя {self.employer} '
+            f'на пользователя {self.worker}'
+        )

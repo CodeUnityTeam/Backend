@@ -1,10 +1,13 @@
+import uuid
 from typing import Any, Type
 
 from allauth.account.models import EmailAddress
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import UploadedFile
 from django.db.models import QuerySet
 from django.http import HttpRequest
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import (
     OpenApiExample,
@@ -16,6 +19,7 @@ from drf_spectacular.utils import (
     inline_serializer,
 )
 from rest_framework import serializers, status
+from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.generics import (
     ListAPIView,
     RetrieveAPIView,
@@ -32,7 +36,7 @@ from rest_framework.viewsets import ModelViewSet
 
 from config import settings
 from users.filters import UserFilter
-from users.models.users import User, UserExperience
+from users.models.users import User, UserExperience, UserLike
 from users.pagination import ProfileListPagination
 from users.permissions import IsEmployer
 from users.serializers.profile import (
@@ -277,6 +281,50 @@ class UserProfileView(RetrieveAPIView):
     queryset = UserModel.objects.filter(is_active=True)
     serializer_class = DetailUserProfileSerializer
     permission_classes = [IsAuthenticated]
+
+
+# ================================ UserLikes ==================================
+
+
+class ProfileLikeAPIView(APIView):
+    """Эндпоинт для переключения лайка пользователю."""
+
+    permission_classes = (IsAuthenticated,)
+
+    def post(
+        self,
+        request: Request,
+        worker_id: uuid.UUID,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Response:
+        """Переключение (toggle) лайка для указанного worker_id."""
+        employer: User = request.user
+        worker = get_object_or_404(User, user_id=worker_id)
+
+        # 1. Попытка удалить существующий лайк (Toggle-выключение)
+        deleted_count, _ = UserLike.objects.filter(
+            employer=employer,
+            worker=worker,
+        ).delete()
+
+        if deleted_count > 0:
+            return Response(
+                {'is_liked': False},
+                status=status.HTTP_200_OK,
+            )
+
+        # 2. Попытка создать новый лайк (Toggle-включение)
+        try:
+            like = UserLike(employer=employer, worker=worker)
+            like.save()
+        except ValidationError as error:
+            raise DRFValidationError({'detail': error.messages})
+
+        return Response(
+            {'is_liked': True},
+            status=status.HTTP_201_CREATED,
+        )
 
 
 # =============================== ListProfile =================================
