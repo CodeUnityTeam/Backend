@@ -108,18 +108,21 @@ def extract_relationship_data(validated_data: dict) -> dict:
     которые добавляет validate_project_data.
     Также удаляет оригинальные ключи (skills, specializations,
     project_format), чтобы они не попали в Project.objects.create.
+
+    Возвращает None для ключей, которые не были переданы
+    (чтобы add_relationships_to_project не трогал существующие связи).
     """
     # Удаляем оригинальные ключи, чтобы не ломать Project.objects.create
     validated_data.pop('skills', None)
     validated_data.pop('specializations', None)
     validated_data.pop('project_format', None)
     return {
-        'skills': validated_data.pop('_validated_skills', []),
+        'skills': validated_data.pop('_validated_skills', None),
         'specializations': validated_data.pop(
             '_validated_specializations',
-            [],
+            None,
         ),
-        'formats': validated_data.pop('_validated_formats', []),
+        'formats': validated_data.pop('_validated_formats', None),
     }
 
 
@@ -131,15 +134,18 @@ def add_relationships_to_project(
 
     Объекты уже проверены на этапе validate_project_data,
     дополнительные запросы к БД не требуются.
+
+    Если передан пустой список — связи очищаются.
+    Если ключ отсутствует (None) — связи не трогаются.
     """
-    skills = relationship_data.get('skills', [])
-    specializations = relationship_data.get('specializations', [])
-    formats = relationship_data.get('formats', [])
-    if skills:
+    skills = relationship_data.get('skills')
+    if skills is not None:
         project.skills.set(skills)
-    if specializations:
+    specializations = relationship_data.get('specializations')
+    if specializations is not None:
         project.specializations.set(specializations)
-    if formats:
+    formats = relationship_data.get('formats')
+    if formats is not None:
         project.project_format.set(formats)
 
 
@@ -166,6 +172,49 @@ def validate_project_dates(start_date: date, end_date: date) -> None:
             'Дата окончания проекта не может '
             'превышать 1 год с начала проекта.',
         )
+
+
+def validate_published_project_dates(
+    start_date: date | None,
+    end_date: date | None,
+    current_start_date: date,
+) -> None:
+    """Валидация дат для опубликованного проекта (published/recruiting_closed).
+
+    - Если start_date уже в прошлом — её нельзя менять.
+    - end_date не может быть в прошлом.
+    - end_date не может быть раньше start_date (текущей, если start_date
+      не меняется).
+    """
+    current_date = date.today()
+    # 1. Защита start_date, если она уже в прошлом
+    if start_date is not None and start_date != current_start_date:
+        if current_start_date < current_date:
+            raise serializers.ValidationError({
+                'start_date': (
+                    'Дата начала проекта не может быть изменена, '
+                    'так как она уже наступила.'
+                ),
+            })
+    # 2. end_date не может быть в прошлом
+    if end_date is not None and end_date < current_date:
+        raise serializers.ValidationError({
+            'end_date': (
+                'Дата окончания проекта не может быть раньше текущей даты. '
+                f'Сегодня: {current_date}'
+            ),
+        })
+    # 3. end_date не может быть раньше start_date
+    effective_start = (
+        start_date if start_date is not None else current_start_date
+    )
+    if end_date is not None and end_date < effective_start:
+        raise serializers.ValidationError({
+            'end_date': (
+                'Дата окончания работ не может быть раньше '
+                'даты начала проекта.'
+            ),
+        })
 
 
 def validate_project_count(user: User) -> None:
@@ -270,6 +319,8 @@ def validate_update_project_status(
 ) -> None:
     """Валидация смены статуса проекта при обновлении.
 
+    Если статус не меняется — валидация пропускается.
+
     Разрешённые переходы:
       - draft → published
       - published → recruiting_closed
@@ -280,6 +331,8 @@ def validate_update_project_status(
       - published → draft
       - recruiting_closed → draft
     """
+    if current_status == new_status:
+        return
     allowed_transitions = {
         DRAFT: (PUBLISHED,),
         PUBLISHED: (RECRUITING_CLOSED,),
@@ -323,12 +376,7 @@ def validate_project_data(data: dict, user: User) -> dict:
     location = data.get('location')
     if location:
         data['location'] = validate_location_project(location)
-    # 3. Валидация дат (если обе даты переданы)
-    start_date = data.get('start_date')
-    end_date = data.get('end_date')
-    if start_date and end_date:
-        validate_project_dates(start_date, end_date)
-    # 4. Количество навыков
+    # 3. Количество навыков
     skills_data = data.get('skills', [])
     if not skills_data:
         raise serializers.ValidationError({

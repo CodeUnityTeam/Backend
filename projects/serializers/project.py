@@ -9,13 +9,20 @@ from core.constants.projects import (
     PUBLISHED,
     RECRUITING_CLOSED,
 )
+from users.models.skills import Skill
+from users.models.specializations import Specialization
+
 from projects.models import Project
 from projects.selectors import get_project_with_relations
 from projects.validators import (
+    _validate_formats_by_uuid_list,
+    _validate_related_ids,
     add_relationships_to_project,
     extract_relationship_data,
     validate_create_project_status,
     validate_project_data,
+    validate_project_dates,
+    validate_published_project_dates,
     validate_update_project_status,
 )
 
@@ -66,15 +73,21 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
 
         Вызывает validate_project_data, которая проверяет:
         - количество проектов у пользователя
-        - даты начала и окончания
         - количество навыков
         - существование skills, specializations, work formats
 
-        Отдельно валидирует статус проекта.
+        Отдельно валидирует:
+        - статус проекта
+        - даты начала и окончания (если обе переданы)
         """
         status_project = data.get('status_project')
         if status_project:
             validate_create_project_status(status_project)
+        # Валидация дат (если обе даты переданы)
+        start_date = data.get('start_date')
+        end_date = data.get('end_date')
+        if start_date and end_date:
+            validate_project_dates(start_date, end_date)
         user = self.context['request'].user
         return validate_project_data(data, user)
 
@@ -281,6 +294,122 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
             'end_date': {'required': False},
             'status_project': {'required': False},
         }
+
+    def validate(self, data: dict) -> dict:
+        """Валидация данных при обновлении проекта.
+
+        Три сценария валидации:
+
+        1. Черновик → публикация (draft → published):
+           - validate_project_dates — проверка дат.
+           - validate_project_data — полная проверка всех обязательных полей.
+             Если поле не передано в PATCH —
+             подставляется текущее значение из БД.
+
+        2. Изменение опубликованного проекта
+           (published / recruiting_closed, включая смену статуса между ними):
+           - validate_published_project_dates — защита start_date в прошлом,
+             end_date не в прошлом, end_date не раньше start_date.
+           - Обычная валидация переданных полей (skills, specializations,
+             project_format).
+
+        3. Черновик (без смены статуса):
+           - validate_project_dates — если даты переданы, проверяет,
+             что start_date не в прошлом, end_date не раньше start_date,
+             длительность ≤ 1 год.
+           - Обычная валидация переданных полей.
+        """
+        project = self.instance
+        # Черновик → публикация
+        new_status = data.get('status_project')
+        is_publishing = (
+            new_status == PUBLISHED
+            and project is not None
+            and project.status_project == DRAFT
+        )
+        if is_publishing:
+            # Валидация дат
+            start_date = data.get('start_date', project.start_date)
+            end_date = data.get('end_date', project.end_date)
+            if start_date and end_date:
+                validate_project_dates(start_date, end_date)
+            # Полная проверка остальных обязательных полей
+            full_data = {
+                'title': data.get('title', project.title),
+                'short_desc': data.get('short_desc', project.short_desc),
+                'full_desc': data.get('full_desc', project.full_desc),
+                'location': data.get('location', project.location),
+                'status_project': PUBLISHED,
+                'skills': data.get('skills'),
+                'specializations': data.get('specializations'),
+                'project_format': data.get('project_format'),
+            }
+            # Если навыки/специализации/форматы не переданы — берём из БД
+            if full_data['skills'] is None:
+                full_data['skills'] = [
+                    {'skill_id': str(s.skill_id)}
+                    for s in project.skills.all()
+                ]
+            if full_data['specializations'] is None:
+                full_data['specializations'] = [
+                    {'spec_id': str(s.spec_id)}
+                    for s in project.specializations.all()
+                ]
+            if full_data['project_format'] is None:
+                full_data['project_format'] = [
+                    str(f.format_id) for f in project.project_format.all()
+                ]
+            user = self.context['request'].user
+            return validate_project_data(full_data, user)
+        # Изменение опубликованного проекта или с закрытым набором
+        published_statuses = (PUBLISHED, RECRUITING_CLOSED)
+        if (
+            project is not None
+            and project.status_project in published_statuses
+        ):
+            validate_published_project_dates(
+                start_date=data.get('start_date'),
+                end_date=data.get('end_date'),
+                current_start_date=project.start_date,
+            )
+
+        # Валидация дат для черновика (без смены статуса):
+        # если даты переданы — проверяем, что start_date не в прошлом,
+        # end_date не раньше start_date, длительность ≤ 1 год
+        start_date = data.get('start_date')
+        end_date = data.get('end_date')
+        if start_date and end_date:
+            validate_project_dates(start_date, end_date)
+
+        # Валидация переданных связанных полей
+        project_format = data.get('project_format')
+        if project_format is not None:
+            validated_formats = _validate_formats_by_uuid_list(project_format)
+            data['_validated_formats'] = validated_formats
+        skills = data.get('skills')
+        if skills is not None:
+            if not skills:
+                raise serializers.ValidationError({
+                    'skills': 'Необходимо указать хотя бы один навык.',
+                })
+            validated_skills = _validate_related_ids(
+                skills, 'skill_id', Skill, 'навыки',
+            )
+            data['_validated_skills'] = validated_skills
+        specializations = data.get('specializations')
+        if specializations is not None:
+            if not specializations:
+                raise serializers.ValidationError({
+                    'specializations': (
+                        'Необходимо указать хотя бы одну специализацию.'
+                    ),
+                })
+            validated_specializations = _validate_related_ids(
+                specializations, 'spec_id', Specialization, 'специализации',
+            )
+            data['_validated_specializations'] = validated_specializations
+
+        return data
 
     def validate_status_project(self, status_project: str) -> str:
         """Валидация статуса проекта."""
