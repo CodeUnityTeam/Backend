@@ -323,9 +323,18 @@ def validate_project_data(data: dict, user: User) -> dict:
     location = data.get('location')
     if location:
         data['location'] = validate_location_project(location)
-    # 3. Количество навыков
+    # 3. Валидация дат (если обе даты переданы)
+    start_date = data.get('start_date')
+    end_date = data.get('end_date')
+    if start_date and end_date:
+        validate_project_dates(start_date, end_date)
+    # 4. Количество навыков
     skills_data = data.get('skills', [])
-    if skills_data and len(skills_data) > MAX_SKILLS_COUNT:
+    if not skills_data:
+        raise serializers.ValidationError({
+            'skills': 'Необходимо указать хотя бы один навык.',
+        })
+    if len(skills_data) > MAX_SKILLS_COUNT:
         raise serializers.ValidationError({
             'skills': (
                 f'Количество навыков не должно превышать '
@@ -337,8 +346,15 @@ def validate_project_data(data: dict, user: User) -> dict:
     validated_skills = _validate_related_ids(
         skills_data, 'skill_id', Skill, 'навыки',
     )
+    specializations_data = data.get('specializations', [])
+    if not specializations_data:
+        raise serializers.ValidationError({
+            'specializations': (
+                'Необходимо указать хотя бы одну специализацию.'
+            ),
+        })
     validated_specializations = _validate_related_ids(
-        data.get('specializations', []),
+        specializations_data,
         'spec_id',
         Specialization,
         'специализации',

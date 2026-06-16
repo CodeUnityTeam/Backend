@@ -37,13 +37,13 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
     skills = serializers.ListField(
         child=serializers.DictField(),
         write_only=True,
-        required=False,
+        required=True,
         help_text='Список навыков в формате [{"skill_id": "uuid"}]',
     )
     specializations = serializers.ListField(
         child=serializers.DictField(),
         write_only=True,
-        required=False,
+        required=True,
         help_text='Список специализаций в формате [{"spec_id": "uuid"}]',
     )
     project_format = serializers.ListField(
