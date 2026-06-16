@@ -256,7 +256,7 @@ class ProjectViewSet(ModelViewSet):
     """Вьюсет для работы с проектами."""
 
     permission_classes = (IsAuthenticated,)
-    http_method_names = ('get', 'post', 'patch', 'delete',)
+    http_method_names = ('get', 'post', 'patch', 'delete')
     lookup_field = 'project_id'
     ordering = ('-published_at',)
     pagination_class = CustomProjectPagination
@@ -272,7 +272,7 @@ class ProjectViewSet(ModelViewSet):
 
         Логика фильтрации по статусу в зависимости от action:
         - list (без my_project): исключаем DRAFT, BLOCKED, ARCHIVED.
-        - list (с my_project): фильтр my_project сам управляет видимостью.
+        - list (с my_project): фильтр my_project сам управляет фильтрацией.
         - retrieve (автор-employer): свои проекты + PUBLISHED,
           RECRUITING_CLOSED.
         - retrieve (обычный пользователь): только PUBLISHED,

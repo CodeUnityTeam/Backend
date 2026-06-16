@@ -3,6 +3,12 @@ from django.db import transaction
 from django.utils import timezone
 from rest_framework import serializers
 
+from core.constants.projects import (
+    ARCHIVED,
+    DRAFT,
+    PUBLISHED,
+    RECRUITING_CLOSED,
+)
 from projects.models import Project
 from projects.selectors import get_project_with_relations
 from projects.validators import (
@@ -12,12 +18,7 @@ from projects.validators import (
     validate_project_data,
     validate_update_project_status,
 )
-from core.constants.projects import (
-    ARCHIVED,
-    DRAFT,
-    PUBLISHED,
-    RECRUITING_CLOSED,
-)
+
 from .skill import SkillSerializer
 from .specialization import SpecializationSerializer
 from .user import (

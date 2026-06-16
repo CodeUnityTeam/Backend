@@ -120,6 +120,7 @@ def get_response_feed_queryset(user: User) -> QuerySet:
 
 def get_recommended_projects_queryset(user: User) -> QuerySet[Project]:
     """Формирует QuerySet проектов для рекомендаций пользователю.
+
     На основе навыков пользователя находит проекты со статусом PUBLISHED,
     сортирует по убыванию количества совпадающих навыков (релевантность).
     - Исключаются проекты, где пользователь является автором.
