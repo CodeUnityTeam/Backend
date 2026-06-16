@@ -319,7 +319,6 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
            - Обычная валидация переданных полей.
         """
         project = self.instance
-        # Черновик → публикация
         new_status = data.get('status_project')
         is_publishing = (
             new_status == PUBLISHED
@@ -327,12 +326,10 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
             and project.status_project == DRAFT
         )
         if is_publishing:
-            # Валидация дат
             start_date = data.get('start_date', project.start_date)
             end_date = data.get('end_date', project.end_date)
             if start_date and end_date:
                 validate_project_dates(start_date, end_date)
-            # Полная проверка остальных обязательных полей
             full_data = {
                 'title': data.get('title', project.title),
                 'short_desc': data.get('short_desc', project.short_desc),
@@ -371,16 +368,21 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
                 end_date=data.get('end_date'),
                 current_start_date=project.start_date,
             )
-
-        # Валидация дат для черновика (без смены статуса):
-        # если даты переданы — проверяем, что start_date не в прошлом,
-        # end_date не раньше start_date, длительность ≤ 1 год
         start_date = data.get('start_date')
         end_date = data.get('end_date')
         if start_date and end_date:
             validate_project_dates(start_date, end_date)
+        self._validate_relationship_fields(data)
+        return data
 
-        # Валидация переданных связанных полей
+    def _validate_relationship_fields(self, data: dict) -> None:
+        """Валидация переданных M2M-полей.
+
+        Если поле не передано (None) — не трогает существующие связи.
+        Если передан пустой список:
+          - project_format — очищается (разрешено)
+          - skills / specializations — ошибка (минимум 1 шт)
+        """
         project_format = data.get('project_format')
         if project_format is not None:
             validated_formats = _validate_formats_by_uuid_list(project_format)
@@ -407,8 +409,6 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
                 specializations, 'spec_id', Specialization, 'специализации',
             )
             data['_validated_specializations'] = validated_specializations
-
-        return data
 
     def validate_status_project(self, status_project: str) -> str:
         """Валидация статуса проекта."""
