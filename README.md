@@ -28,6 +28,7 @@ uv run python manage.py runserver
 * [Авторизация](docs/auth.md)
 * [Наполнение БД](docs/add_tags.md)
 * [Docker](docs/docker.md)
+* [Admin-панель](docs/admin.md)
 ### Разделы
 * [👤 Пользователи и профили](docs/users.md)
 * [📁 Проекты](docs/projects.md)

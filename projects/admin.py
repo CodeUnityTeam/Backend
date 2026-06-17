@@ -1,65 +1,74 @@
 from django.contrib import admin
 
-from .models import Project, ProjectLike, ProjectParticipant
-
-
-class ProjectParticipantInline(admin.TabularInline):
-    """Инлайн для отображения участников проекта."""
-
-    model = ProjectParticipant
-    extra = 0
-    verbose_name = 'Участник'
-    verbose_name_plural = 'Участники'
-
+from core.admin_mixins import RolePermissionsMixin
+from .models import (
+    Project,
+    ProjectLike,
+    ProjectParticipant,
+    Response,
+    WorkFormat,
+)
 
 @admin.register(Project)
-class ProjectAdmin(admin.ModelAdmin):
-    """Админка для модели Project."""
+class ProjectAdmin(RolePermissionsMixin, admin.ModelAdmin):
+    """Админ-панель для модели проекта."""
 
     list_display = (
-        'title',
-        'author',
-        'status_project',
-        'published_at',
-        'created_at',
-    )
-    list_filter = ('status_project',)
-    search_fields = (
-        'title',
-        'author__email',
-    )
-    readonly_fields = (
         'project_id',
-        'published_at',
-        'created_at',
-        'updated_at',
+        'author',
+        'title',
+        'short_desc',
+        'status_project',
+        'location',
     )
-    filter_horizontal = (
-        'skills',
-        'specializations',
-        'project_format',
-    )
-    inlines = (ProjectParticipantInline,)
+    filter_horizontal = ('skills', 'project_format', 'specializations')
+    list_filter = ('author', 'location',)
+    search_fields = ('title ', 'short_desc',)
+    ordering = ('start_date',)
 
 
 @admin.register(ProjectParticipant)
-class ProjectParticipantAdmin(admin.ModelAdmin):
-    """Админка для модели ProjectParticipant."""
+class ProjectParticipantAdmin(RolePermissionsMixin, admin.ModelAdmin):
+    """Админ-панель для модели участников проекта."""
 
     list_display = (
         'project',
         'user',
         'status_participant',
     )
-    list_filter = ('status_participant',)
+    search_fields = ('^project__title', '^project__author',)
+
+
+@admin.register(Response)
+class ResponseAdmin(RolePermissionsMixin, admin.ModelAdmin):
+    """Админ-панель для модели октликов."""
+
+    list_display = (
+        'response_id',
+        'project',
+        'user',
+        'initiator_type',
+        'status_resp'
+    )
+
+
+@admin.register(WorkFormat)
+class WorkFormatAdmin(RolePermissionsMixin, admin.ModelAdmin):
+    """Админ-панель для модели форматов работы."""
+
+    list_display = ('format_id', 'name')
+    search_fields = ('name',)
 
 
 @admin.register(ProjectLike)
 class ProjectLikeAdmin(admin.ModelAdmin):
-    """Админка для модели ProjectLike."""
+    """Админ‑панель для модели лайков."""
 
     list_display = (
-        'user',
         'project',
-        'created_at',
+        'user',
+    )
+    search_fields =(
+        'project__title',
+        '^user__email',
     )
