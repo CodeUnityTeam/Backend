@@ -9,6 +9,7 @@ from rest_framework import serializers
 
 from config import settings
 from core.validators import file_size_validator
+from projects.models import Response as ProjectResponse
 from projects.models import WorkFormat
 from projects.serializers import (
     SkillSerializer,
@@ -17,9 +18,17 @@ from projects.serializers import (
 )
 from users.models.skills import Skill
 from users.models.specializations import Specialization
-from users.models.users import UserExperience
+from users.models.users import User, UserExperience, UserLike
 
 UserModel = get_user_model()
+
+
+class DRFErrorResponseSerializer(serializers.Serializer):
+    """Стандартная структура ошибки Django REST Framework."""
+
+    detail = serializers.CharField(
+        help_text='Текстовое сообщение с деталями ошибки.',
+    )
 
 
 class UserExperienceSerializer(
@@ -158,6 +167,7 @@ class AvatarUploadSerializer(serializers.Serializer[dict[str, Any]]):
 class PublicUserProfileSerializer(serializers.ModelSerializer):
     """Сериализатор для списочного отображения профилей."""
 
+    is_liked = serializers.SerializerMethodField()
     skills = SkillSerializer(many=True, read_only=True)
     specializations = SpecializationSerializer(
         many=True, read_only=True,
@@ -175,8 +185,29 @@ class PublicUserProfileSerializer(serializers.ModelSerializer):
             'specializations',
             'workformats',
             'avatar_url',
+            'is_liked',
         )
         read_only_fields = fields
+
+    def get_is_liked(self, obj: User) -> bool:
+        """Определяет, лайкнул ли текущий пользователь этот профиль."""
+        request = self.context['request']
+        employer: User = request.user
+
+        # Проверка кэша prefetch_related для исключения N+1 запросов
+        if hasattr(obj, 'employers_likes'):
+            prefetch_cache = getattr(obj, '_prefetched_objects_cache', {})
+            if 'employers_likes' in prefetch_cache:
+                return any(
+                    like.employer_id == employer.user_id
+                    for like in obj.employers_likes.all()
+                )
+
+        # fallback-запрос, если данные не были предварительно подгружены
+        return UserLike.objects.filter(
+            employer=employer,
+            worker=obj,
+        ).exists()
 
 
 class DetailUserProfileSerializer(PublicUserProfileSerializer):
@@ -193,5 +224,34 @@ class DetailUserProfileSerializer(PublicUserProfileSerializer):
             'soft_skills',
             'about_me',
             'experiences',
+        )
+        read_only_fields = fields
+
+
+class UserResponseCardSerializer(serializers.ModelSerializer):
+    """Сериализатор карточки отклика с вложенным профилем соискателя."""
+
+    response_id: serializers.UUIDField = serializers.UUIDField(
+        read_only=True,
+    )
+    project_id: serializers.UUIDField = serializers.UUIDField(
+        source='project.project_id', read_only=True,
+    )
+    project_title: serializers.CharField = serializers.CharField(
+        source='project.title', read_only=True,
+    )
+    profile: PublicUserProfileSerializer = (
+        PublicUserProfileSerializer(source='user', read_only=True)
+    )
+
+    class Meta:
+        model = ProjectResponse
+        fields = (
+            'response_id',
+            'project_id',
+            'project_title',
+            'initiator_type',
+            'status_resp',
+            'profile',
         )
         read_only_fields = fields

@@ -8,10 +8,7 @@ from qna.selectors import create_answer, create_answer_image
 class AnswerDetailSerializer(serializers.ModelSerializer):
     """Сериализатор ответа для детальной страницы вопроса."""
 
-    author_name = serializers.CharField(
-        source='user.get_full_name',
-        read_only=True,
-    )
+    author_name = serializers.SerializerMethodField()
     images = serializers.SerializerMethodField()
     likes_count = serializers.IntegerField(read_only=True)
 
@@ -26,6 +23,10 @@ class AnswerDetailSerializer(serializers.ModelSerializer):
             'likes_count',
             'images',
         ]
+
+    def get_author_name(self, obj: Answer) -> str:
+        """Возвращает имя автора ответа."""
+        return f'{obj.user.first_name} {obj.user.last_name}'.strip() or obj.user.email
 
     def get_images(self, obj: Answer) -> list[str]:
         """Возвращает список URL изображений."""

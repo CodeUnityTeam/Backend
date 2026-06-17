@@ -1,4 +1,5 @@
 import json
+import logging
 from typing import Any
 
 from botocore.exceptions import ClientError
@@ -14,11 +15,12 @@ class MinioService:
         """Инициализировать имя бакета и настройки хранилища."""
         self.bucket_name: str = bucket_name
         self.storage: S3Boto3Storage = self._init_storage()
+        self._bucket_configured: bool = False
         self._ensure_bucket_templated()
 
     def _init_storage(self) -> S3Boto3Storage:
         """Внутренний метод инициализации S3-хранилища."""
-        options: dict[str, Any] = settings.S3_OPTIONS
+        options: dict[str, Any] = settings.STORAGES['avatars']['OPTIONS']
         endpoint_url: str = options.get('endpoint_url', '')
 
         clean_domain: str = endpoint_url.replace(
@@ -38,6 +40,9 @@ class MinioService:
 
     def _ensure_bucket_templated(self) -> None:
         """Проверить наличие бакета и сделать его публичным на чтение."""
+        if self._bucket_configured:
+            return
+
         try:
             s3_client: Any = self.storage.connection.meta.client
 
@@ -69,8 +74,13 @@ class MinioService:
                 Bucket=self.bucket_name,
                 Policy=json.dumps(public_read_policy),
             )
-        except Exception:  # noqa: BLE001
-            pass
+
+            # 4. Устанавливаем флаг, что бакет настроен
+            self._bucket_configured = True
+
+        except Exception as err:
+            logger = logging.getLogger(__name__)
+            logger.error(f'Ошибка настройки бакета {self.bucket_name}: {err}')
 
     def upload_file(self, cloud_path: str, file_obj: UploadedFile) -> str:
         """Загружает файл и возвращает его полный публичный URL."""
@@ -85,5 +95,6 @@ class MinioService:
             if bucket_part in file_url:
                 file_path: str = file_url.split(bucket_part)[-1]
                 self.storage.delete(file_path)
-        except Exception:  # noqa: BLE001
-            pass
+        except Exception as err:
+            logger = logging.getLogger(__name__)
+            logger.error(f'Ошибка удаления файла {file_url}: {err}')
