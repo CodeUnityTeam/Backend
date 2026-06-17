@@ -134,7 +134,7 @@ urlpatterns = [
                 name='user-profile',
             ),
             path(
-                '<uuid:worker_id>/like',
+                '<uuid:worker_id>/like/',
                 ProfileLikeAPIView.as_view(),
                 name='profile-like',
             ),

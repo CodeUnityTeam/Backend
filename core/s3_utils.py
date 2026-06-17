@@ -2,10 +2,13 @@ import json
 import logging
 from typing import Any
 
-from botocore.exceptions import ClientError
 from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
 from storages.backends.s3boto3 import S3Boto3Storage
+
+
+class S3ClientError(Exception):
+    """Кастомное исключение для ошибок S3-клиента."""
 
 
 class MinioService:
@@ -49,11 +52,14 @@ class MinioService:
             # 1. Проверяем существование бакета. Если нет — создаем.
             try:
                 s3_client.head_bucket(Bucket=self.bucket_name)
-            except ClientError as e:
-                if e.response.get('Error', {}).get('Code') == '404':
+            except Exception as e:
+                error_code = getattr(e, 'response', {}).get('Error', {}).get('Code', '')
+                if error_code == '404':
                     s3_client.create_bucket(Bucket=self.bucket_name)
-                else:
+                elif isinstance(e, S3ClientError):
                     raise e
+                else:
+                    raise S3ClientError(str(e)) from e
 
             # 2. Формируем политику анонимного чтения файлов
             public_read_policy = {

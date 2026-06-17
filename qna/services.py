@@ -5,6 +5,7 @@ from django.db.models import Model
 
 from config import settings
 from core.s3_utils import MinioService
+from qna.selectors import count_likes, delete_like, get_or_create_like
 
 image_minio_client = MinioService(
     bucket_name=settings.STORAGES['images']['OPTIONS']['bucket_name'],
@@ -46,20 +47,25 @@ def toggle_like(
         dict: {'liked': bool, 'likes_count': int}
 
     """
-    like, created = like_model.objects.get_or_create(
-        **{target_field: target_obj, 'user': user},
+    like, created = get_or_create_like(
+        like_model=like_model,
+        target_field=target_field,
+        target_obj=target_obj,
+        user=user,
     )
     if not created:
-        like.delete()
+        delete_like(like)
         liked = False
     else:
         liked = True
 
     # Используем агрегацию из БД вместо .count() на prefetch-кеше,
     # чтобы избежать проблем с устаревшим кешем prefetch_related
-    likes_count = like_model.objects.filter(
-        **{target_field: target_obj},
-    ).count()
+    likes_count = count_likes(
+        like_model=like_model,
+        target_field=target_field,
+        target_obj=target_obj,
+    )
 
     return {
         'liked': liked,

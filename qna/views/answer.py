@@ -6,8 +6,9 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from qna.models import Answer, AnswerLike
+from qna.models import AnswerLike
 from qna.permissions import CanDeleteAnswer
+from qna.selectors import get_answer_detail_queryset
 from qna.serializers.answer import AnswerDetailSerializer
 from qna.serializers.like import LikeSerializer
 from qna.services import toggle_like
@@ -25,9 +26,7 @@ from qna.services import toggle_like
 class AnswerViewSet(DestroyModelMixin, GenericViewSet):
     """Представление для ответов."""
 
-    queryset = Answer.objects.select_related(
-        'user', 'question',
-    ).prefetch_related('likes', 'images')
+    queryset = get_answer_detail_queryset()
     serializer_class = AnswerDetailSerializer
     permission_classes = [IsAuthenticated, CanDeleteAnswer]
 

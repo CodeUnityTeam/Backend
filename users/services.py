@@ -10,7 +10,10 @@ from config import settings
 from core.s3_utils import MinioService
 from projects.models import Response as ProjectResponse
 from users.models.users import User
-from users.selectors import get_employer_profiles_selector
+from users.selectors import (
+    get_employer_base_queryset,
+    get_employer_profiles_selector,
+)
 
 avatar_minio_client = MinioService(
     bucket_name=settings.STORAGES['avatars']['OPTIONS']['bucket_name'],
@@ -75,35 +78,74 @@ def _is_valid_uuid(val: str) -> bool:
 def get_profiles_for_employer_service(
     current_user: Any, query_params: dict[str, Any],
 ) -> Union[QuerySet[ProjectResponse], QuerySet[User]]:
-    """Бизнес-логика фильтрации параметров и защиты от DataError СУБД."""
-    responses_param: str = query_params.get('responses', '').lower()
-    sort_by: str = query_params.get('sort_by', 'newest').lower()
+    """Получить фильтрованный и сортированный список пользователей.
 
+    Выбитрает базовый queryset в зависимости от сценария запроса (все,
+    избранное, отклики) и подготавливает данные для запроса в базу.
+    """
+    # 1. Определяем сценарий
+    if query_params.get('responses', '').lower() == 'true':
+        scenario: str = 'responses'
+    elif query_params.get('favourites', '').lower() == 'true':
+        scenario = 'favourites'
+    else:
+        scenario = 'all'
+
+    # Бизнес-исключение: одновременный вызов responses и favourites запрещен
+    if (
+        query_params.get('responses', '').lower() == 'true'
+        and query_params.get('favourites', '').lower() == 'true'
+    ):
+        return User.objects.none()
+
+    # 2. Инициализируем базовые параметры таблиц СУБД под сценарий
+    if scenario == 'responses':
+        base_queryset: QuerySet[Any] = (
+            ProjectResponse.objects.filter(project__author=current_user)
+            .exclude(user=current_user)
+            .select_related('project', 'user')
+        )
+        outer_ref_field: str = 'user_id'
+        field_prefix: str = 'user__'
+    else:
+        base_queryset = User.objects.exclude(pk=current_user.pk)
+        outer_ref_field = 'pk'
+        field_prefix = ''
+
+    # 3. Чистим и парсим списки UUID
+    sort_by: str = query_params.get('sort_by', 'newest').lower()
     raw_skills: str = query_params.get('skill_ids', '')
     raw_specs: str = query_params.get('spec_ids', '')
     raw_formats: str = query_params.get('format_ids', '')
 
     skill_ids: tuple[str, ...] = (
         tuple(filter(_is_valid_uuid, raw_skills.split(',')))
-        if raw_skills
-        else ()
+        if raw_skills else ()
     )
     spec_ids: tuple[str, ...] = (
         tuple(filter(_is_valid_uuid, raw_specs.split(',')))
-        if raw_specs
-        else ()
+        if raw_specs else ()
     )
     format_ids: tuple[str, ...] = (
         tuple(filter(_is_valid_uuid, raw_formats.split(',')))
-        if raw_formats
-        else ()
+        if raw_formats else ()
     )
 
-    return get_employer_profiles_selector(
+    # 4. Вызываем общий для всех запросов селектор
+    annotated_queryset = get_employer_base_queryset(
         current_user=current_user,
-        responses_param=responses_param,
+        outer_ref_field=outer_ref_field,
+        field_prefix=field_prefix,
         sort_by=sort_by,
         skill_ids=skill_ids,
         spec_ids=spec_ids,
         format_ids=format_ids,
+        queryset=base_queryset,
+    )
+
+    # 5. Передаем готовый QuerySet в сценарный маппер
+    return get_employer_profiles_selector(
+        scenario=scenario,
+        current_user=current_user,
+        queryset=annotated_queryset,
     )
