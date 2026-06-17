@@ -1,7 +1,8 @@
 from django.db import transaction
 from rest_framework import serializers
 
-from qna.models import Answer, AnswerImage
+from qna.models import Answer
+from qna.selectors import create_answer, create_answer_image
 
 
 class AnswerDetailSerializer(serializers.ModelSerializer):
@@ -25,7 +26,10 @@ class AnswerDetailSerializer(serializers.ModelSerializer):
 
     def get_author_name(self, obj: Answer) -> str:
         """Возвращает имя автора ответа."""
-        return f'{obj.user.first_name} {obj.user.last_name}'.strip() or obj.user.email
+        return (
+            f'{obj.user.first_name} {obj.user.last_name}'.strip()
+            or obj.user.email
+        )
 
     def get_images(self, obj: Answer) -> list[str]:
         """Возвращает список URL изображений."""
@@ -74,14 +78,14 @@ class AnswerCreateSerializer(serializers.ModelSerializer):
         question = self.context['question']
 
         with transaction.atomic():
-            answer = Answer.objects.create(
+            answer = create_answer(
                 user=user,
                 question=question,
                 **validated_data,
             )
 
             for image in images:
-                AnswerImage.objects.create(
+                create_answer_image(
                     answer=answer,
                     uploaded_by=user,
                     image_url=image['image_url'],

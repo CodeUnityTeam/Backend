@@ -45,6 +45,35 @@ echo "=============================================="
 echo ""
 
 # =============================================================================
+# Функция: подтверждение email через API
+# =============================================================================
+confirm_email() {
+  local email=$1
+
+  # Подтверждаем email напрямую через manage.py shell
+  # (allauth 65+ использует HMAC-ключи, которые не хранятся в БД)
+  local result
+  result=$(uv run python manage.py shell -c "
+from allauth.account.models import EmailAddress
+try:
+    ea = EmailAddress.objects.get(email='$email')
+    ea.verified = True
+    ea.save()
+    print('OK')
+except Exception as e:
+    print(f'ERROR: {e}')
+" 2>&1)
+
+  if [ "$result" = "OK" ]; then
+    echo -e "${GREEN}  ✓ Email подтверждён ($email)${NC}"
+    return 0
+  else
+    echo -e "${RED}  ✗ Ошибка подтверждения email: $result${NC}"
+    return 1
+  fi
+}
+
+# =============================================================================
 # Функция: логин и получение токена
 # =============================================================================
 login() {
@@ -114,6 +143,10 @@ api_post_empty() {
 # Шаг 1: Логин и получение JWT-токена (Stanislav)
 # =============================================================================
 echo -e "${YELLOW}[1/11] Логин и получение JWT-токена...${NC}"
+
+# Подтверждаем email перед логином
+echo "  Подтверждение email для Stanislav..."
+confirm_email "$EMAIL"
 
 access_token=$(login "$EMAIL" "$PASSWORD")
 if [ -n "$access_token" ]; then
@@ -307,6 +340,8 @@ echo -e "${YELLOW}[6/11] Создание ответов на вопросы...$
 
 # Логинимся как второй пользователь (Oleg)
 echo "  Логин второго пользователя (Oleg)..."
+echo "  Подтверждение email для Oleg..."
+confirm_email "$EMAIL2"
 access_token2=$(login "$EMAIL2" "$PASSWORD")
 if [ -n "$access_token2" ]; then
   echo -e "${GREEN}  ✓ Логин успешен (Oleg)${NC}"
@@ -396,6 +431,8 @@ done
 # =============================================================================
 echo -e "${YELLOW}[7/11] Логин остальных пользователей...${NC}"
 
+echo "  Подтверждение email для Kristina..."
+confirm_email "$EMAIL3"
 access_token3=$(login "$EMAIL3" "$PASSWORD")
 if [ -n "$access_token3" ]; then
   echo -e "${GREEN}  ✓ Логин успешен (Kristina)${NC}"
@@ -404,6 +441,8 @@ else
   exit 1
 fi
 
+echo "  Подтверждение email для Evgeniy..."
+confirm_email "$EMAIL4"
 access_token4=$(login "$EMAIL4" "$PASSWORD")
 if [ -n "$access_token4" ]; then
   echo -e "${GREEN}  ✓ Логин успешен (Evgeniy)${NC}"
@@ -412,6 +451,8 @@ else
   exit 1
 fi
 
+echo "  Подтверждение email для Natalya..."
+confirm_email "$EMAIL5"
 access_token5=$(login "$EMAIL5" "$PASSWORD")
 if [ -n "$access_token5" ]; then
   echo -e "${GREEN}  ✓ Логин успешен (Natalya)${NC}"
@@ -586,20 +627,8 @@ else
 fi
 echo ""
 
-echo "  Лайк проекта ${project_ids[5]} от Oleg..."
-result=$(api_post_json "$BASE_URL/projects/${project_ids[5]}/like/" "$access_token2" "{\"project_id\": \"${project_ids[5]}\"}")
-code=$(echo "$result" | cut -d'|' -f1)
-body=$(echo "$result" | cut -d'|' -f2-)
-if [ "$code" -eq 200 ]; then
-  liked=$(echo "$body" | python -c "import sys,json; print(json.load(sys.stdin).get('liked', 'unknown'))")
-  echo -e "${GREEN}    ✓ Лайк: $liked${NC}"
-else
-  echo -e "${RED}    ✗ Ошибка (HTTP $code): $body${NC}"
-fi
-echo ""
-
-echo "  Лайк проекта ${project_ids[6]} от Stanislav..."
-result=$(api_post_json "$BASE_URL/projects/${project_ids[6]}/like/" "$access_token" "{\"project_id\": \"${project_ids[6]}\"}")
+echo "  Лайк проекта ${project_ids[6]} от Oleg..."
+result=$(api_post_json "$BASE_URL/projects/${project_ids[6]}/like/" "$access_token2" "{\"project_id\": \"${project_ids[6]}\"}")
 code=$(echo "$result" | cut -d'|' -f1)
 body=$(echo "$result" | cut -d'|' -f2-)
 if [ "$code" -eq 200 ]; then

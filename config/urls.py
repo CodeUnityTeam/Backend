@@ -7,6 +7,7 @@ from drf_spectacular.views import (
 )
 
 v1_urlpatterns = [
+    path('help/', include(('help.urls', 'help'), namespace='help')),
     path('user/', include(('users.urls', 'users'), namespace='users')),
     path('qna/', include(('qna.urls', 'qna'), namespace='qna')),
     path(

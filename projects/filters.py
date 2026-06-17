@@ -1,19 +1,86 @@
+from datetime import timedelta
 from typing import Any, Optional
 
 import django_filters
-from django.db.models import F, Q, QuerySet
+from django.contrib.auth import get_user_model
+from django.contrib.postgres.search import SearchRank, SearchVector
+from django.db.models import (
+    Count,
+    DurationField,
+    F,
+    Q,
+    QuerySet,
+)
+from django.db.models.expressions import ExpressionWrapper
+from rest_framework import serializers
 from rest_framework.request import Request
 
 from core.constants.projects import (
     APPROVED,
+    BLOCKED,
     MAX_FILTER_DAYS,
+    MEMBER,
     MIN_FILTER_DAYS,
     PENDING,
+    PUBLISHED,
+    RECRUITING_CLOSED,
     REJECTED,
     WITHDRAWN,
 )
 
 from .models import Project, Response
+
+User = get_user_model()
+
+
+class ProjectOrderingFilter(django_filters.OrderingFilter):
+    """Кастомный OrderingFilter для сортировки проектов.
+
+    Поддерживает:
+        - published_at — по дате публикации (по умолчанию, по убыванию)
+        - like — по количеству лайков (по убыванию)
+        - relevance — по релевантности полнотекстового поиска
+          (только при наличии search в query_params)
+
+    Использует query-параметр 'sort_by' (не 'ordering').
+    """
+
+    ordering_param = 'sort_by'
+
+    def filter(self, qs: QuerySet, value: Any) -> QuerySet:
+        """Применяет сортировку с поддержкой кастомных аннотаций."""
+        if not value:
+            return qs.order_by('-published_at')
+
+        # Определяем, какие сортировки запрошены
+        ordering = []
+        for param in value:
+            desc = param.startswith('-')
+            field_name = param.lstrip('-')
+
+            if field_name == 'like':
+                qs = qs.annotate(likes_count=Count('likes'))
+                ordering.append('-likes_count' if desc else 'likes_count')
+            elif field_name == 'relevance':
+                search_query = self.parent.request.GET.get('search', '')
+                if search_query:
+                    search_vector = SearchVector(
+                        'title', weight='A',
+                    ) + SearchVector(
+                        'short_desc', weight='B',
+                    )
+                    qs = qs.annotate(
+                        search=search_vector,
+                        rank=SearchRank(search_vector, search_query),
+                    )
+                    ordering.append('-rank' if desc else 'rank')
+                else:
+                    suffix = 'published_at'
+                    ordering.append(f'-{suffix}' if desc else suffix)
+            else:
+                ordering.append(param)
+
+        return qs.order_by(*ordering)
 
 
 class ProjectFilter(django_filters.FilterSet):
@@ -27,6 +94,10 @@ class ProjectFilter(django_filters.FilterSet):
     - Поиск по названию, описанию.
     - Фильтр по статусу.
     - Показывает мои проекты, но с учётом роли юзера.
+    - Сортировка через OrderingFilter.
+
+    Исключение статусов (DRAFT, BLOCKED, ARCHIVED) для list
+    выполняется в ProjectViewSet.get_queryset.
     """
 
     format_id = django_filters.BaseInFilter(
@@ -55,6 +126,20 @@ class ProjectFilter(django_filters.FilterSet):
     status = django_filters.BaseInFilter(field_name='status_project')
     # Показывает мои проекты, но с условием!
     my_project = django_filters.BooleanFilter(method='filter_my_project')
+    # Сортировка
+    sort_by = ProjectOrderingFilter(
+        fields=(
+            ('published_at', 'published_at'),
+            ('like', 'like'),
+            ('relevance', 'relevance'),
+        ),
+        field_labels={
+            'published_at': 'По дате публикации',
+            'like': 'По количеству лайков',
+            'relevance': 'По релевантности',
+        },
+        label='Сортировка',
+    )
 
     class Meta:
         model = Project
@@ -67,6 +152,8 @@ class ProjectFilter(django_filters.FilterSet):
         value: str | None,
     ) -> QuerySet[Project]:
         """Поиск по названию, описанию проекта."""
+        if not value:
+            return queryset
         return queryset.filter(
             Q(title__icontains=value) |
             Q(short_desc__icontains=value) |
@@ -79,30 +166,58 @@ class ProjectFilter(django_filters.FilterSet):
         name: str,
         value: str | None,
     ) -> QuerySet[Project]:
-        """Фильтрация проектов по длительности в днях."""
-        duration_min = self.data.get('duration_min')
-        duration_max = self.data.get('duration_max')
-        operator = self.data.get('duration_operator', 'between')
+        """Фильтрация проектов по длительности в днях.
+
+        Длительность вычисляется как разница end_date - start_date.
+        Для сравнения дни конвертируются в timedelta.
+
+        Параметры (из query params):
+            duration_min (int): Мин. длительность (7-365)
+            duration_max (int): Макс. длительность (7-365)
+            duration_operator (str): less | greater | between
+
+        Логика:
+            less    — duration <= duration_min
+            greater — duration >= duration_min
+            between — duration_min <= duration <= duration_max
+        """
+        duration_min = self.request.GET.get('duration_min')
+        duration_max = self.request.GET.get('duration_max')
+        operator = self.request.GET.get(
+            'duration_operator', 'between',
+        )
         if not duration_min and not duration_max:
             return queryset
-        # Преобразуем в числа с дефолтными значениями
-        min_days = int(duration_min) if duration_min else MIN_FILTER_DAYS
-        max_days = int(duration_max) if duration_max else MAX_FILTER_DAYS
-        # Вычисляем длительность как разницу между датами
-        duration_expr = F('end_date') - F('start_date')
+        # Валидация входных данных
+        try:
+            min_days = (
+                int(duration_min) if duration_min else MIN_FILTER_DAYS
+            )
+            max_days = (
+                int(duration_max) if duration_max else MAX_FILTER_DAYS
+            )
+        except (ValueError, TypeError):
+            raise serializers.ValidationError(
+                'Параметры duration_min и duration_max '
+                'должны быть целыми числами.',
+            )
+        # Конвертируем дни в timedelta для сравнения interval с interval
+        min_delta = timedelta(days=min_days)
+        max_delta = timedelta(days=max_days)
+        # Длительность проекта как interval (end_date - start_date)
+        duration_expr = ExpressionWrapper(
+            F('end_date') - F('start_date'),
+            output_field=DurationField(),
+        )
+        queryset = queryset.annotate(duration=duration_expr)
         if operator == 'less':
-            # Длительность меньше или равна min_days
-            return queryset.annotate(
-                duration=duration_expr,
-            ).filter(duration__lte=min_days)
+            return queryset.filter(duration__lte=min_delta)
         if operator == 'greater':
-            # Длительность больше или равна max_days
-            return queryset.annotate(
-                duration=duration_expr,
-            ).filter(duration__gte=max_days)
-        # Длительность между min_days и max_days
-        return queryset.annotate(duration=duration_expr).filter(
-            duration__range=(min_days, max_days),
+            return queryset.filter(duration__gte=min_delta)
+        # between (по умолчанию)
+        return queryset.filter(
+            duration__gte=min_delta,
+            duration__lte=max_delta,
         )
 
     def filter_my_project(
@@ -113,25 +228,30 @@ class ProjectFilter(django_filters.FilterSet):
     ) -> QuerySet[Project]:
         """Фильтрует проекты, где пользователь — автор или участник.
 
-        - Если пользователь — автор: возвращаются все проекты
-        (за исключением archived).
-        - Если пользователь — участник: возвращаются только проекты со статусом
-        published или recruiting_closed.
+        - Наниматель (employer): возвращаются его проекты
+          (за исключением blocked).
+        - Работник (worker): возвращаются проекты, где он участник,
+          со статусом published или recruiting_closed.
         - Админам и суперюзеру видно всё.
         """
-        if not value:
+        if not value or value == 'false':
             return queryset
         user = self.request.user
         if user.is_superuser or user.is_staff or user.role == 'admin':
             return queryset
-        if hasattr(user, 'author_projects'):
-            return queryset.filter(author=user).exclude(status='archived')
-        if hasattr(user, 'participant_projects'):
+
+        if user.projects_relation == User.ProjectsRelationChoices.EMPLOYER:
+            # Наниматель — свои проекты (кроме blocked)
             return queryset.filter(
-                participants=user,
-                status__in=['published', 'recruiting_closed'],
-            )
-        return queryset
+                author=user,
+            ).exclude(status_project=BLOCKED)
+
+        # Работник — проекты, где он участник
+        return queryset.filter(
+            participants__user=user,
+            participants__status_participant=MEMBER,
+            status_project__in=[PUBLISHED, RECRUITING_CLOSED],
+        )
 
 
 class ResponseFeedFilter(django_filters.FilterSet):

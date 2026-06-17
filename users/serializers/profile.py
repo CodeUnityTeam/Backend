@@ -194,16 +194,16 @@ class PublicUserProfileSerializer(serializers.ModelSerializer):
         request = self.context['request']
         employer: User = request.user
 
-        # Проверка кэша prefetch_related для исключения N+1 запросов
-        if hasattr(obj, 'employers_likes'):
-            prefetch_cache = getattr(obj, '_prefetched_objects_cache', {})
-            if 'employers_likes' in prefetch_cache:
-                return any(
-                    like.employer_id == employer.user_id
-                    for like in obj.employers_likes.all()
-                )
+        if hasattr(obj, 'annotated_is_liked'):
+            return obj.annotated_is_liked
 
-        # fallback-запрос, если данные не были предварительно подгружены
+        employer: Any = self.context['request'].user
+        if (
+            employer.projects_relation
+            != UserModel.ProjectsRelationChoices.EMPLOYER
+        ):
+            return False
+
         return UserLike.objects.filter(
             employer=employer,
             worker=obj,

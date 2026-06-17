@@ -25,6 +25,35 @@ echo " Регистрация пользователей"
 echo "=============================================="
 echo ""
 
+# =============================================================================
+# Функция: подтверждение email через API
+# =============================================================================
+confirm_email() {
+  local email=$1
+
+  # Подтверждаем email напрямую через manage.py shell
+  # (allauth 65+ использует HMAC-ключи, которые не хранятся в БД)
+  local result
+  result=$(uv run python manage.py shell -c "
+from allauth.account.models import EmailAddress
+try:
+    ea = EmailAddress.objects.get(email='$email')
+    ea.verified = True
+    ea.save()
+    print('OK')
+except Exception as e:
+    print(f'ERROR: {e}')
+" 2>&1)
+
+  if [ "$result" = "OK" ]; then
+    echo -e "${GREEN}  ✓ Email подтверждён ($email)${NC}"
+    return 0
+  else
+    echo -e "${RED}  ✗ Ошибка подтверждения email: $result${NC}"
+    return 1
+  fi
+}
+
 # Считаем количество пользователей
 users_count=$(python -c "
 import json
@@ -83,6 +112,9 @@ print(data.get('last_name', ''))
 
   if [ "$code" -eq 201 ]; then
     echo -e "${GREEN}    ✓ Успешно${NC}"
+    # Подтверждаем email после регистрации
+    echo "  Подтверждение email..."
+    confirm_email "$email"
   else
     echo -e "${RED}    ✗ Ошибка (HTTP $code): $body${NC}"
   fi

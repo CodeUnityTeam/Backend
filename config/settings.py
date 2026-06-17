@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'projects.apps.ProjectsConfig',
     'qna.apps.QnaConfig',
     'feedback.apps.FeedbackConfig',
+    'help.apps.HelpConfig',
 ]
 
 MIDDLEWARE = [
