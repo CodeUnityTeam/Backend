@@ -586,20 +586,8 @@ else
 fi
 echo ""
 
-echo "  Лайк проекта ${project_ids[5]} от Oleg..."
-result=$(api_post_json "$BASE_URL/projects/${project_ids[5]}/like/" "$access_token2" "{\"project_id\": \"${project_ids[5]}\"}")
-code=$(echo "$result" | cut -d'|' -f1)
-body=$(echo "$result" | cut -d'|' -f2-)
-if [ "$code" -eq 200 ]; then
-  liked=$(echo "$body" | python -c "import sys,json; print(json.load(sys.stdin).get('liked', 'unknown'))")
-  echo -e "${GREEN}    ✓ Лайк: $liked${NC}"
-else
-  echo -e "${RED}    ✗ Ошибка (HTTP $code): $body${NC}"
-fi
-echo ""
-
-echo "  Лайк проекта ${project_ids[6]} от Stanislav..."
-result=$(api_post_json "$BASE_URL/projects/${project_ids[6]}/like/" "$access_token" "{\"project_id\": \"${project_ids[6]}\"}")
+echo "  Лайк проекта ${project_ids[6]} от Oleg..."
+result=$(api_post_json "$BASE_URL/projects/${project_ids[6]}/like/" "$access_token2" "{\"project_id\": \"${project_ids[6]}\"}")
 code=$(echo "$result" | cut -d'|' -f1)
 body=$(echo "$result" | cut -d'|' -f2-)
 if [ "$code" -eq 200 ]; then

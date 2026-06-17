@@ -26,8 +26,10 @@ class AnswerDetailSerializer(serializers.ModelSerializer):
 
     def get_author_name(self, obj: Answer) -> str:
         """Возвращает имя автора ответа."""
-        full_name = f'{obj.user.first_name} {obj.user.last_name}'.strip()
-        return full_name or obj.user.email
+        return (
+            f'{obj.user.first_name} {obj.user.last_name}'.strip()
+            or obj.user.email
+        )
 
     def get_images(self, obj: Answer) -> list[str]:
         """Возвращает список URL изображений."""
