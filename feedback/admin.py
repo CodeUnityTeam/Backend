@@ -5,6 +5,7 @@ from django.http import HttpRequest
 from qna.forms import ImageAdminForm
 from qna.services import image_upload_handler
 
+from core.admin_mixins import RolePermissionsMixin
 from .models import FeedbackForm, FeedbackImage
 
 
@@ -20,7 +21,7 @@ class FeedbackImageInline(admin.TabularInline):
 
 
 @admin.register(FeedbackForm)
-class FeedbackFormAdmin(admin.ModelAdmin):
+class FeedbackFormAdmin(RolePermissionsMixin, admin.ModelAdmin):
     """Админ‑панель для модели FeedbackForm."""
 
     list_display = (
@@ -35,7 +36,7 @@ class FeedbackFormAdmin(admin.ModelAdmin):
 
 
 @admin.register(FeedbackImage)
-class FeedbackImageAdmin(admin.ModelAdmin):
+class FeedbackImageAdmin(RolePermissionsMixin, admin.ModelAdmin):
     """Админ‑панель для модели FeedbackImage."""
 
     form = ImageAdminForm
