@@ -28,8 +28,6 @@ from .models import Project, WorkFormat
 User = get_user_model()
 
 
-# Проверенные валидаторы
-
 def validate_title_project(value: str) -> str:
     """Валидатор для названия проекта."""
     cleaned_value: str = value.strip()
@@ -98,8 +96,6 @@ def validate_location_project(value: str) -> str:
         )
     return cleaned_value
 
-# Непроверенные валидаторы
-
 
 def extract_relationship_data(validated_data: dict) -> dict:
     """Извлекает данные связей и возвращает их в словаре.
@@ -131,9 +127,6 @@ def add_relationships_to_project(
     relationship_data: dict,
 ) -> None:
     """Присваивает связанные объекты проекту после валидации.
-
-    Объекты уже проверены на этапе validate_project_data,
-    дополнительные запросы к БД не требуются.
 
     Если передан пустой список — связи очищаются.
     Если ключ отсутствует (None) — связи не трогаются.
