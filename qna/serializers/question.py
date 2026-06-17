@@ -198,8 +198,8 @@ class QuestionListSerializer(serializers.ModelSerializer):
         if obj.is_anonymous:
             return 'Аноним'
         return (
-            f'{obj.user.first_name} {obj.user.last_name}'.strip() or
-            obj.user.email
+            f'{obj.user.first_name} {obj.user.last_name}'.strip()
+            or obj.user.email
         )
 
 
@@ -234,8 +234,8 @@ class QuestionDetailSerializer(serializers.ModelSerializer):
         if obj.is_anonymous:
             return 'Аноним'
         return (
-            f'{obj.user.first_name} {obj.user.last_name}'.strip() or
-            obj.user.email
+            f'{obj.user.first_name} {obj.user.last_name}'.strip()
+            or obj.user.email
         )
 
     def get_images(self, obj: Question) -> list[str]:
