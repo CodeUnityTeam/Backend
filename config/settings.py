@@ -269,7 +269,23 @@ ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# =============================================================================
+# E-MAIL SERVER
+# =============================================================================
+
+DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER', 'hello@code-unity.ru')
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+print
+if os.getenv('PRODUCTION_EMAIL_BACKEND', False) is True:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = os.getenv('EMAIL_HOST')
+    EMAIL_PORT = int(os.getenv('EMAIL_PORT', 465))
+    EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+    EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+    EMAIL_USE_SSL = True
+    EMAIL_USE_TLS = False
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # =============================================================================
 # SOCIAL AUTHENTICATION PROVIDERS
