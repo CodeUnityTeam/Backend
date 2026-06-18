@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.mailru',
     'allauth.socialaccount.providers.yandex',
+    'django_extensions',
     'dj_rest_auth',
     'dj_rest_auth.registration',
     'rest_framework_simplejwt',
