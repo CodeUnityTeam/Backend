@@ -1,47 +1,50 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
-from django.contrib.auth.models import Group
 from django.core.files.uploadedfile import UploadedFile
 from django.http import HttpRequest
 from django.utils.safestring import mark_safe
 
 from core.admin_mixins import RolePermissionsMixin
 from users.forms import UserImageAdminForm
-from .services import avatar_upload_handler, avatar_delete_handler
+
 from .models import (
     Skill,
     Specialization,
     User,
-    UserLike,
     UserExperience,
+    UserLike,
     UserSkill,
     UserSpecialization,
     UserWorkFormat,
 )
-
+from .services import avatar_delete_handler, avatar_upload_handler
 
 #admin.site.unregister(Group)
 
 
 class BaseInline(admin.TabularInline):
     """Базовый класс для inline."""
+
     extra = 0
     classes = ('collapse',)
 
 
 class UserSpecializationInline(BaseInline):
     """Inline для добавления специализаций юзеру."""
+
     model = UserSpecialization
 
 
 class UserSkillInline(BaseInline):
     """Inline для добавления навыков юзеру."""
+
     model = UserSkill
 
 
 class UserWorkFormatInline(BaseInline):
     """Inline для добавления форматов работы юзеру."""
-    model = UserWorkFormat 
+
+    model = UserWorkFormat
 
 
 @admin.register(Specialization)
@@ -92,13 +95,14 @@ class UserExperienceAdmin(RolePermissionsMixin, admin.ModelAdmin):
         'end_date',
         )
     list_filter = ('position',)
-    search_fields = ('^user__email', 'company',)
+    search_fields = ('^user__email', 'company')
+
 
 @admin.register(UserLike)
 class UserLikeAdmin(RolePermissionsMixin, admin.ModelAdmin):
     """Админ-панель для модели лайков."""
 
-    list_display = ('employer', 'worker',)
+    list_display = ('employer', 'worker')
     search_fields = ('^employer__email', 'worker__email')
 
 
@@ -106,9 +110,10 @@ class UserLikeAdmin(RolePermissionsMixin, admin.ModelAdmin):
 class UserWorkFormatAdmin(RolePermissionsMixin, admin.ModelAdmin):
     """Админ-панель для связи пользователей и форматов работы."""
 
-    list_display = ('user', 'workformat',)
+    list_display = ('user', 'workformat')
     list_filter = ('workformat',)
     search_fields = ('^user__email',)
+
 
 @admin.register(User)
 class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
@@ -151,7 +156,7 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
                     'get_avatar',
                     'file',
                     'avatar_url',
-                    'clear_image'
+                    'clear_image',
                 ),
             },
         ),
@@ -191,18 +196,17 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
             },
         ),
     )
-    readonly_fields = ('is_staff', 'is_superuser', 'get_avatar',)
+    readonly_fields = ('is_staff', 'is_superuser', 'get_avatar')
     inlines = (
         UserSpecializationInline,
         UserSkillInline,
         UserWorkFormatInline,
     )
-    
+
     def get_form(self, request, obj=None, **kwargs):
         """Замена формы на кастомную для отображения кнопки загрузки аватара."""
         kwargs['form'] = UserImageAdminForm
         return super().get_form(request, obj, **kwargs)
-    
 
     @admin.display(description='Аватар')
     @mark_safe
@@ -211,7 +215,6 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
         if obj.avatar_url:
             return f'<img src="{obj.avatar_url}" style="max-height: 100px;">'
         return ''
-    
 
     def save_model(
         self,
@@ -221,14 +224,13 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
         change: bool,
     ) -> None:
         """Сохранение модели."""
-        
         #1.  Загрузка файла в БД
         image_obj: UploadedFile | None = form.cleaned_data.get('file')
 
         if image_obj:
             public_url: str = avatar_upload_handler(obj, file_obj=image_obj)
             obj.avatar_url = public_url
-        
+
         #2.  Удаление аватара
         if form.cleaned_data.get('clear_image'):
             avatar_delete_handler(obj)
@@ -243,5 +245,5 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
                 obj.is_superuser = False
             else:
                 obj.is_staff = False
-        
+
         super().save_model(request, obj, form, change)

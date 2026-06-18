@@ -10,7 +10,7 @@ class UserImageAdminForm(ImageAdminForm):
     clear_image = forms.BooleanField(
         required=False,
         label='Удалить изображение',
-        help_text='Отметьте, чтобы удалить изображение.'
+        help_text='Отметьте, чтобы удалить изображение.',
     )
 
     class Meta:

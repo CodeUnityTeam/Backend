@@ -275,7 +275,7 @@ ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 
 DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER', 'hello@code-unity.ru')
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
-print
+
 if os.getenv('PRODUCTION_EMAIL_BACKEND', False) is True:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
     EMAIL_HOST = os.getenv('EMAIL_HOST')

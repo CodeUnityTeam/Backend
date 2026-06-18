@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 from core.admin_mixins import RolePermissionsMixin
+
 from .models import (
     Project,
     ProjectLike,
@@ -8,6 +9,7 @@ from .models import (
     Response,
     WorkFormat,
 )
+
 
 @admin.register(Project)
 class ProjectAdmin(RolePermissionsMixin, admin.ModelAdmin):
@@ -22,8 +24,8 @@ class ProjectAdmin(RolePermissionsMixin, admin.ModelAdmin):
         'location',
     )
     filter_horizontal = ('skills', 'project_format', 'specializations')
-    list_filter = ('author', 'location',)
-    search_fields = ('title ', 'short_desc',)
+    list_filter = ('author', 'location')
+    search_fields = ('title ', 'short_desc')
     ordering = ('start_date',)
 
 
@@ -36,7 +38,7 @@ class ProjectParticipantAdmin(RolePermissionsMixin, admin.ModelAdmin):
         'user',
         'status_participant',
     )
-    search_fields = ('^project__title', '^project__author',)
+    search_fields = ('^project__title', '^project__author')
 
 
 @admin.register(Response)
@@ -48,7 +50,7 @@ class ResponseAdmin(RolePermissionsMixin, admin.ModelAdmin):
         'project',
         'user',
         'initiator_type',
-        'status_resp'
+        'status_resp',
     )
 
 
