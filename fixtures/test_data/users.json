@@ -28,5 +28,521 @@
     "first_name": "Natalya",
     "last_name": "Khusnutdinova",
     "password": "user887089"
+  },
+  {
+    "email": "michael_shilkin@example.com",
+    "first_name": "Michael",
+    "last_name": "Shilkin",
+    "password": "user887089"
+  },
+  {
+    "email": "uyriq@example.com",
+    "first_name": "Uyriq",
+    "last_name": "nessun cognome",
+    "password": "user887089"
+  },
+  {
+    "email": "gulnaz@example.com",
+    "first_name": "Gulnaz",
+    "last_name": "Davletshina",
+    "password": "user887089"
+  },
+  {
+    "email": "evgeniymaslov@example.com",
+    "first_name": "Egeniy",
+    "last_name": "Maslov",
+    "password": "user887089"
+  },
+  {
+    "email": "daniil@example.com",
+    "first_name": "Daniil",
+    "last_name": "unknown",
+    "password": "user887089"
+  },
+  {
+    "email": "lil@example.com",
+    "first_name": "LiL",
+    "last_name": "unknown",
+    "password": "user887089"
+  },
+  {
+    "email": "natalia_k@example.com",
+    "first_name": "Natalia",
+    "last_name": "Kulinchenko",
+    "password": "user887089"
+  },
+  {
+    "email": "aleksandr@example.com",
+    "first_name": "Aleksandr",
+    "last_name": "Bystrov",
+    "password": "user887089"
+  },
+  {
+  "email": "leo.da.vinci@example.com",
+  "first_name": "Leonardo",
+  "last_name": "Da Vinci",
+  "password": "user887089"
+  },
+  {
+    "email": "marie.curie@example.com",
+    "first_name": "Marie",
+    "last_name": "Curie",
+    "password": "user887089"
+  },
+  {
+    "email": "william.shakespeare@example.com",
+    "first_name": "William",
+    "last_name": "Shakespeare",
+    "password": "user887089"
+  },
+  {
+    "email": "albert.einstein@example.com",
+    "first_name": "Albert",
+    "last_name": "Einstein",
+    "password": "user887089"
+  },
+  {
+    "email": "isaac.newton@example.com",
+    "first_name": "Isaac",
+    "last_name": "Newton",
+    "password": "user887089"
+  },
+  {
+    "email": "nikola.tesla@example.com",
+    "first_name": "Nikola",
+    "last_name": "Tesla",
+    "password": "user887089"
+  },
+  {
+    "email": "charles.darwin@example.com",
+    "first_name": "Charles",
+    "last_name": "Darwin",
+    "password": "user887089"
+  },
+  {
+    "email": "galileo.galilei@example.com",
+    "first_name": "Galileo",
+    "last_name": "Galilei",
+    "password": "user887089"
+  },
+  {
+  "email": "tom.hanks@example.com",
+  "first_name": "Tom",
+  "last_name": "Hanks",
+  "password": "user887089"
+  },
+  {
+    "email": "meryl.streep@example.com",
+    "first_name": "Meryl",
+    "last_name": "Streep",
+    "password": "user887089"
+  },
+  {
+    "email": "leonardo.dicaprio@example.com",
+    "first_name": "Leonardo",
+    "last_name": "DiCaprio",
+    "password": "user887089"
+  },
+  {
+    "email": "audrey.hepburn@example.com",
+    "first_name": "Audrey",
+    "last_name": "Hepburn",
+    "password": "user887089"
+  },
+  {
+    "email": "robert.downey.jr@example.com",
+    "first_name": "Robert",
+    "last_name": "Downey Jr.",
+    "password": "user887089"
+  },
+  {
+    "email": "angelina.jolie@example.com",
+    "first_name": "Angelina",
+    "last_name": "Jolie",
+    "password": "user887089"
+  },
+  {
+    "email": "dwayne.johnson@example.com",
+    "first_name": "Dwayne",
+    "last_name": "Johnson",
+    "password": "user887089"
+  },
+  {
+    "email": "jennifer.lawrence@example.com",
+    "first_name": "Jennifer",
+    "last_name": "Lawrence",
+    "password": "user887089"
+  },
+  {
+    "email": "keanu.reeves@example.com",
+    "first_name": "Keanu",
+    "last_name": "Reeves",
+    "password": "user887089"
+  },
+  {
+    "email": "scarlett.johansson@example.com",
+    "first_name": "Scarlett",
+    "last_name": "Johansson",
+    "password": "user887089"
+  },
+  {
+    "email": "michael.jackson@example.com",
+    "first_name": "Michael",
+    "last_name": "Jackson",
+    "password": "user887089"
+  },
+  {
+    "email": "whitney.houston@example.com",
+    "first_name": "Whitney",
+    "last_name": "Houston",
+    "password": "user887089"
+  },
+  {
+    "email": "elvis.presley@example.com",
+    "first_name": "Elvis",
+    "last_name": "Presley",
+    "password": "user887089"
+  },
+  {
+    "email": "adele.adkins@example.com",
+    "first_name": "Adele",
+    "last_name": "Adkins",
+    "password": "user887089"
+  },
+  {
+    "email": "taylor.swift@example.com",
+    "first_name": "Taylor",
+    "last_name": "Swift",
+    "password": "user887089"
+  },
+  {
+    "email": "beyonce.knowles@example.com",
+    "first_name": "Beyonce",
+    "last_name": "Knowles",
+    "password": "user887089"
+  },
+  {
+    "email": "freddie.mercury@example.com",
+    "first_name": "Freddie",
+    "last_name": "Mercury",
+    "password": "user887089"
+  },
+  {
+    "email": "madonna.ciccone@example.com",
+    "first_name": "Madonna",
+    "last_name": "Ciccone",
+    "password": "user887089"
+  },
+  {
+    "email": "david.bowie@example.com",
+    "first_name": "David",
+    "last_name": "Bowie",
+    "password": "user887089"
+  },
+    {
+    "email": "britney.spears@example.com",
+    "first_name": "Britney",
+    "last_name": "Spears",
+    "password": "user887089"
+  },
+  {
+    "email": "rihanna.fenty@example.com",
+    "first_name": "Rihanna",
+    "last_name": "Fenty",
+    "password": "user887089"
+  },
+  {
+    "email": "justin.bieber@example.com",
+    "first_name": "Justin",
+    "last_name": "Bieber",
+    "password": "user887089"
+  },
+  {
+    "email": "lady.gaga@example.com",
+    "first_name": "Lady",
+    "last_name": "Gaga",
+    "password": "user887089"
+  },
+  {
+    "email": "shakira.mebarak@example.com",
+    "first_name": "Shakira",
+    "last_name": "Mebarak",
+    "password": "user887089"
+  },
+  {
+    "email": "stevie.wonder@example.com",
+    "first_name": "Stevie",
+    "last_name": "Wonder",
+    "password": "user887089"
+  },
+  {
+    "email": "bob.marley@example.com",
+    "first_name": "Bob",
+    "last_name": "Marley",
+    "password": "user887089"
+  },
+  {
+    "email": "john.lennon@example.com",
+    "first_name": "John",
+    "last_name": "Lennon",
+    "password": "user887089"
+  },
+  {
+    "email": "paul.mccartney@example.com",
+    "first_name": "Paul",
+    "last_name": "McCartney",
+    "password": "user887089"
+  },
+  {
+    "email": "kurt.cobain@example.com",
+    "first_name": "Kurt",
+    "last_name": "Cobain",
+    "password": "user887089"
+  },
+  {
+    "email": "mariah.carey@example.com",
+    "first_name": "Mariah",
+    "last_name": "Carey",
+    "password": "user887089"
+  },
+  {
+    "email": "eminem.mathers@example.com",
+    "first_name": "Eminem",
+    "last_name": "Mathers",
+    "password": "user887089"
+  },
+  {
+    "email": "justin.timberlake@example.com",
+    "first_name": "Justin",
+    "last_name": "Timberlake",
+    "password": "user887089"
+  },
+  {
+    "email": "christina.aguilera@example.com",
+    "first_name": "Christina",
+    "last_name": "Aguilera",
+    "password": "user887089"
+  },
+  {
+    "email": "ray.charles@example.com",
+    "first_name": "Ray",
+    "last_name": "Charles",
+    "password": "user887089"
+  },
+  {
+    "email": "frank.sinatra@example.com",
+    "first_name": "Frank",
+    "last_name": "Sinatra",
+    "password": "user887089"
+  },
+  {
+    "email": "diana.ross@example.com",
+    "first_name": "Diana",
+    "last_name": "Ross",
+    "password": "user887089"
+  },
+  {
+    "email": "george.michael@example.com",
+    "first_name": "George",
+    "last_name": "Michael",
+    "password": "user887089"
+  },
+  {
+    "email": "michael.buble@example.com",
+    "first_name": "Michael",
+    "last_name": "Buble",
+    "password": "user887089"
+  },
+  {
+    "email": "alicia.keys@example.com",
+    "first_name": "Alicia",
+    "last_name": "Keys",
+    "password": "user887089"
+  },
+  {
+    "email": "jon.snow@example.com",
+    "first_name": "Jon",
+    "last_name": "Snow",
+    "password": "user887089"
+  },
+  {
+    "email": "daenerys.targaryen@example.com",
+    "first_name": "Daenerys",
+    "last_name": "Targaryen",
+    "password": "user887089"
+  },
+  {
+    "email": "tyrion.lannister@example.com",
+    "first_name": "Tyrion",
+    "last_name": "Lannister",
+    "password": "user887089"
+  },
+  {
+    "email": "cersei.lannister@example.com",
+    "first_name": "Cersei",
+    "last_name": "Lannister",
+    "password": "user887089"
+  },
+  {
+    "email": "jamie.lannister@example.com",
+    "first_name": "Jaime",
+    "last_name": "Lannister",
+    "password": "user887089"
+  },
+  {
+    "email": "arya.stark@example.com",
+    "first_name": "Arya",
+    "last_name": "Stark",
+    "password": "user887089"
+  },
+  {
+    "email": "sansa.stark@example.com",
+    "first_name": "Sansa",
+    "last_name": "Stark",
+    "password": "user887089"
+  },
+  {
+    "email": "bran.stark@example.com",
+    "first_name": "Bran",
+    "last_name": "Stark",
+    "password": "user887089"
+  },
+  {
+    "email": "ned.stark@example.com",
+    "first_name": "Eddard",
+    "last_name": "Stark",
+    "password": "user887089"
+  },
+  {
+    "email": "robb.stark@example.com",
+    "first_name": "Robb",
+    "last_name": "Stark",
+    "password": "user887089"
+  },
+  {
+    "email": "brienne.of.tarth@example.com",
+    "first_name": "Brienne",
+    "last_name": "Tarth",
+    "password": "user887089"
+  },
+  {
+    "email": "sandor.clegane@example.com",
+    "first_name": "Sandor",
+    "last_name": "Clegane",
+    "password": "user887089"
+  },
+  {
+    "email": "gregor.clegane@example.com",
+    "first_name": "Gregor",
+    "last_name": "Clegane",
+    "password": "user887089"
+  },
+  {
+    "email": "petyr.baelish@example.com",
+    "first_name": "Petyr",
+    "last_name": "Baelish",
+    "password": "user887089"
+  },
+  {
+    "email": "varys@example.com",
+    "first_name": "Varys",
+    "last_name": "unknown",
+    "password": "user887089"
+  },
+  {
+    "email": "theon.greyjoy@example.com",
+    "first_name": "Theon",
+    "last_name": "Greyjoy",
+    "password": "user887089"
+  },
+  {
+    "email": "yara.greyjoy@example.com",
+    "first_name": "Yara",
+    "last_name": "Greyjoy",
+    "password": "user887089"
+  },
+  {
+    "email": "margaery.tyrell@example.com",
+    "first_name": "Margaery",
+    "last_name": "Tyrell",
+    "password": "user887089"
+  },
+  {
+    "email": "olenna.tyrell@example.com",
+    "first_name": "Olenna",
+    "last_name": "Tyrell",
+    "password": "user887089"
+  },
+  {
+    "email": "stannis.baratheon@example.com",
+    "first_name": "Stannis",
+    "last_name": "Baratheon",
+    "password": "user887089"
+  },
+  {
+    "email": "renly.baratheon@example.com",
+    "first_name": "Renly",
+    "last_name": "Baratheon",
+    "password": "user887089"
+  },
+  {
+    "email": "joffrey.baratheon@example.com",
+    "first_name": "Joffrey",
+    "last_name": "Baratheon",
+    "password": "user887089"
+  },
+  {
+    "email": "tommen.baratheon@example.com",
+    "first_name": "Tommen",
+    "last_name": "Baratheon",
+    "password": "user887089"
+  },
+  {
+    "email": "khal.drogo@example.com",
+    "first_name": "Khal",
+    "last_name": "Drogo",
+    "password": "user887089"
+  },
+  {
+    "email": "melisandre@example.com",
+    "first_name": "Melisandre",
+    "last_name": "unknown",
+    "password": "user887089"
+  },
+  {
+    "email": "davos.seaworth@example.com",
+    "first_name": "Davos",
+    "last_name": "Seaworth",
+    "password": "user887089"
+  },
+  {
+    "email": "jorah.mormont@example.com",
+    "first_name": "Jorah",
+    "last_name": "Mormont",
+    "password": "user887089"
+  },
+  {
+    "email": "tormund.giantsbane@example.com",
+    "first_name": "Tormund",
+    "last_name": "Giantsbane",
+    "password": "user887089"
+  },
+  {
+    "email": "ramsay.bolton@example.com",
+    "first_name": "Ramsay",
+    "last_name": "Bolton",
+    "password": "user887089"
+  },
+  {
+    "email": "oberyn.martell@example.com",
+    "first_name": "Oberyn",
+    "last_name": "Martell",
+    "password": "user887089"
+  },
+  {
+    "email": "missandei@example.com",
+    "first_name": "Missandei",
+    "last_name": "unknown",
+    "password": "user887089"
   }
 ]

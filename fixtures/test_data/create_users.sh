@@ -120,7 +120,6 @@ print(data.get('last_name', ''))
   fi
 
   echo ""
-  sleep 1
 done
 
 # Удаляем временный файл
