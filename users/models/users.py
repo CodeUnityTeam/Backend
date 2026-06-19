@@ -30,6 +30,8 @@ from core.constants.users import (
 )
 from core.models.mixins import CreatedAtMixin, TimestampMixin
 
+from .managers import UserManager
+
 
 class User(TimestampMixin, AbstractUser):
     """Кастомная модель пользователя на базе стандартного AbstractUser."""
@@ -43,7 +45,9 @@ class User(TimestampMixin, AbstractUser):
         EMPLOYER = 'employer', 'Наниматель'
         WORKER = 'worker', 'Работник'
 
-    REQUIRED_FIELDS = ('email', 'first_name', 'last_name')
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ('first_name', 'last_name')
+    objects = UserManager()
 
     username = models.CharField(
         max_length=MAX_CHAR_FIELD_LENGTH,

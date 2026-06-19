@@ -53,7 +53,8 @@ class MinioService:
             try:
                 s3_client.head_bucket(Bucket=self.bucket_name)
             except Exception as e:
-                error_code = getattr(e, 'response', {}).get('Error', {}).get('Code', '')
+                error_code = getattr(e, 'response', {},
+                                     ).get('Error', {}).get('Code', '')
                 if error_code == '404':
                     s3_client.create_bucket(Bucket=self.bucket_name)
                 elif isinstance(e, S3ClientError):
