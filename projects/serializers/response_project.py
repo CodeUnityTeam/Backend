@@ -1,9 +1,8 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import extend_schema_field
+
 from rest_framework import serializers
 
 from core.constants.projects import (
@@ -291,7 +290,7 @@ class FeedbackAndInvitationFeedSerializer(serializers.Serializer):
         instance: Response,
     ) -> None | Optional[Dict[str, Any]]:
         """Получаем проекты где пользователь откликнулся."""
-        if self.get_card_type(instance) == 'project' and instance.project:
+        if instance.project:
             serializer = ProjectCardConditionalSerializer(
                 instance.project,
                 context={
@@ -306,7 +305,6 @@ class FeedbackAndInvitationFeedSerializer(serializers.Serializer):
     def to_representation(self, instance: Any) -> Dict[str, Any]:
         """Форматируем поля для ответа."""
         data = super().to_representation(instance)
-        card_type = data['card_type']
         result = {
             'response_id': data['response_id'],
             'response_status': data['response_status'],
