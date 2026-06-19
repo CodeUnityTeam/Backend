@@ -1,8 +1,7 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-
 from rest_framework import serializers
 
 from core.constants.projects import (
@@ -17,7 +16,6 @@ from core.constants.projects import (
     WITHDRAWN,
 )
 from projects.models import Project, ProjectParticipant, Response
-from projects.serializers import ProjectShortSerializer
 from projects.services import (
     add_user_to_project_participants,
     create_response,
@@ -50,7 +48,11 @@ class ResponseUserProjectSerializer(serializers.ModelSerializer):
         """Валидация перед созданием отклика."""
         project = self.context['project']
         user = self.context['request'].user
-        if project.author == user:
+        if (
+            project.author == user and
+            project.author.projects_relation ==
+            User.ProjectsRelationChoices.EMPLOYER
+        ):
             raise serializers.ValidationError(
                 'Нельзя откликнуться на собственный проект.',
             )
@@ -231,83 +233,96 @@ class UpdateResponseStatusSerializer(serializers.ModelSerializer):
         return user_response
 
 
-class ProjectCardConditionalSerializer(ProjectShortSerializer):
-    """Сериализатор проекта с условным добавлением контактов автора.
+class FeedbackAndInvitationFeedSerializer(serializers.Serializer):
+    """Сериализатор для ленты откликов/приглашений.
 
-    Используется при фильтрации ленты откликов/приглашений.
+    Возвращает поля отклика и проекта на одном уровне.
+    - Когда response_status == 'approved' — добавляются
+      author_email и author_phone автора проекта.
+    - Когда response_status == 'pending' — контакты автора скрыты.
+
+    Все данные получает из аннотированного queryset
+    (get_response_feed_queryset).
     """
 
-    author_email = serializers.EmailField(
-        source='author.email',
+    # Поля отклика
+    response_id = serializers.UUIDField(read_only=True)
+    response_status = serializers.CharField(
+        source='status_resp',
         read_only=True,
-        required=False,
+    )
+    response_created_at = serializers.DateTimeField(
+        source='created_at',
+        read_only=True,
+    )
+    # Поля проекта (на верхнем уровне, через source)
+    project_id = serializers.UUIDField(
+        source='project.project_id',
+        read_only=True,
+    )
+    title = serializers.CharField(
+        source='project.title',
+        read_only=True,
+    )
+    short_desc = serializers.CharField(
+        source='project.short_desc',
+        read_only=True,
+    )
+    skills = serializers.SerializerMethodField()
+    location = serializers.CharField(
+        source='project.location',
+        read_only=True,
         allow_null=True,
     )
-    author_phone = serializers.CharField(
-        source='author.phone_number',
+    status = serializers.CharField(
+        source='project.status_project',
         read_only=True,
-        required=False,
+    )
+    published_at = serializers.DateTimeField(
+        source='project.published_at',
+        read_only=True,
         allow_null=True,
     )
+    participants_count = serializers.IntegerField(
+        read_only=True,
+    )
+    is_liked_by_me = serializers.BooleanField(
+        read_only=True,
+    )
+    # Контакты автора (только для approved)
+    author_email = serializers.SerializerMethodField()
+    author_phone = serializers.SerializerMethodField()
 
-    class Meta(ProjectShortSerializer.Meta):
-        fields = ProjectShortSerializer.Meta.fields + [
-            'author_email',
-            'author_phone',
+    def get_skills(self, instance: Response) -> list[dict]:
+        """Навыки проекта из prefetch_related (без доп. запроса)."""
+        if not instance.project_id:
+            return []
+        return [
+            {'skill_id': str(s.skill_id), 'name': s.name}
+            for s in instance.project.skills.all()
         ]
 
-    def to_representation(self, instance: Any) -> Dict[str, Any]:
-        """Форматируем поля для ответа."""
-        data = super().to_representation(instance)
-        response = self.context.get('response')
-        user = self.context.get('user')
-        # Добавляем контакты автора только если:
-        # response_status == 'approved'
-        # текущий пользователь — участник проекта (соискатель)
-        if not (
-            response and response.status_resp == APPROVED and
-            user and user.id == response.user_id
-        ):
-            data.pop('author_email', None)
-            data.pop('author_phone', None)
-        return data
+    def get_author_email(self, instance: Response) -> str | None:
+        """Email автора — только для approved откликов."""
+        if instance.status_resp == APPROVED:
+            return instance.project.author.email
+        return None
 
-
-class FeedbackAndInvitationFeedSerializer(serializers.Serializer):
-    """Сериализатор для ленты откликов с условными полями.
-
-    Для выдачи информации использует ProjectCardConditionalSerializer.
-    Пользователь получает проекты где он откликнулся.
-    """
-
-    response_id = serializers.UUIDField()
-    response_status = serializers.CharField(source='status_resp')
-    response_created_at = serializers.DateTimeField(source='created_at')
-    project = serializers.SerializerMethodField()
-
-    def get_project(
-        self,
-        instance: Response,
-    ) -> None | Optional[Dict[str, Any]]:
-        """Получаем проекты где пользователь откликнулся."""
-        if instance.project:
-            serializer = ProjectCardConditionalSerializer(
-                instance.project,
-                context={
-                    'user': self.context.get('user'),
-                    'response': instance,
-                    'request': self.context.get('request'),
-                },
-            )
-            return serializer.data
+    def get_author_phone(self, instance: Response) -> str | None:
+        """Телефон автора — только для approved откликов."""
+        if instance.status_resp == APPROVED:
+            return instance.project.author.phone_number
         return None
 
     def to_representation(self, instance: Any) -> Dict[str, Any]:
-        """Форматируем поля для ответа."""
+        """Форматируем поля для ответа.
+
+        Удаляем author_email и author_phone, если они None
+        (т.е. статус не approved).
+        """
         data = super().to_representation(instance)
-        result = {
-            'response_id': data['response_id'],
-            'response_status': data['response_status'],
-            'response_created_at': data['response_created_at'],
-        }
-        return result
+        if data.get('author_email') is None:
+            data.pop('author_email', None)
+        if data.get('author_phone') is None:
+            data.pop('author_phone', None)
+        return data

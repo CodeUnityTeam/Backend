@@ -51,3 +51,15 @@ class IsEmployer(permissions.BasePermission):
             and user.projects_relation
             == User.ProjectsRelationChoices.EMPLOYER
         )
+
+
+class IsWorker(permissions.BasePermission):
+    """Permission для действий над откликами."""
+
+    def has_permission(self, request: Request, view: Any) -> bool:
+        """Проверяет возможность выполнения действия."""
+        return (
+            request.user.is_authenticated
+            and request.user.projects_relation
+            == User.ProjectsRelationChoices.WORKER
+        )

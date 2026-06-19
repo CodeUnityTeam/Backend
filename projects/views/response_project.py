@@ -21,6 +21,7 @@ from rest_framework.viewsets import GenericViewSet
 from projects.filters import ResponseFeedFilter
 from projects.models import Project, Response
 from projects.paginations import CustomResponseFeedPagination
+from projects.permissions import IsWorker
 from projects.selectors import (
     get_response_feed_queryset,
 )
@@ -86,7 +87,7 @@ class ResponseFeedViewSet(ListModelMixin, GenericViewSet):
     Доступен только для пользователей с ролью worker.
     """
 
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsWorker,)
     pagination_class = CustomResponseFeedPagination
     serializer_class = FeedbackAndInvitationFeedSerializer
     filterset_class = ResponseFeedFilter

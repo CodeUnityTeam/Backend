@@ -109,13 +109,49 @@ def _annotate_is_participant(
 def get_response_feed_queryset(user: User) -> QuerySet:
     """Возвращает базовый queryset для ленты откликов текущего пользователя.
 
+    Аннотирует:
+      - participants_count — количество участников проекта
+      - is_liked_by_me — лайкнул ли текущий пользователь проект
+
+    Оптимизация запросов:
+      - select_related('project__author') — проект + автор одним join
+      - prefetch_related('project__skills') — навыки проекта
+      - prefetch_related('project__participants') — участники
+      - prefetch_related('project__likes') — лайки (для is_liked_by_me)
+
     user (User): текущий пользователь
     QuerySet: отфильтрованный queryset откликов
     """
-    return Response.objects.select_related(
-        'project',
+    qs = Response.objects.select_related(
+        'project__author',
         'user',
+    ).prefetch_related(
+        'project__skills',
+        'project__participants',
+        'project__likes',
     )
+
+    # Аннотация is_liked_by_me
+    if user.is_authenticated:
+        qs = qs.annotate(
+            is_liked_by_me=Exists(
+                ProjectLike.objects.filter(
+                    user=user,
+                    project=OuterRef('project_id'),
+                ),
+            ),
+        )
+    else:
+        qs = qs.annotate(
+            is_liked_by_me=Value(False, output_field=BooleanField()),
+        )
+
+    # Аннотация participants_count
+    qs = qs.annotate(
+        participants_count=Count('project__participants'),
+    )
+
+    return qs
 
 
 def get_recommended_projects_queryset(user: User) -> QuerySet[Project]:
