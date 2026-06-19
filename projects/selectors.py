@@ -115,7 +115,7 @@ def get_response_feed_queryset(user: User) -> QuerySet:
     return Response.objects.select_related(
         'project',
         'user',
-    ).order_by('-created_at')
+    )
 
 
 def get_recommended_projects_queryset(user: User) -> QuerySet[Project]:

@@ -10,6 +10,7 @@ from drf_spectacular.utils import (
     extend_schema_view,
 )
 from rest_framework import status
+from rest_framework.mixins import ListModelMixin
 from rest_framework.permissions import (
     IsAuthenticated,
 )
@@ -67,16 +68,8 @@ from projects.serializers import (
                 location=OpenApiParameter.QUERY,
             ),
             OpenApiParameter(
-                name='sort_by',
-                description='Сортировка по дате создания',
-                required=False,
-                type=str,
-                enum=['created_at'],
-                location=OpenApiParameter.QUERY,
-            ),
-            OpenApiParameter(
                 name='sort_order',
-                description='Порядок сортировки',
+                description='Порядок сортировки по created_at',
                 required=False,
                 type=str,
                 enum=['asc', 'desc'],
@@ -85,53 +78,28 @@ from projects.serializers import (
         ],
     ),
 )
-class ResponseFeedViewSet(GenericViewSet):
+class ResponseFeedViewSet(ListModelMixin, GenericViewSet):
     """Вьюсет для ленты откликов/приглашений.
 
     Предоставляет единый список откликов и приглашений
     для текущего пользователя с фильтрацией и пагинацией.
+    Доступен только для пользователей с ролью worker.
     """
 
     permission_classes = (IsAuthenticated,)
     pagination_class = CustomResponseFeedPagination
     serializer_class = FeedbackAndInvitationFeedSerializer
+    filterset_class = ResponseFeedFilter
 
     def get_queryset(self) -> QuerySet:
         """Базовый queryset для ленты откликов текущего пользователя."""
         return get_response_feed_queryset(self.request.user)
 
-    def list(
-        self,
-        request: Request,
-        *args: Any,
-        **kwargs: Any,
-    ) -> DRFResponse:
-        """Лента откликов/приглашений с фильтрацией и пагинацией."""
-        queryset = self.get_queryset()
-        filterset = ResponseFeedFilter(
-            request.GET,
-            queryset=queryset,
-            request=request,
-        )
-        filtered_queryset = filterset.qs
-        paginator = self.pagination_class()
-        page = paginator.paginate_queryset(filtered_queryset, request)
-        serializer = self.get_serializer(
-            page if page is not None else filtered_queryset,
-            many=True,
-            context={
-                'user': request.user,
-                'request': request,
-            },
-        )
-        if page is not None:
-            return paginator.get_paginated_response(serializer.data)
-        response = DRFResponse(serializer.data)
-        response.data['applied_filters'] = {
-            'card_type': request.query_params.get('card_type', 'all'),
-            'status': request.query_params.get('status', 'all'),
-        }
-        return response
+    def get_serializer_context(self) -> dict[str, Any]:
+        """Добавить user в контекст сериализатора."""
+        context = super().get_serializer_context()
+        context['user'] = self.request.user
+        return context
 
 
 class ProjectResponseViewSet(GenericViewSet):

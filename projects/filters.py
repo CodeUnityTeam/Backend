@@ -255,23 +255,37 @@ class ProjectFilter(django_filters.FilterSet):
 
 
 class ResponseFeedFilter(django_filters.FilterSet):
-    """Фильтр для ленты откликов."""
+    """Фильтр для ленты откликов/приглашений.
 
-    status = django_filters.CharFilter(method='filter_status')
-    card_type = django_filters.CharFilter(method='filter_card_type')
-    project_id = django_filters.UUIDFilter(field_name='project__project_id')
-    sort_by = django_filters.CharFilter(
-        method='filter_sort_by',
-        label='Поле сортировки',
+    Доступен только для пользователей с ролью worker.
+    По умолчанию отдаются все отклики (status=all).
+    Сортировка по created_at (по умолчанию desc).
+    """
+
+    status = django_filters.ChoiceFilter(
+        choices=[
+            ('all', 'Все'),
+            (PENDING, 'Ожидает'),
+            (APPROVED, 'Одобрен'),
+            (REJECTED, 'Отклонён'),
+            (WITHDRAWN, 'Отозван'),
+        ],
+        method='filter_status',
+        label='Статус отклика',
+    )
+    project_id = django_filters.UUIDFilter(
+        field_name='project__project_id',
+        label='Фильтр по проекту',
     )
     sort_order = django_filters.ChoiceFilter(
         choices=[('asc', 'asc'), ('desc', 'desc')],
+        method='filter_sort_order',
         label='Порядок сортировки',
     )
 
     class Meta:
         model = Response
-        fields = ['card_type', 'status', 'project_id']
+        fields = ['status', 'project_id']
 
     def __init__(
         self,
@@ -285,12 +299,12 @@ class ResponseFeedFilter(django_filters.FilterSet):
         self.request = request
 
     def filter_queryset(self, queryset: QuerySet) -> QuerySet:
-        """"Фильтруем QuerySet по времени создания."""
+        """Применяет фильтры и сортировку по created_at."""
         queryset = super().filter_queryset(queryset)
-        sort_by = self.data.get('sort_by', 'created_at')
+        # Сортировка по created_at: desc по умолчанию
         sort_order = self.data.get('sort_order', 'desc')
         order_prefix = '-' if sort_order == 'desc' else ''
-        return queryset.order_by(f'{order_prefix}{sort_by}')
+        return queryset.order_by(f'{order_prefix}created_at')
 
     def filter_status(
         self,
@@ -298,12 +312,27 @@ class ResponseFeedFilter(django_filters.FilterSet):
         name: str,
         status_resp: str,
     ) -> QuerySet:
-        """Фильтрация по статусу отклика."""
-        if status_resp == 'all' or status_resp not in (
+        """Фильтрация по статусу отклика.
+
+        Если статус 'all' или неизвестный — возвращаются все отклики.
+        """
+        if status_resp == 'all' or status_resp not in {
             PENDING,
             APPROVED,
             REJECTED,
             WITHDRAWN,
-        ):
+        }:
             return queryset
         return queryset.filter(status_resp=status_resp)
+
+    def filter_sort_order(
+        self,
+        queryset: QuerySet,
+        name: str,
+        value: str,
+    ) -> QuerySet:
+        """Сортировка по created_at.
+
+        Порядок применяется в filter_queryset, здесь только валидация.
+        """
+        return queryset
