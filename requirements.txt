@@ -42,6 +42,7 @@ django==4.2.30
     #   django-allauth
     #   django-cors-headers
     #   django-filter
+    #   django-redis
     #   django-storages
     #   djangorestframework
     #   djangorestframework-simplejwt
@@ -56,6 +57,9 @@ django-cors-headers==4.9.0
     # via backend (pyproject.toml)
 
 django-filter==25.1
+    # via backend (pyproject.toml)
+
+django-redis==5.4.0
     # via backend (pyproject.toml)
 
 django-storages==1.14.6
@@ -123,6 +127,9 @@ python-dotenv==1.2.2
 pyyaml==6.0.3
     # via drf-spectacular
 
+redis==8.0.0
+    # via django-redis
+
 referencing==0.37.0
     # via
     #   jsonschema
@@ -147,6 +154,9 @@ sqlparse==0.5.5
 
 typing-extensions==4.15.0
     # via referencing
+
+tzdata==2026.2
+    # via django
 
 uritemplate==4.2.0
     # via drf-spectacular
