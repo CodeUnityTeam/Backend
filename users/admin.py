@@ -2,6 +2,7 @@ from typing import Any, Optional
 
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
+from django.contrib.auth.models import Group
 from django.core.files.uploadedfile import UploadedFile
 from django.http import HttpRequest
 from django.utils.safestring import mark_safe
