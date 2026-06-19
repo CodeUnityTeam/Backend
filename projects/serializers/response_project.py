@@ -232,54 +232,6 @@ class UpdateResponseStatusSerializer(serializers.ModelSerializer):
         return user_response
 
 
-class ProfileCardConditionalSerializer(serializers.Serializer):
-    """Сериализатор профиля с условным добавлением контактов.
-
-    Используется при фильтрации ленты откликов/приглашений.
-    """
-
-    user_id = serializers.UUIDField()
-    first_name = serializers.CharField()
-    last_name = serializers.CharField()
-    avatar_url = serializers.URLField(required=False, allow_null=True)
-    skills = serializers.SerializerMethodField()
-    email = serializers.EmailField(
-        source='email',
-        read_only=True,
-        required=False,
-        allow_null=True,
-    )
-    phone = serializers.CharField(
-        source='phone_number',
-        read_only=True,
-        required=False,
-        allow_null=True,
-    )
-
-    def get_skills(self, user: User) -> List:
-        """Форматируем навыки в список."""
-        return [skill.name for skill in user.skills.all()]
-
-    def to_representation(self, instance: Any) -> Dict[str, Any]:
-        """Форматируем поля для ответа.
-
-        Контакты (email, phone) добавляются только если:
-        - response_status == 'approved'
-        - текущий пользователь — автор проекта
-        """
-        data = super().to_representation(instance)
-        response = self.context.get('response')
-        user = self.context.get('user')
-        if not (
-            response
-            and response.status_resp == APPROVED
-            and response.project.author_id == user.id
-        ):
-            data.pop('email', None)
-            data.pop('phone', None)
-        return data
-
-
 class ProjectCardConditionalSerializer(ProjectShortSerializer):
     """Сериализатор проекта с условным добавлением контактов автора.
 
@@ -325,36 +277,14 @@ class ProjectCardConditionalSerializer(ProjectShortSerializer):
 class FeedbackAndInvitationFeedSerializer(serializers.Serializer):
     """Сериализатор для ленты откликов с условными полями.
 
-    Для выдачи информации использует ProjectCardConditionalSerializer и
-    ProfileCardConditionalSerializer.
-
-    Автор проекта получает профили пользователей с откликами и свои отклики.
+    Для выдачи информации использует ProjectCardConditionalSerializer.
     Пользователь получает проекты где он откликнулся.
     """
 
     response_id = serializers.UUIDField()
-    card_type = serializers.SerializerMethodField()
     response_status = serializers.CharField(source='status_resp')
     response_created_at = serializers.DateTimeField(source='created_at')
-
     project = serializers.SerializerMethodField()
-    profile = serializers.SerializerMethodField()
-
-    @extend_schema_field(OpenApiTypes.STR)
-    def get_card_type(self, instance: Any) -> str:
-        """Определяем тип карточки, которую возвращаем.
-
-        Если пользователь автор, то возвращаем profile (профили пользователей,
-        которые откликнулись на проект.)
-        Если пользователь участник проекта, то возвращаем project.
-        """
-        user = self.context.get('user')
-        if hasattr(
-            instance,
-            'project',
-        ) and instance.project and instance.project.author_id == user.id:
-            return 'profile'
-        return 'project'
 
     def get_project(
         self,
@@ -373,22 +303,6 @@ class FeedbackAndInvitationFeedSerializer(serializers.Serializer):
             return serializer.data
         return None
 
-    def get_profile(self, instance: Response) -> Optional[Dict[str, Any]]:
-        """Получаем профили пользователей, кто откликнулся."""
-        if self.get_card_type(
-            instance,
-        ) == 'profile' and hasattr(instance, 'user') and instance.user:
-            serializer = ProfileCardConditionalSerializer(
-                instance.user,
-                context={
-                    'user': self.context.get('user'),
-                    'response': instance,
-                    'request': self.context.get('request'),
-                },
-            )
-            return serializer.data
-        return None
-
     def to_representation(self, instance: Any) -> Dict[str, Any]:
         """Форматируем поля для ответа."""
         data = super().to_representation(instance)
@@ -398,11 +312,4 @@ class FeedbackAndInvitationFeedSerializer(serializers.Serializer):
             'response_status': data['response_status'],
             'response_created_at': data['response_created_at'],
         }
-        if card_type == 'project' and data.get('project'):
-            project_data = data['project']
-            if 'status_project' in project_data:
-                project_data['status'] = project_data.pop('status_project')
-            result.update(project_data)
-        elif card_type == 'profile' and data.get('profile'):
-            result.update(data['profile'])
         return result
