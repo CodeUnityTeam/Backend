@@ -1,6 +1,6 @@
-from typing import Optional
 
-from django.db.models import Model
+from typing import Any, Optional
+
 from django.http import HttpRequest
 
 
@@ -25,21 +25,45 @@ class RolePermissionsMixin:
             return not action
         return True
 
-    def has_add_permission(self, request, obj=None):
+    def has_add_permission(
+        self,
+        request: HttpRequest,
+        obj: Optional[Any] = None,
+    ) -> bool:
+        """Проверяет, имеет ли пользователь право добавлять новые объекты."""
         return self._check_permission(request, 'add')
 
-    def has_change_permission(self, request, obj=None):
+    def has_change_permission(
+        self,
+        request: HttpRequest,
+        obj: Optional[Any] = None,
+    ) -> bool:
+        """Проверяет, может ли пользователь изменять существующие объекты."""
         return self._check_permission(request, 'change')
 
-    def has_delete_permission(self, request, obj=None):
+    def has_delete_permission(
+        self,
+        request: HttpRequest,
+        obj: Optional[Any] = None,
+    ) -> bool:
+        """Проверяет, имеет ли пользователь право удалять объекты."""
         if obj and hasattr(obj, 'pk') and obj.pk == request.user.pk:
             return False
         return self._check_permission(request, 'delete')
 
-    def has_view_permission(self, request, obj=None):
+    def has_view_permission(
+        self,
+        request: HttpRequest,
+        obj: Optional[Any] = None,
+    ) -> bool:
+        """Проверяет, имеет ли пользователь право просматривать объекты."""
         return self._check_permission(request, 'view')
 
-    def has_module_permission(self, request):
+    def has_module_permission(
+        self,
+        request: HttpRequest,
+    ) -> bool:
+        """Проверяет, имеет ли пользователь доступ к модулю в админ‑панели."""
         if request.user.is_staff and request.user.is_active:
             return True
         return False

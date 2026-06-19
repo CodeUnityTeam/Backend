@@ -299,35 +299,11 @@ class ResponseFeedFilter(django_filters.FilterSet):
         status_resp: str,
     ) -> QuerySet:
         """Фильтрация по статусу отклика."""
-        if status_resp == 'all' or status_resp not in [
+        if status_resp == 'all' or status_resp not in (
             PENDING,
             APPROVED,
             REJECTED,
             WITHDRAWN,
-        ]:
+        ):
             return queryset
         return queryset.filter(status_resp=status_resp)
-
-    def filter_card_type(
-        self,
-        queryset: QuerySet,
-        name: str,
-        value: Any,
-    ) -> QuerySet:
-        """Фильтрация по типу карточки."""
-        if value not in ['all', 'project', 'profile']:
-            return queryset
-        if not hasattr(self.request, 'user'):
-            return queryset.none()
-        if not self.request.user or not self.request.user.is_authenticated:
-            return queryset.none()
-        user = self.request.user
-        if value == 'all':
-            return queryset
-        if value == 'project':
-            # Отклики, где пользователь — соискатель
-            return queryset.filter(user=user)
-        if value == 'profile':
-            # Отклики на проекты пользователя (пользователь — автор проекта)
-            return queryset.filter(project__author=user)
-        return queryset.none()

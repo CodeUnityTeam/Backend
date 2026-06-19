@@ -131,9 +131,15 @@ class ProjectShortSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = [
-            'project_id', 'title', 'short_desc', 'location',
-            'status_project', 'published_at', 'participants_count',
-            'is_liked_by_me', 'skills',
+            'project_id',
+            'title',
+            'short_desc',
+            'location',
+            'status_project',
+            'published_at',
+            'participants_count',
+            'is_liked_by_me',
+            'skills',
         ]
 
     def get_participants_count(self, project: Project) -> int:

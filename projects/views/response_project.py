@@ -38,14 +38,6 @@ from projects.serializers import (
         summary='Лента откликов/приглашений',
         parameters=[
             OpenApiParameter(
-                name='card_type',
-                description='Фильтр по типу карточек',
-                required=False,
-                type=str,
-                enum=['all', 'project', 'profile'],
-                location=OpenApiParameter.QUERY,
-            ),
-            OpenApiParameter(
                 name='status',
                 description='Фильтр по статусу отклика/приглашения',
                 required=False,
@@ -147,7 +139,6 @@ class ProjectResponseViewSet(GenericViewSet):
 
     permission_classes = (IsAuthenticated,)
     lookup_field = 'project_id'
-    serializer_class = ResponseResponseCreateProjectSerializer
 
     def get_queryset(self) -> QuerySet:
         """Базовый queryset не используется — проект получаем напрямую."""

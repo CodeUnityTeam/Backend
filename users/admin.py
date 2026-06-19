@@ -1,7 +1,9 @@
 from typing import Any, Optional
 
+from django import forms
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
+from django.contrib.auth.models import Group
 from django.core.files.uploadedfile import UploadedFile
 from django.http import HttpRequest
 from django.utils.safestring import mark_safe
@@ -121,7 +123,7 @@ class UserWorkFormatAdmin(RolePermissionsMixin, admin.ModelAdmin):
 class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
     """Админ-панель для модели пользователя с расширенными полями."""
 
-    forms = UserImageAdminForm
+    form = UserImageAdminForm
 
     list_display = (
         'user_id',
