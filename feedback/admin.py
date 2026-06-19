@@ -4,9 +4,9 @@ from django.http import HttpRequest
 
 from core.admin_mixins import RolePermissionsMixin
 from qna.forms import ImageAdminForm
-from qna.services import image_upload_handler
 
 from .models import FeedbackForm, FeedbackImage
+from .services import feedback_image_upload_handler
 
 
 class FeedbackImageInline(admin.TabularInline):
@@ -64,7 +64,7 @@ class FeedbackImageAdmin(RolePermissionsMixin, admin.ModelAdmin):
         file_obj: UploadedFile | None = request.FILES.get('file')
 
         if file_obj:
-            public_url: str = image_upload_handler(file_obj=file_obj)
+            public_url: str = feedback_image_upload_handler(file_obj=file_obj)
             obj.image_url = public_url
             obj.original_name = file_obj.name
             obj.file_size = file_obj.size

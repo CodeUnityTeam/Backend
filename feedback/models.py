@@ -11,8 +11,8 @@ from core.constants.feedback import (
     MAX_SUBJECT_FEEDBACK,
     STATUS_FEEDBACK,
 )
-from core.constants.qna import MAX_IMAGE_URL, MAX_MINE_TYPE, MAX_ORIGINAL_NAME
 from core.models.mixins import TimestampMixin
+from qna.mixins import BaseImageMixin
 
 User = get_user_model()
 
@@ -69,7 +69,7 @@ class FeedbackForm(TimestampMixin, models.Model):
         return f'{self.subject} — {self.user.first_name} ({self.status})'
 
 
-class FeedbackImage(TimestampMixin, models.Model):
+class FeedbackImage(TimestampMixin, BaseImageMixin):
     """Изображение, прикреплённое к форме обратной связи.
 
     - Хранит метаданные и URL.
@@ -89,21 +89,6 @@ class FeedbackImage(TimestampMixin, models.Model):
         related_name='images',
         verbose_name='Форма',
     )
-    original_name = models.CharField(
-        max_length=MAX_ORIGINAL_NAME,
-        verbose_name='Оригинальное имя файла',
-    )
-    file_size = models.IntegerField(
-        verbose_name='Размер файла в байтах',
-    )
-    mime_type = models.CharField(
-        max_length=MAX_MINE_TYPE,
-        verbose_name='MIME-тип',
-    )
-    image_url = models.URLField(
-        max_length=MAX_IMAGE_URL,
-        verbose_name='URL изображения',
-    )
 
     class Meta:
         """Метаданные модели."""
@@ -113,15 +98,8 @@ class FeedbackImage(TimestampMixin, models.Model):
         verbose_name_plural = 'Изображения обратной связи'
         indexes = [
             models.Index(fields=['feedback']),
-            models.Index(fields=['created_at']),
+            models.Index(fields=['uploaded_at']),
         ]
 
     def __str__(self) -> str:
         return f'Изображение: {self.original_name} для {self.feedback.subject}'
-
-    @admin.display(description='Изображение')
-    def post_image(self):   # noqa: ANN201
-        """Отображает превью в админке."""
-        if self.image_url:
-            return mark_safe(f"<img src='{self.image_url}' width=50>")
-        return 'Без фото'

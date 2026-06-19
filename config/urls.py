@@ -11,6 +11,10 @@ v1_urlpatterns = [
     path('user/', include(('users.urls', 'users'), namespace='users')),
     path('qna/', include(('qna.urls', 'qna'), namespace='qna')),
     path(
+        'feedback/',
+        include(('feedback.urls', 'feedback'), namespace='feedback'),
+    ),
+    path(
         'projects/',
         include(('projects.urls', 'projects'), namespace='projects'),
     ),
