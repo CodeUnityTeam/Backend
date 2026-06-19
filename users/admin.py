@@ -1,3 +1,5 @@
+from typing import Any, Optional
+
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.core.files.uploadedfile import UploadedFile
@@ -19,7 +21,7 @@ from .models import (
 )
 from .services import avatar_delete_handler, avatar_upload_handler
 
-#admin.site.unregister(Group)
+admin.site.unregister(Group)
 
 
 class BaseInline(admin.TabularInline):
@@ -203,14 +205,19 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
         UserWorkFormatInline,
     )
 
-    def get_form(self, request, obj=None, **kwargs):
-        """Замена формы на кастомную для отображения кнопки загрузки аватара."""
+    def get_form(
+            self,
+            request: HttpRequest,
+            obj: Optional[User]=None,
+            **kwargs: Any,
+        ) -> forms.ModelForm:
+        """Замена формы для отображения кнопки загрузки аватара."""
         kwargs['form'] = UserImageAdminForm
         return super().get_form(request, obj, **kwargs)
 
     @admin.display(description='Аватар')
     @mark_safe
-    def get_avatar(self, obj: User):
+    def get_avatar(self, obj: User) -> str:
         """Метод для отображения аватара."""
         if obj.avatar_url:
             return f'<img src="{obj.avatar_url}" style="max-height: 100px;">'

@@ -1,7 +1,13 @@
+from typing import Optional
+
+from django.db.models import Model
+from django.http import HttpRequest
+
+
 class RolePermissionsMixin:
     """Миксин для проверки прав в админке в зависимости от роли."""
 
-    def _check_permission(self, request, action):
+    def _check_permission(self, request: HttpRequest, action: str) -> bool:
         """Проверка прав."""
         user = request.user
 
@@ -16,7 +22,7 @@ class RolePermissionsMixin:
         if action == 'add':
             return False
         if self.model._meta.app_label in ['users', 'feedback']:
-            return action == False
+            return not action
         return True
 
     def has_add_permission(self, request, obj=None):

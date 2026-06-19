@@ -8,7 +8,7 @@ bash fixtures/test_data/create_obj.sh
 теперь можно очистить и оставить админа
 ```bash
 uv run python manage.py flush --noinput
-DJANGO_SUPERUSER_PASSWORD=admin uv run python manage.py createsuperuser --username admin --email admin@example.com --first_name Admin --last_name Admin --noinput
+DJANGO_SUPERUSER_PASSWORD=admin uv run python manage.py createsuperuser --email admin@example.com --first_name Admin --last_name Admin --noinput
 ```
 скопируй для быстрого старта локалки, чтобы пройти тесты, если не запущен локально, потом вставь первый кусок выше
 ```
