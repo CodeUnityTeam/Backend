@@ -115,6 +115,11 @@ class MeProfileView(RetrieveUpdateDestroyAPIView):
             return MeProfileUpdateSerializer
         return MeProfileRetrieveSerializer
 
+    # TODO: При мягком удалении пользователя:
+    #  - найти записи FeedbackForm и перевести их в статус Closed
+    #  - найи проекты пользователя и перевести из в статус ARCHIVED
+    #  - найти записи ProjectParticipant и удалить их
+    #  - найти записи Response и удалить их
     def perform_destroy(self, instance: User) -> None:
         """Перевести флаги активности и согласия в False."""
         instance.is_active = False
