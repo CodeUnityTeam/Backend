@@ -1,6 +1,8 @@
 from typing import Any, Type
 
 from django.db.models import QuerySet
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from drf_spectacular.utils import (
     OpenApiParameter,
     OpenApiResponse,
@@ -14,6 +16,7 @@ from rest_framework.generics import ListAPIView
 from rest_framework.permissions import AllowAny, BasePermission
 from rest_framework.serializers import BaseSerializer
 
+from core.constants.cache import TAGS_CACHE_TIMEOUT
 from projects.models import WorkFormat
 from projects.serializers import (
     SkillSerializer,
@@ -66,6 +69,7 @@ from users.models.specializations import Specialization
         },
     ),
 )
+@method_decorator(cache_page(TAGS_CACHE_TIMEOUT), name='get')
 class TagsListAPIView(ListAPIView):
     """View для получения списков тегов."""
 

@@ -1,5 +1,6 @@
 from typing import Any, Optional
 
+from django import forms
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.contrib.auth.models import Group
@@ -122,7 +123,7 @@ class UserWorkFormatAdmin(RolePermissionsMixin, admin.ModelAdmin):
 class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
     """Админ-панель для модели пользователя с расширенными полями."""
 
-    forms = UserImageAdminForm
+    form = UserImageAdminForm
 
     list_display = (
         'user_id',
@@ -176,8 +177,6 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
                     'is_agreed_to_terms',
                     'groups',
                     'user_permissions',
-
-
                 ),
             },
         ),
@@ -209,9 +208,9 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
     def get_form(
             self,
             request: HttpRequest,
-            obj: Optional[User]=None,
+            obj: Optional[User] = None,
             **kwargs: Any,
-        ) -> forms.ModelForm:
+    ) -> forms.ModelForm:
         """Замена формы для отображения кнопки загрузки аватара."""
         kwargs['form'] = UserImageAdminForm
         return super().get_form(request, obj, **kwargs)
@@ -232,18 +231,18 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
         change: bool,
     ) -> None:
         """Сохранение модели."""
-        #1.  Загрузка файла в БД
+        # 1. Загрузка файла в БД
         image_obj: UploadedFile | None = form.cleaned_data.get('file')
 
         if image_obj:
             public_url: str = avatar_upload_handler(obj, file_obj=image_obj)
             obj.avatar_url = public_url
 
-        #2.  Удаление аватара
+        # 2. Удаление аватара
         if form.cleaned_data.get('clear_image'):
             avatar_delete_handler(obj)
 
-        #3.  Проверка состояния роли
+        # 3. Проверка состояния роли
         if 'role' in form.changed_data:
             if obj.role == 'admin':
                 obj.is_staff = True
@@ -253,5 +252,6 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
                 obj.is_superuser = False
             else:
                 obj.is_staff = False
+                obj.is_superuser = False
 
         super().save_model(request, obj, form, change)
