@@ -1,6 +1,6 @@
+from typing import Optional
 
-from typing import Any, Optional
-
+from django.db.models import Model
 from django.http import HttpRequest
 
 
