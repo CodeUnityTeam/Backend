@@ -171,6 +171,7 @@ class FeedbackAndInvitationFeedSerializer(serializers.Serializer):
     Все данные получает из аннотированного queryset
     (get_response_feed_queryset).
     """
+
     # Поля отклика
     response_id = serializers.UUIDField(read_only=True)
     response_status = serializers.CharField(

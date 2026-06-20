@@ -66,6 +66,7 @@ def validate_can_invite(
         project: проект, в который приглашают.
         inviter: пользователь, который приглашает.
         invitee_id: UUID приглашаемого пользователя.
+
     """
     if project.author != inviter:
         raise serializers.ValidationError(

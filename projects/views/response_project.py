@@ -245,8 +245,7 @@ class ResponseStatusViewSet(GenericViewSet):
         """Базовый queryset откликов с оптимизацией запросов.
 
         Загружает project__author и user через select_related
-        для валидации прав (project.author, user_response.user)
-        без дополнительных запросов.
+        для валидации прав (project.author, user_response.user).
         """
         return get_response_for_status_update_queryset()
 

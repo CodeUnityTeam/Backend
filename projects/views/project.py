@@ -381,8 +381,6 @@ class ProjectViewSet(ModelViewSet):
         """Переводит проект в статус 'archived'. (мягкое удаление).
 
         - Доступ только для автора-нанимателя, админа или суперюзера.
-        - Проверка прав осуществляется через CanArchiveProject
-          (has_object_permission).
         """
         project = self.get_object()
         serializer = self.get_serializer(
