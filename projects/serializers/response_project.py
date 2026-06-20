@@ -16,7 +16,6 @@ from projects.validators.response_project import (
     validate_can_change_status,
     validate_can_create_response,
     validate_can_invite,
-    validate_status_can_be_changed,
 )
 
 
@@ -109,12 +108,6 @@ class UpdateResponseStatusSerializer(serializers.ModelSerializer):
         model = Response
         fields = ['status']
 
-    def validate_status(self, status: str) -> str:
-        """Валидация нового статуса."""
-        user_response = self.instance
-        validate_status_can_be_changed(user_response)
-        return status
-
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
         """Валидация прав на изменение статуса."""
         user_response = self.instance
@@ -131,15 +124,40 @@ class UpdateResponseStatusSerializer(serializers.ModelSerializer):
         """Обновление статуса и сопутствующие действия."""
         new_status = validated_data['status']
         user_response.status_resp = new_status
-        user_response.save()
+        user_response.save(update_fields=['status_resp'])
         if new_status == APPROVED:
             add_user_to_project_participants(
                 project=user_response.project,
                 user=user_response.user,
                 status=MEMBER,
             )
-            user_response.project.save()
         return user_response
+
+
+class UpdateResponseStatusResponseSerializer(serializers.ModelSerializer):
+    """Сериализатор для ответа после изменения статуса отклика."""
+
+    project_id = serializers.UUIDField(
+        source='project.project_id',
+        read_only=True,
+    )
+    user_id = serializers.UUIDField(
+        source='user.user_id',
+        read_only=True,
+    )
+    status = serializers.CharField(
+        source='status_resp',
+        read_only=True,
+    )
+
+    class Meta:
+        model = Response
+        fields = [
+            'response_id',
+            'project_id',
+            'user_id',
+            'status',
+        ]
 
 
 class FeedbackAndInvitationFeedSerializer(serializers.Serializer):

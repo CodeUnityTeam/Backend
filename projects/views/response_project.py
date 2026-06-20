@@ -31,6 +31,7 @@ from projects.serializers import (
     InviteUserProjectSerializer,
     ResponseResponseCreateProjectSerializer,
     ResponseUserProjectSerializer,
+    UpdateResponseStatusResponseSerializer,
     UpdateResponseStatusSerializer,
 )
 
@@ -226,12 +227,15 @@ class ResponseStatusViewSet(GenericViewSet):
     """Вьюсет для изменения статуса отклика/приглашения."""
 
     permission_classes = (IsAuthenticated,)
-    serializer_class = ResponseResponseCreateProjectSerializer
+    serializer_class = UpdateResponseStatusResponseSerializer
     lookup_field = 'response_id'
 
     def get_queryset(self) -> QuerySet:
-        """Базовый queryset откликов."""
-        return Response.objects.all()
+        """Базовый queryset откликов с оптимизацией запросов."""
+        return Response.objects.select_related(
+            'project__author',
+            'user',
+        ).all()
 
     @transaction.atomic
     def update(

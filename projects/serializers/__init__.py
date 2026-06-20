@@ -15,6 +15,7 @@ from .response_project import (
     InviteUserProjectSerializer,
     ResponseResponseCreateProjectSerializer,
     ResponseUserProjectSerializer,
+    UpdateResponseStatusResponseSerializer,
     UpdateResponseStatusSerializer,
 )
 
