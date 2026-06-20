@@ -41,6 +41,7 @@ User = get_user_model()
 
 class SkillIdSerializer(serializers.Serializer):
     """Сериализатор для передачи skill_id в теле запроса."""
+
     skill_id = serializers.UUIDField(
         help_text='UUID навыка',
     )
@@ -48,6 +49,7 @@ class SkillIdSerializer(serializers.Serializer):
 
 class SpecializationIdSerializer(serializers.Serializer):
     """Сериализатор для передачи spec_id в теле запроса."""
+
     spec_id = serializers.UUIDField(
         help_text='UUID специализации',
     )
