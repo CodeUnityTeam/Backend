@@ -112,8 +112,6 @@ class UpdateResponseStatusSerializer(serializers.ModelSerializer):
     def validate_status(self, status: str) -> str:
         """Валидация нового статуса."""
         user_response = self.instance
-        if not user_response:
-            raise serializers.ValidationError('Отклик не найден')
         validate_status_can_be_changed(user_response)
         return status
 

@@ -303,7 +303,6 @@ class ProjectViewSet(ModelViewSet):
             return qs.filter(
                 status_project__in=[PUBLISHED, RECRUITING_CLOSED],
             )
-
         return qs
 
     def get_permissions(self) -> List[BasePermission]:

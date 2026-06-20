@@ -28,14 +28,11 @@ def validate_can_create_response(
     - пользователь не является автором проекта
     - проект опубликован
     - нет существующего отклика от этого пользователя
-
-    Raises:
-        serializers.ValidationError: если хотя бы одна проверка не пройдена.
     """
     if user.projects_relation != User.ProjectsRelationChoices.WORKER:
         raise serializers.ValidationError(
             'Откликаться на проекты могут только пользователи '
-            'с ролью "Работник".',
+            'с ролью "worker".',
         )
     if project.author == user:
         raise serializers.ValidationError(
@@ -69,12 +66,6 @@ def validate_can_invite(
         project: проект, в который приглашают.
         inviter: пользователь, который приглашает.
         invitee_id: UUID приглашаемого пользователя.
-
-    Returns:
-        User: объект приглашаемого пользователя.
-
-    Raises:
-        serializers.ValidationError: если хотя бы одна проверка не пройдена.
     """
     if project.author != inviter:
         raise serializers.ValidationError(
@@ -102,77 +93,12 @@ def validate_status_can_be_changed(user_response: Response) -> None:
     """Проверяет, что статус отклика можно изменить.
 
     Статус можно изменить только если текущий статус — 'pending'.
-
-    Raises:
-        serializers.ValidationError: если статус не 'pending'.
     """
     if user_response.status_resp != PENDING:
         raise serializers.ValidationError(
             f'Статус можно изменить только из "{PENDING}", '
             f'текущий статус: "{user_response.status_resp}".',
         )
-
-
-def get_response_permissions_map() -> dict[str, list[tuple[bool, str]]]:
-    """Возвращает карту прав для изменения статуса отклика.
-
-    Каждый элемент списка — кортеж (условие, сообщение_об_ошибке).
-    Если хотя бы одно условие истинно — действие разрешено.
-
-    Returns:
-        dict: {
-            'approved': [(условие1, ошибка1), (условие2, ошибка2)],
-            'rejected': [...],
-            'withdrawn': [...],
-        }
-    """
-    return {
-        APPROVED: [
-            (
-                lambda r, u: (
-                    r.initiator_type == AUTHOR and r.user == u
-                ),
-                'Нет прав для одобрения этого приглашения.',
-            ),
-            (
-                lambda r, u: (
-                    r.initiator_type == APPLICANT
-                    and r.project.author == u
-                ),
-                'Нет прав для одобрения этого отклика.',
-            ),
-        ],
-        REJECTED: [
-            (
-                lambda r, u: (
-                    r.initiator_type == AUTHOR and r.user == u
-                ),
-                'Нет прав для отклонения этого приглашения.',
-            ),
-            (
-                lambda r, u: (
-                    r.initiator_type == APPLICANT
-                    and r.project.author == u
-                ),
-                'Нет прав для отклонения этого отклика.',
-            ),
-        ],
-        WITHDRAWN: [
-            (
-                lambda r, u: (
-                    r.initiator_type == APPLICANT and r.user == u
-                ),
-                'Только инициатор может отозвать свой отклик.',
-            ),
-            (
-                lambda r, u: (
-                    r.initiator_type == AUTHOR
-                    and r.project.author == u
-                ),
-                'Только автор может отменить своё приглашение.',
-            ),
-        ],
-    }
 
 
 def validate_can_change_status(
@@ -182,20 +108,57 @@ def validate_can_change_status(
 ) -> None:
     """Валидация прав на изменение статуса отклика/приглашения.
 
-    Проверяет:
-    - текущий статус — 'pending'
-    - у пользователя есть права на запрашиваемое действие
-    - при одобрении — пользователь ещё не является участником проекта
-
-    Raises:
-        serializers.ValidationError: если хотя бы одна проверка не пройдена.
+    ┌──────────────────────┬──────────────┬──────────────────────────┐
+    │ Тип отклика          │ Действие     │ Кто может                │
+    ├──────────────────────┼──────────────┼──────────────────────────┤
+    │ APPLICANT (отклик)   │ approved     │ автор-employer           │
+    │ APPLICANT (отклик)   │ rejected     │ автор-employer           │
+    │ APPLICANT (отклик)   │ withdrawn    │ соискатель-worker        │
+    ├──────────────────────┼──────────────┼──────────────────────────┤
+    │ AUTHOR (приглашение) │ approved     │ приглашённый-worker      │
+    │ AUTHOR (приглашение) │ rejected     │ приглашённый-worker      │
+    │ AUTHOR (приглашение) │ withdrawn    │ автор-employer           │
+    └──────────────────────┴──────────────┴──────────────────────────┘
+    Дополнительно:
+      - текущий статус должен быть 'pending'
+      - при одобрении — пользователь не должен быть участником проекта
     """
     validate_status_can_be_changed(user_response)
+    is_employer = (
+        user.projects_relation == User.ProjectsRelationChoices.EMPLOYER
+    )
+    is_worker = user.projects_relation == User.ProjectsRelationChoices.WORKER
+    is_target_user = user_response.user == user
+    is_project_author = user_response.project.author == user
+    has_permission = False
+    if new_status in (APPROVED, REJECTED):
+        if (
+            user_response.initiator_type == APPLICANT
+            and is_project_author
+            and is_employer
+        ):
+            has_permission = True
+        elif (
+            user_response.initiator_type == AUTHOR
+            and is_target_user
+            and is_worker
+        ):
+            has_permission = True
 
-    permissions_map = get_response_permissions_map()
-    checks = permissions_map.get(new_status, [])
-
-    if not any(check[0](user_response, user) for check in checks):
+    elif new_status == WITHDRAWN:
+        if (
+            user_response.initiator_type == APPLICANT
+            and is_target_user
+            and is_worker
+        ):
+            has_permission = True
+        elif (
+            user_response.initiator_type == AUTHOR
+            and is_project_author
+            and is_employer
+        ):
+            has_permission = True
+    if not has_permission:
         error_messages = {
             APPROVED: 'Нет прав для одобрения этого отклика/приглашения.',
             REJECTED: 'Нет прав для отклонения этого отклика/приглашения.',
@@ -207,7 +170,6 @@ def validate_can_change_status(
                 f'Нет прав для действия "{new_status}".',
             ),
         )
-
     if new_status == APPROVED and ProjectParticipant.objects.filter(
         project=user_response.project,
         user=user_response.user,
