@@ -26,44 +26,41 @@ class RolePermissionsMixin:
         return True
 
     def has_add_permission(
-        self,
-        request: HttpRequest,
-        obj: Optional[Any] = None,
-    ) -> bool:
-        """Проверяет, имеет ли пользователь право добавлять новые объекты."""
+            self,
+            request: HttpRequest,
+            obj: Optional[Model]=None,
+        ) -> bool:
+        """Проверка прав на добавление объектов."""
         return self._check_permission(request, 'add')
 
     def has_change_permission(
-        self,
-        request: HttpRequest,
-        obj: Optional[Any] = None,
-    ) -> bool:
-        """Проверяет, может ли пользователь изменять существующие объекты."""
+            self,
+            request: HttpRequest,
+            obj: Optional[Model]=None,
+        ) -> bool:
+        """Проверка прав на изменение объектов."""
         return self._check_permission(request, 'change')
 
     def has_delete_permission(
-        self,
-        request: HttpRequest,
-        obj: Optional[Any] = None,
-    ) -> bool:
-        """Проверяет, имеет ли пользователь право удалять объекты."""
+            self,
+            request: HttpRequest,
+            obj: Optional[Model]=None,
+        ) -> bool:
+        """Проверка прав на удаление объектов."""
         if obj and hasattr(obj, 'pk') and obj.pk == request.user.pk:
             return False
         return self._check_permission(request, 'delete')
 
     def has_view_permission(
-        self,
-        request: HttpRequest,
-        obj: Optional[Any] = None,
-    ) -> bool:
-        """Проверяет, имеет ли пользователь право просматривать объекты."""
+            self,
+            request: HttpRequest,
+            obj: Optional[Model]=None,
+        ) -> bool:
+        """Проверка прав на просмотр объектов."""
         return self._check_permission(request, 'view')
 
-    def has_module_permission(
-        self,
-        request: HttpRequest,
-    ) -> bool:
-        """Проверяет, имеет ли пользователь доступ к модулю в админ‑панели."""
+    def has_module_permission(self, request: HttpRequest)-> bool:
+        """Проверка прав на вход в админку."""
         if request.user.is_staff and request.user.is_active:
             return True
         return False
