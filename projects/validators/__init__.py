@@ -24,4 +24,3 @@ from .response_project import (
     validate_can_invite,
     validate_status_can_be_changed,
 )
-

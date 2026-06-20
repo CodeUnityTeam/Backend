@@ -18,22 +18,6 @@ from users.selectors import (
     get_employer_profiles_selector,
 )
 
-
-def update_last_login(user: User) -> None:
-    """Обновить last_login пользователя, если прошло достаточно времени.
-
-    Обновляет поле last_login в БД,
-    но не чаще одного раза в LAST_LOGIN_UPDATE_INTERVAL.
-    """
-    now = timezone.now()
-    last_login = user.last_login
-    if not last_login or (now - last_login) > timedelta(
-        minutes=LAST_LOGIN_UPDATE_INTERVAL,
-    ):
-        User.objects.filter(pk=user.pk).update(last_login=now)
-        user.last_login = now
-
-
 avatar_minio_client = MinioService(
     bucket_name=settings.STORAGES['avatars']['OPTIONS']['bucket_name'],
 )
@@ -168,3 +152,18 @@ def get_profiles_for_employer_service(
         current_user=current_user,
         queryset=annotated_queryset,
     )
+
+
+def update_last_login(user: User) -> None:
+    """Обновить last_login пользователя, если прошло достаточно времени.
+
+    Обновляет поле last_login в БД,
+    но не чаще одного раза в LAST_LOGIN_UPDATE_INTERVAL.
+    """
+    now = timezone.now()
+    last_login = user.last_login
+    if not last_login or (now - last_login) > timedelta(
+        minutes=LAST_LOGIN_UPDATE_INTERVAL,
+    ):
+        User.objects.filter(pk=user.pk).update(last_login=now)
+        user.last_login = now

@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.db import transaction
 
 from core.constants.projects import (
     ALLOWED_STATUSED_FOR_LIKE,
@@ -58,11 +59,12 @@ def toggle_project_like(project: Project, user: User) -> dict:
             'Нельзя лайкать проект с текущим статусом.',
         )
 
-    like, created = ProjectLike.objects.get_or_create(
-        project=project,
-        user=user,
-    )
-    if not created:
-        like.delete()
-    likes_count = ProjectLike.objects.filter(project=project).count()
+    with transaction.atomic():
+        like, created = ProjectLike.objects.select_for_update().get_or_create(
+            project=project,
+            user=user,
+        )
+        if not created:
+            like.delete()
+        likes_count = ProjectLike.objects.filter(project=project).count()
     return {'liked': created, 'likes_count': likes_count}
