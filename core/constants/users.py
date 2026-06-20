@@ -28,4 +28,4 @@ USER_EMAIL_HELP = (
 USER_NAME_HELP = 'Допускаются только буквы кириллицы или латиницы.'
 
 # --- UpdateLastActivityMiddleware ---
-LAST_LOGIN_UPDATE_INTERVAL = 10
+LAST_LOGIN_UPDATE_INTERVAL = 5

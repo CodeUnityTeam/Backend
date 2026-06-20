@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Type
 
 from django.db import transaction
 from django.db.models import QuerySet
@@ -17,14 +17,16 @@ from rest_framework.permissions import (
 )
 from rest_framework.request import Request
 from rest_framework.response import Response as DRFResponse
+from rest_framework.serializers import Serializer
 from rest_framework.viewsets import GenericViewSet
 
 from projects.filters import ResponseFeedFilter
-from projects.models import Project, Response
 from projects.paginations import CustomResponseFeedPagination
 from projects.permissions import IsEmployer, IsWorker
 from projects.selectors import (
+    get_project_for_response_queryset,
     get_response_feed_queryset,
+    get_response_for_status_update_queryset,
 )
 from projects.serializers import (
     FeedbackAndInvitationFeedSerializer,
@@ -121,10 +123,31 @@ class ProjectResponseViewSet(GenericViewSet):
 
     permission_classes = (IsAuthenticated,)
     lookup_field = 'project_id'
+    serializer_class = ResponseUserProjectSerializer
 
     def get_queryset(self) -> QuerySet:
-        """Базовый queryset не используется — проект получаем напрямую."""
-        return Project.objects.select_related('author').all()
+        """Оптимизированный queryset проекта для откликов/приглашений.
+
+        Загружает author через select_related для валидации прав
+        (project.author == user) без дополнительного запроса.
+        """
+        return get_project_for_response_queryset()
+
+    def get_serializer_class(self) -> Type[Serializer]:
+        """Применяем сериализатор в зависимости от action."""
+        if self.action == 'create':
+            return ResponseUserProjectSerializer
+        if self.action == 'invite':
+            return InviteUserProjectSerializer
+        return self.serializer_class
+
+    def get_serializer_context(self) -> dict[str, Any]:
+        """Добавить project и user_id в контекст сериализатора."""
+        context = super().get_serializer_context()
+        context['project'] = self.get_object()
+        if self.action == 'invite':
+            context['user_id'] = self.kwargs.get('user_id')
+        return context
 
     def get_permissions(self) -> list:
         """Динамические permission в зависимости от action."""
@@ -147,11 +170,7 @@ class ProjectResponseViewSet(GenericViewSet):
         **kwargs: Any,
     ) -> DRFResponse:
         """Откликнуться на проект (только для worker)."""
-        project = self.get_object()
-        serializer = ResponseUserProjectSerializer(
-            data={},
-            context={'request': request, 'project': project},
-        )
+        serializer = self.get_serializer(data={})
         serializer.is_valid(raise_exception=True)
         response = serializer.save()
         return DRFResponse(
@@ -180,15 +199,7 @@ class ProjectResponseViewSet(GenericViewSet):
         user_id: str,
     ) -> DRFResponse:
         """Пригласить пользователя в проект (только для employer-автора)."""
-        project = self.get_object()
-        serializer = InviteUserProjectSerializer(
-            data={},
-            context={
-                'project': project,
-                'user_id': user_id,
-                'request': request,
-            },
-        )
+        serializer = self.get_serializer(data={})
         serializer.is_valid(raise_exception=True)
         response_instance = serializer.save()
         return DRFResponse(
@@ -231,11 +242,13 @@ class ResponseStatusViewSet(GenericViewSet):
     lookup_field = 'response_id'
 
     def get_queryset(self) -> QuerySet:
-        """Базовый queryset откликов с оптимизацией запросов."""
-        return Response.objects.select_related(
-            'project__author',
-            'user',
-        ).all()
+        """Базовый queryset откликов с оптимизацией запросов.
+
+        Загружает project__author и user через select_related
+        для валидации прав (project.author, user_response.user)
+        без дополнительных запросов.
+        """
+        return get_response_for_status_update_queryset()
 
     @transaction.atomic
     def update(

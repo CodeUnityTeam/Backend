@@ -5,12 +5,14 @@ from rest_framework import serializers
 
 from core.constants.projects import (
     ARCHIVED,
+    AUTHOR,
     DRAFT,
     PUBLISHED,
     RECRUITING_CLOSED,
 )
 from projects.models import Project
 from projects.selectors import get_project_with_relations
+from projects.services import add_user_to_project_participants
 from projects.validators import (
     _validate_formats_by_uuid_list,
     _validate_related_ids,
@@ -67,7 +69,7 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
             'status_project', 'skills', 'specializations', 'project_format',
         ]
         extra_kwargs = {
-            'location': {'required': True}
+            'location': {'required': True},
         }
 
     def validate(self, data: dict) -> dict:
@@ -103,6 +105,12 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
             validated_data['published_at'] = timezone.now()
         project = Project.objects.create(**validated_data)
         add_relationships_to_project(project, relationship_data)
+        # Добавляем автора в участники проекта со статусом AUTHOR
+        add_user_to_project_participants(
+            project=project,
+            user=user,
+            status=AUTHOR,
+        )
         return project
 
 
@@ -129,7 +137,10 @@ class ProjectShortSerializer(serializers.ModelSerializer):
         default=False,
         help_text='Лайкнул ли проект текущий пользователь (аннотация БД).',
     )
-    participants_count = serializers.SerializerMethodField()
+    participants_count = serializers.IntegerField(
+        read_only=True,
+        help_text='Количество участников проекта (аннотация БД).',
+    )
 
     class Meta:
         model = Project
@@ -145,13 +156,6 @@ class ProjectShortSerializer(serializers.ModelSerializer):
             'skills',
         ]
 
-    def get_participants_count(self, project: Project) -> int:
-        """Получаем количество участников проекта.
-
-        Использует prefetch_related('participants') — без доп. запроса.
-        """
-        return project.participants.count()
-
 
 class ProjectDetailSerializer(ProjectShortSerializer):
     """Сериализатор детальной карточки проекта.
@@ -161,7 +165,10 @@ class ProjectDetailSerializer(ProjectShortSerializer):
 
     specializations = SpecializationSerializer(many=True, read_only=True)
     project_format = WorkFormatSerializer(many=True, read_only=True)
-    likes_count = serializers.SerializerMethodField()
+    likes_count = serializers.IntegerField(
+        read_only=True,
+        help_text='Количество лайков проекта (аннотация БД).',
+    )
     participants = serializers.SerializerMethodField()
     author = serializers.SerializerMethodField()
     full_desc = serializers.SerializerMethodField()
@@ -186,13 +193,6 @@ class ProjectDetailSerializer(ProjectShortSerializer):
             == User.ProjectsRelationChoices.EMPLOYER
         )
 
-    def get_likes_count(self, project: Project) -> int:
-        """Получаем количество лайков проекта.
-
-        Использует prefetch_related('likes') — без дополнительного запроса.
-        """
-        return project.likes.count()
-
     def get_participants(self, project: Project) -> list:
         """Получает инфу об участниках проекта.
 
@@ -200,12 +200,15 @@ class ProjectDetailSerializer(ProjectShortSerializer):
           email, phone участников.
         - Участник и обычный пользователь видят только
           ID, full_name, аватар участников.
+
+        Participants уже загружены через Prefetch с select_related('user')
+        в get_optimized_project_queryset — без дополнительных запросов.
         """
         is_author_employer = self._is_author_employer(project)
         serializer_class = (
             UserAuthorSerializer if is_author_employer else UserBaseSerializer
         )
-        participants_qs = project.participants.select_related('user')
+        participants_qs = project.participants.all()
         if is_author_employer:
             participants_qs = participants_qs.exclude(user=project.author)
         users = [p.user for p in participants_qs]
@@ -221,8 +224,7 @@ class ProjectDetailSerializer(ProjectShortSerializer):
         - Участник проекта видит полную информацию об авторе (email, phone).
         - Обычный пользователь видит краткую информацию.
 
-        Использует аннотацию is_participant из get_optimized_project_queryset
-        — без дополнительного запроса к БД.
+        Использует аннотацию is_participant из get_optimized_project_queryset.
         """
         is_author_employer = self._is_author_employer(project)
         is_participant = getattr(project, 'is_participant', False)
