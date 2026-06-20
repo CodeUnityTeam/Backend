@@ -25,10 +25,10 @@ class ResponseUserProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Response
         fields = (
-            'response_id', 'project', 'user', 'initiator_type', 'status_resp'
+            'response_id', 'project', 'user', 'initiator_type', 'status_resp',
         )
         read_only_fields = fields
-    
+
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
         """Валидация перед созданием отклика."""
         project = self.context['project']
@@ -40,7 +40,6 @@ class ResponseUserProjectSerializer(serializers.ModelSerializer):
             'initiator_type': APPLICANT,
             'status_resp': PENDING,
         }
-
 
 
 class ResponseResponseCreateProjectSerializer(serializers.ModelSerializer):
@@ -73,7 +72,7 @@ class InviteUserProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Response
         fields = (
-            'response_id', 'project', 'user', 'initiator_type', 'status_resp'
+            'response_id', 'project', 'user', 'initiator_type', 'status_resp',
         )
         read_only_fields = fields
 
@@ -107,7 +106,7 @@ class UpdateResponseStatusSerializer(serializers.ModelSerializer):
         """Валидация прав на изменение статуса."""
         if self.instance is None:
             raise serializers.ValidationError(
-                'Изменение статуса возможно только для существующего ответа.'
+                'Изменение статуса возможно только для существующего ответа.',
             )
         user_response = self.instance
         user = self.context['request'].user
