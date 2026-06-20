@@ -40,8 +40,7 @@ def validate_can_create_response(
         )
     if project.status_project != PUBLISHED:
         raise serializers.ValidationError(
-            f'Отклик возможен только на проекты '
-            f'со статусом "{PUBLISHED}".',
+            f'Отклик возможен только на проекты со статусом "{PUBLISHED}".',
         )
     if Response.objects.filter(project=project, user=user).exists():
         raise serializers.ValidationError(
@@ -61,6 +60,8 @@ def validate_can_invite(
     - приглашаемый пользователь существует
     - приглашаемый не является автором проекта
     - нет существующего отклика/приглашения
+    - проект опубликован
+    - приглашаемый пользователь не является участником проекта
 
     Args:
         project: проект, в который приглашают.
@@ -83,8 +84,15 @@ def validate_can_invite(
         )
     if Response.objects.filter(project=project, user=invitee).exists():
         raise serializers.ValidationError(
-            'Приглашение или отклик для этого пользователя '
-            'уже существует.',
+            'Пользователь уже приглашён в этот проект.',
+        )
+    if project.status_project != PUBLISHED:
+        raise serializers.ValidationError(
+            f'Приглашение возможно на проекты со статусом "{PUBLISHED}".',
+        )
+    if inviter.projects_relation != User.ProjectsRelationChoices.WORKER:
+        raise serializers.ValidationError(
+            'Нельзя пригласить пользователя, уже участвующего в проекте.',
         )
     return invitee
 
