@@ -109,6 +109,9 @@ def _annotate_is_participant(
 def get_response_feed_queryset(user: User) -> QuerySet:
     """Возвращает базовый queryset для ленты откликов текущего пользователя.
 
+    Фильтрует отклики по текущему пользователю — worker видит только
+    свои отклики и приглашения, где он является приглашённым.
+
     Аннотирует:
       - participants_count — количество участников проекта
       - is_liked_by_me — лайкнул ли текущий пользователь проект
@@ -129,7 +132,7 @@ def get_response_feed_queryset(user: User) -> QuerySet:
         'project__skills',
         'project__participants',
         'project__likes',
-    )
+    ).filter(user=user)
     # Аннотация is_liked_by_me
     if user.is_authenticated:
         queryset = queryset.annotate(

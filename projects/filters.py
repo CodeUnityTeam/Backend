@@ -270,13 +270,9 @@ class ResponseFeedFilter(django_filters.FilterSet):
         field_name='project__project_id',
         label='Фильтр по проекту',
     )
-    sort_order = django_filters.ChoiceFilter(
-        choices=[
-            ('asc', 'По возрастанию (старые сначала)'),
-            ('desc', 'По убыванию (новые сначала)')
-        ],
+    sort_order = django_filters.CharFilter(
         method='filter_sort_order',
-        label='Порядок сортировки',
+        label='Порядок сортировки (asc/desc, по умолчанию desc)',
     )
 
     class Meta:
@@ -290,17 +286,15 @@ class ResponseFeedFilter(django_filters.FilterSet):
         request: Optional[Request] = None,
         **kwargs: Any,
     ) -> None:
-        """Инициализирует фильтр с дополнительными параметрами."""
+        """Инициализирует фильтр с дополнительными параметрами.
+
+        Если sort_order не передан — по умолчанию desc (новые сначала).
+        """
+        if data is not None and 'sort_order' not in data:
+            data = data.copy()
+            data['sort_order'] = 'desc'
         super().__init__(data, queryset, **kwargs)
         self.request = request
-
-    def filter_queryset(self, queryset: QuerySet) -> QuerySet:
-        """Применяет фильтры и сортировку по created_at."""
-        queryset = super().filter_queryset(queryset)
-        # Сортировка по created_at: desc по умолчанию
-        sort_order = self.data.get('sort_order', 'desc')
-        order_prefix = '-' if sort_order == 'desc' else ''
-        return queryset.order_by(f'{order_prefix}created_at')
 
     def filter_status(
         self,
@@ -328,6 +322,7 @@ class ResponseFeedFilter(django_filters.FilterSet):
     ) -> QuerySet:
         """Сортировка по created_at.
 
-        Порядок применяется в filter_queryset, здесь только валидация.
+        desc — новые сначала (по умолчанию), asc — старые сначала.
         """
-        return queryset
+        order_prefix = '-' if value == 'desc' else ''
+        return queryset.order_by(f'{order_prefix}created_at')
