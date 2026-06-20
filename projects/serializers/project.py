@@ -66,6 +66,9 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
             'location', 'start_date', 'end_date',
             'status_project', 'skills', 'specializations', 'project_format',
         ]
+        extra_kwargs = {
+            'location': {'required': True}
+        }
 
     def validate(self, data: dict) -> dict:
         """Валидация всех данных для создания проекта.

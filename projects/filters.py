@@ -262,14 +262,7 @@ class ResponseFeedFilter(django_filters.FilterSet):
     Сортировка по created_at (по умолчанию desc).
     """
 
-    status = django_filters.ChoiceFilter(
-        choices=[
-            ('all', 'Все'),
-            (PENDING, 'Ожидает'),
-            (APPROVED, 'Одобрен'),
-            (REJECTED, 'Отклонён'),
-            (WITHDRAWN, 'Отозван'),
-        ],
+    status = django_filters.CharFilter(
         method='filter_status',
         label='Статус отклика',
     )
@@ -278,7 +271,10 @@ class ResponseFeedFilter(django_filters.FilterSet):
         label='Фильтр по проекту',
     )
     sort_order = django_filters.ChoiceFilter(
-        choices=[('asc', 'asc'), ('desc', 'desc')],
+        choices=[
+            ('asc', 'По возрастанию (старые сначала)'),
+            ('desc', 'По убыванию (новые сначала)')
+        ],
         method='filter_sort_order',
         label='Порядок сортировки',
     )
@@ -314,15 +310,14 @@ class ResponseFeedFilter(django_filters.FilterSet):
     ) -> QuerySet:
         """Фильтрация по статусу отклика.
 
-        Если статус 'all' или неизвестный — возвращаются все отклики.
+        Допустимые значения: all, pending, approved, rejected, withdrawn.
+        - 'all' — возвращаются все отклики.
+        - Если значение не входит в допустимые — пустой результат.
         """
-        if status_resp == 'all' or status_resp not in {
-            PENDING,
-            APPROVED,
-            REJECTED,
-            WITHDRAWN,
-        }:
+        if status_resp == 'all':
             return queryset
+        if status_resp not in {PENDING, APPROVED, REJECTED, WITHDRAWN}:
+            return queryset.none()
         return queryset.filter(status_resp=status_resp)
 
     def filter_sort_order(

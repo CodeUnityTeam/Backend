@@ -2,6 +2,7 @@ from typing import Any
 
 from django.db import transaction
 from django.db.models import QuerySet
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import (
     OpenApiExample,
@@ -21,7 +22,7 @@ from rest_framework.viewsets import GenericViewSet
 from projects.filters import ResponseFeedFilter
 from projects.models import Project, Response
 from projects.paginations import CustomResponseFeedPagination
-from projects.permissions import IsWorker
+from projects.permissions import IsEmployer, IsWorker
 from projects.selectors import (
     get_response_feed_queryset,
 )
@@ -70,7 +71,13 @@ from projects.serializers import (
             ),
             OpenApiParameter(
                 name='sort_order',
-                description='Порядок сортировки по created_at',
+                description=(
+                    'Порядок сортировки по created_at.\n\n'
+                    'Допустимые значения:\n\n'
+                    '  • "asc" — по возрастанию (старые сначала)\n\n'
+                    '  • "desc" — по убыванию (новые сначала).\n\n'
+                    'По умолчанию — "desc".'
+                ),
                 required=False,
                 type=str,
                 enum=['asc', 'desc'],
@@ -80,7 +87,7 @@ from projects.serializers import (
     ),
 )
 class ResponseFeedViewSet(ListModelMixin, GenericViewSet):
-    """Вьюсет для ленты откликов/приглашений.
+    """Лента откликов/приглашений.
 
     Предоставляет единый список откликов и приглашений
     для текущего пользователя с фильтрацией и пагинацией.
@@ -90,6 +97,7 @@ class ResponseFeedViewSet(ListModelMixin, GenericViewSet):
     permission_classes = (IsWorker,)
     pagination_class = CustomResponseFeedPagination
     serializer_class = FeedbackAndInvitationFeedSerializer
+    filter_backends = (DjangoFilterBackend,)
     filterset_class = ResponseFeedFilter
 
     def get_queryset(self) -> QuerySet:
@@ -104,14 +112,26 @@ class ResponseFeedViewSet(ListModelMixin, GenericViewSet):
 
 
 class ProjectResponseViewSet(GenericViewSet):
-    """Вьюсет для откликов и приглашений в контексте проекта."""
+    """Вьюсет для откликов и приглашений в контексте проекта.
+
+    - create (POST): откликнуться на проект — только worker.
+    - invite (POST): пригласить пользователя — только employer-автор.
+    """
 
     permission_classes = (IsAuthenticated,)
     lookup_field = 'project_id'
 
     def get_queryset(self) -> QuerySet:
         """Базовый queryset не используется — проект получаем напрямую."""
-        return Project.objects.all()
+        return Project.objects.select_related('author').all()
+
+    def get_permissions(self) -> list:
+        """Динамические permission в зависимости от action."""
+        if self.action == 'create':
+            return [IsWorker()]
+        if self.action == 'invite':
+            return [IsEmployer()]
+        return [permission() for permission in self.permission_classes]
 
     @extend_schema(
         tags=['Отклики'],
@@ -125,7 +145,7 @@ class ProjectResponseViewSet(GenericViewSet):
         *args: Any,
         **kwargs: Any,
     ) -> DRFResponse:
-        """Откликнуться на проект."""
+        """Откликнуться на проект (только для worker)."""
         project = self.get_object()
         serializer = ResponseUserProjectSerializer(
             data={},
@@ -158,25 +178,22 @@ class ProjectResponseViewSet(GenericViewSet):
         project_id: str,
         user_id: str,
     ) -> DRFResponse:
-        """Пригласить пользователя в проект."""
+        """Пригласить пользователя в проект (только для employer-автора)."""
         project = self.get_object()
-        if project.author != request.user:
-            return DRFResponse(
-                {'detail': 'У вас нет прав для приглашения в этот проект'},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-        create_serializer = InviteUserProjectSerializer(
+        serializer = InviteUserProjectSerializer(
             data={},
             context={
-                'project_id': project_id,
+                'project': project,
                 'user_id': user_id,
                 'request': request,
             },
         )
-        create_serializer.is_valid(raise_exception=True)
-        response_instance = create_serializer.save()
+        serializer.is_valid(raise_exception=True)
+        response_instance = serializer.save()
         return DRFResponse(
-            self.get_serializer(response_instance).data,
+            ResponseResponseCreateProjectSerializer(
+                response_instance,
+            ).data,
             status=status.HTTP_200_OK,
         )
 

@@ -1,7 +1,5 @@
 from typing import Any, Dict
 
-from django.contrib.auth import get_user_model
-from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
 from core.constants.projects import (
@@ -10,22 +8,20 @@ from core.constants.projects import (
     AUTHOR,
     MEMBER,
     PENDING,
-    PUBLISHED,
-    REJECTED,
     STATUS_RESPONSE_PROJECT,
-    WITHDRAWN,
 )
-from projects.models import Project, ProjectParticipant, Response
-from projects.services import (
-    add_user_to_project_participants,
-    create_response,
+from projects.models import Response
+from projects.services import add_user_to_project_participants
+from projects.validators.response_project import (
+    validate_can_change_status,
+    validate_can_create_response,
+    validate_can_invite,
+    validate_status_can_be_changed,
 )
-
-User = get_user_model()
 
 
 class ResponseUserProjectSerializer(serializers.ModelSerializer):
-    """Сериализатор для создания отклика на проект."""
+    """Сериализатор для создания отклика на проект (только для worker)."""
 
     class Meta:
         model = Response
@@ -36,41 +32,18 @@ class ResponseUserProjectSerializer(serializers.ModelSerializer):
             'initiator_type',
             'status_resp',
         ]
-        read_only_fields = [
-            'response_id',
-            'project',
-            'user',
-            'initiator_type',
-            'status_resp',
-        ]
+        read_only_fields = fields
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
         """Валидация перед созданием отклика."""
         project = self.context['project']
         user = self.context['request'].user
-        if (
-            project.author == user and
-            project.author.projects_relation ==
-            User.ProjectsRelationChoices.EMPLOYER
-        ):
-            raise serializers.ValidationError(
-                'Нельзя откликнуться на собственный проект.',
-            )
-        if project.status_project != PUBLISHED:
-            raise serializers.ValidationError(
-                f'Отклик возможен только на проекты со статусом {PUBLISHED}.',
-            )
-        if Response.objects.filter(project=project, user=user).exists():
-            raise serializers.ValidationError(
-                'Вы уже откликнулись на этот проект.',
-            )
+        validate_can_create_response(project, user)
+        attrs['project'] = project
+        attrs['user'] = user
+        attrs['initiator_type'] = APPLICANT
+        attrs['status_resp'] = PENDING
         return attrs
-
-    def create(self, validated_data: Dict[str, Any]) -> Response:
-        """Создание отклика."""
-        project = self.context['project']
-        user = self.context['request'].user
-        return create_response(project, user)
 
 
 class ResponseResponseCreateProjectSerializer(serializers.ModelSerializer):
@@ -95,45 +68,33 @@ class ResponseResponseCreateProjectSerializer(serializers.ModelSerializer):
 
 
 class InviteUserProjectSerializer(serializers.ModelSerializer):
-    """Сериализатор для инвайта в проект."""
+    """Сериализатор для приглашения пользователя в проект.
+
+    Проект уже получен во вьюхе и передан в контекст.
+    """
 
     class Meta:
         model = Response
         fields = [
+            'response_id',
             'project',
             'user',
+            'initiator_type',
+            'status_resp',
         ]
-        read_only_fields = [
-            'project',
-            'user',
-        ]
+        read_only_fields = fields
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
         """Валидация перед созданием инвайта."""
-        project_id = self.context['project_id']
+        project = self.context['project']
         user_id = self.context['user_id']
-        project = get_object_or_404(Project, project_id=project_id)
-        user = get_object_or_404(User, user_id=user_id)
-        if project.author == user:
-            raise serializers.ValidationError(
-                'Нельзя пригласить самого автора проекта',
-            )
-        if Response.objects.filter(project=project, user=user).exists():
-            raise serializers.ValidationError('Приглашение уже существует')
+        request = self.context['request']
+        user = validate_can_invite(project, request.user, user_id)
         attrs['project'] = project
         attrs['user'] = user
         attrs['initiator_type'] = AUTHOR
         attrs['status_resp'] = PENDING
         return attrs
-
-    def create(self, validated_data: Dict[str, Any]) -> Project:
-        """Создание инвайта на проект (автором проекта)."""
-        return create_response(
-            project=validated_data['project'],
-            user=validated_data['user'],
-            initiator_type=validated_data['initiator_type'],
-            status_resp=validated_data['status_resp'],
-        )
 
 
 class UpdateResponseStatusSerializer(serializers.ModelSerializer):
@@ -153,65 +114,15 @@ class UpdateResponseStatusSerializer(serializers.ModelSerializer):
         user_response = self.instance
         if not user_response:
             raise serializers.ValidationError('Отклик не найден')
-        if user_response.status_resp != PENDING:
-            raise serializers.ValidationError(
-                f'Статус можно изменить только из pending, '
-                f'текущий статус: {user_response.status_resp}',
-            )
+        validate_status_can_be_changed(user_response)
         return status
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
-        """Валидация перед изменением статуса."""
+        """Валидация прав на изменение статуса."""
         user_response = self.instance
-        request = self.context['request']
-        user = request.user
+        user = self.context['request'].user
         new_status = attrs['status']
-        permissions = {
-            APPROVED: [
-                (
-                    user_response.initiator_type == AUTHOR and
-                    user_response.user == user
-                ),  # пользователь принимает приглашение
-                (
-                    user_response.initiator_type == APPLICANT and
-                    user_response.project.author == user
-                ),  # автор одобряет отклик
-            ],
-            REJECTED: [
-                (
-                    user_response.initiator_type == AUTHOR and
-                    user_response.user == user
-                ),  # пользователь отклоняет приглашение
-                (
-                    user_response.initiator_type == APPLICANT and
-                    user_response.project.author == user
-                ),  # автор отклоняет отклик
-            ],
-            WITHDRAWN: [
-                (
-                    user_response.initiator_type == APPLICANT and
-                    user_response.user == user
-                ),  # пользователь отзывает отклик
-                (
-                    user_response.initiator_type == AUTHOR and
-                    user_response.project.author == user
-                ),  # автор отменяет приглашение
-            ],
-        }
-        if not any(permissions.get(new_status, [])):
-            error_messages = {
-                APPROVED: 'Нет прав для одобрения этого отклика/приглашения',
-                REJECTED: 'Нет прав для отклонения этого отклика/приглашения',
-                WITHDRAWN: 'Инициатор может отозвать свой отклик/приглашение',
-            }
-            raise serializers.ValidationError(error_messages[new_status])
-        if new_status == APPROVED and ProjectParticipant.objects.filter(
-            project=user_response.project,
-            user=user_response.user,
-        ).exists():
-            raise serializers.ValidationError(
-                'Пользователь уже является участником проекта',
-            )
+        validate_can_change_status(user_response, user, new_status)
         return attrs
 
     def update(
@@ -244,7 +155,6 @@ class FeedbackAndInvitationFeedSerializer(serializers.Serializer):
     Все данные получает из аннотированного queryset
     (get_response_feed_queryset).
     """
-
     # Поля отклика
     response_id = serializers.UUIDField(read_only=True)
     response_status = serializers.CharField(
@@ -297,10 +207,7 @@ class FeedbackAndInvitationFeedSerializer(serializers.Serializer):
         """Навыки проекта из prefetch_related (без доп. запроса)."""
         if not instance.project_id:
             return []
-        return [
-            {'skill_id': str(s.skill_id), 'name': s.name}
-            for s in instance.project.skills.all()
-        ]
+        return [skill.name for skill in instance.project.skills.all()]
 
     def get_author_email(self, instance: Response) -> str | None:
         """Email автора — только для approved откликов."""

@@ -122,7 +122,7 @@ def get_response_feed_queryset(user: User) -> QuerySet:
     user (User): текущий пользователь
     QuerySet: отфильтрованный queryset откликов
     """
-    qs = Response.objects.select_related(
+    queryset = Response.objects.select_related(
         'project__author',
         'user',
     ).prefetch_related(
@@ -130,10 +130,9 @@ def get_response_feed_queryset(user: User) -> QuerySet:
         'project__participants',
         'project__likes',
     )
-
     # Аннотация is_liked_by_me
     if user.is_authenticated:
-        qs = qs.annotate(
+        queryset = queryset.annotate(
             is_liked_by_me=Exists(
                 ProjectLike.objects.filter(
                     user=user,
@@ -142,16 +141,13 @@ def get_response_feed_queryset(user: User) -> QuerySet:
             ),
         )
     else:
-        qs = qs.annotate(
+        queryset = queryset.annotate(
             is_liked_by_me=Value(False, output_field=BooleanField()),
         )
-
     # Аннотация participants_count
-    qs = qs.annotate(
+    return queryset.annotate(
         participants_count=Count('project__participants'),
     )
-
-    return qs
 
 
 def get_recommended_projects_queryset(user: User) -> QuerySet[Project]:
