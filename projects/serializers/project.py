@@ -39,17 +39,31 @@ from .work_format import WorkFormatSerializer
 User = get_user_model()
 
 
+class SkillIdSerializer(serializers.Serializer):
+    """Сериализатор для передачи skill_id в теле запроса."""
+    skill_id = serializers.UUIDField(
+        help_text='UUID навыка',
+    )
+
+
+class SpecializationIdSerializer(serializers.Serializer):
+    """Сериализатор для передачи spec_id в теле запроса."""
+    spec_id = serializers.UUIDField(
+        help_text='UUID специализации',
+    )
+
+
 class ProjectCreateSerializer(serializers.ModelSerializer):
     """Сериализатор для создания проекта."""
 
     skills = serializers.ListField(
-        child=serializers.DictField(),
+        child=SkillIdSerializer(),
         write_only=True,
         required=True,
         help_text='Список навыков в формате [{"skill_id": "uuid"}]',
     )
     specializations = serializers.ListField(
-        child=serializers.DictField(),
+        child=SpecializationIdSerializer(),
         write_only=True,
         required=True,
         help_text='Список специализаций в формате [{"spec_id": "uuid"}]',
@@ -273,19 +287,22 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
     """Сериализатор для обновления проекта."""
 
     skills = serializers.ListField(
-        child=serializers.DictField(),
+        child=SkillIdSerializer(),
         required=False,
         allow_empty=True,
+        help_text='Список навыков в формате [{"skill_id": "uuid"}]',
     )
     specializations = serializers.ListField(
-        child=serializers.DictField(),
+        child=SpecializationIdSerializer(),
         required=False,
         allow_empty=True,
+        help_text='Список специализаций в формате [{"spec_id": "uuid"}]',
     )
     project_format = serializers.ListField(
         child=serializers.UUIDField(),
         required=False,
         allow_empty=True,
+        help_text='Список форматов работы в формате ["uuid", "uuid"]',
     )
 
     class Meta:
