@@ -79,11 +79,11 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = [
+        fields = (
             'title', 'short_desc', 'full_desc',
             'location', 'start_date', 'end_date',
             'status_project', 'skills', 'specializations', 'project_format',
-        ]
+        )
         extra_kwargs = {
             'location': {'required': True},
         }
@@ -160,7 +160,7 @@ class ProjectShortSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = [
+        fields = (
             'project_id',
             'title',
             'short_desc',
@@ -170,7 +170,7 @@ class ProjectShortSerializer(serializers.ModelSerializer):
             'participants_count',
             'is_liked_by_me',
             'skills',
-        ]
+        )
 
 
 class ProjectDetailSerializer(ProjectShortSerializer):
@@ -190,10 +190,10 @@ class ProjectDetailSerializer(ProjectShortSerializer):
     full_desc = serializers.SerializerMethodField()
 
     class Meta(ProjectShortSerializer.Meta):
-        fields = ProjectShortSerializer.Meta.fields + [
+        fields = ProjectShortSerializer.Meta.fields + (
             'full_desc', 'end_date', 'specializations',
             'project_format', 'likes_count', 'participants', 'author',
-        ]
+        )
 
     def _is_author_employer(self, project: Project) -> bool:
         """Проверяет, является ли текущий пользователь автором-нанимателем.
@@ -309,11 +309,11 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = [
+        fields = (
             'title', 'short_desc', 'full_desc',
             'location', 'start_date', 'end_date',
             'status_project', 'skills', 'specializations', 'project_format',
-        ]
+        )
         extra_kwargs = {
             'title': {'required': False},
             'short_desc': {'required': False},
@@ -487,9 +487,9 @@ class ProjectUpdateResponseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = [
+        fields = (
             'project_id', 'title', 'short_desc', 'full_desc',
             'location', 'start_date', 'end_date',
             'status_project', 'published_at', 'created_at',
             'skills', 'specializations', 'project_format',
-        ]
+        )

@@ -131,6 +131,7 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
         'first_name',
         'last_name',
         'role',
+        'projects_relation',
         'get_avatar',
         'is_email_confirmed',
     )
@@ -208,11 +209,11 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
     )
 
     def get_form(
-            self,
-            request: HttpRequest,
-            obj: Optional[User]=None,
-            **kwargs: Any,
-        ) -> forms.ModelForm:
+        self,
+        request: HttpRequest,
+        obj: Optional[User] = None,
+        **kwargs: Any,
+    ) -> forms.ModelForm:
         """Замена формы для отображения кнопки загрузки аватара."""
         kwargs['form'] = UserImageAdminForm
         return super().get_form(request, obj, **kwargs)
@@ -233,18 +234,18 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
         change: bool,
     ) -> None:
         """Сохранение модели."""
-        #1.  Загрузка файла в БД
+        # 1. Загрузка файла в БД
         image_obj: UploadedFile | None = form.cleaned_data.get('file')
 
         if image_obj:
             public_url: str = avatar_upload_handler(obj, file_obj=image_obj)
             obj.avatar_url = public_url
 
-        #2.  Удаление аватара
+        # 2. Удаление аватара
         if form.cleaned_data.get('clear_image'):
             avatar_delete_handler(obj)
 
-        #3.  Проверка состояния роли
+        # 3. Проверка состояния роли
         if 'role' in form.changed_data:
             if obj.role == 'admin':
                 obj.is_staff = True

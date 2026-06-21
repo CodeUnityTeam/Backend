@@ -54,7 +54,6 @@ from projects.services import toggle_project_like
             'Эндпоинт доступен всем пользователям.'
         ),
         parameters=[
-            # Формат работы
             OpenApiParameter(
                 name='format_id',
                 type=str,
@@ -62,7 +61,6 @@ from projects.services import toggle_project_like
                 description='Список ID форматов через запятую',
                 required=False,
             ),
-            # Специализации
             OpenApiParameter(
                 name='spec_id',
                 type=str,
@@ -70,7 +68,6 @@ from projects.services import toggle_project_like
                 description='Список ID специализаций через запятую',
                 required=False,
             ),
-            # Навыки/теги
             OpenApiParameter(
                 name='skills_id',
                 type=str,
@@ -78,7 +75,6 @@ from projects.services import toggle_project_like
                 description='Список ID навыков через запятую',
                 required=False,
             ),
-            # Длительность: мин. дней
             OpenApiParameter(
                 name='duration_min',
                 type=int,
@@ -86,7 +82,6 @@ from projects.services import toggle_project_like
                 description='Минимальная длительность в днях (от 7 до 365)',
                 required=False,
             ),
-            # Длительность: макс. дней
             OpenApiParameter(
                 name='duration_max',
                 type=int,
@@ -94,7 +89,6 @@ from projects.services import toggle_project_like
                 description='Максимальная длительность в днях (от 7 до 365)',
                 required=False,
             ),
-            # Оператор длительности
             OpenApiParameter(
                 name='duration_operator',
                 type=str,
@@ -107,7 +101,6 @@ from projects.services import toggle_project_like
                 required=False,
                 enum=['less', 'greater', 'between'],
             ),
-            # Текстовый поиск
             OpenApiParameter(
                 name='search',
                 type=str,
@@ -115,7 +108,6 @@ from projects.services import toggle_project_like
                 description='Поиск по title и short_desc',
                 required=False,
             ),
-            # Статус проекта
             OpenApiParameter(
                 name='status',
                 type=str,
@@ -128,7 +120,6 @@ from projects.services import toggle_project_like
                 required=False,
                 enum=['draft', 'published', 'recruiting_closed'],
             ),
-            # Сортировка
             OpenApiParameter(
                 name='sort_by',
                 type=str,
@@ -142,7 +133,6 @@ from projects.services import toggle_project_like
                 required=False,
                 enum=['like', 'relevance', 'published_at'],
             ),
-            # Проекты пользователя
             OpenApiParameter(
                 name='my_project',
                 type=bool,
@@ -154,7 +144,6 @@ from projects.services import toggle_project_like
                 ),
                 required=False,
             ),
-            # Пагинация: номер страницы
             OpenApiParameter(
                 name='page',
                 type=int,
@@ -162,7 +151,6 @@ from projects.services import toggle_project_like
                 description='Номер страницы (по умолчанию 1)',
                 required=False,
             ),
-            # Пагинация: записей на странице
             OpenApiParameter(
                 name='limit',
                 type=int,
@@ -174,7 +162,6 @@ from projects.services import toggle_project_like
                     OpenApiExample('Max', value=100),
                 ],
             ),
-            # Бесконечный скролл
             OpenApiParameter(
                 name='load_more',
                 type=bool,
@@ -334,9 +321,9 @@ class ProjectViewSet(ModelViewSet):
         """
         match self.action:
             case 'list':
-                return [AllowAny()]
+                return (AllowAny(),)
             case 'create' | 'partial_update' | 'destroy':
-                return [IsEmployer()]
+                return (IsEmployer(),)
             case _:
                 return super().get_permissions()
 

@@ -44,7 +44,7 @@ class IsEmployer(permissions.BasePermission):
         if view.action not in ('update', 'partial_update', 'destroy'):
             return True
         user = request.user
-        if user.is_superuser or user.role == 'admin':
+        if user.is_superuser or user.role == User.RoleChoices.ADMIN:
             return True
         return (
             obj.author == user
