@@ -152,9 +152,9 @@ class ProjectResponseViewSet(GenericViewSet):
     def get_permissions(self) -> list:
         """Динамические permission в зависимости от action."""
         if self.action == 'create':
-            return [IsWorker()]
+            return (IsWorker(),)
         if self.action == 'invite':
-            return [IsEmployer()]
+            return (IsEmployer(),)
         return [permission() for permission in self.permission_classes]
 
     @extend_schema(

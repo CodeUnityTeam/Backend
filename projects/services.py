@@ -45,8 +45,6 @@ def add_user_to_project_participants(
 def toggle_project_like(project: Project, user: User) -> dict:
     """Переключает лайк проекта: создаёт или удаляет.
 
-    Возвращает {'liked': bool, 'likes_count': int}.
-
     Ограничения:
     - Нельзя лайкнуть свой проект.
     - Можно лайкать только PUBLISHED или RECRUITING_CLOSED.
@@ -58,7 +56,6 @@ def toggle_project_like(project: Project, user: User) -> dict:
         raise ValueError(
             'Нельзя лайкать проект с текущим статусом.',
         )
-
     with transaction.atomic():
         like, created = ProjectLike.objects.select_for_update().get_or_create(
             project=project,
