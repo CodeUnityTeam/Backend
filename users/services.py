@@ -2,6 +2,7 @@ from functools import partial
 from typing import Any, Union
 from uuid import UUID, uuid4
 
+from allauth.account.models import EmailAddress
 from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
 from django.db.models import QuerySet
@@ -64,6 +65,40 @@ def avatar_delete_handler(user: User) -> None:
             transaction.on_commit(
                 lambda: avatar_minio_client.delete_file(old_avatar_url),
             )
+
+
+def deactivate_user_account(user: User) -> None:
+    """Выполнить мягкое удаление пользователя и обработать связанные сущности.
+
+    - Переводит FeedbackForm в статус Closed
+    - Переводит проекты в статус ARCHIVED
+    - Удаляет записи ProjectParticipant
+    - Удаляет отклики Response
+    - Сбрасывает активность пользователя и верификацию email
+    """
+    with transaction.atomic():
+        # 1. Закрываем формы обратной связи
+        user.feedback_forms.update(status='Closed')
+
+        # 2. Архивируем проекты автора
+        user.projects.update(status_project='ARCHIVED')
+
+        # 3. Удаляем участия в проектах
+        user.project_participations.all().delete()
+
+        # 4. Удаляем отклики и приглашения
+        user.responses.all().delete()
+
+        # 5. Деактивируем самого пользователя
+        user.is_active = False
+        user.is_agreed_to_terms = False
+        user.save()
+
+        # 6. Сбрасываем верификацию почты
+        EmailAddress.objects.filter(
+            user=user,
+            email__iexact=user.email,
+        ).update(verified=False)
 
 
 def _is_valid_uuid(val: str) -> bool:

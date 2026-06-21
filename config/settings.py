@@ -291,9 +291,7 @@ else:
 # SOCIAL AUTHENTICATION PROVIDERS
 # =============================================================================
 
-SOCIALACCOUNT_ADAPTER = (
-    'allauth.socialaccount.adapter.DefaultSocialAccountAdapter'
-)
+SOCIALACCOUNT_ADAPTER = 'users.adapters.CustomSocialAccountAdapter'
 SOCIALACCOUNT_EMAIL_VERIFICATION = 'none'
 SOCIALACCOUNT_EMAIL_REQUIRED = True
 
