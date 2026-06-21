@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.db import transaction
 
 from core.constants.projects import (
     ALLOWED_STATUSED_FOR_LIKE,
@@ -44,8 +45,6 @@ def add_user_to_project_participants(
 def toggle_project_like(project: Project, user: User) -> dict:
     """Переключает лайк проекта: создаёт или удаляет.
 
-    Возвращает {'liked': bool, 'likes_count': int}.
-
     Ограничения:
     - Нельзя лайкнуть свой проект.
     - Можно лайкать только PUBLISHED или RECRUITING_CLOSED.
@@ -57,12 +56,12 @@ def toggle_project_like(project: Project, user: User) -> dict:
         raise ValueError(
             'Нельзя лайкать проект с текущим статусом.',
         )
-
-    like, created = ProjectLike.objects.get_or_create(
-        project=project,
-        user=user,
-    )
-    if not created:
-        like.delete()
-    likes_count = ProjectLike.objects.filter(project=project).count()
+    with transaction.atomic():
+        like, created = ProjectLike.objects.select_for_update().get_or_create(
+            project=project,
+            user=user,
+        )
+        if not created:
+            like.delete()
+        likes_count = ProjectLike.objects.filter(project=project).count()
     return {'liked': created, 'likes_count': likes_count}

@@ -1,7 +1,7 @@
 from typing import Any, List
 
 from django.db import transaction
-from django.db.models import Q, QuerySet
+from django.db.models import QuerySet
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import (
     OpenApiExample,
@@ -22,13 +22,6 @@ from rest_framework.request import Request
 from rest_framework.response import Response as DRFResponse
 from rest_framework.viewsets import ModelViewSet
 
-from core.constants.projects import (
-    ARCHIVED,
-    BLOCKED,
-    DRAFT,
-    PUBLISHED,
-    RECRUITING_CLOSED,
-)
 from projects.filters import ProjectFilter
 from projects.models import Project
 from projects.paginations import CustomProjectPagination
@@ -36,6 +29,8 @@ from projects.permissions import IsEmployer
 from projects.selectors import (
     get_optimized_project_queryset,
     get_recommended_projects_queryset,
+    get_visible_projects_for_list,
+    get_visible_projects_for_retrieve,
 )
 from projects.serializers import (
     ProjectArchiveSerializer,
@@ -48,15 +43,17 @@ from projects.serializers import (
     ProjectUpdateSerializer,
 )
 from projects.services import toggle_project_like
-from users.models import User as UserModel
 
 
 @extend_schema_view(
     list=extend_schema(
         tags=['Проекты'],
         summary='Список проектов с возможностью фильтрации',
+        description=(
+            'Возвращает список проектов (краткое описание) с пагинацией.'
+            'Эндпоинт доступен всем пользователям.'
+        ),
         parameters=[
-            # Формат работы
             OpenApiParameter(
                 name='format_id',
                 type=str,
@@ -64,7 +61,6 @@ from users.models import User as UserModel
                 description='Список ID форматов через запятую',
                 required=False,
             ),
-            # Специализации
             OpenApiParameter(
                 name='spec_id',
                 type=str,
@@ -72,7 +68,6 @@ from users.models import User as UserModel
                 description='Список ID специализаций через запятую',
                 required=False,
             ),
-            # Навыки/теги
             OpenApiParameter(
                 name='skills_id',
                 type=str,
@@ -80,7 +75,6 @@ from users.models import User as UserModel
                 description='Список ID навыков через запятую',
                 required=False,
             ),
-            # Длительность: мин. дней
             OpenApiParameter(
                 name='duration_min',
                 type=int,
@@ -88,7 +82,6 @@ from users.models import User as UserModel
                 description='Минимальная длительность в днях (от 7 до 365)',
                 required=False,
             ),
-            # Длительность: макс. дней
             OpenApiParameter(
                 name='duration_max',
                 type=int,
@@ -96,7 +89,6 @@ from users.models import User as UserModel
                 description='Максимальная длительность в днях (от 7 до 365)',
                 required=False,
             ),
-            # Оператор длительности
             OpenApiParameter(
                 name='duration_operator',
                 type=str,
@@ -109,7 +101,6 @@ from users.models import User as UserModel
                 required=False,
                 enum=['less', 'greater', 'between'],
             ),
-            # Текстовый поиск
             OpenApiParameter(
                 name='search',
                 type=str,
@@ -117,7 +108,6 @@ from users.models import User as UserModel
                 description='Поиск по title и short_desc',
                 required=False,
             ),
-            # Статус проекта
             OpenApiParameter(
                 name='status',
                 type=str,
@@ -130,7 +120,6 @@ from users.models import User as UserModel
                 required=False,
                 enum=['draft', 'published', 'recruiting_closed'],
             ),
-            # Сортировка
             OpenApiParameter(
                 name='sort_by',
                 type=str,
@@ -144,19 +133,17 @@ from users.models import User as UserModel
                 required=False,
                 enum=['like', 'relevance', 'published_at'],
             ),
-            # Проекты пользователя
             OpenApiParameter(
                 name='my_project',
                 type=bool,
                 location=OpenApiParameter.QUERY,
                 description=(
                     'Проекты, где пользователь — автор или участник. '
-                    'Если автор: все проекты (кроме archived).'
+                    'Если автор: все проекты (кроме - blocked).'
                     'Если участник: только published или recruiting_closed.'
                 ),
                 required=False,
             ),
-            # Пагинация: номер страницы
             OpenApiParameter(
                 name='page',
                 type=int,
@@ -164,7 +151,6 @@ from users.models import User as UserModel
                 description='Номер страницы (по умолчанию 1)',
                 required=False,
             ),
-            # Пагинация: записей на странице
             OpenApiParameter(
                 name='limit',
                 type=int,
@@ -176,7 +162,6 @@ from users.models import User as UserModel
                     OpenApiExample('Max', value=100),
                 ],
             ),
-            # Бесконечный скролл
             OpenApiParameter(
                 name='load_more',
                 type=bool,
@@ -189,19 +174,62 @@ from users.models import User as UserModel
             200: ProjectShortSerializer(many=True),
         },
     ),
-    create=extend_schema(tags=['Проекты'], summary='Создать проект'),
+    create=extend_schema(
+        tags=['Проекты'],
+        summary='Создать проект',
+        description=(
+            'Эндпоинт для создания нового проекта. '
+            'Доступ только для Нанимателей (employer).\n\n'
+            'Для создания проекта необходимо заполнить все данные.'
+        ),
+    ),
     retrieve=extend_schema(
         tags=['Проекты'],
         summary='Просмотр подробной информации о проекте',
+        description=(
+            'Эндпоинт для просмотра подробной карточки проекта. '
+            'Информация о проекте зависит от роли пользователя, '
+            'а также от того учавствует он в проекте или нет.\n\n'
+            ' - Для обычных пользователей поля full_desc, author.email, '
+            'author.phone, participants отсутствуют в ответе.\n\n'
+            ' - Для автора проекта в объекте participants дополнительно '
+            'возвращаются контакты участников (email, phone).\n\n'
+            ' - Для участника проекта дополнительно возвращаются'
+            ' контактные данные автора проекта.\n\n'
+            ' - Доступно для аутентифицированного пользователя'
+        ),
     ),
     partial_update=extend_schema(
         tags=['Проекты'],
         summary='Редактировать проект',
+        description=(
+            'Эндпоинт для частичного обновления проекта.\n\n'
+            ' - Доступен только пользователю Нанимателю (employer)\n\n'
+            ' - Обновить можно статус проекта:\n\n'
+            '- - DRAFT -> PUBLISHED\n\n'
+            '- - PUBLISHED -> RECRUITING_CLOSED\n\n'
+            '- - RECRUITING_CLOSED -> PUBLISHED\n\n'
+            'Для удаления проекта используется отдельный эндпоинт:\n\n'
+            '/api/v1/projects/{project_id}/'
+        ),
     ),
     destroy=extend_schema(tags=['Проекты'], summary='Мягкое удаление проекта'),
     recommendations=extend_schema(
         tags=['Проекты'],
         summary='Персональные рекомендации проектов',
+        description=(
+            'Эндпоинт для получения персональных рекомендаций проектов.\n\n'
+            'Доступен только Работнику (worker).\n\n'
+            'Фильтрует проекты в зависимости от навыков пользователя:\n\n'
+            ' - Если пользователь не указал навыки - '
+            'возвращается пустой список.\n\n'
+            ' - Нет проектов с совпадающими навыками - '
+            'возвращаются пустой список.\n\n'
+            ' - Пользователь уже участвует в проекте - '
+            'проект исключаентся из рекомендаций.\n\n'
+            ' - Пользователь является автором проекта - '
+            'проект исключается из рекомендаций.\n\n'
+        ),
         parameters=[
             OpenApiParameter(
                 name='page',
@@ -267,43 +295,22 @@ class ProjectViewSet(ModelViewSet):
     def get_queryset(self) -> QuerySet[Project]:
         """Оптимизированный queryset с предзагрузкой связанных данных.
 
-        Аннотирует is_liked_by_me через Exists-подзапрос
-        для текущего пользователя — на уровне БД, без N+1.
+        Аннотирует is_liked_by_me, is_participant, participants_count,
+        likes_count через подзапросы на уровне БД — без N+1.
 
-        Логика фильтрации по статусу в зависимости от action:
-        - list (без my_project): исключаем DRAFT, BLOCKED, ARCHIVED.
-        - list (с my_project): фильтр my_project сам управляет фильтрацией.
-        - retrieve (автор-employer): свои проекты + PUBLISHED,
-          RECRUITING_CLOSED.
-        - retrieve (обычный пользователь): только PUBLISHED,
-          RECRUITING_CLOSED.
-        - Остальные действия: все проекты.
+        Логика видимости в зависимости от action вынесена в selectors:
+        - list (без my_project): get_visible_projects_for_list
+        - retrieve: get_visible_projects_for_retrieve
         """
         user = self.request.user
         qs = get_optimized_project_queryset(user=user)
         if self.action == 'list':
-            # Для list без my_project или my_project=false
-            # исключаем черновики, заблокированные, архивные.
             my_project = self.request.query_params.get('my_project')
             if not my_project or my_project.lower() == 'false':
-                qs = qs.exclude(
-                    status_project__in=[DRAFT, BLOCKED, ARCHIVED],
-                )
+                qs = get_visible_projects_for_list(qs)
             return qs
         if self.action == 'retrieve':
-            if (
-                user.is_authenticated
-                and user.projects_relation
-                == UserModel.ProjectsRelationChoices.EMPLOYER
-            ):
-                return qs.filter(
-                    Q(author=user) |
-                    Q(status_project__in=[PUBLISHED, RECRUITING_CLOSED]),
-                )
-            return qs.filter(
-                status_project__in=[PUBLISHED, RECRUITING_CLOSED],
-            )
-
+            return get_visible_projects_for_retrieve(qs, user)
         return qs
 
     def get_permissions(self) -> List[BasePermission]:
@@ -314,9 +321,9 @@ class ProjectViewSet(ModelViewSet):
         """
         match self.action:
             case 'list':
-                return [AllowAny()]
+                return (AllowAny(),)
             case 'create' | 'partial_update' | 'destroy':
-                return [IsEmployer()]
+                return (IsEmployer(),)
             case _:
                 return super().get_permissions()
 
@@ -361,8 +368,6 @@ class ProjectViewSet(ModelViewSet):
         """Переводит проект в статус 'archived'. (мягкое удаление).
 
         - Доступ только для автора-нанимателя, админа или суперюзера.
-        - Проверка прав осуществляется через CanArchiveProject
-          (has_object_permission).
         """
         project = self.get_object()
         serializer = self.get_serializer(
@@ -453,7 +458,16 @@ class ProjectViewSet(ModelViewSet):
                 ],
             ),
         ],
-        responses=ProjectShortSerializer(many=True),
+        responses={
+            200: inline_serializer(
+                name='RecommendationsResponse',
+                fields={
+                    'items': ProjectShortSerializer(many=True),
+                    'total': serializers.IntegerField(),
+                    'has_more': serializers.BooleanField(),
+                },
+            ),
+        },
         examples=[
             OpenApiExample(
                 'Success',

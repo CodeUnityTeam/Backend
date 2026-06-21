@@ -26,3 +26,6 @@ USER_EMAIL_HELP = (
     'Действующий и уникальный адрес электронной почты, используемый для входа.'
 )
 USER_NAME_HELP = 'Допускаются только буквы кириллицы или латиницы.'
+
+# --- UpdateLastActivityMiddleware ---
+LAST_LOGIN_UPDATE_INTERVAL = 5

@@ -22,8 +22,7 @@ from core.constants.projects import (
     PUBLISHED,
     RECRUITING_CLOSED,
 )
-
-from .models import Project, WorkFormat
+from projects.models import Project, WorkFormat
 
 User = get_user_model()
 

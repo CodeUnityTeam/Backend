@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 from rest_framework import serializers
 
 User = get_user_model()
@@ -30,7 +31,7 @@ class UserAuthorShortSerializer(UserBaseSerializer):
     def get_last_activity_at(self, user: User) -> str:
         """Метод для выдачи последней активности пользователя."""
         if user.last_login:
-            return user.last_login.isoformat()
+            return timezone.localtime(user.last_login).isoformat()
         return None
 
 

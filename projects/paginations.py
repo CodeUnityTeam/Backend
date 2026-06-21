@@ -22,26 +22,17 @@ class CustomProjectPagination(PageNumberPagination):
         })
 
 
-class CustomResponseFeedPagination(PageNumberPagination):
-    """Кастомный пагинатор для рекомендованных проектов пользователю.
-
-    В ответ включает примененные фильтры.
-    """
-
-    page_size = PAGE_SIZE
-    page_size_query_param = 'limit'
-    max_page_size = MAX_PAGE_SIZE
+class CustomResponseFeedPagination(CustomProjectPagination):
+    """Кастомный пагинатор для ленты откликов."""
 
     def get_paginated_response(self, data: Any) -> Response:
-        """Формируем ответ для рекомендаций (по проектам)."""
+        """Формируем ответ для списка откликов (карточек проектов)."""
+        base_response = super().get_paginated_response(data).data
         return Response({
-            'items': data,
-            'total': self.page.paginator.count,
+            **base_response,
             'page': self.page.number,
             'limit': self.get_page_size(self.request),
-            'has_more': self.page.has_next(),
             'applied_filters': {
-                'card_type': self.request.query_params.get('card_type', 'all'),
                 'status': self.request.query_params.get('status', 'all'),
             },
         })

@@ -1,3 +1,4 @@
+from datetime import timedelta
 from functools import partial
 from typing import Any, Union
 from uuid import UUID, uuid4
@@ -6,8 +7,10 @@ from allauth.account.models import EmailAddress
 from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
 from django.db.models import QuerySet
+from django.utils import timezone
 
 from config import settings
+from core.constants.users import LAST_LOGIN_UPDATE_INTERVAL
 from core.s3_utils import MinioService
 from projects.models import Response as ProjectResponse
 from users.models.users import User
@@ -184,3 +187,18 @@ def get_profiles_for_employer_service(
         current_user=current_user,
         queryset=annotated_queryset,
     )
+
+
+def update_last_login(user: User) -> None:
+    """Обновить last_login пользователя, если прошло достаточно времени.
+
+    Обновляет поле last_login в БД,
+    но не чаще одного раза в LAST_LOGIN_UPDATE_INTERVAL.
+    """
+    now = timezone.now()
+    last_login = user.last_login
+    if not last_login or (now - last_login) > timedelta(
+        minutes=LAST_LOGIN_UPDATE_INTERVAL,
+    ):
+        User.objects.filter(pk=user.pk).update(last_login=now)
+        user.last_login = now
