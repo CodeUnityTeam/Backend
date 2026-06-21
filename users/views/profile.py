@@ -1,7 +1,6 @@
 import uuid
 from typing import Any, Type
 
-from allauth.account.models import EmailAddress
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import UploadedFile
@@ -52,6 +51,7 @@ from users.serializers.profile import (
 from users.services import (
     avatar_delete_handler,
     avatar_upload_handler,
+    deactivate_user_account,
     get_profiles_for_employer_service,
 )
 
@@ -86,6 +86,13 @@ UserModel = get_user_model()
     delete=extend_schema(
         tags=['profile'],
         summary='Мягкое удаление аккаунта текущего пользователя',
+        description=(
+            '- Переводит обращение обратной связи в статус Closed'
+            '- Переводит проекты в статус ARCHIVED'
+            '- Удаляет записи участия в проектах'
+            '- Удаляет отклики пользователя на проекты'
+            '- Сбрасывает активность пользователя и верификацию email'
+        ),
         request=None,
         responses={
             200: inline_serializer(
@@ -115,21 +122,9 @@ class MeProfileView(RetrieveUpdateDestroyAPIView):
             return MeProfileUpdateSerializer
         return MeProfileRetrieveSerializer
 
-    # TODO: При мягком удалении пользователя:
-    #  - найти записи FeedbackForm и перевести их в статус Closed
-    #  - найи проекты пользователя и перевести из в статус ARCHIVED
-    #  - найти записи ProjectParticipant и удалить их
-    #  - найти записи Response и удалить их
     def perform_destroy(self, instance: User) -> None:
         """Перевести флаги активности и согласия в False."""
-        instance.is_active = False
-        instance.is_agreed_to_terms = False
-        instance.save()
-
-        EmailAddress.objects.filter(
-            user=instance,
-            email__iexact=instance.email,
-        ).update(verified=False)
+        deactivate_user_account(instance)
 
     def delete(
         self,
