@@ -91,10 +91,6 @@ def validate_can_invite(
         raise serializers.ValidationError(
             f'Приглашение возможно на проекты со статусом "{PUBLISHED}".',
         )
-    if inviter.projects_relation != User.ProjectsRelationChoices.WORKER:
-        raise serializers.ValidationError(
-            'Нельзя пригласить пользователя, уже участвующего в проекте.',
-        )
     return invitee
 
 

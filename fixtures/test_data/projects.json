@@ -6,7 +6,7 @@
     "location": "Москва",
     "start_date": "2026-08-01",
     "end_date": "2026-10-01",
-    "status_project": "draft",
+    "status_project": "published",
     "skills": [
         {"skill_id": "07931edf-4f66-43e9-b6a4-e358f90bce26"},
         {"skill_id": "0820ac05-16b0-49f0-9f91-d169eb43a7bc"}
