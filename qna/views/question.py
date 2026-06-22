@@ -1,4 +1,5 @@
 import hashlib
+from typing import Any
 
 from django.core.cache import cache
 from django.db.models import QuerySet
@@ -65,7 +66,9 @@ class QuestionViewSet(CacheRetrieveMixin, viewsets.ModelViewSet):
     retrieve_cache_timeout = QUESTION_DETAIL_CACHE_TIMEOUT
     retrieve_cache_key_prefix = 'qna'
 
-    def list(self, request, *args, **kwargs):
+    def list(
+        self, request: Request, *args: Any, **kwargs: Any,
+    ) -> Response:
         """Кэширует список вопросов.
 
         Ключ: qna:list:{md5(params)} — без user_id, т.к. данные публичные

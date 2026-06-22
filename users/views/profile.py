@@ -472,7 +472,9 @@ class UserProfileListView(ListAPIView):
             query_params=self.request.query_params,
         )
 
-    def list(self, request, *args, **kwargs):
+    def list(
+        self, request: Request, *args: Any, **kwargs: Any,
+    ) -> Response:
         """Кэширует список профилей.
 
         Ключ: users:list:{user_id}:{md5(params)}.
@@ -482,7 +484,7 @@ class UserProfileListView(ListAPIView):
         query_params = request.query_params.dict()
         sorted_params = sorted(query_params.items())
         params_str = hashlib.md5(
-            str(sorted_params).encode()
+            str(sorted_params).encode(),
         ).hexdigest()
         cache_key = f'users:list:{user.pk}:{params_str}'
 

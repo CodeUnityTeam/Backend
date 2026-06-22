@@ -1,5 +1,4 @@
 import hashlib
-
 from typing import Any
 
 from django.core.cache import cache

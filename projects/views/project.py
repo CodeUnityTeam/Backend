@@ -275,7 +275,9 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_class = ProjectFilter
 
-    def list(self, request, *args, **kwargs):
+    def list(
+        self, request: Request, *args: Any, **kwargs: Any,
+    ) -> DRFResponse:
         """Кэширует список проектов.
 
         Ключ: projects:list:{user_id}:{md5(params)}.

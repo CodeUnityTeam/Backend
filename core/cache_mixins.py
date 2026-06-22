@@ -1,6 +1,8 @@
 import logging
+from typing import Any
 
 from django.core.cache import cache
+from rest_framework.request import Request
 from rest_framework.response import Response
 
 logger = logging.getLogger(__name__)
@@ -22,12 +24,15 @@ class CacheRetrieveMixin:
     retrieve_cache_timeout = 600
     retrieve_cache_key_prefix = ''
 
-    def _get_user_part(self, request) -> str:
-        """pk пользователя или 'anonymous' для неаутентифицированных."""
+    def _get_user_part(self, request: Request) -> str:
+        """Pk пользователя или 'anonymous' для неаутентифицированных."""
         user = request.user
         return str(getattr(user, 'pk', 'anonymous'))
 
-    def retrieve(self, request, *args, **kwargs):
+    def retrieve(
+        self, request: Request, *args: Any, **kwargs: Any,
+    ) -> Response:
+        """Кэширует retrieve-запрос с per-user ключом."""
         lookup_value = kwargs.get(self.lookup_field, '')
         user_part = self._get_user_part(request)
         cache_key = (

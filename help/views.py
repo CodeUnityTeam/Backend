@@ -13,6 +13,7 @@ from drf_spectacular.utils import (
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import AllowAny, BasePermission
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import BaseSerializer
 
@@ -76,6 +77,7 @@ from users.models.specializations import Specialization
 )
 class TagsListAPIView(ListAPIView):
     """View для получения списков тегов.
+
     (Skills, Specializations, WorkFormats).
     """
 
@@ -122,7 +124,9 @@ class TagsListAPIView(ListAPIView):
 
         return Skill.objects.none()
 
-    def list(self, request, *args, **kwargs):
+    def list(
+        self, request: Request, *args: Any, **kwargs: Any,
+    ) -> Response:
         """Кэширует список тегов.
 
         Ключ: {prefix}:list, TTL 1 час.
