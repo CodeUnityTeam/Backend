@@ -10,6 +10,3 @@ class SpecializationSerializer(serializers.ModelSerializer):
         model = Specialization
         fields = ('spec_id', 'name')
         read_only_fields = ('name',)
-        extra_kwargs = {
-            'spec_id': {'read_only': False},
-        }

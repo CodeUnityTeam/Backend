@@ -1,6 +1,7 @@
 from typing import Any, Optional
 
 from django import forms
+from django import forms
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.contrib.auth.models import Group
@@ -131,6 +132,7 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
         'first_name',
         'last_name',
         'role',
+        'projects_relation',
         'get_avatar',
         'is_email_confirmed',
     )

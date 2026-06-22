@@ -13,10 +13,9 @@ from .project import (
 from .response_project import (
     FeedbackAndInvitationFeedSerializer,
     InviteUserProjectSerializer,
-    ProfileCardConditionalSerializer,
-    ProjectCardConditionalSerializer,
     ResponseResponseCreateProjectSerializer,
     ResponseUserProjectSerializer,
+    UpdateResponseStatusResponseSerializer,
     UpdateResponseStatusSerializer,
 )
 

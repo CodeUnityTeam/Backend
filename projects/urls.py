@@ -9,12 +9,12 @@ from .views import (
 )
 
 project_router = DefaultRouter()
-project_router.register(r'', ProjectViewSet, basename='project')
 project_router.register(
     r'responses',
     ResponseFeedViewSet,
     basename='responses',
 )
+project_router.register(r'', ProjectViewSet, basename='project')
 
 
 urlpatterns = [

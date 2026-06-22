@@ -551,9 +551,9 @@ echo "  user_id Evgeniy: $user_id_evgeniy"
 echo ""
 
 if [ "$user_id_kristina" != "unknown" ] && [ "$user_id_evgeniy" != "unknown" ]; then
-  echo "  Приглашение Kristina в проект ${project_ids[0]}..."
+  echo "  Приглашение Kristina в проект ${project_ids[6]}..."
   # Сериализатор InviteUserProjectSerializer берёт project_id и user_id из контекста (URL)
-  result=$(api_post_empty "$BASE_URL/projects/${project_ids[0]}/invite/$user_id_kristina/" "$access_token")
+  result=$(api_post_empty "$BASE_URL/projects/${project_ids[6]}/invite/$user_id_kristina/" "$access_token")
   code=$(echo "$result" | cut -d'|' -f1)
   body=$(echo "$result" | cut -d'|' -f2-)
   if [ "$code" -eq 200 ]; then
@@ -563,8 +563,8 @@ if [ "$user_id_kristina" != "unknown" ] && [ "$user_id_evgeniy" != "unknown" ]; 
   fi
   echo ""
 
-  echo "  Приглашение Evgeniy в проект ${project_ids[2]}..."
-  result=$(api_post_empty "$BASE_URL/projects/${project_ids[2]}/invite/$user_id_evgeniy/" "$access_token")
+  echo "  Приглашение Evgeniy в проект ${project_ids[1]}..."
+  result=$(api_post_empty "$BASE_URL/projects/${project_ids[1]}/invite/$user_id_evgeniy/" "$access_token")
   code=$(echo "$result" | cut -d'|' -f1)
   body=$(echo "$result" | cut -d'|' -f2-)
   if [ "$code" -eq 200 ]; then

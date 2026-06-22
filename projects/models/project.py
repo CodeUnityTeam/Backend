@@ -61,8 +61,8 @@ class Project(TimestampMixin, models.Model):
     location = models.CharField(
         max_length=MAX_LEN_LOCATION,
         verbose_name='Местоположение',
-        blank=True,
-        null=True,
+        blank=False,
+        null=False,
     )
     start_date = models.DateField(
         default=date.today,

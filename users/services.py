@@ -1,12 +1,16 @@
+from datetime import timedelta
 from functools import partial
 from typing import Any, Union
 from uuid import UUID, uuid4
 
+from allauth.account.models import EmailAddress
 from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
 from django.db.models import QuerySet
+from django.utils import timezone
 
 from config import settings
+from core.constants.users import LAST_LOGIN_UPDATE_INTERVAL
 from core.s3_utils import MinioService
 from projects.models import Response as ProjectResponse
 from users.models.users import User
@@ -64,6 +68,40 @@ def avatar_delete_handler(user: User) -> None:
             transaction.on_commit(
                 lambda: avatar_minio_client.delete_file(old_avatar_url),
             )
+
+
+def deactivate_user_account(user: User) -> None:
+    """Выполнить мягкое удаление пользователя и обработать связанные сущности.
+
+    - Переводит FeedbackForm в статус Closed
+    - Переводит проекты в статус ARCHIVED
+    - Удаляет записи ProjectParticipant
+    - Удаляет отклики Response
+    - Сбрасывает активность пользователя и верификацию email
+    """
+    with transaction.atomic():
+        # 1. Закрываем формы обратной связи
+        user.feedback_forms.update(status='Closed')
+
+        # 2. Архивируем проекты автора
+        user.projects.update(status_project='ARCHIVED')
+
+        # 3. Удаляем участия в проектах
+        user.project_participations.all().delete()
+
+        # 4. Удаляем отклики и приглашения
+        user.responses.all().delete()
+
+        # 5. Деактивируем самого пользователя
+        user.is_active = False
+        user.is_agreed_to_terms = False
+        user.save()
+
+        # 6. Сбрасываем верификацию почты
+        EmailAddress.objects.filter(
+            user=user,
+            email__iexact=user.email,
+        ).update(verified=False)
 
 
 def _is_valid_uuid(val: str) -> bool:
@@ -149,3 +187,18 @@ def get_profiles_for_employer_service(
         current_user=current_user,
         queryset=annotated_queryset,
     )
+
+
+def update_last_login(user: User) -> None:
+    """Обновить last_login пользователя, если прошло достаточно времени.
+
+    Обновляет поле last_login в БД,
+    но не чаще одного раза в LAST_LOGIN_UPDATE_INTERVAL.
+    """
+    now = timezone.now()
+    last_login = user.last_login
+    if not last_login or (now - last_login) > timedelta(
+        minutes=LAST_LOGIN_UPDATE_INTERVAL,
+    ):
+        User.objects.filter(pk=user.pk).update(last_login=now)
+        user.last_login = now
