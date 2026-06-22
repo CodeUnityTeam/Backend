@@ -1,13 +1,17 @@
+import hashlib
 import uuid
 from typing import Any, Type
 
 from allauth.account.models import EmailAddress
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import UploadedFile
 from django.db.models import QuerySet
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import never_cache
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import (
     OpenApiExample,
@@ -35,6 +39,11 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from config import settings
+from core.cache_mixins import CacheRetrieveMixin
+from core.constants.cache import (
+    USER_PROFILE_CACHE_TIMEOUT,
+    USER_PROFILE_LIST_CACHE_TIMEOUT,
+)
 from users.filters import UserFilter
 from users.models.users import User, UserExperience, UserLike
 from users.pagination import ProfileListPagination
@@ -99,6 +108,7 @@ UserModel = get_user_model()
         },
     ),
 )
+@method_decorator(never_cache, name='dispatch')
 class MeProfileView(RetrieveUpdateDestroyAPIView):
     """View для работы с профилем авторизованного пользователя."""
 
@@ -280,17 +290,20 @@ class MeExperienceViewSet(ModelViewSet):
         responses={200: DetailUserProfileSerializer},
     ),
 )
-class UserProfileView(RetrieveAPIView):
+class UserProfileView(CacheRetrieveMixin, RetrieveAPIView):
     """View для просмотра профиля пользователя по ID."""
 
     queryset = UserModel.objects.filter(is_active=True)
     serializer_class = DetailUserProfileSerializer
     permission_classes = [IsAuthenticated]
+    retrieve_cache_timeout = USER_PROFILE_CACHE_TIMEOUT
+    retrieve_cache_key_prefix = 'users'
 
 
 # ================================ UserLikes ==================================
 
 
+@method_decorator(never_cache, name='dispatch')
 class ProfileLikeAPIView(APIView):
     """Эндпоинт для переключения лайка пользователю."""
 
@@ -458,3 +471,32 @@ class UserProfileListView(ListAPIView):
             current_user=self.request.user,
             query_params=self.request.query_params,
         )
+
+    def list(self, request, *args, **kwargs):
+        """Кэширует список профилей.
+
+        Ключ: users:list:{user_id}:{md5(params)}.
+        user_id в ключе позволяет точечно инвалидировать кэш при лайке.
+        """
+        user = request.user
+        query_params = request.query_params.dict()
+        sorted_params = sorted(query_params.items())
+        params_str = hashlib.md5(
+            str(sorted_params).encode()
+        ).hexdigest()
+        cache_key = f'users:list:{user.pk}:{params_str}'
+
+        cached_response = cache.get(cache_key)
+        if cached_response is not None:
+            return Response(cached_response)
+
+        response = super().list(request, *args, **kwargs)
+
+        if response.status_code == 200:
+            cache.set(
+                cache_key,
+                response.data,
+                timeout=USER_PROFILE_LIST_CACHE_TIMEOUT,
+            )
+
+        return response

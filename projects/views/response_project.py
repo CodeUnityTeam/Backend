@@ -1,5 +1,8 @@
+import hashlib
+
 from typing import Any
 
+from django.core.cache import cache
 from django.db import transaction
 from django.db.models import QuerySet
 from drf_spectacular.types import OpenApiTypes
@@ -17,6 +20,10 @@ from rest_framework.request import Request
 from rest_framework.response import Response as DRFResponse
 from rest_framework.viewsets import GenericViewSet
 
+from core.constants.cache import (
+    CACHE_KEY_RESPONSES_PREFIX,
+    RESPONSE_FEED_CACHE_TIMEOUT,
+)
 from projects.filters import ResponseFeedFilter
 from projects.models import Project, Response
 from projects.paginations import CustomResponseFeedPagination
@@ -114,7 +121,25 @@ class ResponseFeedViewSet(GenericViewSet):
         *args: Any,
         **kwargs: Any,
     ) -> DRFResponse:
-        """Лента откликов/приглашений с фильтрацией и пагинацией."""
+        """Лента откликов/приглашений с фильтрацией и пагинацией.
+
+        Ключ: responses:feed:{user_id}:{md5(params)}, TTL 3 мин.
+        """
+        user = request.user
+        query_params = request.query_params.dict()
+        sorted_params = sorted(query_params.items())
+        params_str = hashlib.md5(
+            str(sorted_params).encode(),
+        ).hexdigest()
+        cache_key = (
+            f'{CACHE_KEY_RESPONSES_PREFIX}:feed:'
+            f'{user.pk}:{params_str}'
+        )
+
+        cached_response = cache.get(cache_key)
+        if cached_response is not None:
+            return DRFResponse(cached_response)
+
         queryset = self.get_queryset()
         filterset = ResponseFeedFilter(
             request.GET,
@@ -133,12 +158,21 @@ class ResponseFeedViewSet(GenericViewSet):
             },
         )
         if page is not None:
-            return paginator.get_paginated_response(serializer.data)
-        response = DRFResponse(serializer.data)
-        response.data['applied_filters'] = {
-            'card_type': request.query_params.get('card_type', 'all'),
-            'status': request.query_params.get('status', 'all'),
-        }
+            response = paginator.get_paginated_response(serializer.data)
+        else:
+            response = DRFResponse(serializer.data)
+            response.data['applied_filters'] = {
+                'card_type': request.query_params.get('card_type', 'all'),
+                'status': request.query_params.get('status', 'all'),
+            }
+
+        if response.status_code == 200:
+            cache.set(
+                cache_key,
+                response.data,
+                timeout=RESPONSE_FEED_CACHE_TIMEOUT,
+            )
+
         return response
 
 

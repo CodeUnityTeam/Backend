@@ -34,6 +34,7 @@ uv run python manage.py runserver
 * [📁 Проекты](docs/projects.md)
 * [❓ Вопросы и ответы (Q&A)](docs/qna.md)
 * [☁️ Хранилище S3 Minio](docs/s3_minio.md)
+* [⚡ Кэширование](docs/caching.md)
 
 
 ### Дополнительные ресурсы

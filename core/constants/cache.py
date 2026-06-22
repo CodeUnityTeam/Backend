@@ -18,6 +18,9 @@ QUESTION_DETAIL_CACHE_TIMEOUT = 60 * 5  # 5 минут
 USER_PROFILE_CACHE_TIMEOUT = 60 * 10  # 10 минут
 USER_PROFILE_LIST_CACHE_TIMEOUT = 60 * 5  # 5 минут
 
+# Отклики/приглашения
+RESPONSE_FEED_CACHE_TIMEOUT = 60 * 3  # 3 минуты
+
 # =============================================================================
 # Cache key prefixes
 # =============================================================================
@@ -28,3 +31,4 @@ CACHE_KEY_USERS_PREFIX = 'users'
 CACHE_KEY_SKILLS_PREFIX = 'skills'
 CACHE_KEY_SPECIALIZATIONS_PREFIX = 'specializations'
 CACHE_KEY_WORK_FORMATS_PREFIX = 'work_formats'
+CACHE_KEY_RESPONSES_PREFIX = 'responses'
