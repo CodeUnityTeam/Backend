@@ -1,3 +1,7 @@
+import hashlib
+from typing import Any
+
+from django.core.cache import cache
 from django.db.models import QuerySet
 from drf_spectacular.utils import (
     extend_schema,
@@ -9,6 +13,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from core.cache_mixins import CacheRetrieveMixin
+from core.constants.cache import (
+    CACHE_KEY_QNA_PREFIX,
+    QUESTION_DETAIL_CACHE_TIMEOUT,
+    QUESTION_LIST_CACHE_TIMEOUT,
+)
 from qna.models import QuestionLike
 from qna.selectors import (
     get_light_question_queryset,
@@ -43,7 +53,7 @@ from qna.services import toggle_like
     ),
     destroy=extend_schema(tags=['Questions'], summary='Удалить вопрос'),
 )
-class QuestionViewSet(viewsets.ModelViewSet):
+class QuestionViewSet(CacheRetrieveMixin, viewsets.ModelViewSet):
     """Представление для вопросов."""
 
     queryset = get_question_detail_queryset()
@@ -53,6 +63,38 @@ class QuestionViewSet(viewsets.ModelViewSet):
     serializer_class = QuestionCreateSerializer
     permission_classes = [IsAuthenticated]
     http_method_names = ['get', 'post', 'patch', 'delete']
+    retrieve_cache_timeout = QUESTION_DETAIL_CACHE_TIMEOUT
+    retrieve_cache_key_prefix = 'qna'
+
+    def list(
+        self, request: Request, *args: Any, **kwargs: Any,
+    ) -> Response:
+        """Кэширует список вопросов.
+
+        Ключ: qna:list:{md5(params)} — без user_id, т.к. данные публичные
+        (QuestionListSerializer не содержит персонализированных полей).
+        """
+        query_params = request.query_params.dict()
+        sorted_params = sorted(query_params.items())
+        params_str = hashlib.md5(
+            str(sorted_params).encode(),
+        ).hexdigest()
+        cache_key = f'{CACHE_KEY_QNA_PREFIX}:list:{params_str}'
+
+        cached_response = cache.get(cache_key)
+        if cached_response is not None:
+            return Response(cached_response)
+
+        response = super().list(request, *args, **kwargs)
+
+        if response.status_code == 200:
+            cache.set(
+                cache_key,
+                response.data,
+                timeout=QUESTION_LIST_CACHE_TIMEOUT,
+            )
+
+        return response
 
     def get_serializer_class(self) -> type[serializers.BaseSerializer]:
         """Получает класс сериализатора."""

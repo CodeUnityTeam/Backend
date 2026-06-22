@@ -1,5 +1,7 @@
+import hashlib
 from typing import Any, List
 
+from django.core.cache import cache
 from django.db import transaction
 from django.db.models import QuerySet
 from django_filters.rest_framework import DjangoFilterBackend
@@ -22,6 +24,13 @@ from rest_framework.request import Request
 from rest_framework.response import Response as DRFResponse
 from rest_framework.viewsets import ModelViewSet
 
+from core.cache_mixins import CacheRetrieveMixin
+from core.constants.cache import (
+    CACHE_KEY_PROJECTS_PREFIX,
+    PROJECT_DETAIL_CACHE_TIMEOUT,
+    PROJECT_LIST_CACHE_TIMEOUT,
+    PROJECT_RECOMMENDATIONS_CACHE_TIMEOUT,
+)
 from projects.filters import ProjectFilter
 from projects.models import Project
 from projects.paginations import CustomProjectPagination
@@ -280,7 +289,7 @@ from projects.services import toggle_project_like
         ],
     ),
 )
-class ProjectViewSet(ModelViewSet):
+class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
     """Вьюсет для работы с проектами."""
 
     permission_classes = (IsAuthenticated,)
@@ -288,9 +297,46 @@ class ProjectViewSet(ModelViewSet):
     lookup_field = 'project_id'
     ordering = ('-published_at',)
     pagination_class = CustomProjectPagination
+    retrieve_cache_timeout = PROJECT_DETAIL_CACHE_TIMEOUT
+    retrieve_cache_key_prefix = 'projects'
 
     filter_backends = (DjangoFilterBackend,)
     filterset_class = ProjectFilter
+
+    def list(
+        self, request: Request, *args: Any, **kwargs: Any,
+    ) -> DRFResponse:
+        """Кэширует список проектов.
+
+        Ключ: projects:list:{user_id}:{md5(params)}.
+        user_id в ключе позволяет точечно инвалидировать кэш при лайке.
+        """
+        user = request.user
+        query_params = request.query_params.dict()
+        sorted_params = sorted(query_params.items())
+        params_str = hashlib.md5(
+            str(sorted_params).encode(),
+        ).hexdigest()
+        user_part = str(getattr(user, 'pk', 'anonymous'))
+        cache_key = (
+            f'{CACHE_KEY_PROJECTS_PREFIX}:list:'
+            f'{user_part}:{params_str}'
+        )
+
+        cached_response = cache.get(cache_key)
+        if cached_response is not None:
+            return DRFResponse(cached_response)
+
+        response = super().list(request, *args, **kwargs)
+
+        if response.status_code == 200:
+            cache.set(
+                cache_key,
+                response.data,
+                timeout=PROJECT_LIST_CACHE_TIMEOUT,
+            )
+
+        return response
 
     def get_queryset(self) -> QuerySet[Project]:
         """Оптимизированный queryset с предзагрузкой связанных данных.
@@ -485,15 +531,21 @@ class ProjectViewSet(ModelViewSet):
         self,
         request: Request,
     ) -> DRFResponse:
-        """Эндпоинт для получения рекомендаций по проектам.
+        """Персональные рекомендации проектов на основе навыков пользователя.
 
-        На основе навыков пользователя находит проекты со статусом PUBLISHED,
-        сортирует по убыванию количества совпадающих навыков (релевантность).
-
-        - Если у пользователя нет навыков — пустой список (200 OK).
-        - Исключаются проекты автора и проекты, где пользователь участник.
+        Ключ: projects:recommendations:{user_id}, TTL 10 мин.
+        Инвалидируется при изменении профиля или создании проекта.
         """
         user = request.user
+        cache_key = (
+            f'{CACHE_KEY_PROJECTS_PREFIX}:recommendations:'
+            f'{user.pk}'
+        )
+
+        cached_response = cache.get(cache_key)
+        if cached_response is not None:
+            return DRFResponse(cached_response)
+
         recommended_projects = get_recommended_projects_queryset(user)
         page = self.paginate_queryset(recommended_projects)
         serializer = ProjectShortSerializer(
@@ -501,4 +553,13 @@ class ProjectViewSet(ModelViewSet):
             many=True,
             context={'request': request},
         )
-        return self.get_paginated_response(serializer.data)
+        response = self.get_paginated_response(serializer.data)
+
+        if response.status_code == 200:
+            cache.set(
+                cache_key,
+                response.data,
+                timeout=PROJECT_RECOMMENDATIONS_CACHE_TIMEOUT,
+            )
+
+        return response
