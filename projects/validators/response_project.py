@@ -87,6 +87,13 @@ def validate_can_invite(
         raise serializers.ValidationError(
             'Пользователь уже приглашён в этот проект.',
         )
+    if ProjectParticipant.objects.filter(
+        project=project,
+        user=invitee,
+    ).exists():
+        raise serializers.ValidationError(
+            'Пользователь уже является участником этого проекта.',
+        )
     if project.status_project != PUBLISHED:
         raise serializers.ValidationError(
             f'Приглашение возможно на проекты со статусом "{PUBLISHED}".',
@@ -175,10 +182,13 @@ def validate_can_change_status(
                 f'Нет прав для действия "{new_status}".',
             ),
         )
-    if new_status == APPROVED and ProjectParticipant.objects.filter(
-        project=user_response.project,
-        user=user_response.user,
-    ).exists():
+    if (
+        new_status == APPROVED
+        and ProjectParticipant.objects.filter(
+            project=user_response.project,
+            user=user_response.user,
+        ).exists()
+    ):
         raise serializers.ValidationError(
             'Пользователь уже является участником проекта.',
         )
