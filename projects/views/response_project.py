@@ -1,5 +1,5 @@
 import hashlib
-from typing import Any
+from typing import Any, Type
 
 from django.core.cache import cache
 from django.db import transaction

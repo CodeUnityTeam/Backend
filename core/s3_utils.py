@@ -44,7 +44,7 @@ class MinioService:
         # Добавляем Cache-Control для иммутабельных файлов.
         # Все файлы имеют UUID в имени, поэтому новый файл = новый URL.
         # Это позволяет браузеру кэшировать их навсегда.
-        storage._object_parameters['CacheControl'] = (
+        storage.object_parameters['CacheControl'] = (
             'public, max-age=31536000, immutable'
         )
 
