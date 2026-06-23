@@ -25,7 +25,7 @@ class IsEmployer(permissions.BasePermission):
                 and request.user.projects_relation
                 == User.ProjectsRelationChoices.EMPLOYER
             )
-        if view.action in ('update', 'partial_update', 'destroy'):
+        if view.action in ('update', 'partial_update', 'destroy', 'invite'):
             return request.user.is_authenticated
         return True
 
