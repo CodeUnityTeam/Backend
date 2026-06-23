@@ -24,20 +24,9 @@ def validate_can_create_response(
     """Валидация перед созданием отклика на проект.
 
     Проверяет:
-    - пользователь имеет роль worker
-    - пользователь не является автором проекта
     - проект опубликован
     - нет существующего отклика от этого пользователя
     """
-    if user.projects_relation != User.ProjectsRelationChoices.WORKER:
-        raise serializers.ValidationError(
-            'Откликаться на проекты могут только пользователи '
-            'с ролью "worker".',
-        )
-    if project.author == user:
-        raise serializers.ValidationError(
-            'Нельзя откликнуться на собственный проект.',
-        )
     if project.status_project != PUBLISHED:
         raise serializers.ValidationError(
             f'Отклик возможен только на проекты со статусом "{PUBLISHED}".',
