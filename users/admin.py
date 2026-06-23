@@ -178,8 +178,6 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
                     'is_agreed_to_terms',
                     'groups',
                     'user_permissions',
-
-
                 ),
             },
         ),
@@ -209,10 +207,10 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
     )
 
     def get_form(
-        self,
-        request: HttpRequest,
-        obj: Optional[User] = None,
-        **kwargs: Any,
+            self,
+            request: HttpRequest,
+            obj: Optional[User] = None,
+            **kwargs: Any,
     ) -> forms.ModelForm:
         """Замена формы для отображения кнопки загрузки аватара."""
         kwargs['form'] = UserImageAdminForm
@@ -255,5 +253,6 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
                 obj.is_superuser = False
             else:
                 obj.is_staff = False
+                obj.is_superuser = False
 
         super().save_model(request, obj, form, change)
