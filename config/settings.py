@@ -363,10 +363,13 @@ REDIS_HOST = os.getenv('REDIS_HOST')
 REDIS_PORT = os.getenv('REDIS_PORT')
 REDIS_PASSWORD = os.getenv('REDIS_PASSWORD')
 
+# Если пароль не задан — подключаемся без аутентификации
+_REDIS_AUTH = f':{REDIS_PASSWORD}@' if REDIS_PASSWORD else ''
+
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': f'redis://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/1',
+        'LOCATION': f'redis://{_REDIS_AUTH}{REDIS_HOST}:{REDIS_PORT}/1',
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
             'CONNECTION_POOL_CLASS': 'redis.BlockingConnectionPool',
