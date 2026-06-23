@@ -1,3 +1,5 @@
+from typing import Optional
+
 import pytest
 from django.urls import reverse
 from rest_framework.status import (
@@ -23,7 +25,6 @@ POST = 'post'
 GET = 'get'
 PATCH = 'patch'
 DELETE = 'delete'
-from typing import Optional
 
 
 @pytest.mark.django_db

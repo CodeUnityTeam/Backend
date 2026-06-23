@@ -68,7 +68,7 @@ def worker_api_client(api_client: APIClient, worker: User) -> APIClient:
 
 
 @pytest.fixture
-def project(employer):
+def project(employer: User) -> Project:
     """Создаёт проект с реальным UUID и корректными M2M-связями."""
     start_date_obj = date.today()
     end_date_obj = start_date_obj + timedelta(days=90)
@@ -122,6 +122,6 @@ def user_id_employer(employer: User) -> str:
 
 
 @pytest.fixture
-def user_id(project) -> str:
+def user_id(project: Project) -> str:
     """Возвращает ID пользователя, создающего проект (автора)."""
     return str(project.author.user_id)
