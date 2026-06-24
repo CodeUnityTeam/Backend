@@ -218,3 +218,46 @@ class ProjectLike(CreatedAtMixin, models.Model):
 
     def __str__(self) -> str:
         return f'Лайк пользователя {self.user} на проект {self.project.title}'
+
+
+class ProjectFavorite(CreatedAtMixin, models.Model):
+    """Избранное: проекты, добавленные пользователем в избранное.
+
+    - Один пользователь может добавить проект в избранное только один раз.
+    - Нельзя добавить в избранное свой проект.
+    - Можно добавлять в избранное только проекты со статусом 'published' или
+      'recruiting_closed'.
+    - При повторном нажатии — запись удаляется (toggle-поведение).
+    """
+
+    user = models.ForeignKey(
+        'users.User',
+        on_delete=models.CASCADE,
+        db_column='user_id',
+        related_name='project_favorites',
+        verbose_name='Пользователь',
+    )
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.RESTRICT,
+        db_column='project_id',
+        related_name='favorites',
+        verbose_name='Проект',
+    )
+
+    class Meta:
+        db_table = 'project_favorites'
+        verbose_name = 'Избранное проекта'
+        verbose_name_plural = 'Избранное проектов'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'project'],
+                name='unique_user_project_favorite',
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return (
+            f'Избранное: пользователь '
+            f'{self.user} добавил проект "{self.project.title}"'
+        )

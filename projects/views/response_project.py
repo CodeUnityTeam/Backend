@@ -181,7 +181,7 @@ class ProjectResponseViewSet(GenericViewSet):
     - invite (POST): пригласить пользователя — только employer-автор.
     """
 
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated(),)
     lookup_field = 'project_id'
     serializer_class = ResponseUserProjectSerializer
 

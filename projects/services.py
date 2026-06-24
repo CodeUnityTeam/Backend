@@ -2,7 +2,14 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 
 from core.constants.projects import APPLICANT, MEMBER, PENDING
-from projects.models import Project, ProjectLike, ProjectParticipant, Response
+from projects.models import (
+    Project,
+    ProjectFavorite,
+    ProjectLike,
+    ProjectParticipant,
+    Response,
+)
+from projects.validators.project_favorite import validate_project_favorite
 from projects.validators.project_like import validate_project_like
 
 User = get_user_model()
@@ -52,3 +59,27 @@ def toggle_project_like(project: Project, user: User) -> dict:
             like.delete()
         likes_count = ProjectLike.objects.filter(project=project).count()
     return {'liked': created, 'likes_count': likes_count}
+
+
+def toggle_project_favorite(project: Project, user: User) -> dict:
+    """Переключает состояние «в избранном» для проекта указанным пользователем.
+
+    Если запись уже существует — удаляет (убирает из избранного).
+    Если отсутствует — создаёт (добавляет в избранное).
+
+    Возвращает словарь:
+      - `favorited`: bool — стало ли проект в избранном после действия
+    """
+    validate_project_favorite(project, user)
+    with transaction.atomic():
+        favorite, created = (
+            ProjectFavorite.objects
+            .select_for_update()
+            .get_or_create(project=project, user=user)
+        )
+        if not created:
+            favorite.delete()
+            favorited = False
+        else:
+            favorited = True
+    return {'favorited': favorited}

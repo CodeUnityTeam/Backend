@@ -7,7 +7,9 @@ from django.contrib.postgres.search import SearchRank, SearchVector
 from django.db.models import (
     Count,
     DurationField,
+    Exists,
     F,
+    OuterRef,
     Q,
     QuerySet,
 )
@@ -22,7 +24,7 @@ from core.constants.projects import (
     PUBLISHED,
     RECRUITING_CLOSED,
 )
-from projects.models import Project
+from projects.models import Project, ProjectFavorite
 
 User = get_user_model()
 
@@ -93,6 +95,7 @@ class ProjectFilter(django_filters.FilterSet):
     - Поиск по названию, описанию.
     - Фильтр по статусу.
     - Показывает мои проекты, но с учётом роли юзера.
+    - Показать избранные проекты (только worker'у)
     - Сортировка через OrderingFilter.
 
     Исключение статусов (DRAFT, BLOCKED, ARCHIVED) для list
@@ -125,6 +128,8 @@ class ProjectFilter(django_filters.FilterSet):
     status = django_filters.BaseInFilter(field_name='status_project')
     # Показывает мои проекты, но с условием!
     my_project = django_filters.BooleanFilter(method='filter_my_project')
+    # Показать избранные проекты
+    favourites = django_filters.BooleanFilter(method='filter_favourites')
     # Сортировка
     sort_by = ProjectOrderingFilter(
         fields=(
@@ -250,4 +255,29 @@ class ProjectFilter(django_filters.FilterSet):
             participants__user=user,
             participants__status_participant=MEMBER,
             status_project__in=[PUBLISHED, RECRUITING_CLOSED],
+        )
+
+    def filter_favourites(
+        self,
+        queryset: QuerySet[Project],
+        name: str,
+        value: str | None,
+    ) -> QuerySet[Project]:
+        """Фильтрует проекты, добавленные текущим пользователем в избранное.
+
+        Доступ только для worker.
+        Анониму вернутся пустой queryset.
+        """
+        if not value or value == 'false':
+            return queryset
+        user = self.request.user
+        if not user.is_authenticated:
+            return queryset.none()
+        return queryset.filter(
+            Exists(
+                ProjectFavorite.objects.filter(
+                    user=user,
+                    project=OuterRef('project_id'),
+                ),
+            ),
         )

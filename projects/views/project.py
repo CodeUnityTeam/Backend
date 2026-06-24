@@ -34,7 +34,7 @@ from core.constants.cache import (
 from projects.filters import ProjectFilter
 from projects.models import Project
 from projects.paginations import CustomProjectPagination
-from projects.permissions import IsEmployer
+from projects.permissions import IsEmployer, IsWorker
 from projects.selectors import (
     get_optimized_project_queryset,
     get_recommended_projects_queryset,
@@ -46,12 +46,13 @@ from projects.serializers import (
     ProjectCreateSerializer,
     ProjectCreationResponseSerializer,
     ProjectDetailSerializer,
+    ProjectFavoriteResponseSerializer,
     ProjectLikeResponseSerializer,
     ProjectShortSerializer,
     ProjectUpdateResponseSerializer,
     ProjectUpdateSerializer,
 )
-from projects.services import toggle_project_like
+from projects.services import toggle_project_favorite, toggle_project_like
 
 
 @extend_schema_view(
@@ -150,6 +151,17 @@ from projects.services import toggle_project_like
                     'Проекты, где пользователь — автор или участник. '
                     'Если автор: все проекты (кроме - blocked).'
                     'Если участник: только published или recruiting_closed.'
+                ),
+                required=False,
+            ),
+            OpenApiParameter(
+                name='favourites',
+                type=bool,
+                location=OpenApiParameter.QUERY,
+                description=(
+                    'Проекты, которые пользователь добавил в избранное. '
+                    'Избранные проекты могут быть только со статусами: '
+                    'published, recruiting_closed.'
                 ),
                 required=False,
             ),
@@ -292,7 +304,7 @@ from projects.services import toggle_project_like
 class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
     """Вьюсет для работы с проектами."""
 
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated(),)
     http_method_names = ('get', 'post', 'patch', 'delete')
     lookup_field = 'project_id'
     ordering = ('-published_at',)
@@ -370,8 +382,10 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
                 return (AllowAny(),)
             case 'create' | 'partial_update' | 'destroy':
                 return (IsEmployer(),)
+            case 'favorite':
+                return (IsWorker(),)
             case _:
-                return super().get_permissions()
+                return self.permission_classes
 
     def get_serializer_class(self) -> type[serializers.Serializer]:
         """Динамический выбор сериализатора в зависимости от действия."""
@@ -541,11 +555,9 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
             f'{CACHE_KEY_PROJECTS_PREFIX}:recommendations:'
             f'{user.pk}'
         )
-
         cached_response = cache.get(cache_key)
         if cached_response is not None:
             return DRFResponse(cached_response)
-
         recommended_projects = get_recommended_projects_queryset(user)
         page = self.paginate_queryset(recommended_projects)
         serializer = ProjectShortSerializer(
@@ -554,12 +566,46 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
             context={'request': request},
         )
         response = self.get_paginated_response(serializer.data)
-
         if response.status_code == 200:
             cache.set(
                 cache_key,
                 response.data,
                 timeout=PROJECT_RECOMMENDATIONS_CACHE_TIMEOUT,
             )
-
         return response
+
+    @extend_schema(
+        tags=['Проекты'],
+        summary='Добавить в избранное/Убрать из избранного',
+        request=None,
+        responses={
+            200: ProjectFavoriteResponseSerializer,
+            400: OpenApiResponse(
+                description=(
+                    'Нельзя добавить свой проект в избранное '
+                    'или проект с текущим статусом.'
+                ),
+            ),
+        },
+    )
+    @action(detail=True, methods=['post'], url_path='favorite')
+    @transaction.atomic
+    def favorite(
+        self,
+        request: Request,
+        *args: Any,
+        **kwargs: Any,
+    ) -> DRFResponse:
+        """Эндпоинт для добавления/удаления проекта из избранного."""
+        project = self.get_object()
+        try:
+            result = toggle_project_favorite(project, request.user)
+        except ValueError as e:
+            return DRFResponse(
+                {'detail': str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return DRFResponse(
+            ProjectFavoriteResponseSerializer(result).data,
+            status=status.HTTP_200_OK,
+        )

@@ -18,7 +18,6 @@ def validate_project_like(
     """
     if project.author == user:
         raise ValueError('Нельзя лайкнуть свой проект.')
-
     if project.status_project not in ALLOWED_STATUSED_FOR_LIKE:
         raise ValueError(
             'Нельзя лайкать проект с текущим статусом.',

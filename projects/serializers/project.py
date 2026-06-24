@@ -201,6 +201,11 @@ class ProjectShortSerializer(serializers.ModelSerializer):
         read_only=True,
         help_text='Количество участников проекта (аннотация БД).',
     )
+    is_favorite_by_me = serializers.BooleanField(
+        read_only=True,
+        default=False,
+        help_text='В избранном ли проект у текущего пользователя',
+    )
 
     class Meta:
         model = Project
@@ -213,6 +218,7 @@ class ProjectShortSerializer(serializers.ModelSerializer):
             'published_at',
             'participants_count',
             'is_liked_by_me',
+            'is_favorite_by_me',
             'skills',
         )
 
