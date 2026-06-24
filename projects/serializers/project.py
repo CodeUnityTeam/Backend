@@ -85,7 +85,51 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
             'status_project', 'skills', 'specializations', 'project_format',
         )
         extra_kwargs = {
-            'location': {'required': True},
+            'title': {
+                'required': True,
+                'allow_blank': False,
+                'error_messages': {
+                    'required': 'Название обязательно для заполнения.',
+                    'blank': 'Название не может быть пустым.',
+                },
+            },
+            'short_desc': {
+                'required': True,
+                'allow_blank': False,
+                'error_messages': {
+                    'required': 'Кратное описание обязательно для заполнения.',
+                    'blank': 'Краткое описание не может быть пустым.',
+                },
+            },
+            'full_desc': {
+                'required': True,
+                'allow_blank': False,
+                'error_messages': {
+                    'required': 'Полное описание обязательно для заполнения.',
+                    'blank': 'Полное описание не может быть пустым.',
+                },
+            },
+            'location': {
+                'required': True,
+                'allow_blank': False,
+                'error_messages': {
+                    'required': 'Местоположение обязательно для заполнения.',
+                    'blank': 'Местоположение не может быть пустым.',
+                },
+            },
+            'start_date': {
+                'required': False,
+                'error_messages': {
+                    'invalid': 'Неверный формат даты. Ожидается ГГГГ-ММ-ДД.',
+                },
+            },
+            'end_date': {
+                'required': True,
+                'error_messages': {
+                    'required': 'Дата окончания проекта обязательна.',
+                    'invalid': 'Неверный формат даты. Ожидается ГГГГ-ММ-ДД.',
+                },
+            },
         }
 
     def validate(self, data: dict) -> dict:
@@ -103,7 +147,7 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
         status_project = data.get('status_project')
         if status_project:
             validate_create_project_status(status_project)
-        # Валидация дат (если обе даты переданы)
+        # Валидация даты периода проекта (если обе даты переданы)
         start_date = data.get('start_date')
         end_date = data.get('end_date')
         if start_date and end_date:
