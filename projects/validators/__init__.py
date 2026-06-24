@@ -15,7 +15,6 @@ from .project_validators import (
     validate_published_project_dates,
     validate_short_desc_project,
     validate_title_project,
-    validate_unique_project_title,
     validate_update_project_status,
 )
 from .response_project import (
