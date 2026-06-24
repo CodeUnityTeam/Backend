@@ -9,6 +9,7 @@ class AnswerDetailSerializer(serializers.ModelSerializer):
     """Сериализатор ответа для детальной страницы вопроса."""
 
     author_name = serializers.SerializerMethodField()
+    author_rating = serializers.SerializerMethodField()
     images = serializers.SerializerMethodField()
     likes_count = serializers.IntegerField(read_only=True)
 
@@ -19,6 +20,7 @@ class AnswerDetailSerializer(serializers.ModelSerializer):
             'parent_answer_id',
             'content',
             'author_name',
+            'author_rating',
             'created_at',
             'likes_count',
             'images',
@@ -30,6 +32,10 @@ class AnswerDetailSerializer(serializers.ModelSerializer):
             f'{obj.user.first_name} {obj.user.last_name}'.strip()
             or obj.user.email
         )
+
+    def get_author_rating(self, obj: Answer) -> int:
+        """Возвращает рейтинг автора."""
+        return obj.user.rating
 
     def get_images(self, obj: Answer) -> list[str]:
         """Возвращает список URL изображений."""

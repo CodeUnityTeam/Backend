@@ -192,6 +192,11 @@ class User(TimestampMixin, AbstractUser):
         verbose_name='Формат работы',
         blank=True,
     )
+    rating = models.PositiveIntegerField(
+        'Рейтинг пользователя (сумма лайков)',
+        default=0,
+        help_text='Сумма лайков ко всем вопросам и ответам пользователя',
+    )
 
     class Meta:
         db_table = 'users'

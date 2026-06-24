@@ -6,6 +6,7 @@ from django.db.models import Model
 from config import settings
 from core.s3_utils import MinioService
 from qna.selectors import count_likes, delete_like, get_or_create_like
+from users.services import update_user_rating
 
 image_minio_client = MinioService(
     bucket_name=settings.STORAGES['images']['OPTIONS']['bucket_name'],
@@ -45,7 +46,6 @@ def toggle_like(
 
     Returns:
         dict: {'liked': bool, 'likes_count': int}
-
     """
     like, created = get_or_create_like(
         like_model=like_model,
@@ -56,8 +56,15 @@ def toggle_like(
     if not created:
         delete_like(like)
         liked = False
+        delta = -1
     else:
         liked = True
+        delta = 1
+
+    # Обновляем рейтинг автора поста
+    author = getattr(target_obj, 'user')
+    if author.pk != user.pk:
+        update_user_rating(user=author, delta=delta)
 
     # Используем агрегацию из БД вместо .count() на prefetch-кеше,
     # чтобы избежать проблем с устаревшим кешем prefetch_related

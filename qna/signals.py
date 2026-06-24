@@ -2,7 +2,12 @@ from typing import Any
 
 from django.core.cache import cache
 from django.db import transaction
-from django.db.models.signals import post_delete, post_save
+from django.db.models.signals import (
+    post_delete,
+    post_save,
+    pre_delete,
+    pre_save,
+)
 from django.dispatch import receiver
 
 from core.constants.cache import CACHE_KEY_QNA_PREFIX
@@ -17,7 +22,7 @@ from qna.models import (
 )
 from qna.services import image_minio_client
 from users.models import User
-from users.services import avatar_minio_client
+from users.services import avatar_minio_client, update_user_rating
 
 
 @receiver(post_save, sender=Question)
@@ -81,6 +86,40 @@ def invalidate_answer_like_cache(
         f'{CACHE_KEY_QNA_PREFIX}:detail:'
         f'{instance.answer.question_id}:{instance.user_id}',
     )
+
+
+@receiver(pre_delete, sender=Question)
+@receiver(pre_delete, sender=Answer)
+def change_author_rating_on_delete(
+    sender: Any,
+    instance: Question | Answer,
+    **kwargs: Any,
+):
+    """Вычитает лайки из рейтинга автора при удалении вопроса/ответа."""
+    likes_count = instance.likes.count()
+    if likes_count:
+        update_user_rating(user=instance.user, delta=-likes_count)
+
+
+@receiver(pre_save, sender=Question)
+@receiver(pre_save, sender=Answer)
+def change_author_rating_on_save(
+    sender: Any,
+    instance: Question | Answer,
+    **kwargs: Any,
+):
+    """Вычитает лайки из рейтинга автора при деактивации вопроса/ответа."""
+    if not instance.pk:
+        return
+    try:
+        post = sender.objects.get(pk=instance.pk)
+    except sender.DoesNotExist:
+        return
+    if post.is_active:
+        return
+    likes_count = instance.likes.count()
+    if likes_count:
+        update_user_rating(user=instance.user, delta=-likes_count)
 
 
 @receiver(post_delete, sender=QuestionImage)

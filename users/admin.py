@@ -134,6 +134,7 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
         'projects_relation',
         'get_avatar',
         'is_email_confirmed',
+        'rating'
     )
     list_filter = ('role', 'is_email_confirmed')
     search_fields = ('email', 'first_name', 'last_name', 'phone_number')
@@ -154,6 +155,7 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
                 ),
             },
         ),
+        ('Рейтинг пользователя', {'fields': ('rating',)}),
         (
             'Аватар',
             {
@@ -199,7 +201,7 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
             },
         ),
     )
-    readonly_fields = ('is_staff', 'is_superuser', 'get_avatar')
+    readonly_fields = ('is_staff', 'is_superuser', 'get_avatar', 'rating')
     inlines = (
         UserSpecializationInline,
         UserSkillInline,
