@@ -14,5 +14,5 @@ def validate_project_favorite(project: Project, user: User) -> None:
     if project.status_project not in (PUBLISHED, RECRUITING_CLOSED):
         raise ValidationError(
             'В избранное можно добавить только проекты со статусом '
-            '{PUBLISHED} или {RECRUITING_CLOSED}.',
+            f'{PUBLISHED} или {RECRUITING_CLOSED}.',
         )
