@@ -55,8 +55,6 @@ class Project(TimestampMixin, models.Model):
     full_desc = models.TextField(
         max_length=MAX_LEN_FULL_DESC,
         verbose_name='Полное описание проекта',
-        blank=True,
-        null=True,
     )
     location = models.CharField(
         max_length=MAX_LEN_LOCATION,
