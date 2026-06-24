@@ -79,7 +79,7 @@ urlpatterns = [
                 'password/change/',
                 extend_schema(
                     tags=['auth'],
-                    description=CHANGE_DESCRIPTION
+                    description=CHANGE_DESCRIPTION,
                 )(PasswordChangeView).as_view(),
                 name='rest_password_change',
             ),
@@ -95,8 +95,8 @@ urlpatterns = [
                 'password/reset/confirm/',
                 extend_schema(
                     tags=['auth'],
-                    description=RESET_CONFIRM_DESCRIPTION
-                )(PasswordResetConfirmView,).as_view(),
+                    description=RESET_CONFIRM_DESCRIPTION,
+                )(PasswordResetConfirmView).as_view(),
                 name='rest_password_reset_confirm',
             ),
             path(
