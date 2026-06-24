@@ -41,9 +41,16 @@ class IsEmployer(permissions.BasePermission):
         - суперюзер или админ — всегда разрешено.
         - автор-наниматель — разрешено.
         """
-        if view.action not in ('update', 'partial_update', 'destroy'):
+        if view.action not in (
+            'update',
+            'partial_update',
+            'destroy',
+            'invite'
+        ):
             return True
         user = request.user
+        if not user.is_authenticated:
+            return False
         if user.is_superuser or user.role == User.RoleChoices.ADMIN:
             return True
         return (

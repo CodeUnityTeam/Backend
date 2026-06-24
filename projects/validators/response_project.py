@@ -1,7 +1,7 @@
 """Валидаторы для откликов и приглашений на проекты."""
 
 from django.contrib.auth import get_user_model
-from rest_framework import serializers
+from rest_framework import exceptions, serializers
 
 from core.constants.projects import (
     APPLICANT,
@@ -27,6 +27,15 @@ def validate_can_create_response(
     - проект опубликован
     - нет существующего отклика от этого пользователя
     """
+    if user.projects_relation != User.ProjectsRelationChoices.WORKER:
+        raise exceptions.PermissionDenied(
+            'Откликаться на проекты могут только пользователи '
+            'с ролью "worker".',
+        )
+    if project.author == user:
+        raise serializers.ValidationError(
+            'Нельзя откликнуться на собственный проект.',
+        )
     if project.status_project != PUBLISHED:
         raise serializers.ValidationError(
             f'Отклик возможен только на проекты со статусом "{PUBLISHED}".',
@@ -59,7 +68,7 @@ def validate_can_invite(
 
     """
     if project.author != inviter:
-        raise serializers.ValidationError(
+        raise exceptions.PermissionDenied(
             'Только автор проекта может приглашать пользователей.',
         )
     try:
