@@ -1,22 +1,23 @@
+import os
 from typing import Any
 
 from allauth.account.adapter import get_adapter
 from allauth.account.models import EmailAddress
+from allauth.account.utils import user_pk_to_url_str
 from dj_rest_auth.registration.serializers import RegisterSerializer
 from dj_rest_auth.serializers import (
     LoginSerializer,
     PasswordChangeSerializer,
+    PasswordResetConfirmSerializer,
     PasswordResetSerializer,
 )
 from django.contrib.auth import get_user_model
-from django.contrib.auth.password_validation import validate_password
 from django.http import HttpRequest
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from users.adapters import MSG_RESENT, ImmediateResponseException
 from users.models.users import User
-from users.utils import get_frontend_url
 
 UserModel = get_user_model()
 
@@ -182,6 +183,31 @@ class EmailChangeSerializer(serializers.Serializer):
         return user
 
 
+class CustomPasswordResetSerializer(PasswordResetSerializer):
+    """Кастомный сериализатор для сброса пароля."""
+
+    def get_email_options(self) -> dict[str, Any]:
+        """Переопределяет генератор ссылок внутри опций формы."""
+        options = super().get_email_options()
+
+        def custom_url_generator(
+            request: Any,
+            user: Any,
+            temp_key: str,
+        ) -> str:
+            """Формирует прямую ссылку на фронтенд с uid и token."""
+            frontend_url = os.getenv('HOST_URL', 'http://localhost:3000')
+
+            # Генерируем uid точно так же, как это делает форма allauth
+            uid = user_pk_to_url_str(user)
+
+            # temp_key — это чистый валидный токен от AllAuthPasswordResetForm
+            return f'{frontend_url}/password-reset/confirm/{uid}/{temp_key}'
+
+        options['url_generator'] = custom_url_generator
+        return options
+
+
 class CustomPasswordChangeSerializer(PasswordChangeSerializer):
     """Сериализатор для смены пароля с одним полем нового пароля."""
 
@@ -191,39 +217,48 @@ class CustomPasswordChangeSerializer(PasswordChangeSerializer):
     )
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        """Удалить стандартные поля подтверждения пароля из формы."""
+        """Удалить дефолтные поля подтверждения из OpenAPI схемы."""
         super().__init__(*args, **kwargs)
         self.fields.pop('new_password1', None)
         self.fields.pop('new_password2', None)
 
-    def validate_password(self, value: str) -> str:
-        """Проверить надежность нового пароля по стандартам Django."""
-        user = self.context['request'].user
-        validate_password(value, user=user)
-        return value
-
     def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
-        """Перераспределить данные для стандартных методов dj-rest-auth."""
-        attrs['new_password1'] = attrs.get('new_password')
-        attrs['new_password2'] = attrs.get('new_password')
+        """Унифицированная валидация надежности и подмена полей для форм."""
+        new_password = attrs.get('new_password')
+
+        # Чистая валидация надежности без привязки к контексту пользователя
+        get_adapter().clean_password(new_password, user=None)
+
+        # Переопределяем поля для корректной инициализации SetPasswordForm
+        attrs['new_password1'] = new_password
+        attrs['new_password2'] = new_password
 
         return super().validate(attrs)
 
 
-class CustomPasswordResetSerializer(PasswordResetSerializer):
-    """Кастомный сериализатор для сброса пароля."""
+class CustomPasswordResetConfirmSerializer(PasswordResetConfirmSerializer):
+    """Сериализатор подтверждения сброса с одним полем пароля."""
 
-    def get_email_options(self) -> dict[str, any]:
-        """Переопределяет генератор ссылок внутри опций формы."""
-        options: dict[str, any] = super().get_email_options()
+    new_password = serializers.CharField(
+        style={'input_type': 'password'},
+        write_only=True,
+    )
 
-        def custom_url_generator(
-            request: HttpRequest,
-            user: User,
-            temp_key: str,
-        ) -> str:
-            """Формирует прямую ссылку на фронтенд."""
-            return get_frontend_url('password', temp_key)
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Удалить дефолтные поля подтверждения из OpenAPI схемы."""
+        super().__init__(*args, **kwargs)
+        self.fields.pop('new_password1', None)
+        self.fields.pop('new_password2', None)
 
-        options['url_generator'] = custom_url_generator
-        return options
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
+        """Унифицированная валидация надежности и подмена полей для форм."""
+        new_password = attrs.get('new_password')
+
+        # Чистая валидация надежности без привязки к контексту пользователя
+        get_adapter().clean_password(new_password, user=None)
+
+        # Переопределяем поля для корректной инициализации SetPasswordForm
+        attrs['new_password1'] = new_password
+        attrs['new_password2'] = new_password
+
+        return super().validate(attrs)
