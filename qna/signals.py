@@ -94,7 +94,7 @@ def change_author_rating_on_delete(
     sender: Any,
     instance: Question | Answer,
     **kwargs: Any,
-):
+) -> None:
     """Вычитает лайки из рейтинга автора при удалении вопроса/ответа."""
     likes_count = instance.likes.count()
     if likes_count:
@@ -107,7 +107,7 @@ def change_author_rating_on_save(
     sender: Any,
     instance: Question | Answer,
     **kwargs: Any,
-):
+) -> None:
     """Вычитает лайки из рейтинга автора при деактивации вопроса/ответа."""
     if not instance.pk:
         return

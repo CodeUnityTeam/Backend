@@ -45,7 +45,8 @@ def toggle_like(
         target_field: Имя поля в like_model для связи с target_obj.
 
     Returns:
-        dict: {'liked': bool, 'likes_count': int}
+        dict: {'liked': bool, 'likes_count': int}.
+
     """
     like, created = get_or_create_like(
         like_model=like_model,

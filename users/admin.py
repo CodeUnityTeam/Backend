@@ -134,7 +134,7 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
         'projects_relation',
         'get_avatar',
         'is_email_confirmed',
-        'rating'
+        'rating',
     )
     list_filter = ('role', 'is_email_confirmed')
     search_fields = ('email', 'first_name', 'last_name', 'phone_number')
