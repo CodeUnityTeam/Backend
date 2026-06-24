@@ -6,7 +6,7 @@ from uuid import UUID, uuid4
 from allauth.account.models import EmailAddress
 from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
-from django.db.models import QuerySet
+from django.db.models import F, QuerySet
 from django.utils import timezone
 
 from config import settings
@@ -202,3 +202,10 @@ def update_last_login(user: User) -> None:
     ):
         User.objects.filter(pk=user.pk).update(last_login=now)
         user.last_login = now
+
+
+def update_user_rating(user: User, delta: int) -> None:
+    """Обновляет рейтиинг пользователя при постановке/снятии лайка."""
+    User.objects.filter(pk=user.pk).update(
+        rating=F('rating') + delta,
+    )

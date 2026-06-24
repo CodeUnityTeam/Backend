@@ -183,6 +183,7 @@ class QuestionListSerializer(serializers.ModelSerializer):
         source='skills',
     )
     author_name = serializers.SerializerMethodField()
+    author_rating = serializers.SerializerMethodField()
     likes_count = serializers.IntegerField(read_only=True)
     answers_count = serializers.IntegerField(read_only=True)
 
@@ -194,6 +195,7 @@ class QuestionListSerializer(serializers.ModelSerializer):
             'description',
             'tags',
             'author_name',
+            'author_rating',
             'created_at',
             'likes_count',
             'answers_count',
@@ -208,6 +210,12 @@ class QuestionListSerializer(serializers.ModelSerializer):
             or obj.user.email
         )
 
+    def get_author_rating(self, obj: Question) -> int:
+        """Возвращает рейтинг автора."""
+        if obj.is_anonymous:
+            return 0
+        return obj.user.rating
+
 
 class QuestionDetailSerializer(serializers.ModelSerializer):
     """Сериализатор детальной страницы вопроса."""
@@ -219,6 +227,7 @@ class QuestionDetailSerializer(serializers.ModelSerializer):
         source='skills',
     )
     author_name = serializers.SerializerMethodField()
+    author_rating = serializers.SerializerMethodField()
     likes_count = serializers.IntegerField(read_only=True)
     images = serializers.SerializerMethodField()
 
@@ -230,6 +239,7 @@ class QuestionDetailSerializer(serializers.ModelSerializer):
             'description',
             'tags',
             'author_name',
+            'author_rating',
             'created_at',
             'likes_count',
             'images',
@@ -243,6 +253,12 @@ class QuestionDetailSerializer(serializers.ModelSerializer):
             f'{obj.user.first_name} {obj.user.last_name}'.strip()
             or obj.user.email
         )
+
+    def get_author_rating(self, obj: Question) -> int:
+        """Возвращает рейтинг автора."""
+        if obj.is_anonymous:
+            return 0
+        return obj.user.rating
 
     def get_images(self, obj: Question) -> list[str]:
         """Возвращает список URL изображений."""
