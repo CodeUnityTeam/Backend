@@ -38,6 +38,19 @@ router.register(
     basename='my-experience',
 )
 
+RESET_DESCRIPTION = (
+    'Отправляет на email ссылку для восстановления пароля.\n'
+    'Формат ссылки: {HOST_URL}/password-reset/confirm/{uid}/{token}'
+)
+RESET_CONFIRM_DESCRIPTION = (
+    'Принимает токен, UID из письма и устанавливает новый пароль.\n'
+    'Требует ввод одного нового пароля без подтверждения.'
+)
+CHANGE_DESCRIPTION = (
+    'Изменяет текущий пароль авторизованного пользователя.\n'
+    'Требует ввод старого пароля и одного нового пароля.'
+)
+
 urlpatterns = [
     path(
         'auth/',
@@ -64,19 +77,26 @@ urlpatterns = [
             ),
             path(
                 'password/change/',
-                extend_schema(tags=['auth'])(PasswordChangeView).as_view(),
+                extend_schema(
+                    tags=['auth'],
+                    description=CHANGE_DESCRIPTION
+                )(PasswordChangeView).as_view(),
                 name='rest_password_change',
             ),
             path(
                 'password/reset/',
-                extend_schema(tags=['auth'])(PasswordResetView).as_view(),
+                extend_schema(
+                    tags=['auth'],
+                    description=RESET_DESCRIPTION,
+                )(PasswordResetView).as_view(),
                 name='rest_password_reset',
             ),
             path(
                 'password/reset/confirm/',
-                extend_schema(tags=['auth'])(
-                    PasswordResetConfirmView,
-                ).as_view(),
+                extend_schema(
+                    tags=['auth'],
+                    description=RESET_CONFIRM_DESCRIPTION
+                )(PasswordResetConfirmView,).as_view(),
                 name='rest_password_reset_confirm',
             ),
             path(

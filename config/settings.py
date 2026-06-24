@@ -240,12 +240,16 @@ REST_AUTH = {
     'JWT_AUTH_SECURE': False,
     'JWT_AUTH_SAMESITE': 'Lax',
     'JWT_AUTH_RETURN_EXPIRATION': True,
+    'OLD_PASSWORD_FIELD_ENABLED': True,
     'LOGIN_SERIALIZER': 'users.serializers.auth.CustomLoginSerializer',
     'PASSWORD_CHANGE_SERIALIZER': (
         'users.serializers.auth.CustomPasswordChangeSerializer'
     ),
     'PASSWORD_RESET_SERIALIZER': (
         'users.serializers.auth.CustomPasswordResetSerializer'
+    ),
+    'PASSWORD_RESET_CONFIRM_SERIALIZER': (
+        'users.serializers.auth.CustomPasswordResetConfirmSerializer'
     ),
     'REGISTER_SERIALIZER': 'users.serializers.auth.CustomRegisterSerializer',
     'USER_DETAILS_SERIALIZER': (
