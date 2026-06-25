@@ -1,3 +1,4 @@
+
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils import timezone
@@ -119,15 +120,24 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
             },
             'start_date': {
                 'required': False,
+                'input_formats': ['%Y.%m.%d', '%Y-%m-%d'],
                 'error_messages': {
-                    'invalid': 'Неверный формат даты. Ожидается ГГГГ-ММ-ДД.',
+                    'required': 'Дата начала проекта обязательна.',
+                    'invalid': (
+                        'Неверный формат даты начала. '
+                        'Ожидается ГГГГ-ММ-ДД.'
+                    ),
                 },
             },
             'end_date': {
                 'required': True,
+                'input_formats': ['%Y.%m.%d', '%Y-%m-%d'],
                 'error_messages': {
                     'required': 'Дата окончания проекта обязательна.',
-                    'invalid': 'Неверный формат даты. Ожидается ГГГГ-ММ-ДД.',
+                    'invalid': (
+                        'Неверный формат даты окончания. '
+                        'Ожидается ГГГГ-ММ-ДД.'
+                    ),
                 },
             },
         }
@@ -369,8 +379,17 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
             'short_desc': {'required': False},
             'full_desc': {'required': False},
             'location': {'required': False},
-            'start_date': {'required': False},
-            'end_date': {'required': False},
+            'end_date': {
+                'required': False,
+                'input_formats': ['%Y.%m.%d', '%Y-%m-%d'],
+                'error_messages': {
+                    'required': 'Дата окончания проекта обязательна.',
+                    'invalid': (
+                        'Неверный формат даты окончания. '
+                        'Ожидается ГГГГ-ММ-ДД.'
+                    ),
+                },
+            },
             'status_project': {'required': False},
         }
 
@@ -399,6 +418,18 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
            - Обычная валидация переданных полей.
         """
         project = self.instance
+        if (
+            project.status_project in (PUBLISHED, RECRUITING_CLOSED)
+            and isinstance(self.initial_data, dict)
+            and 'start_date' in self.initial_data
+        ):
+            raise serializers.ValidationError(
+                {
+                    'start_date': (
+                        'Нельзя изменить дату начала проекта после публикации.'
+                    ),
+                },
+            )
         new_status = data.get('status_project')
         is_publishing = (
             new_status == PUBLISHED

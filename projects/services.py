@@ -75,7 +75,7 @@ def toggle_project_favorite(project: Project, user: User) -> dict:
     with transaction.atomic():
         favorite, created = (
             ProjectFavorite.objects.select_for_update().get_or_create(
-                project=project, user=user
+                project=project, user=user,
             )
         )
         if not created:
