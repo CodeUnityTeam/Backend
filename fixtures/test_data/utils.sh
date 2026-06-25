@@ -12,7 +12,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DATA_DIR="$SCRIPT_DIR"
 USERS_FILE="$DATA_DIR/users.json"
 ROLES_FILE="$DATA_DIR/roles.json"
-PYTHON="uv run python"
+PYTHON="${FIXTURES_PYTHON:-uv run python}"
 
 # =============================================================================
 # Загрузка данных
