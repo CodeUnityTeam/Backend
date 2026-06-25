@@ -45,7 +45,7 @@ class IsEmployer(permissions.BasePermission):
             'update',
             'partial_update',
             'destroy',
-            'invite'
+            'invite',
         ):
             return True
         user = request.user
