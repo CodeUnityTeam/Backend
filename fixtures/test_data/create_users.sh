@@ -10,34 +10,43 @@
 #   BASE_URL="https://dev.code-unity.ru/api/v1" bash fixtures/test_data/create_users.sh
 # =============================================================================
 
-# Конфигурация
-BASE_URL="${BASE_URL:-http://127.0.0.1:8000/api/v1}"
-JSON_FILE="fixtures/test_data/users.json"
-
-# Цвета для вывода
-GREEN='\033[0;32m'
-RED='\033[0;31m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
+# Подключаем общие функции
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/utils.sh"
 
 echo "=============================================="
 echo " Регистрация пользователей"
 echo "=============================================="
 echo ""
 
+# Загружаем пользователей
+echo "Загрузка пользователей..."
+load_users
+echo ""
+
 # =============================================================================
-# Функция: подтверждение email через API
+# Вспомогательные функции для извлечения полей пользователя
+# =============================================================================
+user_email()       { json_extract "${USERS_JSON[$1]}" "email"; }
+user_password()    { json_extract "${USERS_JSON[$1]}" "password"; }
+user_first_name()  { json_extract "${USERS_JSON[$1]}" "first_name"; }
+user_last_name()   { json_extract "${USERS_JSON[$1]}" "last_name"; }
+
+# =============================================================================
+# Функция: подтверждение email через Django shell
 # =============================================================================
 confirm_email() {
   local email=$1
 
   # Подтверждаем email напрямую через manage.py shell
   # (allauth 65+ использует HMAC-ключи, которые не хранятся в БД)
+  # email передаётся через переменную окружения, чтобы избежать shell injection
   local result
-  result=$(uv run python manage.py shell -c "
+  result=$(EMAIL="$email" uv run python manage.py shell -c "
+import os
 from allauth.account.models import EmailAddress
+email = os.environ['EMAIL']
 try:
-    ea = EmailAddress.objects.get(email='$email')
+    ea = EmailAddress.objects.get(email=email)
     ea.verified = True
     ea.save()
     print('OK')
@@ -54,52 +63,28 @@ except Exception as e:
   fi
 }
 
-# Считаем количество пользователей
-users_count=$(python -c "
-import json
-with open('$JSON_FILE', 'r', encoding='utf-8') as f:
-    data = json.load(f)
-print(len(data))
-")
+# Временный файл для данных
+TEMP_JSON="$DATA_DIR/temp_user_data.json"
+USER_IDS_FILE="$DATA_DIR/user_ids.json"
 
+# Удаляем старый файл с id, если есть
+rm -f "$USER_IDS_FILE"
+
+users_count=${#USERS_JSON[@]}
 echo "  Всего пользователей для регистрации: $users_count"
 echo ""
 
-# Временный файл для данных
-TEMP_JSON="fixtures/test_data/temp_user_data.json"
+# Инициализируем массив для id пользователей
+user_ids=()
 
 for i in $(seq 0 $((users_count - 1))); do
-  # Извлекаем данные пользователя
-  python -c "
-import json, os, sys
-json_file = '$JSON_FILE'
-with open(json_file, 'r', encoding='utf-8') as f:
-    users = json.load(f)
-user = users[$i]
-with open('$TEMP_JSON', 'w', encoding='utf-8') as f:
-    json.dump(user, f, ensure_ascii=False)
-"
+  email=$(user_email "$i")
+  password=$(user_password "$i")
+  first_name=$(user_first_name "$i")
+  last_name=$(user_last_name "$i")
 
-  email=$(python -c "
-import json
-with open('$TEMP_JSON', 'r', encoding='utf-8') as f:
-    data = json.load(f)
-print(data.get('email', ''))
-")
-
-  first_name=$(python -c "
-import json
-with open('$TEMP_JSON', 'r', encoding='utf-8') as f:
-    data = json.load(f)
-print(data.get('first_name', ''))
-")
-
-  last_name=$(python -c "
-import json
-with open('$TEMP_JSON', 'r', encoding='utf-8') as f:
-    data = json.load(f)
-print(data.get('last_name', ''))
-")
+  # Извлекаем данные пользователя во временный файл
+  echo "${USERS_JSON[$i]}" > "$TEMP_JSON"
 
   echo "  Регистрация: $email ($first_name $last_name)"
 
@@ -115,15 +100,38 @@ print(data.get('last_name', ''))
     # Подтверждаем email после регистрации
     echo "  Подтверждение email..."
     confirm_email "$email"
+
+    # Логинимся и получаем pk пользователя
+    echo "  Получение id пользователя..."
+    token=$(login "$email" "$password")
+    if [ -n "$token" ]; then
+      uid=$(get_user_id "$token")
+      user_ids+=("$uid")
+      echo -e "${GREEN}    ✓ pk=$uid${NC}"
+    else
+      echo -e "${RED}    ✗ Ошибка логина после регистрации${NC}"
+      user_ids+=("unknown")
+    fi
   else
     echo -e "${RED}    ✗ Ошибка (HTTP $code): $body${NC}"
+    user_ids+=("unknown")
   fi
 
   echo ""
 done
 
+# Сохраняем массив id в JSON-файл 
+printf '%s\n' "${user_ids[@]}" | $PYTHON -c "
+import json, sys
+ids = [line.strip() for line in sys.stdin if line.strip()]
+with open('$USER_IDS_FILE', 'w') as f:
+    json.dump(ids, f, ensure_ascii=False)
+"
+
 # Удаляем временный файл
 rm -f "$TEMP_JSON"
+
+echo -e "${GREEN}  ✓ Сохранено ${#user_ids[@]} id пользователей в $USER_IDS_FILE${NC}"
 
 echo "=============================================="
 echo -e "${GREEN} Регистрация завершена!${NC}"
