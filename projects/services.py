@@ -9,6 +9,7 @@ from projects.models import (
     ProjectParticipant,
     Response,
 )
+from projects.validators import validate_project_like
 from projects.validators.project_favorite import validate_project_favorite
 from projects.validators.project_like import validate_project_like
 
@@ -73,9 +74,9 @@ def toggle_project_favorite(project: Project, user: User) -> dict:
     validate_project_favorite(project, user)
     with transaction.atomic():
         favorite, created = (
-            ProjectFavorite.objects
-            .select_for_update()
-            .get_or_create(project=project, user=user)
+            ProjectFavorite.objects.select_for_update().get_or_create(
+                project=project, user=user
+            )
         )
         if not created:
             favorite.delete()

@@ -1,6 +1,10 @@
 # ruff: noqa: F401
 """Валидаторы."""
+
 from .project_favorite import validate_project_favorite
+from .project_like import (
+    validate_project_like,
+)
 from .project_validators import (
     _validate_formats_by_uuid_list,
     _validate_related_ids,
