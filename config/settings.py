@@ -171,6 +171,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 ALLOW_AVATAR_SIZE_MB = 10
 ALLOW_IMAGE_SIZE_MB = 10
+ALLOW_FEEDBACK_SIZE_MB = 5
 
 # =============================================================================
 # SECURITY, CORS & AUTH MODEL
