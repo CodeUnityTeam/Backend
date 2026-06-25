@@ -444,7 +444,7 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
         """Валидация статуса проекта."""
         if status_project is None:
             return status_project
-        valid_statuses = [DRAFT, PUBLISHED, RECRUITING_CLOSED]
+        valid_statuses = (DRAFT, PUBLISHED, RECRUITING_CLOSED)
         if status_project not in valid_statuses:
             raise serializers.ValidationError(
                 f'Статус должен быть одним из: {", ".join(valid_statuses)}.',

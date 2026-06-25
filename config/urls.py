@@ -6,7 +6,7 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
 )
 
-v1_urlpatterns = [
+v1_urlpatterns = (
     path('help/', include(('help.urls', 'help'), namespace='help')),
     path('user/', include(('users.urls', 'users'), namespace='users')),
     path('qna/', include(('qna.urls', 'qna'), namespace='qna')),
@@ -29,9 +29,9 @@ v1_urlpatterns = [
         SpectacularRedocView.as_view(url_name='schema'),
         name='redoc',
     ),
-]
+)
 
-urlpatterns = [
+urlpatterns = (
     path('admin/', admin.site.urls),
     path('api/v1/', include(v1_urlpatterns)),
-]
+)

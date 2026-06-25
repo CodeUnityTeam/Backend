@@ -15,7 +15,7 @@ class AnswerDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Answer
-        fields = [
+        fields = (
             'answer_id',
             'parent_answer_id',
             'content',
@@ -24,7 +24,7 @@ class AnswerDetailSerializer(serializers.ModelSerializer):
             'created_at',
             'likes_count',
             'images',
-        ]
+        )
 
     def get_author_name(self, obj: Answer) -> str:
         """Возвращает имя автора ответа."""
@@ -64,7 +64,7 @@ class AnswerCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Answer
-        fields = ['content', 'parent_answer', 'images']
+        fields = ('content', 'parent_answer', 'images')
 
     def validate_parent_answer(self, value: Answer | None) -> Answer | None:
         """Проверяет, что parent_answer относится к тому же вопросу."""
@@ -108,4 +108,4 @@ class AnswerCreateResponseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Answer
-        fields = ['answer_id']
+        fields = ('answer_id',)

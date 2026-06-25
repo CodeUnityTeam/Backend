@@ -59,11 +59,11 @@ class FeedbackForm(TimestampMixin, models.Model):
         db_table = 'feedback_form'
         verbose_name = 'Форма обратной связи'
         verbose_name_plural = 'Формы обратной связи'
-        indexes = [
+        indexes = (
             models.Index(fields=['user']),
             models.Index(fields=['status']),
             models.Index(fields=['-created_at']),
-        ]
+        )
 
     def __str__(self) -> str:
         return f'{self.subject} — {self.user.first_name} ({self.status})'
@@ -111,10 +111,10 @@ class FeedbackImage(TimestampMixin, models.Model):
         db_table = 'feedback_form_image'
         verbose_name = 'Изображение для обратной связи'
         verbose_name_plural = 'Изображения обратной связи'
-        indexes = [
+        indexes = (
             models.Index(fields=['feedback']),
             models.Index(fields=['created_at']),
-        ]
+        )
 
     def __str__(self) -> str:
         return f'Изображение: {self.original_name} для {self.feedback.subject}'

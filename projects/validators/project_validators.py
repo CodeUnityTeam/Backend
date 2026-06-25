@@ -218,7 +218,7 @@ def validate_project_count(user: User) -> None:
     active_projects_count = Project.objects.filter(
         author=user,
     ).exclude(
-        status_project__in=[ARCHIVED, BLOCKED],
+        status_project__in=(ARCHIVED, BLOCKED),
     ).count()
     if active_projects_count >= MAX_PROJECTS_PER_USER:
         raise serializers.ValidationError(

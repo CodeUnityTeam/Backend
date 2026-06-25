@@ -51,10 +51,10 @@ CHANGE_DESCRIPTION = (
     'Требует ввод старого пароля и одного нового пароля.'
 )
 
-urlpatterns = [
+urlpatterns = (
     path(
         'auth/',
-        include([
+        include((
             path(
                 'login/',
                 extend_schema(tags=['auth'])(LoginView).as_view(),
@@ -133,11 +133,11 @@ urlpatterns = [
                 MailRuLogin.as_view(),
                 name='mailru_login',
             ),
-        ]),
+        )),
     ),
     path(
         'profile/',
-        include([
+        include((
             path(
                 '',
                 UserProfileListView.as_view(),
@@ -160,7 +160,7 @@ urlpatterns = [
             ),
             path(
                 'me/',
-                include([
+                include((
                     path(
                         '',
                         MeProfileView.as_view(),
@@ -175,8 +175,8 @@ urlpatterns = [
                         'experience/',
                         include(router.urls),
                     ),
-                ]),
+                )),
             ),
-        ]),
+        )),
     ),
-]
+)
