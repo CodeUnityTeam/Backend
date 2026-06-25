@@ -57,4 +57,3 @@ postgres_data/
 # Migratioms
 
 migrations/
-tests/
