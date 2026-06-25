@@ -28,5 +28,95 @@
     "first_name": "Natalya",
     "last_name": "Khusnutdinova",
     "password": "user887089"
+  },
+  {
+    "email": "dmitry@example.com",
+    "first_name": "Dmitry",
+    "last_name": "Sokolov",
+    "password": "user887089"
+  },
+  {
+    "email": "alexey@example.com",
+    "first_name": "Alexey",
+    "last_name": "Kuznetsov",
+    "password": "user887089"
+  },
+  {
+    "email": "maxim@example.com",
+    "first_name": "Maxim",
+    "last_name": "Morozov",
+    "password": "user887089"
+  },
+  {
+    "email": "artem@example.com",
+    "first_name": "Artem",
+    "last_name": "Volkov",
+    "password": "user887089"
+  },
+  {
+    "email": "sergey@example.com",
+    "first_name": "Sergey",
+    "last_name": "Zaitsev",
+    "password": "user887089"
+  },
+  {
+    "email": "andrey@example.com",
+    "first_name": "Andrey",
+    "last_name": "Pavlov",
+    "password": "user887089"
+  },
+  {
+    "email": "nikolay@example.com",
+    "first_name": "Nikolay",
+    "last_name": "Semenov",
+    "password": "user887089"
+  },
+  {
+    "email": "anna@example.com",
+    "first_name": "Anna",
+    "last_name": "Belova",
+    "password": "user887089"
+  },
+  {
+    "email": "elena@example.com",
+    "first_name": "Elena",
+    "last_name": "Gromova",
+    "password": "user887089"
+  },
+  {
+    "email": "olga@example.com",
+    "first_name": "Olga",
+    "last_name": "Timofeeva",
+    "password": "user887089"
+  },
+  {
+    "email": "tatyana@example.com",
+    "first_name": "Tatyana",
+    "last_name": "Frolova",
+    "password": "user887089"
+  },
+  {
+    "email": "irina@example.com",
+    "first_name": "Irina",
+    "last_name": "Martynova",
+    "password": "user887089"
+  },
+  {
+    "email": "yulia@example.com",
+    "first_name": "Yulia",
+    "last_name": "Belyaeva",
+    "password": "user887089"
+  },
+  {
+    "email": "maria@example.com",
+    "first_name": "Maria",
+    "last_name": "Osipova",
+    "password": "user887089"
+  },
+  {
+    "email": "daria@example.com",
+    "first_name": "Daria",
+    "last_name": "Vinogradova",
+    "password": "user887089"
   }
 ]

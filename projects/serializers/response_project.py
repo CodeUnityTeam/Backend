@@ -45,6 +45,7 @@ class ResponseUserProjectSerializer(serializers.ModelSerializer):
 class ResponseResponseCreateProjectSerializer(serializers.ModelSerializer):
     """Сериализатор для формирования ответа после создания отклика."""
 
+    response_id = serializers.UUIDField(read_only=True)
     project_id = serializers.UUIDField(
         source='project.project_id',
         read_only=True,
@@ -60,7 +61,13 @@ class ResponseResponseCreateProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Response
-        fields = ('project_id', 'user_id', 'status', 'created_at')
+        fields = (
+            'response_id',
+            'project_id',
+            'user_id',
+            'status',
+            'created_at',
+        )
 
 
 class InviteUserProjectSerializer(serializers.ModelSerializer):

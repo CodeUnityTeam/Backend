@@ -17,7 +17,7 @@ project_router.register(
 project_router.register(r'', ProjectViewSet, basename='project')
 
 
-urlpatterns = [
+urlpatterns = (
     path('', include(project_router.urls)),
     path(
         '<uuid:project_id>/responses/',
@@ -34,4 +34,4 @@ urlpatterns = [
         ResponseStatusViewSet.as_view({'patch': 'update'}),
         name='response-status-update',
     ),
-]
+)
