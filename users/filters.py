@@ -32,7 +32,7 @@ class UserFilter(django_filters.FilterSet):
     )
 
     class Meta:
-        fields = []
+        fields = ()
 
     def _get_prefix(self, queryset: QuerySet[Any]) -> str:
         """Определяет префикс пути в зависимости от модели QuerySet."""

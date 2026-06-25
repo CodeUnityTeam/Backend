@@ -28,7 +28,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CORE DJANGO APPS & MIDDLEWARE
 # =============================================================================
 
-INSTALLED_APPS = [
+INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -56,9 +56,9 @@ INSTALLED_APPS = [
     'qna.apps.QnaConfig',
     'feedback.apps.FeedbackConfig',
     'help.apps.HelpConfig',
-]
+)
 
-MIDDLEWARE = [
+MIDDLEWARE = (
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -69,23 +69,23 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
     'users.middleware.UpdateLastActivityMiddleware',
-]
+)
 
-TEMPLATES = [
+TEMPLATES = (
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
-            'context_processors': [
+            'context_processors': (
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-            ],
+            ),
         },
     },
-]
+)
 
 # =============================================================================
 # DATABASES & STORAGES (MINIO)
@@ -179,12 +179,12 @@ SITE_ID = 1
 
 CORS_ALLOWED_ORIGINS = TRUSTED_ORIGINS
 
-AUTHENTICATION_BACKENDS = [
+AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
-]
+)
 
-AUTH_PASSWORD_VALIDATORS = [
+AUTH_PASSWORD_VALIDATORS = (
     {
         'NAME': (
             'django.contrib.auth.password_validation.'
@@ -206,23 +206,23 @@ AUTH_PASSWORD_VALIDATORS = [
             'django.contrib.auth.password_validation.NumericPasswordValidator'
         ),
     },
-]
+)
 
 # =============================================================================
 # DJANGO REST FRAMEWORK CONFIGURATION
 # =============================================================================
 
 REST_FRAMEWORK = {
-    'DEFAULT_RENDERER_CLASSES': [
+    'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
-    ],
-    'DEFAULT_PERMISSION_CLASSES': [
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.AllowAny',
-    ],
-    'DEFAULT_AUTHENTICATION_CLASSES': [
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
         'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
-    ],
+    ),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
@@ -350,13 +350,13 @@ SPECTACULAR_SETTINGS = {
     'CONTACT': {'name': '', 'email': ''},
     'LICENSE': {'name': ''},
     'TAG_SORT_ORDER': 'definition',
-    'TAGS': [
+    'TAGS': (
         {'name': 'Questions', 'description': 'Вопросы'},
         {'name': 'Answers', 'description': 'Ответы'},
         {'name': 'Likes', 'description': 'Лайки'},
         {'name': 'Tags', 'description': 'Теги'},
         {'name': 'Files', 'description': 'Файлы'},
-    ],
+    ),
 }
 
 # =============================================================================

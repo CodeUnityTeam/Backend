@@ -247,7 +247,7 @@ def get_visible_projects_for_list(
     когда не запрошен фильтр my_project.
     """
     return qs.exclude(
-        status_project__in=[DRAFT, BLOCKED, ARCHIVED],
+        status_project__in=(DRAFT, BLOCKED, ARCHIVED),
     )
 
 
@@ -269,10 +269,10 @@ def get_visible_projects_for_retrieve(
     ):
         return qs.filter(
             Q(author=user)
-            | Q(status_project__in=[PUBLISHED, RECRUITING_CLOSED]),
+            | Q(status_project__in=(PUBLISHED, RECRUITING_CLOSED)),
         )
     return qs.filter(
-        status_project__in=[PUBLISHED, RECRUITING_CLOSED],
+        status_project__in=(PUBLISHED, RECRUITING_CLOSED),
     )
 
 

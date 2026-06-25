@@ -3,13 +3,19 @@ from typing import Any
 
 from django.core.cache import cache
 from django.db.models import QuerySet
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import (
+    OpenApiParameter,
     extend_schema,
     extend_schema_view,
 )
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import (
+    AllowAny,
+    BasePermission,
+    IsAuthenticated,
+)
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -19,7 +25,9 @@ from core.constants.cache import (
     QUESTION_DETAIL_CACHE_TIMEOUT,
     QUESTION_LIST_CACHE_TIMEOUT,
 )
+from qna.filters import QuestionFilter
 from qna.models import QuestionLike
+from qna.paginations import CustomQuestionOffsetPagination
 from qna.selectors import (
     get_light_question_queryset,
     get_question_detail_queryset,
@@ -41,7 +49,31 @@ from qna.services import toggle_like
 
 
 @extend_schema_view(
-    list=extend_schema(tags=['Questions'], summary='Список вопросов'),
+    list=extend_schema(
+        tags=['Questions'],
+        summary='Список вопросов',
+        description=(
+            'Возвращает список вопросов с пагинацией, поиском, '
+            'фильтрам по тегам, по популярности, вопросы без ответов, '
+            'вопросы пользователя '
+            '(только для аунтетифицированных пользователей.)\n\n'
+            '- Эндпоинт доступен любому пользователю, кроме фильтра "my"'
+        ),
+        parameters=[
+            OpenApiParameter(
+                name='filter',
+                description=(
+                    'Варианты:'
+                    'popular (по лайкам), '
+                    'no_answers (без ответов), '
+                    'my (мои вопросы)'
+                ),
+                enum=['popular', 'no_answers', 'my'],
+                required=False,
+                location=OpenApiParameter.QUERY,
+                type=str,
+            ),
+        ]),
     create=extend_schema(tags=['Questions'], summary='Создать вопрос'),
     retrieve=extend_schema(
         tags=['Questions'],
@@ -59,12 +91,23 @@ class QuestionViewSet(CacheRetrieveMixin, viewsets.ModelViewSet):
     queryset = get_question_detail_queryset()
     # Лёгкий queryset для actions, где не нужны prefetch (add_answer, like)
     _light_queryset = get_light_question_queryset()
-
     serializer_class = QuestionCreateSerializer
-    permission_classes = [IsAuthenticated]
-    http_method_names = ['get', 'post', 'patch', 'delete']
+    http_method_names = ('get', 'post', 'patch', 'delete')
     retrieve_cache_timeout = QUESTION_DETAIL_CACHE_TIMEOUT
     retrieve_cache_key_prefix = 'qna'
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = QuestionFilter
+    pagination_class = CustomQuestionOffsetPagination
+
+    def get_permissions(self) -> BasePermission:
+        """Назначает разные права для разных действий.
+
+        - list: любой пользователь (включая анонимных)
+        - остальные действия: только авторизованные
+        """
+        if self.action == 'list':
+            return (AllowAny(),)
+        return (IsAuthenticated(),)
 
     def list(
         self, request: Request, *args: Any, **kwargs: Any,
@@ -106,9 +149,10 @@ class QuestionViewSet(CacheRetrieveMixin, viewsets.ModelViewSet):
 
     def get_queryset(self) -> QuerySet:
         """Возвращает оптимизированный queryset в зависимости от action."""
+        qs = super().get_queryset()
         if self.action in ('add_answer', 'like'):
-            return self._light_queryset
-        return super().get_queryset()
+            qs = self._light_queryset
+        return qs
 
     @extend_schema(
             request=QuestionCreateSerializer,

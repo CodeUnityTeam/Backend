@@ -1,5 +1,5 @@
 import hashlib
-from typing import Any, List
+from typing import Any
 
 from django.core.cache import cache
 from django.db import transaction
@@ -371,7 +371,7 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
             return get_visible_projects_for_retrieve(qs, user)
         return qs
 
-    def get_permissions(self) -> List[BasePermission]:
+    def get_permissions(self) -> BasePermission:
         """Переопределяем разрешения для разных действий.
 
         - list — AllowAny.

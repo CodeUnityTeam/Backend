@@ -103,12 +103,9 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
                 },
             },
             'full_desc': {
-                'required': True,
-                'allow_blank': False,
-                'error_messages': {
-                    'required': 'Полное описание обязательно для заполнения.',
-                    'blank': 'Полное описание не может быть пустым.',
-                },
+                'required': False,
+                'allow_blank': True,
+                'default': None,
             },
             'location': {
                 'required': True,
@@ -171,6 +168,11 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
         relationship_data = extract_relationship_data(validated_data)
         user = self.context['request'].user
         validated_data['author'] = user
+        short_desc = validated_data.get('short_desc')
+        full_desc = validated_data.get('full_desc')
+        if not full_desc:
+            # Если full_desc нет или пустая строка — копируем short_desc
+            validated_data['full_desc'] = short_desc
         if validated_data.get('status_project') == 'published':
             validated_data['published_at'] = timezone.now()
         project = Project.objects.create(**validated_data)
@@ -525,7 +527,7 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
         """Валидация статуса проекта."""
         if status_project is None:
             return status_project
-        valid_statuses = [DRAFT, PUBLISHED, RECRUITING_CLOSED]
+        valid_statuses = (DRAFT, PUBLISHED, RECRUITING_CLOSED)
         if status_project not in valid_statuses:
             raise serializers.ValidationError(
                 f'Статус должен быть одним из: {", ".join(valid_statuses)}.',

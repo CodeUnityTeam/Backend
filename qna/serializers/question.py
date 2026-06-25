@@ -67,13 +67,13 @@ class QuestionCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Question
-        fields = [
+        fields = (
             'title',
             'description',
             'tags',
             'is_anonymous',
             'images',
-        ]
+        )
 
     def create(self, validated_data: dict) -> Question:
         """Создание вопроса."""
@@ -104,13 +104,13 @@ class QuestionUpdateSerializer(QuestionCreateSerializer):
 
     class Meta:
         model = Question
-        fields = [
+        fields = (
             'title',
             'description',
             'tags',
             'is_anonymous',
             'images',
-        ]
+        )
 
     def update(self, instance: Question, validated_data: dict) -> Question:
         """Обновление вопроса."""
@@ -170,7 +170,7 @@ class QuestionCreateResponseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Question
-        fields = ['question_id']
+        fields = ('question_id',)
 
 
 class QuestionListSerializer(serializers.ModelSerializer):
@@ -189,7 +189,7 @@ class QuestionListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Question
-        fields = [
+        fields = (
             'question_id',
             'title',
             'description',
@@ -199,7 +199,7 @@ class QuestionListSerializer(serializers.ModelSerializer):
             'created_at',
             'likes_count',
             'answers_count',
-        ]
+        )
 
     def get_author_name(self, obj: Question) -> str:
         """Возвращает имя автора или 'Аноним'."""
@@ -233,7 +233,7 @@ class QuestionDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Question
-        fields = [
+        fields = (
             'question_id',
             'title',
             'description',
@@ -243,7 +243,7 @@ class QuestionDetailSerializer(serializers.ModelSerializer):
             'created_at',
             'likes_count',
             'images',
-        ]
+        )
 
     def get_author_name(self, obj: Question) -> str:
         """Возвращает имя автора или 'Аноним'."""
@@ -274,4 +274,4 @@ class QuestionWithAnswersSerializer(QuestionDetailSerializer):
     answers = AnswerDetailSerializer(many=True, read_only=True)
 
     class Meta(QuestionDetailSerializer.Meta):
-        fields = QuestionDetailSerializer.Meta.fields + ['answers']
+        fields = QuestionDetailSerializer.Meta.fields + ('answers',)

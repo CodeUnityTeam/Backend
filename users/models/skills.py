@@ -61,9 +61,9 @@ class UserSkill(models.Model):
                 name='unique_user_skill',
             ),
         )
-        indexes = [
+        indexes = (
             models.Index(fields=['skill', 'user']),
-        ]
+        )
 
     def __str__(self) -> str:
         return f'{self.user} - {self.skill}'

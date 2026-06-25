@@ -51,7 +51,7 @@ CHANGE_DESCRIPTION = (
     'Требует ввод старого пароля и одного нового пароля.'
 )
 
-urlpatterns = [
+urlpatterns = (
     path(
         'auth/',
         include([
@@ -179,4 +179,4 @@ urlpatterns = [
             ),
         ]),
     ),
-]
+)

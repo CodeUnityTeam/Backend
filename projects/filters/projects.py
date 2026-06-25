@@ -115,11 +115,11 @@ class ProjectFilter(django_filters.FilterSet):
     duration_min = django_filters.NumberFilter(method='filter_duration')
     duration_max = django_filters.NumberFilter(method='filter_duration')
     duration_operator = django_filters.ChoiceFilter(
-        choices=[
+        choices=(
             ('less', 'Меньше'),
             ('greater', 'Больше'),
             ('between', 'Между'),
-        ],
+        ),
         method='filter_duration',
     )
     # Поиск по названию, описанию
@@ -147,7 +147,7 @@ class ProjectFilter(django_filters.FilterSet):
 
     class Meta:
         model = Project
-        fields = []
+        fields = ()
 
     def filter_search(
         self,
@@ -254,7 +254,7 @@ class ProjectFilter(django_filters.FilterSet):
         return queryset.filter(
             participants__user=user,
             participants__status_participant=MEMBER,
-            status_project__in=[PUBLISHED, RECRUITING_CLOSED],
+            status_project__in=(PUBLISHED, RECRUITING_CLOSED),
         )
 
     def filter_favourites(

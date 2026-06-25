@@ -42,7 +42,7 @@ class ResponseFeedFilter(django_filters.FilterSet):
 
     class Meta:
         model = Response
-        fields = ['status', 'project_id']
+        fields = ('status', 'project_id')
 
     def __init__(
         self,
