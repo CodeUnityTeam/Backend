@@ -274,4 +274,4 @@ class QuestionWithAnswersSerializer(QuestionDetailSerializer):
     answers = AnswerDetailSerializer(many=True, read_only=True)
 
     class Meta(QuestionDetailSerializer.Meta):
-        fields = QuestionDetailSerializer.Meta.fields + ['answers']
+        fields = QuestionDetailSerializer.Meta.fields + ('answers',)
