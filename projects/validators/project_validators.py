@@ -14,7 +14,7 @@ from core.constants.projects import (
     MAX_LEN_FULL_DESC,
     MAX_LEN_LOCATION,
     MAX_LEN_TITLE,
-    MAX_PROJECTS_PER_USER,
+    MAX_PROJECTS_PER_AUTHOR,
     MAX_SHORT_DESC,
     MAX_SKILLS_COUNT,
     MIN_LEN_TITLE,
@@ -242,10 +242,10 @@ def validate_published_project_dates(
         })
 
 
-def validate_project_count(user: User) -> None:
-    """Валидация количества проектов у пользователя.
+def validate_project_count_per_author(user: User) -> None:
+    """Валидация количества проектов у автора.
 
-    Проверяет, что у пользователя не больше MAX_PROJECTS_PER_USER
+    Проверяет, что у пользователя не больше MAX_PROJECTS_PER_AUTHOR
     активных проектов (draft, published, recruiting_closed).
     """
     active_projects_count = (
@@ -258,10 +258,10 @@ def validate_project_count(user: User) -> None:
         )
         .count()
     )
-    if active_projects_count >= MAX_PROJECTS_PER_USER:
+    if active_projects_count >= MAX_PROJECTS_PER_AUTHOR:
         raise serializers.ValidationError(
             f'У пользователя не может быть больше '
-            f'{MAX_PROJECTS_PER_USER} активных проектов. '
+            f'{MAX_PROJECTS_PER_AUTHOR} активных проектов. '
             f'Текущее количество: {active_projects_count}.',
         )
 
@@ -386,7 +386,7 @@ def validate_project_data(data: dict, user: User) -> dict:
             - _validated_formats: список объектов WorkFormat
     """
     # Валидиция лимита проектов у автора
-    validate_project_count(user)
+    validate_project_count_per_author(user)
     # Валидация текстовых полей
     data['title'] = validate_title_project(data['title'], user)
     data['short_desc'] = validate_short_desc_project(data['short_desc'])

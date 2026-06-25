@@ -7,6 +7,8 @@ from core.constants.projects import (
     APPLICANT,
     APPROVED,
     AUTHOR,
+    MAX_PROJECTS_PER_MEMBER,
+    MEMBER,
     PENDING,
     PUBLISHED,
     REJECTED,
@@ -111,6 +113,19 @@ def validate_status_can_be_changed(user_response: Response) -> None:
         )
 
 
+def validate_project_count_per_member(user: User) -> None:
+    """Проверяет, не превысил ли пользователь лимит участия в проектах."""
+    active_count = ProjectParticipant.objects.filter(
+            user=user,
+            status_participant=MEMBER,
+        ).count()
+    if active_count >= MAX_PROJECTS_PER_MEMBER:
+        raise serializers.ValidationError(
+            'Пользователь не может участвовать больше чем в '
+            f'{MAX_PROJECTS_PER_MEMBER} проектах.',
+        )
+
+
 def validate_can_change_status(
     user_response: Response,
     user: User,
@@ -180,6 +195,7 @@ def validate_can_change_status(
                 f'Нет прав для действия "{new_status}".',
             ),
         )
+    validate_project_count_per_member(user_response.user)
     if (
         new_status == APPROVED
         and ProjectParticipant.objects.filter(
