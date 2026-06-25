@@ -9,7 +9,7 @@ from drf_spectacular.utils import (
 )
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -61,10 +61,19 @@ class QuestionViewSet(CacheRetrieveMixin, viewsets.ModelViewSet):
     _light_queryset = get_light_question_queryset()
 
     serializer_class = QuestionCreateSerializer
-    permission_classes = [IsAuthenticated]
     http_method_names = ['get', 'post', 'patch', 'delete']
     retrieve_cache_timeout = QUESTION_DETAIL_CACHE_TIMEOUT
     retrieve_cache_key_prefix = 'qna'
+
+    def get_permissions(self):
+        """Назначает разные права для разных действий.
+
+        - list: любой пользователь (включая анонимных)
+        - остальные действия: только авторизованные
+        """
+        if self.action == 'list':
+            return (AllowAny(),)
+        return (IsAuthenticated(),)
 
     def list(
         self, request: Request, *args: Any, **kwargs: Any,
