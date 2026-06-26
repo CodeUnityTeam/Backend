@@ -3,7 +3,7 @@ from django.db import models
 
 
 class UserWorkFormat(models.Model):
-    """Связь пользователя с навыком."""
+    """Связь пользователя с форматом работы."""
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -22,7 +22,7 @@ class UserWorkFormat(models.Model):
 
     class Meta:
         db_table = 'user_workformat'
-        verbose_name = 'Формат работы пользователя.'
+        verbose_name = 'Формат работы пользователя'
         verbose_name_plural = 'Форматы работы пользователя.'
         constraints = (
             models.UniqueConstraint(
@@ -30,9 +30,9 @@ class UserWorkFormat(models.Model):
                 name='unique_user_workformat',
             ),
         )
-        indexes = [
+        indexes = (
             models.Index(fields=['workformat', 'user']),
-        ]
+        )
 
     def __str__(self) -> str:
         return f'{self.user} - {self.workformat}'

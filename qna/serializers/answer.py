@@ -9,20 +9,22 @@ class AnswerDetailSerializer(serializers.ModelSerializer):
     """Сериализатор ответа для детальной страницы вопроса."""
 
     author_name = serializers.SerializerMethodField()
+    author_rating = serializers.SerializerMethodField()
     images = serializers.SerializerMethodField()
     likes_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Answer
-        fields = [
+        fields = (
             'answer_id',
             'parent_answer_id',
             'content',
             'author_name',
+            'author_rating',
             'created_at',
             'likes_count',
             'images',
-        ]
+        )
 
     def get_author_name(self, obj: Answer) -> str:
         """Возвращает имя автора ответа."""
@@ -30,6 +32,10 @@ class AnswerDetailSerializer(serializers.ModelSerializer):
             f'{obj.user.first_name} {obj.user.last_name}'.strip()
             or obj.user.email
         )
+
+    def get_author_rating(self, obj: Answer) -> int:
+        """Возвращает рейтинг автора."""
+        return obj.user.rating
 
     def get_images(self, obj: Answer) -> list[str]:
         """Возвращает список URL изображений."""
@@ -58,7 +64,7 @@ class AnswerCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Answer
-        fields = ['content', 'parent_answer', 'images']
+        fields = ('content', 'parent_answer', 'images')
 
     def validate_parent_answer(self, value: Answer | None) -> Answer | None:
         """Проверяет, что parent_answer относится к тому же вопросу."""
@@ -102,4 +108,4 @@ class AnswerCreateResponseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Answer
-        fields = ['answer_id']
+        fields = ('answer_id',)

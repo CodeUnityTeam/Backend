@@ -61,8 +61,8 @@ class Project(TimestampMixin, models.Model):
     location = models.CharField(
         max_length=MAX_LEN_LOCATION,
         verbose_name='Местоположение',
-        blank=True,
-        null=True,
+        blank=False,
+        null=False,
     )
     start_date = models.DateField(
         default=date.today,
@@ -162,12 +162,12 @@ class ProjectParticipant(models.Model):
         db_table = 'project_participant'
         verbose_name = 'Участник проекта'
         verbose_name_plural = 'Участники проекта'
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
                 fields=['project', 'user'],
                 name='unique_project_participant',
             ),
-        ]
+        )
 
     def __str__(self) -> str:
         return (
@@ -208,15 +208,15 @@ class ProjectLike(CreatedAtMixin, models.Model):
         db_table = 'project_likes'
         verbose_name = 'Лайк проекта'
         verbose_name_plural = 'Лайки проектов'
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
                 fields=['user', 'project'],
                 name='unique_user_project_like',
             ),
-        ]
-        indexes = [
+        )
+        indexes = (
             models.Index(fields=['created_at']),
-        ]
+        )
 
     def __str__(self) -> str:
         return f'Лайк пользователя {self.user} на проект {self.project.title}'

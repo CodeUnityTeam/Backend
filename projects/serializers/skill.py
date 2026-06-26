@@ -10,6 +10,3 @@ class SkillSerializer(serializers.ModelSerializer):
         model = Skill
         fields = ('skill_id', 'name')
         read_only_fields = ('name',)
-        extra_kwargs = {
-            'skill_id': {'read_only': False},
-        }

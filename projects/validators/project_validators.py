@@ -22,8 +22,7 @@ from core.constants.projects import (
     PUBLISHED,
     RECRUITING_CLOSED,
 )
-
-from .models import Project, WorkFormat
+from projects.models import Project, WorkFormat
 
 User = get_user_model()
 
@@ -219,7 +218,7 @@ def validate_project_count(user: User) -> None:
     active_projects_count = Project.objects.filter(
         author=user,
     ).exclude(
-        status_project__in=[ARCHIVED, BLOCKED],
+        status_project__in=(ARCHIVED, BLOCKED),
     ).count()
     if active_projects_count >= MAX_PROJECTS_PER_USER:
         raise serializers.ValidationError(
@@ -264,9 +263,10 @@ def _validate_related_ids(
         raise serializers.ValidationError(
             f'В данных {error_label} отсутствует поле "{id_field}"',
         )
+    ids_str = [str(obj_id) for obj_id in ids]
     existing_objects = list(model_class.objects.filter(pk__in=ids))
     existing_ids = {str(obj.pk) for obj in existing_objects}
-    missing_ids = set(ids) - existing_ids
+    missing_ids = set(ids_str) - existing_ids
     if missing_ids:
         raise serializers.ValidationError(
             f'{error_label.capitalize()} с ID '

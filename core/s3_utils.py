@@ -31,7 +31,7 @@ class MinioService:
         ).replace('https://', '')
         custom_domain: str = f'{clean_domain}/{self.bucket_name}'
 
-        return S3Boto3Storage(
+        storage = S3Boto3Storage(
             access_key=options.get('access_key'),
             secret_key=options.get('secret_key'),
             bucket_name=self.bucket_name,
@@ -40,6 +40,15 @@ class MinioService:
             querystring_auth=False,
             file_overwrite=False,
         )
+
+        # Добавляем Cache-Control для иммутабельных файлов.
+        # Все файлы имеют UUID в имени, поэтому новый файл = новый URL.
+        # Это позволяет браузеру кэшировать их навсегда.
+        storage.object_parameters['CacheControl'] = (
+            'public, max-age=31536000, immutable'
+        )
+
+        return storage
 
     def _ensure_bucket_templated(self) -> None:
         """Проверить наличие бакета и сделать его публичным на чтение."""
@@ -53,7 +62,8 @@ class MinioService:
             try:
                 s3_client.head_bucket(Bucket=self.bucket_name)
             except Exception as e:
-                error_code = getattr(e, 'response', {}).get('Error', {}).get('Code', '')
+                error_code = getattr(e, 'response', {},
+                                     ).get('Error', {}).get('Code', '')
                 if error_code == '404':
                     s3_client.create_bucket(Bucket=self.bucket_name)
                 elif isinstance(e, S3ClientError):

@@ -44,10 +44,22 @@ class IsEmployer(permissions.BasePermission):
         if view.action not in ('update', 'partial_update', 'destroy'):
             return True
         user = request.user
-        if user.is_superuser or user.role == 'admin':
+        if user.is_superuser or user.role == User.RoleChoices.ADMIN:
             return True
         return (
             obj.author == user
             and user.projects_relation
             == User.ProjectsRelationChoices.EMPLOYER
+        )
+
+
+class IsWorker(permissions.BasePermission):
+    """Permission для действий над откликами."""
+
+    def has_permission(self, request: Request, view: Any) -> bool:
+        """Проверяет возможность выполнения действия."""
+        return (
+            request.user.is_authenticated
+            and request.user.projects_relation
+            == User.ProjectsRelationChoices.WORKER
         )

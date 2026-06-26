@@ -9,15 +9,15 @@ from .views import (
 )
 
 project_router = DefaultRouter()
-project_router.register(r'', ProjectViewSet, basename='project')
 project_router.register(
     r'responses',
     ResponseFeedViewSet,
     basename='responses',
 )
+project_router.register(r'', ProjectViewSet, basename='project')
 
 
-urlpatterns = [
+urlpatterns = (
     path('', include(project_router.urls)),
     path(
         '<uuid:project_id>/responses/',
@@ -34,4 +34,4 @@ urlpatterns = [
         ResponseStatusViewSet.as_view({'patch': 'update'}),
         name='response-status-update',
     ),
-]
+)
