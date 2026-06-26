@@ -1,33 +1,45 @@
 from django.db import transaction
 from rest_framework import serializers
 
-from qna.models import Answer, AnswerImage
+from qna.models import Answer
+from qna.selectors import create_answer, create_answer_image
 
 
 class AnswerDetailSerializer(serializers.ModelSerializer):
     """Сериализатор ответа для детальной страницы вопроса."""
 
-    author_name = serializers.CharField(
-        source='user.get_full_name',
-        read_only=True,
-    )
+    author_name = serializers.SerializerMethodField()
+    author_rating = serializers.SerializerMethodField()
     images = serializers.SerializerMethodField()
+    likes_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Answer
-        fields = [
+        fields = (
             'answer_id',
             'parent_answer_id',
             'content',
             'author_name',
+            'author_rating',
             'created_at',
             'likes_count',
             'images',
-        ]
+        )
+
+    def get_author_name(self, obj: Answer) -> str:
+        """Возвращает имя автора ответа."""
+        return (
+            f'{obj.user.first_name} {obj.user.last_name}'.strip()
+            or obj.user.email
+        )
+
+    def get_author_rating(self, obj: Answer) -> int:
+        """Возвращает рейтинг автора."""
+        return obj.user.rating
 
     def get_images(self, obj: Answer) -> list[str]:
         """Возвращает список URL изображений."""
-        return list(obj.images.values_list('image_url', flat=True))
+        return [img.image_url for img in obj.images.all()]
 
 
 class AnswerImageMetaSerializer(serializers.Serializer):
@@ -52,7 +64,18 @@ class AnswerCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Answer
-        fields = ['content', 'parent_answer', 'images']
+        fields = ('content', 'parent_answer', 'images')
+
+    def validate_parent_answer(self, value: Answer | None) -> Answer | None:
+        """Проверяет, что parent_answer относится к тому же вопросу."""
+        if value is None:
+            return value
+        question = self.context.get('question')
+        if question and value.question_id != question.pk:
+            raise serializers.ValidationError(
+                'Родительский ответ должен относиться к тому же вопросу.',
+            )
+        return value
 
     def create(self, validated_data: dict) -> Answer:
         """Создаёт ответ с изображениями."""
@@ -61,14 +84,14 @@ class AnswerCreateSerializer(serializers.ModelSerializer):
         question = self.context['question']
 
         with transaction.atomic():
-            answer = Answer.objects.create(
+            answer = create_answer(
                 user=user,
                 question=question,
                 **validated_data,
             )
 
             for image in images:
-                AnswerImage.objects.create(
+                create_answer_image(
                     answer=answer,
                     uploaded_by=user,
                     image_url=image['image_url'],
@@ -85,4 +108,4 @@ class AnswerCreateResponseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Answer
-        fields = ['answer_id']
+        fields = ('answer_id',)

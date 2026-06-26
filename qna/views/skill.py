@@ -5,8 +5,8 @@ from drf_spectacular.utils import (
 from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet
 
-from qna.serializers.tag import SkillSerializer
-from users.models import Skill
+from projects.serializers import SkillSerializer
+from qna.selectors import get_all_skills
 
 
 @extend_schema_view(
@@ -15,5 +15,5 @@ from users.models import Skill
 class SkillViewSet(ListModelMixin, GenericViewSet):
     """Представление для Тегов (скиллов)."""
 
-    queryset = Skill.objects.all()
+    queryset = get_all_skills()
     serializer_class = SkillSerializer

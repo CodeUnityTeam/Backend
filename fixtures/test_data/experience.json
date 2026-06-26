@@ -1,0 +1,16 @@
+[
+  {
+    "company": "BarinoV Technologies",
+    "position": "Senior Python Developer",
+    "responsibilities": "Архитектура и разработка backend-сервисов на Django, управление командой из 5 разработчиков, внедрение CI/CD",
+    "start_date": "2022-03-01",
+    "end_date": "2026-06-01"
+  },
+  {
+    "company": "OlegCo Solutions",
+    "position": "Team Lead",
+    "responsibilities": "Руководство командой backend-разработки, код-ревью, архитектура микросервисов",
+    "start_date": "2021-01-01",
+    "end_date": "2026-06-01"
+  }
+]

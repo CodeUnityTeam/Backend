@@ -54,12 +54,15 @@ class UserSkill(models.Model):
     class Meta:
         db_table = 'user_skills'
         verbose_name = 'Навык пользователя'
-        verbose_name_plural = 'Навыки пользователей'
+        verbose_name_plural = 'Навыки пользователя'
         constraints = (
             models.UniqueConstraint(
                 fields=('user', 'skill'),
                 name='unique_user_skill',
             ),
+        )
+        indexes = (
+            models.Index(fields=['skill', 'user']),
         )
 
     def __str__(self) -> str:

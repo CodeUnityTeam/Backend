@@ -1,13 +1,17 @@
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework.decorators import action
 from rest_framework.mixins import DestroyModelMixin
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from qna.models import Answer, AnswerLike
+from qna.models import AnswerLike
+from qna.permissions import CanDeleteAnswer
+from qna.selectors import get_answer_detail_queryset
 from qna.serializers.answer import AnswerDetailSerializer
 from qna.serializers.like import LikeSerializer
+from qna.services import toggle_like
 
 
 @extend_schema_view(
@@ -22,8 +26,9 @@ from qna.serializers.like import LikeSerializer
 class AnswerViewSet(DestroyModelMixin, GenericViewSet):
     """Представление для ответов."""
 
-    queryset = Answer.objects.all()
+    queryset = get_answer_detail_queryset()
     serializer_class = AnswerDetailSerializer
+    permission_classes = [IsAuthenticated, CanDeleteAnswer]
 
     @extend_schema(
             tags=['Answers'],
@@ -38,17 +43,10 @@ class AnswerViewSet(DestroyModelMixin, GenericViewSet):
     ) -> Response:
         """Ставит или снимает лайк на ответ."""
         answer = self.get_object()
-        user = request.user
-        like, created = AnswerLike.objects.get_or_create(
-            answer=answer,
-            user=user,
+        result = toggle_like(
+            like_model=AnswerLike,
+            target_obj=answer,
+            user=request.user,
+            target_field='answer',
         )
-        if not created:
-            like.delete()
-            liked = False
-        else:
-            liked = True
-        return Response({
-            'liked': liked,
-            'likes_count': answer.likes.count(),
-        })
+        return Response(result)

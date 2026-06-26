@@ -17,7 +17,7 @@ python manage.py loaddata fixtures/tags/*
 
 **Для регистрации пользователей в проекте, запущенном локально, используем команду**
 ```bash
-bash create_users.sh
+bash fixtures/test_data/create_users.sh
 ```
 **Если запуск на dev-сервере, то в BASE_URL передаём нужный адрес (можно поменять в скрипте)**
 ```bash
@@ -31,7 +31,7 @@ BASE_URL="https://dev.code-unity.ru/api/v1" bash fixtures/test_data/create_users
 
 **Для добавления данных в проект, запущенный локально, используем команду**
 ```bash
-bash create_obj.sh
+bash fixtures/test_data/create_obj.sh
 ```
 **Если запуск на dev-сервере, то в BASE_URL передаём нужный адрес (можно поменять в скрипте)**
 ```bash

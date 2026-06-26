@@ -17,7 +17,8 @@ DEBUG = os.getenv('DEBUG_MODE', default='False').lower() == 'true'
 DOMAIN = os.getenv('DOMAIN')
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 
-CSRF_TRUSTED_ORIGINS = [os.getenv('CSRF_DOMAIN')]
+TRUSTED_ORIGINS = os.getenv('ALLOWED_ORIGINS', '').split(',')
+CSRF_TRUSTED_ORIGINS = TRUSTED_ORIGINS
 
 ROOT_URLCONF = 'config.urls'
 WSGI_APPLICATION = 'config.wsgi.application'
@@ -27,7 +28,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CORE DJANGO APPS & MIDDLEWARE
 # =============================================================================
 
-INSTALLED_APPS = [
+INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -54,9 +55,10 @@ INSTALLED_APPS = [
     'projects.apps.ProjectsConfig',
     'qna.apps.QnaConfig',
     'feedback.apps.FeedbackConfig',
-]
+    'help.apps.HelpConfig',
+)
 
-MIDDLEWARE = [
+MIDDLEWARE = (
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -66,23 +68,24 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
-]
+    'users.middleware.UpdateLastActivityMiddleware',
+)
 
-TEMPLATES = [
+TEMPLATES = (
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
-            'context_processors': [
+            'context_processors': (
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-            ],
+            ),
         },
     },
-]
+)
 
 # =============================================================================
 # DATABASES & STORAGES (MINIO)
@@ -92,10 +95,8 @@ DB_MODE = os.getenv('DB_MODE')
 
 if DB_MODE == 'local':
     DB_HOST = os.getenv('DB_HOST_LOCAL')
-    S3_ENDPOINT = 'http://localhost:9000'
 else:
     DB_HOST = os.getenv('DB_HOST')
-    S3_ENDPOINT = 'http://minio:9000'
 
 DATABASES = {
     'default': {
@@ -108,11 +109,7 @@ DATABASES = {
     },
 }
 
-S3_OPTIONS = {
-    'access_key': os.environ.get('AWS_ACCESS_KEY_ID'),
-    'secret_key': os.environ.get('AWS_SECRET_ACCESS_KEY'),
-    'endpoint_url': S3_ENDPOINT,
-}
+S3_ENDPOINT = os.getenv('S3_ENDPOINT_URL', 'http://minio:9000')
 
 STORAGES = {
     'default': {
@@ -130,7 +127,8 @@ STORAGES = {
             'bucket_name': os.environ.get('AWS_STORAGE_BUCKET_NAME'),
             'endpoint_url': S3_ENDPOINT,  # Динамический хост
             'custom_domain': (
-                f"localhost:9000/{os.environ.get('AWS_STORAGE_BUCKET_NAME')}"
+                f'{os.environ.get("S3_ENDPOINT")}'
+                f'/{os.environ.get("AWS_STORAGE_BUCKET_NAME")}'
             ),
             'querystring_auth': False,
             'file_overwrite': False,
@@ -146,8 +144,8 @@ STORAGES = {
             ),
             'endpoint_url': S3_ENDPOINT,
             'custom_domain': (
-                f"localhost:9000/"
-                f"{os.environ.get('MINIO_IMAGES_BUCKET_NAME', 'images')}"
+                f'{os.environ.get("S3_ENDPOINT")}'
+                f'{os.environ.get("MINIO_IMAGES_BUCKET_NAME", "images")}'
             ),
             'querystring_auth': False,
             'file_overwrite': False,
@@ -180,14 +178,14 @@ ALLOW_FEEDBACK_SIZE_MB = 5
 AUTH_USER_MODEL = 'users.User'
 SITE_ID = 1
 
-CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', '').split(',')
+CORS_ALLOWED_ORIGINS = TRUSTED_ORIGINS
 
-AUTHENTICATION_BACKENDS = [
+AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
-]
+)
 
-AUTH_PASSWORD_VALIDATORS = [
+AUTH_PASSWORD_VALIDATORS = (
     {
         'NAME': (
             'django.contrib.auth.password_validation.'
@@ -209,23 +207,23 @@ AUTH_PASSWORD_VALIDATORS = [
             'django.contrib.auth.password_validation.NumericPasswordValidator'
         ),
     },
-]
+)
 
 # =============================================================================
 # DJANGO REST FRAMEWORK CONFIGURATION
 # =============================================================================
 
 REST_FRAMEWORK = {
-    'DEFAULT_RENDERER_CLASSES': [
+    'DEFAULT_RENDERER_CLASSES': (
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
-    ],
-    'DEFAULT_PERMISSION_CLASSES': [
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.AllowAny',
-    ],
-    'DEFAULT_AUTHENTICATION_CLASSES': [
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
         'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
-    ],
+    ),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
@@ -243,6 +241,7 @@ REST_AUTH = {
     'JWT_AUTH_SECURE': False,
     'JWT_AUTH_SAMESITE': 'Lax',
     'JWT_AUTH_RETURN_EXPIRATION': True,
+    'OLD_PASSWORD_FIELD_ENABLED': True,
     'LOGIN_SERIALIZER': 'users.serializers.auth.CustomLoginSerializer',
     'PASSWORD_CHANGE_SERIALIZER': (
         'users.serializers.auth.CustomPasswordChangeSerializer'
@@ -250,15 +249,18 @@ REST_AUTH = {
     'PASSWORD_RESET_SERIALIZER': (
         'users.serializers.auth.CustomPasswordResetSerializer'
     ),
-    "REGISTER_SERIALIZER": "users.serializers.auth.CustomRegisterSerializer",
-    "USER_DETAILS_SERIALIZER": (
-        "users.serializers.profile.MeProfileRetrieveSerializer"
+    'PASSWORD_RESET_CONFIRM_SERIALIZER': (
+        'users.serializers.auth.CustomPasswordResetConfirmSerializer'
+    ),
+    'REGISTER_SERIALIZER': 'users.serializers.auth.CustomRegisterSerializer',
+    'USER_DETAILS_SERIALIZER': (
+        'users.serializers.profile.MeProfileRetrieveSerializer'
     ),
 }
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=3),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'UPDATE_LAST_LOGIN': True,
@@ -268,20 +270,34 @@ SIMPLE_JWT = {
 ACCOUNT_ADAPTER = 'users.adapters.CustomAccountAdapter'
 ACCOUNT_CHANGE_EMAIL = True
 ACCOUNT_LOGIN_METHODS = {'email'}
-ACCOUNT_SIGNUP_FIELDS = ['first_name*', 'last_name*', 'email*', 'password1*']
+ACCOUNT_SIGNUP_FIELDS = ('first_name*', 'last_name*', 'email*', 'password1*')
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# =============================================================================
+# E-MAIL SERVER
+# =============================================================================
+
+DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER', 'hello@code-unity.ru')
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
+if os.getenv('PRODUCTION_EMAIL_BACKEND', False) is True:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = os.getenv('EMAIL_HOST')
+    EMAIL_PORT = int(os.getenv('EMAIL_PORT', 465))
+    EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+    EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+    EMAIL_USE_SSL = True
+    EMAIL_USE_TLS = False
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # =============================================================================
 # SOCIAL AUTHENTICATION PROVIDERS
 # =============================================================================
 
-SOCIALACCOUNT_ADAPTER = (
-    'allauth.socialaccount.adapter.DefaultSocialAccountAdapter'
-)
+SOCIALACCOUNT_ADAPTER = 'users.adapters.CustomSocialAccountAdapter'
 SOCIALACCOUNT_EMAIL_VERIFICATION = 'none'
 SOCIALACCOUNT_EMAIL_REQUIRED = True
 
@@ -335,11 +351,56 @@ SPECTACULAR_SETTINGS = {
     'CONTACT': {'name': '', 'email': ''},
     'LICENSE': {'name': ''},
     'TAG_SORT_ORDER': 'definition',
-    'TAGS': [
+    'TAGS': (
         {'name': 'Questions', 'description': 'Вопросы'},
         {'name': 'Answers', 'description': 'Ответы'},
         {'name': 'Likes', 'description': 'Лайки'},
         {'name': 'Tags', 'description': 'Теги'},
         {'name': 'Files', 'description': 'Файлы'},
-    ],
+    ),
 }
+
+# =============================================================================
+# CACHE CONFIGURATION (Redis via django-redis)
+# =============================================================================
+
+REDIS_HOST = os.getenv('REDIS_HOST')
+REDIS_PORT = os.getenv('REDIS_PORT')
+REDIS_PASSWORD = os.getenv('REDIS_PASSWORD')
+
+# Если пароль не задан — подключаемся без аутентификации
+_REDIS_AUTH = f':{REDIS_PASSWORD}@' if REDIS_PASSWORD else ''
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': f'redis://{_REDIS_AUTH}{REDIS_HOST}:{REDIS_PORT}/1',
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            'CONNECTION_POOL_CLASS': 'redis.BlockingConnectionPool',
+            'CONNECTION_POOL_CLASS_KWARGS': {
+                'max_connections': 50,
+                'timeout': 20,
+            },
+            'MAX_CONNECTIONS': 1000,
+            'PICKLE_VERSION': -1,
+            'SOCKET_CONNECT_TIMEOUT': 5,
+            'SOCKET_TIMEOUT': 5,
+            'RETRY_ON_TIMEOUT': True,
+            'IGNORE_EXCEPTIONS': True,
+        },
+        'KEY_PREFIX': 'codeunity',
+    },
+    'local_memory': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'codeunity-local',
+        'TIMEOUT': 300,
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000,
+        },
+    },
+}
+
+# Fallback при недоступности Redis
+DJANGO_REDIS_IGNORE_EXCEPTIONS = True
+DJANGO_REDIS_LOG_IGNORED_EXCEPTIONS = True

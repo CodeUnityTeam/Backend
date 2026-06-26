@@ -13,7 +13,7 @@ router.register('questions', QuestionViewSet, basename='questions')
 router.register('answers', AnswerViewSet, basename='answers')
 router.register('tags', SkillViewSet, basename='tags')
 
-urlpatterns = [
+urlpatterns = (
     path('', include(router.urls)),
     path('files/upload/', FileUploadView.as_view(), name='file-upload'),
-]
+)

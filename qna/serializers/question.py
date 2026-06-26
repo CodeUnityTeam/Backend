@@ -1,8 +1,36 @@
 from django.db import transaction
+from django.db.models import QuerySet
 from rest_framework import serializers
 
-from qna.models import Question, QuestionImage
+from core.constants.qna import (
+    MAX_TITLE_QUESTION,
+    MIN_DESC_QUESTION,
+    MIN_TITLE_QUESTION,
+)
+from qna.models import Question
+from qna.selectors import (
+    create_question,
+    create_question_image,
+    delete_question_image,
+    get_all_skills,
+    get_question_images,
+    get_question_images_excluding,
+    set_question_skills,
+    update_question_image,
+)
+from qna.serializers.answer import AnswerDetailSerializer
 from users.models import Skill
+
+
+class LazySkillField(serializers.PrimaryKeyRelatedField):
+    """Поле с ленивой загрузкой queryset для Skill.
+
+    Используется при создании вопроса.
+    """
+
+    def get_queryset(self) -> QuerySet[Skill]:
+        """Возвращает queryset с ленивой загрузкой."""
+        return get_all_skills()
 
 
 class QuestionImageMetaSerializer(serializers.Serializer):
@@ -18,10 +46,9 @@ class QuestionImageMetaSerializer(serializers.Serializer):
 class QuestionCreateSerializer(serializers.ModelSerializer):
     """Сериализатор создания вопроса."""
 
-    tags = serializers.PrimaryKeyRelatedField(
+    tags = LazySkillField(
         many=True,
         source='skills',
-        queryset=Skill.objects.all(),
         label='Навыки',
     )
     images = QuestionImageMetaSerializer(
@@ -30,16 +57,23 @@ class QuestionCreateSerializer(serializers.ModelSerializer):
         write_only=True,
         label='Изображения',
     )
+    title = serializers.CharField(
+        min_length=MIN_TITLE_QUESTION,
+        max_length=MAX_TITLE_QUESTION,
+    )
+    description = serializers.CharField(
+        min_length=MIN_DESC_QUESTION,
+    )
 
     class Meta:
         model = Question
-        fields = [
+        fields = (
             'title',
             'description',
             'tags',
             'is_anonymous',
             'images',
-        ]
+        )
 
     def create(self, validated_data: dict) -> Question:
         """Создание вопроса."""
@@ -48,13 +82,14 @@ class QuestionCreateSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
 
         with transaction.atomic():
-            question = Question.objects.create(user=user, **validated_data)
-            question.skills.set(tags)
+            question = create_question(user=user, **validated_data)
+            set_question_skills(question, tags)
 
             for image in images:
-                QuestionImage.objects.create(
+                create_question_image(
                     question=question,
                     uploaded_by=user,
+                    image_id=image['image_id'],
                     image_url=image['image_url'],
                     original_name=image['original_name'],
                     file_size=image['file_size'],
@@ -62,6 +97,20 @@ class QuestionCreateSerializer(serializers.ModelSerializer):
                 )
 
         return question
+
+
+class QuestionUpdateSerializer(QuestionCreateSerializer):
+    """Сериализатор обновления вопроса."""
+
+    class Meta:
+        model = Question
+        fields = (
+            'title',
+            'description',
+            'tags',
+            'is_anonymous',
+            'images',
+        )
 
     def update(self, instance: Question, validated_data: dict) -> Question:
         """Обновление вопроса."""
@@ -72,12 +121,12 @@ class QuestionCreateSerializer(serializers.ModelSerializer):
             instance = super().update(instance, validated_data)
 
             if tags is not None:
-                instance.skills.set(tags)
+                set_question_skills(instance, tags)
 
             if images is not None:
                 existing_images = {
                     str(image.image_id): image
-                    for image in instance.images.all()
+                    for image in get_question_images(instance)
                 }
                 incoming_ids: set[str] = set()
                 user = self.context['request'].user
@@ -89,20 +138,15 @@ class QuestionCreateSerializer(serializers.ModelSerializer):
                         image_obj = existing_images[str(image_id)]
                         incoming_ids.add(str(image_id))
 
-                        image_obj.image_url = image_data['image_url']
-                        image_obj.original_name = image_data['original_name']
-                        image_obj.file_size = image_data['file_size']
-                        image_obj.mime_type = image_data['mime_type']
-                        image_obj.save(
-                            update_fields=[
-                                'image_url',
-                                'original_name',
-                                'file_size',
-                                'mime_type',
-                            ],
+                        update_question_image(
+                            image=image_obj,
+                            image_url=image_data['image_url'],
+                            original_name=image_data['original_name'],
+                            file_size=image_data['file_size'],
+                            mime_type=image_data['mime_type'],
                         )
                     else:
-                        new_image = QuestionImage.objects.create(
+                        new_image = create_question_image(
                             question=instance,
                             uploaded_by=user,
                             image_url=image_data['image_url'],
@@ -112,10 +156,11 @@ class QuestionCreateSerializer(serializers.ModelSerializer):
                         )
                         incoming_ids.add(str(new_image.image_id))
 
-                for image in instance.images.exclude(
-                    image_id__in=incoming_ids,
+                for image in get_question_images_excluding(
+                    instance,
+                    exclude_ids=incoming_ids,
                 ):
-                    image.delete()
+                    delete_question_image(image)
 
         return instance
 
@@ -125,7 +170,7 @@ class QuestionCreateResponseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Question
-        fields = ['question_id']
+        fields = ('question_id',)
 
 
 class QuestionListSerializer(serializers.ModelSerializer):
@@ -138,35 +183,38 @@ class QuestionListSerializer(serializers.ModelSerializer):
         source='skills',
     )
     author_name = serializers.SerializerMethodField()
-    likes_count = serializers.SerializerMethodField()
-    answers_count = serializers.SerializerMethodField()
+    author_rating = serializers.SerializerMethodField()
+    likes_count = serializers.IntegerField(read_only=True)
+    answers_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Question
-        fields = [
+        fields = (
             'question_id',
             'title',
             'description',
             'tags',
             'author_name',
+            'author_rating',
             'created_at',
             'likes_count',
             'answers_count',
-        ]
+        )
 
     def get_author_name(self, obj: Question) -> str:
-        """Возвращает имя автора или Аноним."""
+        """Возвращает имя автора или 'Аноним'."""
         if obj.is_anonymous:
             return 'Аноним'
-        return f'{obj.user.first_name} {obj.user.last_name}'.strip()
+        return (
+            f'{obj.user.first_name} {obj.user.last_name}'.strip()
+            or obj.user.email
+        )
 
-    def get_likes_count(self, obj: Question) -> int:
-        """Возвращает количество лайков."""
-        return obj.likes.count()
-
-    def get_answers_count(self, obj: Question) -> int:
-        """Возвращает количество активных ответов."""
-        return obj.answers.filter(is_active=True).count()
+    def get_author_rating(self, obj: Question) -> int:
+        """Возвращает рейтинг автора."""
+        if obj.is_anonymous:
+            return 0
+        return obj.user.rating
 
 
 class QuestionDetailSerializer(serializers.ModelSerializer):
@@ -178,30 +226,52 @@ class QuestionDetailSerializer(serializers.ModelSerializer):
         slug_field='name',
         source='skills',
     )
-    author_name = serializers.CharField(
-        source='user.get_full_name',
-        read_only=True,
-    )
-    likes_count = serializers.SerializerMethodField()
+    author_name = serializers.SerializerMethodField()
+    author_rating = serializers.SerializerMethodField()
+    likes_count = serializers.IntegerField(read_only=True)
     images = serializers.SerializerMethodField()
 
     class Meta:
         model = Question
-        fields = [
+        fields = (
             'question_id',
             'title',
             'description',
             'tags',
             'author_name',
+            'author_rating',
             'created_at',
             'likes_count',
             'images',
-        ]
+        )
 
-    def get_likes_count(self, obj: Question) -> int:
-        """Возвращает количество лайков."""
-        return obj.likes.count()
+    def get_author_name(self, obj: Question) -> str:
+        """Возвращает имя автора или 'Аноним'."""
+        if obj.is_anonymous:
+            return 'Аноним'
+        return (
+            f'{obj.user.first_name} {obj.user.last_name}'.strip()
+            or obj.user.email
+        )
+
+    def get_author_rating(self, obj: Question) -> int:
+        """Возвращает рейтинг автора."""
+        if obj.is_anonymous:
+            return 0
+        return obj.user.rating
 
     def get_images(self, obj: Question) -> list[str]:
         """Возвращает список URL изображений."""
-        return list(obj.images.values_list('image_url', flat=True))
+        return [img.image_url for img in obj.images.all()]
+
+
+class QuestionWithAnswersSerializer(QuestionDetailSerializer):
+    """Объединяет вопрос и ответы в один ответ.
+
+    Наследует все поля от QuestionDetailSerializer и добавляет ответы.
+    """
+
+    answers = AnswerDetailSerializer(many=True, read_only=True)
+
+    class Meta(QuestionDetailSerializer.Meta):
+        fields = QuestionDetailSerializer.Meta.fields + ('answers',)

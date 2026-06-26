@@ -1,11 +1,13 @@
 import uuid
 
+from django.core.validators import MinLengthValidator
 from django.db import models
 
-from core.constants import (
+from core.constants.qna import (
     MAX_CONTENT_ANSWER,
-    MAX_LEN_TITLE,
-    ZERO_LIKE_COUNT,
+    MAX_TITLE_QUESTION,
+    MIN_DESC_QUESTION,
+    MIN_TITLE_QUESTION,
 )
 from core.models.mixins import TimestampMixin
 from users.models import Skill
@@ -35,10 +37,12 @@ class Question(TimestampMixin, models.Model):
         verbose_name='Автор вопроса',
     )
     title = models.CharField(
-        max_length=MAX_LEN_TITLE,
+        max_length=MAX_TITLE_QUESTION,
+        validators=[MinLengthValidator(MIN_TITLE_QUESTION)],
         verbose_name='Заголовок вопроса',
     )
     description = models.TextField(
+        validators=[MinLengthValidator(MIN_DESC_QUESTION)],
         verbose_name='Полное описание вопроса',
     )
     is_anonymous = models.BooleanField(
@@ -63,12 +67,12 @@ class Question(TimestampMixin, models.Model):
         db_table = 'questions'
         verbose_name = 'Вопрос'
         verbose_name_plural = 'Вопросы'
-        indexes = [
-            models.Index(fields=['-created_at']),
-            models.Index(fields=['-updated_at']),
+        indexes = (
+            models.Index(fields=['-created_at']),  # поля из миксина
+            models.Index(fields=['-updated_at']),  # поля из миксина
             models.Index(fields=['is_active']),
             models.Index(fields=['is_anonymous']),
-        ]
+        )
 
     def __str__(self) -> str:
         return self.title
@@ -114,10 +118,6 @@ class Answer(models.Model):
         default=True,
         verbose_name='Активен',
     )
-    likes_count = models.IntegerField(
-        default=ZERO_LIKE_COUNT,
-        verbose_name='Количество лайков',
-    )
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name='Дата создания',
@@ -129,14 +129,13 @@ class Answer(models.Model):
         db_table = 'answers'
         verbose_name = 'Ответ'
         verbose_name_plural = 'Ответы'
-        indexes = [
+        indexes = (
             models.Index(fields=['question', 'created_at']),
             models.Index(fields=['user']),
             models.Index(fields=['parent_answer']),
             models.Index(fields=['-created_at']),
             models.Index(fields=['is_active']),
-            models.Index(fields=['likes_count']),
-        ]
+        )
 
     def __str__(self) -> str:
         short_content = self.content[:75]
@@ -172,15 +171,15 @@ class QuestionLike(models.Model):
         unique_together = ('user', 'question')
         verbose_name = 'Лайк вопроса'
         verbose_name_plural = 'Лайки вопросов'
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
                 fields=['user', 'question'],
                 name='unique_user_question_like',
             ),
-        ]
-        indexes = [
+        )
+        indexes = (
             models.Index(fields=['created_at']),
-        ]
+        )
 
     def __str__(self) -> str:
         return (
@@ -218,15 +217,15 @@ class AnswerLike(models.Model):
         unique_together = ('user', 'answer')
         verbose_name = 'Лайк ответа'
         verbose_name_plural = 'Лайки ответов'
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
                 fields=['user', 'answer'],
                 name='unique_user_answer_like',
             ),
-        ]
-        indexes = [
+        )
+        indexes = (
             models.Index(fields=['created_at']),
-        ]
+        )
 
     def __str__(self) -> str:
         return f'{self.user.first_name} ответ на {self.answer.question.title}'
@@ -253,11 +252,11 @@ class QuestionImage(BaseImageMixin):
         db_table = 'question_image'
         verbose_name = 'Изображение вопроса'
         verbose_name_plural = 'Изображения вопроса'
-        indexes = [
+        indexes = (
             models.Index(fields=['question']),
             models.Index(fields=['uploaded_by']),
             models.Index(fields=['uploaded_at']),
-        ]
+        )
 
     def __str__(self) -> str:
         return f'Изображение {self.original_name} для "{self.question.title}"'
@@ -284,11 +283,11 @@ class AnswerImage(BaseImageMixin):
         db_table = 'answer_image'
         verbose_name = 'Изображение ответа'
         verbose_name_plural = 'Изображения ответов'
-        indexes = [
+        indexes = (
             models.Index(fields=['answer']),
             models.Index(fields=['uploaded_by']),
             models.Index(fields=['uploaded_at']),
-        ]
+        )
 
     def __str__(self) -> str:
         return (
