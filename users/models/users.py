@@ -51,7 +51,7 @@ class User(TimestampMixin, AbstractUser):
 
     username = models.CharField(
         max_length=MAX_CHAR_FIELD_LENGTH,
-        unique=False,
+        unique=True,
         blank=True,
         null=True,
     )

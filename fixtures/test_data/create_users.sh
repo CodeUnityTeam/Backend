@@ -41,7 +41,7 @@ confirm_email() {
   # (allauth 65+ использует HMAC-ключи, которые не хранятся в БД)
   # email передаётся через переменную окружения, чтобы избежать shell injection
   local result
-  result=$(EMAIL="$email" uv run python manage.py shell -c "
+  result=$(EMAIL="$email" $PYTHON manage.py shell -c "
 import os
 from allauth.account.models import EmailAddress
 email = os.environ['EMAIL']

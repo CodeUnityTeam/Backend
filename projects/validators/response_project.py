@@ -1,12 +1,14 @@
 """Валидаторы для откликов и приглашений на проекты."""
 
 from django.contrib.auth import get_user_model
-from rest_framework import serializers
+from rest_framework import exceptions, serializers
 
 from core.constants.projects import (
     APPLICANT,
     APPROVED,
     AUTHOR,
+    MAX_PROJECTS_PER_MEMBER,
+    MEMBER,
     PENDING,
     PUBLISHED,
     REJECTED,
@@ -24,13 +26,11 @@ def validate_can_create_response(
     """Валидация перед созданием отклика на проект.
 
     Проверяет:
-    - пользователь имеет роль worker
-    - пользователь не является автором проекта
     - проект опубликован
     - нет существующего отклика от этого пользователя
     """
     if user.projects_relation != User.ProjectsRelationChoices.WORKER:
-        raise serializers.ValidationError(
+        raise exceptions.PermissionDenied(
             'Откликаться на проекты могут только пользователи '
             'с ролью "worker".',
         )
@@ -70,7 +70,7 @@ def validate_can_invite(
 
     """
     if project.author != inviter:
-        raise serializers.ValidationError(
+        raise exceptions.PermissionDenied(
             'Только автор проекта может приглашать пользователей.',
         )
     try:
@@ -86,6 +86,13 @@ def validate_can_invite(
     if Response.objects.filter(project=project, user=invitee).exists():
         raise serializers.ValidationError(
             'Пользователь уже приглашён в этот проект.',
+        )
+    if ProjectParticipant.objects.filter(
+        project=project,
+        user=invitee,
+    ).exists():
+        raise serializers.ValidationError(
+            'Пользователь уже является участником этого проекта.',
         )
     if project.status_project != PUBLISHED:
         raise serializers.ValidationError(
@@ -103,6 +110,19 @@ def validate_status_can_be_changed(user_response: Response) -> None:
         raise serializers.ValidationError(
             f'Статус можно изменить только из "{PENDING}", '
             f'текущий статус: "{user_response.status_resp}".',
+        )
+
+
+def validate_project_count_per_member(user: User) -> None:
+    """Проверяет, не превысил ли пользователь лимит участия в проектах."""
+    active_count = ProjectParticipant.objects.filter(
+            user=user,
+            status_participant=MEMBER,
+        ).count()
+    if active_count >= MAX_PROJECTS_PER_MEMBER:
+        raise serializers.ValidationError(
+            'Пользователь не может участвовать больше чем в '
+            f'{MAX_PROJECTS_PER_MEMBER} проектах.',
         )
 
 
@@ -175,10 +195,14 @@ def validate_can_change_status(
                 f'Нет прав для действия "{new_status}".',
             ),
         )
-    if new_status == APPROVED and ProjectParticipant.objects.filter(
-        project=user_response.project,
-        user=user_response.user,
-    ).exists():
+    validate_project_count_per_member(user_response.user)
+    if (
+        new_status == APPROVED
+        and ProjectParticipant.objects.filter(
+            project=user_response.project,
+            user=user_response.user,
+        ).exists()
+    ):
         raise serializers.ValidationError(
             'Пользователь уже является участником проекта.',
         )
