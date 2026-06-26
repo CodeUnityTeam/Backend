@@ -107,7 +107,7 @@ class FeedbackImage(BaseImageMixin):
         indexes = (
             models.Index(fields=['feedback']),
             models.Index(fields=['uploaded_at']),
-        ]
+        )
 
     def __str__(self) -> str:
         return f'Изображение: {self.original_name} для {self.feedback.subject}'
