@@ -1,9 +1,8 @@
 import uuid
 
-from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.utils.safestring import mark_safe
+from django.utils.safestring import SafeText, mark_safe
 
 from core.constants.feedback import (
     MAX_CONTENT_FEEDBACK,
@@ -11,8 +10,8 @@ from core.constants.feedback import (
     MAX_SUBJECT_FEEDBACK,
     STATUS_FEEDBACK,
 )
-from core.constants.qna import MAX_IMAGE_URL, MAX_MINE_TYPE, MAX_ORIGINAL_NAME
 from core.models.mixins import TimestampMixin
+from qna.mixins import BaseImageMixin
 
 User = get_user_model()
 
@@ -68,41 +67,39 @@ class FeedbackForm(TimestampMixin, models.Model):
     def __str__(self) -> str:
         return f'{self.subject} — {self.user.first_name} ({self.status})'
 
+    def image_preview(self) -> SafeText:
+        """Вохвращает изображения.
 
-class FeedbackImage(TimestampMixin, models.Model):
+        Если у данной формы есть изображения, то собираем ссылки на них
+        в строку и передаём в html-блоке для вывода в админ-панели.
+
+        """
+        if self.images.exists():
+            links = ''
+            for x in self.images.all():
+                links += (
+                    f'<a href="{x.image_url}" target="_blank" style="display: '
+                    f'inline-block; margin: 15px;"><img src="{x.image_url}" "'
+                    f'"width="150" height="150" style="object-fit: cover;"'
+                    f' /></a>'
+                )
+            return mark_safe(links)
+        return mark_safe('<p>Нет изображения</p>')
+
+
+class FeedbackImage(BaseImageMixin):
     """Изображение, прикреплённое к форме обратной связи.
 
     - Хранит метаданные и URL.
     - Привязано к форме и времени загрузки.
     """
 
-    feedback_image = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False,
-        verbose_name='Идентификатор изображения',
-    )
     feedback = models.ForeignKey(
         FeedbackForm,
         on_delete=models.CASCADE,
         db_column='feedback_id',
         related_name='images',
         verbose_name='Форма',
-    )
-    original_name = models.CharField(
-        max_length=MAX_ORIGINAL_NAME,
-        verbose_name='Оригинальное имя файла',
-    )
-    file_size = models.IntegerField(
-        verbose_name='Размер файла в байтах',
-    )
-    mime_type = models.CharField(
-        max_length=MAX_MINE_TYPE,
-        verbose_name='MIME-тип',
-    )
-    image_url = models.URLField(
-        max_length=MAX_IMAGE_URL,
-        verbose_name='URL изображения',
     )
 
     class Meta:
@@ -113,15 +110,22 @@ class FeedbackImage(TimestampMixin, models.Model):
         verbose_name_plural = 'Изображения обратной связи'
         indexes = (
             models.Index(fields=['feedback']),
-            models.Index(fields=['created_at']),
+            models.Index(fields=['uploaded_at']),
         )
 
     def __str__(self) -> str:
         return f'Изображение: {self.original_name} для {self.feedback.subject}'
 
-    @admin.display(description='Изображение')
-    def post_image(self):   # noqa: ANN201
-        """Отображает превью в админке."""
-        if self.image_url:
-            return mark_safe(f"<img src='{self.image_url}' width=50>")
-        return 'Без фото'
+    def image_preview(self) -> SafeText:
+        """Вохвращает изображение.
+
+        Вставляет ссылку в html-блок для вывода в админ-панели.
+
+        """
+        if self.image_id:
+            return mark_safe(
+                f'<a href="{self.image_url}" target="_blank"><img '
+                f'src="{self.image_url}" width="150" height="150" '
+                f'style="object-fit: cover;" /></a>',
+            )
+        return 'Нет изображения'
