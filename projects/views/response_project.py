@@ -181,7 +181,7 @@ class ProjectResponseViewSet(GenericViewSet):
     - invite (POST): пригласить пользователя — только employer-автор.
     """
 
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated(),)
     lookup_field = 'project_id'
     serializer_class = ResponseUserProjectSerializer
 
@@ -215,7 +215,7 @@ class ProjectResponseViewSet(GenericViewSet):
             return (IsWorker(),)
         if self.action == 'invite':
             return (IsEmployer(),)
-        return [permission() for permission in self.permission_classes]
+        return self.permission_classes
 
     @extend_schema(
         tags=['Отклики'],
