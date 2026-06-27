@@ -56,13 +56,13 @@ def invalidate_question_like_cache(
 ) -> None:
     """Инвалидирует кэш при лайке/снятии лайка вопроса.
 
-    Очищает детали для пользователя и список для всех (изменяется likes_count).
+    Очищает только детальную страницу вопроса для конкретного пользователя.
+    Список вопросов не очищается.
     """
     cache.delete_pattern(
         f'{CACHE_KEY_QNA_PREFIX}:detail:'
         f'{instance.question_id}:{instance.user_id}',
     )
-    cache.delete_pattern(f'{CACHE_KEY_QNA_PREFIX}:list:*')
 
 
 @receiver(post_save, sender=AnswerLike)

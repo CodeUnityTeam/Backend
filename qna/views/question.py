@@ -9,7 +9,11 @@ from drf_spectacular.utils import (
 )
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import (
+    AllowAny,
+    BasePermission,
+    IsAuthenticated,
+)
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -41,30 +45,41 @@ from qna.services import toggle_like
 
 
 @extend_schema_view(
-    list=extend_schema(tags=['Questions'], summary='Список вопросов'),
+    list=extend_schema(
+        tags=['Questions'],
+        summary='Список вопросов',
+        description='Список вопросов с пагинацией.'
+        'Доступен всем пользователям.',
+    ),
     create=extend_schema(tags=['Questions'], summary='Создать вопрос'),
     retrieve=extend_schema(
         tags=['Questions'],
         summary='Детальная страница вопроса',
+        description='Детальная страница вопроса с ответами. '
+        'Доступна только авторизованным пользователям.',
     ),
     partial_update=extend_schema(
         tags=['Questions'],
         summary='Редактировать вопрос',
-    ),
-    destroy=extend_schema(tags=['Questions'], summary='Удалить вопрос'),
-)
+        description='Редактировать вопрос. Доступно только автору вопроса.'),
+    destroy=extend_schema(
+        tags=['Questions'],
+        summary='Удалить вопрос',
+        description='Удалить вопрос. Доступно только автору вопроса.'),
+    )
 class QuestionViewSet(CacheRetrieveMixin, viewsets.ModelViewSet):
     """Представление для вопросов."""
 
-    queryset = get_question_detail_queryset()
-    # Лёгкий queryset для actions, где не нужны prefetch (add_answer, like)
-    _light_queryset = get_light_question_queryset()
-
     serializer_class = QuestionCreateSerializer
-    permission_classes = [IsAuthenticated]
     http_method_names = ['get', 'post', 'patch', 'delete']
     retrieve_cache_timeout = QUESTION_DETAIL_CACHE_TIMEOUT
     retrieve_cache_key_prefix = 'qna'
+
+    def get_permissions(self) -> list[BasePermission]:
+        """Список вопросов доступен всем, остальное — только авторизованным."""
+        if self.action == 'list':
+            return [AllowAny()]
+        return [IsAuthenticated()]
 
     def list(
         self, request: Request, *args: Any, **kwargs: Any,
@@ -106,9 +121,9 @@ class QuestionViewSet(CacheRetrieveMixin, viewsets.ModelViewSet):
 
     def get_queryset(self) -> QuerySet:
         """Возвращает оптимизированный queryset в зависимости от action."""
-        if self.action in ('add_answer', 'like'):
-            return self._light_queryset
-        return super().get_queryset()
+        if self.action in ('add_answer', 'like', 'partial_update', 'destroy'):
+            return get_light_question_queryset()
+        return get_question_detail_queryset()
 
     @extend_schema(
             request=QuestionCreateSerializer,

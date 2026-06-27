@@ -1,3 +1,4 @@
+from django.db.models import QuerySet
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework.decorators import action
 from rest_framework.mixins import DestroyModelMixin
@@ -15,7 +16,11 @@ from qna.services import toggle_like
 
 
 @extend_schema_view(
-    destroy=extend_schema(tags=['Answers'], summary='Удалить ответ'),
+    destroy=extend_schema(
+        tags=['Answers'],
+        summary='Удалить ответ',
+        description='Удалить ответ. Доступно только автору ответа.',
+    ),
     like=extend_schema(
         tags=['Likes'],
         summary='Лайк/снятие лайка ответа',
@@ -26,13 +31,17 @@ from qna.services import toggle_like
 class AnswerViewSet(DestroyModelMixin, GenericViewSet):
     """Представление для ответов."""
 
-    queryset = get_answer_detail_queryset()
     serializer_class = AnswerDetailSerializer
     permission_classes = [IsAuthenticated, CanDeleteAnswer]
+
+    def get_queryset(self) -> QuerySet:
+        """Возвращает оптимизированный queryset с аннотациями."""
+        return get_answer_detail_queryset()
 
     @extend_schema(
             tags=['Answers'],
             summary='Лайк/снятие лайка ответа',
+            description='Ставит или снимает лайк на ответ.',
         )
     @action(detail=True, methods=['post'], url_path='like')
     def like(

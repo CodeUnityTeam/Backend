@@ -32,7 +32,7 @@ def get_question_detail_queryset() -> QuerySet[Question]:
     """Возвращает оптимизированный queryset для детальной страницы вопроса.
 
     - select_related: user
-    - prefetch_related: answers, likes, images
+    - prefetch_related: answers, images
     - annotate: likes_count, answers_count, author_name
     """
     return Question.objects.select_related('user').prefetch_related(
@@ -42,7 +42,6 @@ def get_question_detail_queryset() -> QuerySet[Question]:
                 'user',
             ).prefetch_related('images').filter(is_active=True),
         ),
-        'likes',
         'images',
     ).annotate(
         likes_count=Count('likes', distinct=True),
@@ -76,11 +75,14 @@ def get_answer_detail_queryset() -> QuerySet[Answer]:
     """Возвращает оптимизированный queryset для ответов.
 
     - select_related: user, question
-    - prefetch_related: likes, images
+    - prefetch_related: images
+    - annotate: likes_count
     """
     return Answer.objects.select_related(
         'user', 'question',
-    ).prefetch_related('likes', 'images')
+    ).prefetch_related('images').annotate(
+        likes_count=Count('likes', distinct=True),
+    )
 
 
 def get_all_skills() -> QuerySet[Skill]:
