@@ -51,7 +51,7 @@ class User(TimestampMixin, AbstractUser):
 
     username = models.CharField(
         max_length=MAX_CHAR_FIELD_LENGTH,
-        unique=False,
+        unique=True,
         blank=True,
         null=True,
     )
@@ -191,6 +191,11 @@ class User(TimestampMixin, AbstractUser):
         related_name='users',
         verbose_name='Формат работы',
         blank=True,
+    )
+    rating = models.PositiveIntegerField(
+        'Рейтинг пользователя (сумма лайков)',
+        default=0,
+        help_text='Сумма лайков ко всем вопросам и ответам пользователя',
     )
 
     class Meta:

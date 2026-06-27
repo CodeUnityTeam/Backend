@@ -139,6 +139,7 @@ class MeProfileRetrieveSerializer(MeProfileUpdateSerializer):
     skills = SkillSerializer(many=True, read_only=True)
     specializations = SpecializationSerializer(many=True, read_only=True)
     workformats = WorkFormatSerializer(many=True, read_only=True)
+    rating = serializers.IntegerField(read_only=True)
 
     class Meta(MeProfileUpdateSerializer.Meta):
         """Конфигурация полей профиля для чтения."""
@@ -149,6 +150,7 @@ class MeProfileRetrieveSerializer(MeProfileUpdateSerializer):
             'email',
             'role',
             'experiences',
+            'rating',
         ) + MeProfileUpdateSerializer.Meta.fields
         read_only_fields = fields
 
@@ -169,10 +171,9 @@ class PublicUserProfileSerializer(serializers.ModelSerializer):
 
     is_liked = serializers.SerializerMethodField()
     skills = SkillSerializer(many=True, read_only=True)
-    specializations = SpecializationSerializer(
-        many=True, read_only=True,
-    )
+    specializations = SpecializationSerializer(many=True, read_only=True)
     workformats = WorkFormatSerializer(many=True, read_only=True)
+    rating = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = UserModel
@@ -186,6 +187,7 @@ class PublicUserProfileSerializer(serializers.ModelSerializer):
             'workformats',
             'avatar_url',
             'is_liked',
+            'rating',
         )
         read_only_fields = fields
 
@@ -197,7 +199,6 @@ class PublicUserProfileSerializer(serializers.ModelSerializer):
         if hasattr(obj, 'annotated_is_liked'):
             return obj.annotated_is_liked
 
-        employer: Any = self.context['request'].user
         if (
             employer.projects_relation
             != UserModel.ProjectsRelationChoices.EMPLOYER

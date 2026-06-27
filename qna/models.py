@@ -67,12 +67,12 @@ class Question(TimestampMixin, models.Model):
         db_table = 'questions'
         verbose_name = 'Вопрос'
         verbose_name_plural = 'Вопросы'
-        indexes = [
+        indexes = (
             models.Index(fields=['-created_at']),  # поля из миксина
             models.Index(fields=['-updated_at']),  # поля из миксина
             models.Index(fields=['is_active']),
             models.Index(fields=['is_anonymous']),
-        ]
+        )
 
     def __str__(self) -> str:
         return self.title
@@ -129,13 +129,13 @@ class Answer(models.Model):
         db_table = 'answers'
         verbose_name = 'Ответ'
         verbose_name_plural = 'Ответы'
-        indexes = [
+        indexes = (
             models.Index(fields=['question', 'created_at']),
             models.Index(fields=['user']),
             models.Index(fields=['parent_answer']),
             models.Index(fields=['-created_at']),
             models.Index(fields=['is_active']),
-        ]
+        )
 
     def __str__(self) -> str:
         short_content = self.content[:75]
@@ -170,15 +170,15 @@ class QuestionLike(models.Model):
         db_table = 'question_likes'
         verbose_name = 'Лайк вопроса'
         verbose_name_plural = 'Лайки вопросов'
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
                 fields=['user', 'question'],
                 name='unique_user_question_like',
             ),
-        ]
-        indexes = [
+        )
+        indexes = (
             models.Index(fields=['created_at']),
-        ]
+        )
 
     def __str__(self) -> str:
         return (
@@ -215,15 +215,15 @@ class AnswerLike(models.Model):
         db_table = 'answer_likes'
         verbose_name = 'Лайк ответа'
         verbose_name_plural = 'Лайки ответов'
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
                 fields=['user', 'answer'],
                 name='unique_user_answer_like',
             ),
-        ]
-        indexes = [
+        )
+        indexes = (
             models.Index(fields=['created_at']),
-        ]
+        )
 
     def __str__(self) -> str:
         return f'{self.user.first_name} ответ на {self.answer.question.title}'
@@ -250,11 +250,11 @@ class QuestionImage(BaseImageMixin):
         db_table = 'question_image'
         verbose_name = 'Изображение вопроса'
         verbose_name_plural = 'Изображения вопроса'
-        indexes = [
+        indexes = (
             models.Index(fields=['question']),
             models.Index(fields=['uploaded_by']),
             models.Index(fields=['uploaded_at']),
-        ]
+        )
 
     def __str__(self) -> str:
         return f'Изображение {self.original_name} для "{self.question.title}"'
@@ -281,11 +281,11 @@ class AnswerImage(BaseImageMixin):
         db_table = 'answer_image'
         verbose_name = 'Изображение ответа'
         verbose_name_plural = 'Изображения ответов'
-        indexes = [
+        indexes = (
             models.Index(fields=['answer']),
             models.Index(fields=['uploaded_by']),
             models.Index(fields=['uploaded_at']),
-        ]
+        )
 
     def __str__(self) -> str:
         return (

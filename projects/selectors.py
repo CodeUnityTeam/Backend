@@ -20,7 +20,13 @@ from core.constants.projects import (
     RECRUITING_CLOSED,
 )
 
-from .models import Project, ProjectLike, ProjectParticipant, Response
+from .models import (
+    Project,
+    ProjectFavorite,
+    ProjectLike,
+    ProjectParticipant,
+    Response,
+)
 
 User = get_user_model()
 
@@ -44,6 +50,29 @@ def _annotate_is_liked_by_me(
             ),
         )
     return qs.annotate(is_liked_by_me=Exists(ProjectLike.objects.none()))
+
+
+def _annotate_is_favorite_by_me(
+    qs: QuerySet[Project],
+    user: User | None,
+) -> QuerySet[Project]:
+    """Аннотирует queryset проектов полем is_favorite_by_me.
+
+    Добавляет булево поле is_favorite_by_me на уровне БД (подзапрос Exists).
+    Если user не передан или не аутентифицирован — аннотирует False.
+    """
+    if user is not None and user.is_authenticated:
+        return qs.annotate(
+            is_favorite_by_me=Exists(
+                ProjectFavorite.objects.filter(
+                    user=user,
+                    project=OuterRef('project_id'),
+                ),
+            ),
+        )
+    return qs.annotate(
+        is_favorite_by_me=Exists(ProjectFavorite.objects.none()),
+    )
 
 
 def get_project_with_relations(project_id: UUID) -> Project:
@@ -93,6 +122,7 @@ def get_optimized_project_queryset(
         likes_count=Count('likes'),
     )
     qs = _annotate_is_liked_by_me(qs, user)
+    qs = _annotate_is_favorite_by_me(qs, user)
     return _annotate_is_participant(qs, user)
 
 
@@ -217,7 +247,7 @@ def get_visible_projects_for_list(
     когда не запрошен фильтр my_project.
     """
     return qs.exclude(
-        status_project__in=[DRAFT, BLOCKED, ARCHIVED],
+        status_project__in=(DRAFT, BLOCKED, ARCHIVED),
     )
 
 
@@ -239,10 +269,10 @@ def get_visible_projects_for_retrieve(
     ):
         return qs.filter(
             Q(author=user)
-            | Q(status_project__in=[PUBLISHED, RECRUITING_CLOSED]),
+            | Q(status_project__in=(PUBLISHED, RECRUITING_CLOSED)),
         )
     return qs.filter(
-        status_project__in=[PUBLISHED, RECRUITING_CLOSED],
+        status_project__in=(PUBLISHED, RECRUITING_CLOSED),
     )
 
 

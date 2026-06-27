@@ -3,7 +3,9 @@ from typing import Any
 
 from django.core.cache import cache
 from django.db.models import QuerySet
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import (
+    OpenApiParameter,
     extend_schema,
     extend_schema_view,
 )
@@ -23,7 +25,9 @@ from core.constants.cache import (
     QUESTION_DETAIL_CACHE_TIMEOUT,
     QUESTION_LIST_CACHE_TIMEOUT,
 )
+from qna.filters import QuestionFilter
 from qna.models import QuestionLike
+from qna.paginations import CustomQuestionOffsetPagination
 from qna.selectors import (
     get_light_question_queryset,
     get_question_detail_queryset,
@@ -74,6 +78,19 @@ class QuestionViewSet(CacheRetrieveMixin, viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'patch', 'delete']
     retrieve_cache_timeout = QUESTION_DETAIL_CACHE_TIMEOUT
     retrieve_cache_key_prefix = 'qna'
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = QuestionFilter
+    pagination_class = CustomQuestionOffsetPagination
+
+    def get_permissions(self) -> BasePermission:
+        """Назначает разные права для разных действий.
+
+        - list: любой пользователь (включая анонимных)
+        - остальные действия: только авторизованные
+        """
+        if self.action == 'list':
+            return (AllowAny(),)
+        return (IsAuthenticated(),)
 
     def get_permissions(self) -> list[BasePermission]:
         """Список вопросов доступен всем, остальное — только авторизованным."""

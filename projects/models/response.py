@@ -59,16 +59,16 @@ class Response(CreatedAtMixin, models.Model):
         db_table = 'response'
         verbose_name = 'Отклик'
         verbose_name_plural = 'Отклики'
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
                 fields=['project', 'user'],
                 name='unique_response_per_project_user',
             ),
-        ]
-        indexes = [
+        )
+        indexes = (
             models.Index(fields=['status_resp']),
             models.Index(fields=['created_at']),
-        ]
+        )
 
     def __str__(self) -> str:
         return (

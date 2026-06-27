@@ -1,3 +1,4 @@
+import os
 from typing import Any, Optional
 
 from allauth.account.adapter import DefaultAccountAdapter
@@ -11,8 +12,6 @@ from django.http import HttpRequest
 from rest_framework import status
 from rest_framework.exceptions import APIException
 from rest_framework.response import Response
-
-from users.utils import get_frontend_url
 
 UserModel = get_user_model()
 
@@ -57,7 +56,7 @@ class CustomAccountAdapter(DefaultAccountAdapter):
         emailconfirmation: EmailConfirmation,
     ) -> str:
         """Получить url для формирования ссылки на подтверждение email."""
-        return get_frontend_url('email', emailconfirmation.key)
+        return os.getenv('HOST_URL', 'http://localhost:3000')
 
     def respond_email_verification_sent(
         self,

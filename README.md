@@ -18,6 +18,27 @@ uv run python manage.py migrate
 uv run python manage.py loaddata fixtures/tags/*
 uv run python manage.py runserver
 ```
+
+#### Запуск на dev-сервере
+
+На сервере используется [`load_on_dev.sh`](../fixtures/test_data/load_on_dev.sh), который сам подставляет нужные переменные:
+
+```bash
+bash fixtures/test_data/load_on_dev.sh
+```
+
+Скрипт автоматически:
+1. Регистрирует пользователей через API `https://dev.code-unity.ru/api/v1`
+2. Подтверждает email через `docker exec backend python manage.py shell`
+3. Создаёт проекты, вопросы, ответы и остальные тестовые данные
+
+При необходимости можно переопределить переменные:
+
+```bash
+BASE_URL="https://custom.domain/api/v1" \
+DOCKER_CONTAINER="my_backend" \
+bash fixtures/test_data/load_on_dev.sh
+```
 ---
 
 ### Backend

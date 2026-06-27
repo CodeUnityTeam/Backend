@@ -9,7 +9,7 @@ from .project import (
     ProjectUpdateResponseSerializer,
     ProjectUpdateSerializer,
 )
-
+from .faivorites_project import ProjectFavoriteResponseSerializer
 from .response_project import (
     FeedbackAndInvitationFeedSerializer,
     InviteUserProjectSerializer,

@@ -1,3 +1,4 @@
+
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils import timezone
@@ -85,7 +86,57 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
             'status_project', 'skills', 'specializations', 'project_format',
         )
         extra_kwargs = {
-            'location': {'required': True},
+            'title': {
+                'required': True,
+                'allow_blank': False,
+                'error_messages': {
+                    'required': 'Название обязательно для заполнения.',
+                    'blank': 'Название не может быть пустым.',
+                },
+            },
+            'short_desc': {
+                'required': True,
+                'allow_blank': False,
+                'error_messages': {
+                    'required': 'Кратное описание обязательно для заполнения.',
+                    'blank': 'Краткое описание не может быть пустым.',
+                },
+            },
+            'full_desc': {
+                'required': False,
+                'allow_blank': True,
+                'default': None,
+            },
+            'location': {
+                'required': True,
+                'allow_blank': False,
+                'error_messages': {
+                    'required': 'Местоположение обязательно для заполнения.',
+                    'blank': 'Местоположение не может быть пустым.',
+                },
+            },
+            'start_date': {
+                'required': False,
+                'input_formats': ['%Y.%m.%d', '%Y-%m-%d'],
+                'error_messages': {
+                    'required': 'Дата начала проекта обязательна.',
+                    'invalid': (
+                        'Неверный формат даты начала. '
+                        'Ожидается ГГГГ-ММ-ДД.'
+                    ),
+                },
+            },
+            'end_date': {
+                'required': True,
+                'input_formats': ['%Y.%m.%d', '%Y-%m-%d'],
+                'error_messages': {
+                    'required': 'Дата окончания проекта обязательна.',
+                    'invalid': (
+                        'Неверный формат даты окончания. '
+                        'Ожидается ГГГГ-ММ-ДД.'
+                    ),
+                },
+            },
         }
 
     def validate(self, data: dict) -> dict:
@@ -103,7 +154,7 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
         status_project = data.get('status_project')
         if status_project:
             validate_create_project_status(status_project)
-        # Валидация дат (если обе даты переданы)
+        # Валидация даты периода проекта (если обе даты переданы)
         start_date = data.get('start_date')
         end_date = data.get('end_date')
         if start_date and end_date:
@@ -117,6 +168,11 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
         relationship_data = extract_relationship_data(validated_data)
         user = self.context['request'].user
         validated_data['author'] = user
+        short_desc = validated_data.get('short_desc')
+        full_desc = validated_data.get('full_desc')
+        if not full_desc:
+            # Если full_desc нет или пустая строка — копируем short_desc
+            validated_data['full_desc'] = short_desc
         if validated_data.get('status_project') == 'published':
             validated_data['published_at'] = timezone.now()
         project = Project.objects.create(**validated_data)
@@ -157,6 +213,11 @@ class ProjectShortSerializer(serializers.ModelSerializer):
         read_only=True,
         help_text='Количество участников проекта (аннотация БД).',
     )
+    is_favorite_by_me = serializers.BooleanField(
+        read_only=True,
+        default=False,
+        help_text='В избранном ли проект у текущего пользователя',
+    )
 
     class Meta:
         model = Project
@@ -169,6 +230,7 @@ class ProjectShortSerializer(serializers.ModelSerializer):
             'published_at',
             'participants_count',
             'is_liked_by_me',
+            'is_favorite_by_me',
             'skills',
         )
 
@@ -319,8 +381,17 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
             'short_desc': {'required': False},
             'full_desc': {'required': False},
             'location': {'required': False},
-            'start_date': {'required': False},
-            'end_date': {'required': False},
+            'end_date': {
+                'required': False,
+                'input_formats': ['%Y.%m.%d', '%Y-%m-%d'],
+                'error_messages': {
+                    'required': 'Дата окончания проекта обязательна.',
+                    'invalid': (
+                        'Неверный формат даты окончания. '
+                        'Ожидается ГГГГ-ММ-ДД.'
+                    ),
+                },
+            },
             'status_project': {'required': False},
         }
 
@@ -349,6 +420,18 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
            - Обычная валидация переданных полей.
         """
         project = self.instance
+        if (
+            project.status_project in (PUBLISHED, RECRUITING_CLOSED)
+            and isinstance(self.initial_data, dict)
+            and 'start_date' in self.initial_data
+        ):
+            raise serializers.ValidationError(
+                {
+                    'start_date': (
+                        'Нельзя изменить дату начала проекта после публикации.'
+                    ),
+                },
+            )
         new_status = data.get('status_project')
         is_publishing = (
             new_status == PUBLISHED
@@ -444,7 +527,7 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
         """Валидация статуса проекта."""
         if status_project is None:
             return status_project
-        valid_statuses = [DRAFT, PUBLISHED, RECRUITING_CLOSED]
+        valid_statuses = (DRAFT, PUBLISHED, RECRUITING_CLOSED)
         if status_project not in valid_statuses:
             raise serializers.ValidationError(
                 f'Статус должен быть одним из: {", ".join(valid_statuses)}.',
