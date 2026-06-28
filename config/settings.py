@@ -444,7 +444,7 @@ config = {
     'disable_existing_loggers': False,
     'filters': {
         'add_parent_dir': {
-            '()': '__main__.ParentDirFilter',
+            '()': 'config.settings.ParentDirFilter',
         },
     },
     'formatters': {
@@ -467,9 +467,9 @@ config = {
             'formatter': 'simple',
         },
         'file': {
-            'class': 'logging.handlers.RotatingFileHandler',
+            'class': 'config.settings.MakeDirRotatingFileHandler',
             'level': 'WARNING',
-            'filename': 'logs.log',
+            'filename': os.path.join(BASE_DIR, 'logs', 'logs.log'),
             'formatter': 'detailed',
             'filters': ['add_parent_dir'],
             'mode': 'a',
