@@ -1,6 +1,9 @@
+import logging.config
+import logging.handlers
 import os
 from datetime import timedelta
 from pathlib import Path
+from typing import Any
 
 from dotenv import load_dotenv
 
@@ -118,7 +121,6 @@ STORAGES = {
     'staticfiles': {
         'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
     },
-
     'avatars': {
         'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage',
         'OPTIONS': {
@@ -140,7 +142,8 @@ STORAGES = {
             'access_key': os.environ.get('AWS_ACCESS_KEY_ID'),
             'secret_key': os.environ.get('AWS_SECRET_ACCESS_KEY'),
             'bucket_name': os.environ.get(
-                'MINIO_IMAGES_BUCKET_NAME', 'images',
+                'MINIO_IMAGES_BUCKET_NAME',
+                'images',
             ),
             'endpoint_url': S3_ENDPOINT,
             'custom_domain': (
@@ -218,9 +221,7 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
     ),
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.AllowAny',
-    ),
+    'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.AllowAny',),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
     ),
@@ -404,3 +405,93 @@ CACHES = {
 # Fallback при недоступности Redis
 DJANGO_REDIS_IGNORE_EXCEPTIONS = True
 DJANGO_REDIS_LOG_IGNORED_EXCEPTIONS = True
+
+# =============================================================================
+# LOGGING
+# =============================================================================
+
+
+class MakeDirRotatingFileHandler(logging.handlers.RotatingFileHandler):
+    """Хэндлер, создающий папку для логов перед инициализацией."""
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Извлекаем имя файла из аргументов dictConfig."""
+        filename = kwargs.get('filename', args[0] if args else '')
+        log_dir = os.path.dirname(str(filename))
+
+        if log_dir:
+            os.makedirs(log_dir, exist_ok=True)
+
+        super().__init__(*args, **kwargs)
+
+
+class ParentDirFilter(logging.Filter):
+    """Фильтр для добавления имени каталога исходного кода в лог."""
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        """Добавляет parent_dir — имя каталога, где лежит .py файл."""
+        if record.pathname:
+            record.parent_dir = os.path.basename(
+                os.path.dirname(record.pathname),
+            )
+        else:
+            record.parent_dir = ''
+        return True
+
+
+config = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+        'add_parent_dir': {
+            '()': '__main__.ParentDirFilter',
+        },
+    },
+    'formatters': {
+        'simple': {'format': (
+            '%(asctime)s - %(levelname)s - [%(name)s] - %(message)s'
+        )},
+        'detailed': {
+            'format': (
+                '%(asctime)s - [%(levelname)s] - %(name)s '
+                '%(parent_dir)s/%(filename)s:'
+                '%(funcName)s:%(lineno)d - %(message)s'
+            ),
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'level': 'DEBUG',
+            'formatter': 'simple',
+        },
+        'file': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'WARNING',
+            'filename': 'logs.log',
+            'formatter': 'detailed',
+            'filters': ['add_parent_dir'],
+            'mode': 'a',
+            'encoding': 'utf-8',
+            'maxBytes': 5242880,
+            'backupCount': 3,
+        },
+    },
+    'loggers': {
+        # логгер для приложений:
+        # core, users, projects, qna, feedback, help
+        'app': {
+            'level': 'DEBUG',
+            'handlers': ['console', 'file'],
+            'propagate': False,
+        },
+    },
+    # корневой логгер
+    'root': {
+        'level': 'WARNING',
+        'handlers': ['console'],
+    },
+}
+
+logging.config.dictConfig(config)
