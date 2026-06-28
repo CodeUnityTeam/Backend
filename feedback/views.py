@@ -13,8 +13,8 @@ from feedback.serializers import FeedbackCreateSerializer
 class FeedbackViewSet(viewsets.ModelViewSet):
     """Представление для формы обратной связи."""
 
-    permission_classes = [IsAuthenticated]
-    http_method_names = ['post']
+    permission_classes = (IsAuthenticated,)
+    http_method_names = ('post',)
 
     @extend_schema(
         request=FeedbackCreateSerializer,
