@@ -144,7 +144,6 @@ class ProjectParticipant(models.Model):
     user = models.ForeignKey(
         'users.User',
         on_delete=models.CASCADE,
-        db_column='user_id',
         related_name='project_participations',
         verbose_name='Пользователь',
     )
@@ -188,7 +187,6 @@ class ProjectLike(CreatedAtMixin, models.Model):
     user = models.ForeignKey(
         'users.User',
         on_delete=models.CASCADE,
-        db_column='user_id',
         related_name='project_likes',
         verbose_name='Пользователь',
     )
@@ -233,7 +231,6 @@ class ProjectFavorite(CreatedAtMixin, models.Model):
     user = models.ForeignKey(
         'users.User',
         on_delete=models.CASCADE,
-        db_column='user_id',
         related_name='project_favorites',
         verbose_name='Пользователь',
     )

@@ -123,54 +123,23 @@ class ResponseFeedViewSet(ListModelMixin, GenericViewSet):
 
         Ключ: responses:feed:{user_id}:{md5(params)}, TTL 3 мин.
         """
-        user = request.user
         query_params = request.query_params.dict()
         sorted_params = sorted(query_params.items())
-        params_str = hashlib.md5(
-            str(sorted_params).encode(),
-        ).hexdigest()
+        params_str = hashlib.md5(str(sorted_params).encode()).hexdigest()
         cache_key = (
             f'{CACHE_KEY_RESPONSES_PREFIX}:feed:'
-            f'{user.pk}:{params_str}'
+            f'{request.user.pk}:{params_str}'
         )
-
         cached_response = cache.get(cache_key)
         if cached_response is not None:
             return DRFResponse(cached_response)
-
-        queryset = self.get_queryset()
-        filterset = ResponseFeedFilter(
-            request.GET,
-            queryset=queryset,
-            request=request,
-        )
-        filtered_queryset = filterset.qs
-        paginator = self.pagination_class()
-        page = paginator.paginate_queryset(filtered_queryset, request)
-        serializer = self.get_serializer(
-            page if page is not None else filtered_queryset,
-            many=True,
-            context={
-                'user': request.user,
-                'request': request,
-            },
-        )
-        if page is not None:
-            response = paginator.get_paginated_response(serializer.data)
-        else:
-            response = DRFResponse(serializer.data)
-            response.data['applied_filters'] = {
-                'card_type': request.query_params.get('card_type', 'all'),
-                'status': request.query_params.get('status', 'all'),
-            }
-
-        if response.status_code == 200:
+        response = super().list(request, *args, **kwargs)
+        if response.status_code == status.HTTP_200_OK:
             cache.set(
                 cache_key,
                 response.data,
                 timeout=RESPONSE_FEED_CACHE_TIMEOUT,
             )
-
         return response
 
 

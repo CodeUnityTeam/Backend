@@ -8,7 +8,13 @@ from core.constants.cache import (
     CACHE_KEY_PROJECTS_PREFIX,
     CACHE_KEY_RESPONSES_PREFIX,
 )
-from projects.models import Project, ProjectLike, ProjectParticipant, Response
+from projects.models import (
+    Project,
+    ProjectFavorite,
+    ProjectLike,
+    ProjectParticipant,
+    Response,
+)
 
 
 @receiver(post_save, sender=Project)
@@ -66,7 +72,6 @@ def invalidate_response_feed_cache(
     cache.delete_pattern(
         f'{CACHE_KEY_RESPONSES_PREFIX}:feed:{instance.user_id}:*',
     )
-
     # Инвалидируем кэш для автора проекта (если это не тот же пользователь)
     author_id = instance.project.author_id
     if str(author_id) != str(instance.user_id):
@@ -88,4 +93,50 @@ def invalidate_project_participant_cache(
     """
     cache.delete_pattern(
         f'{CACHE_KEY_PROJECTS_PREFIX}:detail:{instance.project_id}:*',
+    )
+
+
+@receiver(post_save, sender=Response)
+@receiver(post_delete, sender=Response)
+def invalidate_project_detail_on_response_change(
+    sender: Any,
+    instance: Response,
+    **kwargs: Any,
+) -> None:
+    """Инвалидирует кэш, связанный с откликами.
+
+    ВАЖНО: очищает кэш деталей проекта, чтобы при изменении
+    статуса (pending -> approved) пользователь видел актуальное
+    количество участников.
+    """
+    project_id = instance.project_id
+    user_id = instance.user_id
+    author_id = instance.project.author_id
+    #  Инвалидируем кэш для АВТОРА проекта.
+    cache.delete(
+        f'{CACHE_KEY_PROJECTS_PREFIX}:detail:{project_id}:{author_id}',
+    )
+    #  Инвалидируем кэш для ПОЛЬЗОВАТЕЛЯ, чей отклик изменился.
+    cache.delete(f'{CACHE_KEY_PROJECTS_PREFIX}:detail:{project_id}:{user_id}')
+
+
+@receiver(post_save, sender=ProjectFavorite)
+@receiver(post_delete, sender=ProjectFavorite)
+def invalidate_favorite_cache(
+    sender: Any,
+    instance: ProjectFavorite,
+    **kwargs: Any,
+) -> None:
+    """Инвалидирует кэш при добавлении/удалении проекта из избранного.
+
+    Очищает:
+    - детали проекта для конкретного пользователя
+    - список проектов для конкретного пользователя
+    """
+    cache.delete_pattern(
+        f'{CACHE_KEY_PROJECTS_PREFIX}:detail:'
+        f'{instance.project_id}:{instance.user_id}',
+    )
+    cache.delete_pattern(
+        f'{CACHE_KEY_PROJECTS_PREFIX}:list:{instance.user_id}:*',
     )
