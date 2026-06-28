@@ -21,9 +21,8 @@ load_users() {
   USERS_JSON=()
   while IFS= read -r line; do USERS_JSON+=("$line"); done < <(
     $PYTHON -c "
-import json, re, sys
-path = re.sub(r'^/(mnt/)?([a-z])/', lambda m: m.group(2).upper() + ':/', '$USERS_FILE')
-with open(path) as f:
+import json, sys
+with open('$USERS_FILE') as f:
     users = json.load(f)
 for u in users:
     sys.stdout.write(json.dumps(u, ensure_ascii=False) + '\n')
@@ -150,4 +149,3 @@ import json, sys
 print(json.load(sys.stdin).get('pk', 'unknown'))
 "
 }
-
