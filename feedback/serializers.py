@@ -6,7 +6,10 @@ from django.db import transaction
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from core.constants.feedback import MAX_IMAGE_SIZE_FEEDBACK, MAX_IMAGE_COUNT_FEEDBACK
+from core.constants.feedback import (
+    MAX_IMAGE_COUNT_FEEDBACK,
+    MAX_IMAGE_SIZE_FEEDBACK,
+)
 from feedback.models import FeedbackForm, FeedbackImage
 from feedback.services import feedback_image_upload_handler
 
@@ -19,7 +22,7 @@ class FeedbackCreateSerializer(serializers.ModelSerializer):
     attachments = serializers.ListField(
         child=serializers.ImageField(),
         write_only=True,
-        required=False
+        required=False,
     )
 
     class Meta:

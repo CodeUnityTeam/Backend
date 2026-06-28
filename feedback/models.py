@@ -10,7 +10,6 @@ from core.constants.feedback import (
     MAX_SUBJECT_FEEDBACK,
     STATUS_FEEDBACK,
 )
-from core.constants.qna import MAX_IMAGE_URL, MAX_MINE_TYPE, MAX_ORIGINAL_NAME
 from core.models.mixins import TimestampMixin
 from qna.mixins import BaseImageMixin
 
@@ -81,15 +80,16 @@ class FeedbackForm(TimestampMixin, models.Model):
                     f'"width="150" height="150" style="object-fit: cover;" /></a>'
                 )
             return mark_safe(links)
-        return mark_safe(f'<p>Нет изображения</p>')
+        return mark_safe('<p>Нет изображения</p>')
 
 
 class FeedbackImage(BaseImageMixin):
-    """Изображение, прикреплённое к форме обратной связи. 
+    """Изображение, прикреплённое к форме обратной связи.
 
     - Хранит метаданные и URL.
     - Привязано к форме и времени загрузки.
     """
+
     feedback = models.ForeignKey(
         FeedbackForm,
         on_delete=models.CASCADE,
@@ -117,6 +117,6 @@ class FeedbackImage(BaseImageMixin):
             return mark_safe(
                 f'<a href="{self.image_url}" target="_blank"><img '
                 f'src="{self.image_url}" width="150" height="150" '
-                f'style="object-fit: cover;" /></a>'
+                f'style="object-fit: cover;" /></a>',
             )
-        return "Нет изображения"
+        return 'Нет изображения'

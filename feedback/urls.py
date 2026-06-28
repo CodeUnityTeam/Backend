@@ -3,7 +3,6 @@ from rest_framework.routers import DefaultRouter
 
 from feedback.views import FeedbackViewSet
 
-
 app_name = 'feedback'
 
 router = DefaultRouter()
