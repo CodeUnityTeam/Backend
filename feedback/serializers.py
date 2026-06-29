@@ -1,12 +1,15 @@
 import uuid
-from typing import List
+from typing import Any, List
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from core.constants.feedback import MAX_IMAGE_SIZE_FEEDBACK, MAX_IMAGE_COUNT_FEEDBACK
+from core.constants.feedback import (
+    MAX_IMAGE_COUNT_FEEDBACK,
+    MAX_IMAGE_SIZE_FEEDBACK,
+)
 from feedback.models import FeedbackForm, FeedbackImage
 from feedback.services import feedback_image_upload_handler
 
@@ -19,7 +22,7 @@ class FeedbackCreateSerializer(serializers.ModelSerializer):
     attachments = serializers.ListField(
         child=serializers.ImageField(),
         write_only=True,
-        required=False
+        required=False,
     )
 
     class Meta:
@@ -48,8 +51,8 @@ class FeedbackCreateSerializer(serializers.ModelSerializer):
                 )
         return feedback
 
-    def validate_attachments(self, value: List):
-        """Валидация изображений прикреплённых к форме обратной связи:
+    def validate_attachments(self, value: List) -> List[Any]:
+        """Валидация изображений прикреплённых к форме обратной связи.
 
         - Количество - не более 5.
         - Размер каждого изображения - не более 5 МБ.
