@@ -57,7 +57,7 @@ class CustomAccountAdapter(DefaultAccountAdapter):
     ) -> str:
         """Получить url для формирования ссылки на подтверждение email."""
         host_url = os.getenv('HOST_URL', 'http://localhost:3000')
-        return f'{host_url}/{emailconfirmation.key}'
+        return f'{host_url}/register/verify-email/{emailconfirmation.key}'
 
     def respond_email_verification_sent(
         self,
