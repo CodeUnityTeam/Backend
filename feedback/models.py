@@ -1,5 +1,4 @@
 import uuid
-from typing import Literal
 
 from django.contrib.auth import get_user_model
 from django.db import models
