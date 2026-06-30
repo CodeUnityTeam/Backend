@@ -14,6 +14,9 @@ v1_urlpatterns = [
         'projects/',
         include(('projects.urls', 'projects'), namespace='projects'),
     ),
+    path('feedback/',
+         include(('feedback.urls', 'feedback'), namespace='feedbacks'),
+    ),
     path(
         'schema/',
         SpectacularAPIView.as_view(),

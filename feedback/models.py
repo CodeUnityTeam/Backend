@@ -81,8 +81,8 @@ class FeedbackForm(TimestampMixin, models.Model):
                 links += (
                     f'<a href="{x.image_url}" target="_blank" style="display: '
                     f'inline-block; margin: 15px;"><img src="{x.image_url}" "'
-                    '"width="150" height="150" style="object-fit: cover;" '
-                    '/></a>'
+                    f'"width="150" height="150" style="object-fit: cover;"'
+                    f' /></a>'
                 )
             return mark_safe(links)
         return mark_safe('<p>Нет изображения</p>')
@@ -117,10 +117,11 @@ class FeedbackImage(BaseImageMixin):
     def __str__(self) -> str:
         return f'Изображение: {self.original_name} для {self.feedback.subject}'
 
-    def image_preview(self) -> SafeText | Literal['Нет изображения']:
+    def image_preview(self) -> SafeText:
         """Вохвращает изображение.
 
         Вставляет ссылку в html-блок для вывода в админ-панели.
+
         """
         if self.image_id:
             return mark_safe(

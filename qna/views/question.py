@@ -105,7 +105,7 @@ class QuestionViewSet(CacheRetrieveMixin, viewsets.ModelViewSet):
         - list: любой пользователь (включая анонимных)
         - остальные действия: только авторизованные
         """
-        if self.action == 'list':
+        if self.action in ('list', 'retrieve'):
             return (AllowAny(),)
         return (IsAuthenticated(),)
 
