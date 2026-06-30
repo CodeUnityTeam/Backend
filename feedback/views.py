@@ -1,6 +1,5 @@
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import status, viewsets
-from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -14,8 +13,8 @@ from feedback.serializers import FeedbackCreateSerializer
 class FeedbackViewSet(viewsets.ModelViewSet):
     """Представление для формы обратной связи."""
 
-    permission_classes = [IsAuthenticated]
-    http_method_names = ['post']
+    permission_classes = (IsAuthenticated,)
+    http_method_names = ('post',)
 
     @extend_schema(
         request=FeedbackCreateSerializer,
@@ -30,4 +29,4 @@ class FeedbackViewSet(viewsets.ModelViewSet):
         print('data = ', request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(status=status.HTTP_201_CREATED,)
+        return Response(status=status.HTTP_201_CREATED)

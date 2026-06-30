@@ -168,6 +168,8 @@ def get_response_feed_queryset(user: User) -> QuerySet:
     user (User): текущий пользователь
     QuerySet: отфильтрованный queryset откликов
     """
+    if not user or not user.is_authenticated:
+        return Response.objects.none()
     queryset = Response.objects.select_related(
         'project__author',
         'user',
