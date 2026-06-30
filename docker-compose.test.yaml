@@ -1,0 +1,75 @@
+volumes:
+  pg_data:
+  static:
+  minio_data:
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: test_db
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  minio:
+    image: minio/minio:latest
+    container_name: test_minio
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 2s
+      retries: 3
+
+  redis:
+    image: redis:alpine
+    container_name: test_redis
+    restart: unless-stopped
+    env_file: .env
+    command: >
+      sh -c 'if [ -n "$REDIS_PASSWORD" ]; then
+        redis-server --requirepass "$REDIS_PASSWORD";
+      else
+        redis-server;
+      fi'
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  backend:
+    image: maxwell884/code-unity-backend:latest
+    container_name: test_backend
+    restart: unless-stopped
+    depends_on:
+      - db
+      - minio
+      - redis
+    env_file: .env
+    environment:
+      - DB_MODE=network
+    volumes:
+      - static:/backend_static/static/
+
+  frontend:
+    image: maxwell884/code-unity-frontend:latest
+    container_name: test_frontend
+    restart: unless-stopped
+    env_file: .env
+
+  nginx:
+    image: maxwell884/code-unity-backend-nginx:latest
+    container_name: test_nginx
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - static:/backend_static/static/:ro
+    depends_on:
+      - backend
