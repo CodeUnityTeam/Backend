@@ -5,7 +5,6 @@ from django.core.files.uploadedfile import UploadedFile
 
 from core.s3_utils import MinioService
 
-
 feedback_image_minio_client = MinioService(
     bucket_name=settings.STORAGES['images']['OPTIONS']['bucket_name'],
 )
@@ -22,6 +21,7 @@ def feedback_image_upload_handler(file_obj: UploadedFile) -> str:
 
     Returns:
         Публичный URL загруженного изображения.
+
     """
     file_name_parts: list[str] = file_obj.name.split('.')
     ext: str = (
