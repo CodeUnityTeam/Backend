@@ -3,7 +3,7 @@ from typing import Literal
 
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.utils.safestring import SafeText, mark_safe
+from django.utils.safestring import SafeString, mark_safe
 
 from core.constants.feedback import (
     MAX_CONTENT_FEEDBACK,
@@ -68,12 +68,11 @@ class FeedbackForm(TimestampMixin, models.Model):
     def __str__(self) -> str:
         return f'{self.subject} — {self.user.first_name} ({self.status})'
 
-    def image_preview(self) -> SafeText:
-        """Вохвращает изображения.
+    def image_preview(self) -> SafeString:
+        """Если у данной формы есть изображения.
 
-        Если у данной формы есть изображения, то собираем ссылки на них
-        в строку и передаём в html-блоке для вывода в админ-панели.
-
+        Cобираем ссылки на них в строку и передаём в html-блоке
+         для вывода в админ-панели.
         """
         if self.images.exists():
             links = ''
@@ -117,12 +116,8 @@ class FeedbackImage(BaseImageMixin):
     def __str__(self) -> str:
         return f'Изображение: {self.original_name} для {self.feedback.subject}'
 
-    def image_preview(self) -> SafeText:
-        """Вохвращает изображение.
-
-        Вставляет ссылку в html-блок для вывода в админ-панели.
-
-        """
+    def image_preview(self) -> SafeString:
+        """Отображает превью изображения в админ-панели."""
         if self.image_id:
             return mark_safe(
                 f'<a href="{self.image_url}" target="_blank"><img '

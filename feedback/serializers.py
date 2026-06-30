@@ -1,5 +1,5 @@
 import uuid
-from typing import List
+from typing import Any, List
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
@@ -51,7 +51,7 @@ class FeedbackCreateSerializer(serializers.ModelSerializer):
                 )
         return feedback
 
-    def validate_attachments(self, value: List) -> List:
+    def validate_attachments(self, value: List) -> List[Any]:
         """Валидация изображений прикреплённых к форме обратной связи.
 
         Выполняет следующие проверки:
