@@ -26,12 +26,17 @@ def invalidate_project_cache(
 ) -> None:
     """Инвалидирует кэш проекта при создании/изменении/удалении.
 
-    Очищает детали, список и рекомендации — для всех пользователей.
+    Очищает:
+    - детали проекта — для всех пользователей (меняются сами данные)
+    - список проектов — только для автора (остальные видят те же данные)
+    - рекомендации — для всех (появился/изменился проект)
     """
     cache.delete_pattern(
         f'{CACHE_KEY_PROJECTS_PREFIX}:detail:{instance.project_id}:*',
     )
-    cache.delete_pattern(f'{CACHE_KEY_PROJECTS_PREFIX}:list:*')
+    cache.delete_pattern(
+        f'{CACHE_KEY_PROJECTS_PREFIX}:list:{instance.author_id}:*',
+    )
     cache.delete_pattern(f'{CACHE_KEY_PROJECTS_PREFIX}:recommendations:*')
 
 
@@ -65,19 +70,13 @@ def invalidate_response_feed_cache(
 ) -> None:
     """Инвалидирует кэш ленты откликов при создании/изменении/удалении.
 
-    Очищает кэш для автора отклика и автора проекта
-    (если это разные пользователи).
+    Очищает кэш только для автора отклика.
+    Автор проекта не использует ResponseFeedViewSet (доступен только IsWorker),
+    поэтому инвалидация для него не требуется.
     """
-    # Инвалидируем кэш для пользователя, который создал отклик
     cache.delete_pattern(
         f'{CACHE_KEY_RESPONSES_PREFIX}:feed:{instance.user_id}:*',
     )
-    # Инвалидируем кэш для автора проекта (если это не тот же пользователь)
-    author_id = instance.project.author_id
-    if str(author_id) != str(instance.user_id):
-        cache.delete_pattern(
-            f'{CACHE_KEY_RESPONSES_PREFIX}:feed:{author_id}:*',
-        )
 
 
 @receiver(post_save, sender=ProjectParticipant)

@@ -65,24 +65,25 @@
 
 1. **Точечная инвалидация (cache stampede prevention)** — при лайке/действии кэш сбрасывается **только для конкретного пользователя**, а не для всех. Например, `ProjectLike.post_save` удаляет `projects:list:{user_id}:*` — только для того, кто лайкнул. Остальные пользователи продолжают использовать свой кэш.
 2. **Инвалидация по паттерну для всех** — когда меняются сами данные (а не отношение пользователя к ним), кэш сбрасывается для всех через `delete_pattern('{prefix}:detail:{id}:*')`. Например, при изменении названия проекта — все видят новое название.
+3. **Минимизация избыточной инвалидации** — лайк вопроса не сбрасывает список вопросов (`qna:list:*`), т.к. не меняет состав списка. Инвалидация списка проектов при изменении проекта сужена до автора (`projects:list:{author_id}:*`).
 
 ### Сигналы
 
 | Модель | Файл | Что инвалидирует |
 |--------|------|-------------------|
-| `Project` | [`projects/signals.py:16`](../projects/signals.py:16) | `projects:detail:{id}:*`, `projects:list:*`, `projects:recommendations:*` |
+| `Project` | [`projects/signals.py:16`](../projects/signals.py:16) | `projects:detail:{id}:*`, `projects:list:{author_id}:*`, `projects:recommendations:*` |
 | `ProjectLike` | [`projects/signals.py:40`](../projects/signals.py:40) | `projects:detail:{id}:{user_id}`, `projects:list:{user_id}:*` |
-| `Response` | [`projects/signals.py:67`](../projects/signals.py:67) | `responses:feed:{user_id}:*`, `responses:feed:{author_id}:*` |
-| `ProjectParticipant` | [`projects/signals.py:96`](../projects/signals.py:96) | `projects:detail:{project_id}:*` |
-| `Question` | [`qna/signals.py:25`](../qna/signals.py:25) | `qna:detail:{pk}:*`, `qna:list:*` |
-| `Answer` | [`qna/signals.py:39`](../qna/signals.py:39) | `qna:detail:{question_id}:*` |
-| `QuestionLike` | [`qna/signals.py:52`](../qna/signals.py:52) | `qna:detail:{question_id}:{user_id}`, `qna:list:*` |
-| `AnswerLike` | [`qna/signals.py:74`](../qna/signals.py:74) | `qna:detail:{answer.question_id}:{user_id}` |
+| `Response` | [`projects/signals.py:59`](../projects/signals.py:59) | `responses:feed:{user_id}:*` (только автор отклика) |
+| `ProjectParticipant` | [`projects/signals.py:83`](../projects/signals.py:83) | `projects:detail:{project_id}:*` |
+| `Question` | [`qna/signals.py:28`](../qna/signals.py:28) | `qna:detail:{pk}:*`, `qna:list:*` |
+| `Answer` | [`qna/signals.py:42`](../qna/signals.py:42) | `qna:detail:{question_id}:*` |
+| `QuestionLike` | [`qna/signals.py:55`](../qna/signals.py:55) | `qna:detail:{question_id}:{user_id}` (список не инвалидируется) |
+| `AnswerLike` | [`qna/signals.py:73`](../qna/signals.py:73) | `qna:detail:{answer.question_id}:{user_id}` |
 | `User` | [`users/signals.py:17`](../users/signals.py:17) | `users:detail:{user_id}:*`, `users:list:*`, `projects:recommendations:{user_id}` |
-| `UserLike` | [`users/signals.py:44`](../users/signals.py:44) | `users:list:{employer_id}:*`, `users:detail:{worker_id}:{employer_id}` |
-| `Skill` | [`help/signals.py:18`](../help/signals.py:18) | `skills:list` |
-| `Specialization` | [`help/signals.py:28`](../help/signals.py:28) | `specializations:list` |
-| `WorkFormat` | [`help/signals.py:38`](../help/signals.py:38) | `work_formats:list` |
+| `UserLike` | [`users/signals.py:36`](../users/signals.py:36) | `users:list:{employer_id}:*`, `users:detail:{worker_id}:{employer_id}` |
+| `Skill` | [`help/signals.py:16`](../help/signals.py:16) | `skills:list` |
+| `Specialization` | [`help/signals.py:26`](../help/signals.py:26) | `specializations:list` |
+| `WorkFormat` | [`help/signals.py:36`](../help/signals.py:36) | `work_formats:list` |
 
 ## Конфигурация
 
