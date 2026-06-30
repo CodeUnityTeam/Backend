@@ -54,6 +54,7 @@ class FeedbackCreateSerializer(serializers.ModelSerializer):
     def validate_attachments(self, value: List) -> List:
         """Валидация изображений прикреплённых к форме обратной связи.
 
+        Выполняет следующие проверки:
         - Количество - не более 5.
         - Размер каждого изображения - не более 5 МБ.
         - Формат изображений - только JPEG/PNG.
