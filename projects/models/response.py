@@ -37,7 +37,6 @@ class Response(CreatedAtMixin, models.Model):
     user = models.ForeignKey(
         'users.User',
         on_delete=models.CASCADE,
-        db_column='user_id',
         related_name='responses',
         verbose_name='Пользователь',
     )
