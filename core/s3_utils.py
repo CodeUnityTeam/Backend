@@ -24,19 +24,13 @@ class MinioService:
     def _init_storage(self) -> S3Boto3Storage:
         """Внутренний метод инициализации S3-хранилища."""
         options: dict[str, Any] = settings.STORAGES['avatars']['OPTIONS']
-        endpoint_url: str = options.get('endpoint_url', '')
-
-        clean_domain: str = endpoint_url.replace(
-            'http://', '',
-        ).replace('https://', '')
-        custom_domain: str = f'{clean_domain}/{self.bucket_name}'
 
         storage = S3Boto3Storage(
             access_key=options.get('access_key'),
             secret_key=options.get('secret_key'),
             bucket_name=self.bucket_name,
-            endpoint_url=endpoint_url,
-            custom_domain=custom_domain,
+            endpoint_url=options.get('endpoint_url'),
+            custom_domain=options.get('custom_domain'),
             querystring_auth=False,
             file_overwrite=False,
         )
@@ -101,15 +95,17 @@ class MinioService:
     def upload_file(self, cloud_path: str, file_obj: UploadedFile) -> str:
         """Загружает файл и возвращает его полный публичный URL."""
         saved_name: str = self.storage.save(cloud_path, file_obj)
-        return f'http://{self.storage.custom_domain}/{saved_name}'
+        return self.storage.url(saved_name)
 
     def delete_file(self, file_url: str) -> None:
         """Удаляет файл из бакета по его полному URL."""
         try:
-            bucket_part: str = f'{self.storage.custom_domain}/'
-
-            if bucket_part in file_url:
-                file_path: str = file_url.split(bucket_part)[-1]
+            # Извлекаем ключ объекта из URL
+            # URL формата: https://domain/bucket-name/path/to/file.ext
+            # Нам нужно всё, что после bucket_name/
+            bucket_prefix = f'{self.bucket_name}/'
+            if bucket_prefix in file_url:
+                file_path: str = file_url.split(bucket_prefix)[-1]
                 self.storage.delete(file_path)
         except Exception as err:
             logger = logging.getLogger(__name__)

@@ -6,6 +6,8 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
 )
 
+from feedback.urls import reviews_router
+
 v1_urlpatterns = [
     path('help/', include(('help.urls', 'help'), namespace='help')),
     path('user/', include(('users.urls', 'users'), namespace='users')),
@@ -14,9 +16,11 @@ v1_urlpatterns = [
         'projects/',
         include(('projects.urls', 'projects'), namespace='projects'),
     ),
-    path('feedback/',
-         include(('feedback.urls', 'feedback'), namespace='feedbacks'),
+    path(
+        'feedback/',
+        include(('feedback.urls', 'feedback'), namespace='feedbacks'),
     ),
+    path('', include(reviews_router.urls)),
     path(
         'schema/',
         SpectacularAPIView.as_view(),
