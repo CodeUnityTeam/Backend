@@ -1,20 +1,73 @@
 import uuid
-from typing import Literal
 
 from django.contrib.auth import get_user_model
+from django.core.validators import MinLengthValidator
 from django.db import models
 from django.utils.safestring import SafeString, mark_safe
 
 from core.constants.feedback import (
     MAX_CONTENT_FEEDBACK,
     MAX_LEN_STATUS_FEEDBACK,
+    MAX_REVIEW_TEXT,
     MAX_SUBJECT_FEEDBACK,
+    MIN_REVIEW_TEXT,
     STATUS_FEEDBACK,
 )
 from core.models.mixins import TimestampMixin
 from qna.mixins import BaseImageMixin
 
 User = get_user_model()
+
+
+class Review(TimestampMixin, models.Model):
+    """Отзыв пользователя о платформе.
+
+    - Содержит текст отзыва.
+    - Привязан к пользователю, который написал отзыв.
+    - Один пользователь может оставить только один отзыв.
+    """
+
+    review_id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+        verbose_name='Идентификатор отзыва',
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        db_column='user_id',
+        related_name='reviews',
+        verbose_name='Пользователь',
+    )
+    text = models.TextField(
+        max_length=MAX_REVIEW_TEXT,
+        validators=[MinLengthValidator(MIN_REVIEW_TEXT)],
+        verbose_name='Текст отзыва',
+    )
+
+    class Meta:
+        """Метаданные модели."""
+
+        db_table = 'reviews'
+        verbose_name = 'Отзыв'
+        verbose_name_plural = 'Отзывы'
+        constraints = (
+            models.UniqueConstraint(
+                fields=['user'],
+                name='unique_user_review',
+                violation_error_message='Пользователь уже оставил отзыв.',
+            ),
+        )
+        indexes = (
+            models.Index(fields=['user']),
+            models.Index(fields=['-created_at']),
+        )
+
+    def __str__(self) -> str:
+        return (
+            f'Отзыв от {self.user.first_name}: {self.text[:50]}...'
+        )
 
 
 class FeedbackForm(TimestampMixin, models.Model):

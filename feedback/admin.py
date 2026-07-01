@@ -5,8 +5,23 @@ from django.http import HttpRequest
 from core.admin_mixins import RolePermissionsMixin
 from qna.forms import ImageAdminForm
 
-from .models import FeedbackForm, FeedbackImage
+from .models import FeedbackForm, FeedbackImage, Review
 from .services import feedback_image_upload_handler
+
+
+@admin.register(Review)
+class ReviewAdmin(RolePermissionsMixin, admin.ModelAdmin):
+    """Админ‑панель для модели Review."""
+
+    list_display = (
+        'review_id',
+        'user',
+        'text',
+        'created_at',
+    )
+    list_select_related = ('user',)
+    search_fields = ('text', 'user__email', 'user__first_name')
+    ordering = ('-created_at',)
 
 
 class FeedbackImageInline(admin.TabularInline):
