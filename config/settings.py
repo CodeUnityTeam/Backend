@@ -358,6 +358,8 @@ SPECTACULAR_SETTINGS = {
         {'name': 'Likes', 'description': 'Лайки'},
         {'name': 'Tags', 'description': 'Теги'},
         {'name': 'Files', 'description': 'Файлы'},
+        {'name': 'Feedbacks', 'description': 'Обратная связь'},
+        {'name': 'Reviews', 'description': 'Отзывы'},
     ),
 }
 
