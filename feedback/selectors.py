@@ -1,4 +1,5 @@
 from django.db.models import Prefetch, QuerySet, Value
+from django.db.models.base import Model
 from django.db.models.functions import Concat
 
 from feedback.models import Review
@@ -26,6 +27,6 @@ def get_reviews_queryset() -> QuerySet[Review]:
     )
 
 
-def create_review(user, text: str) -> Review:
+def create_review(user: Model, text: str) -> Review:
     """Создаёт отзыв."""
     return Review.objects.create(user=user, text=text)
