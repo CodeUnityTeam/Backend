@@ -4,7 +4,6 @@ from typing import Any, Type
 
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
-from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import UploadedFile
 from django.db.models import QuerySet
 from django.http import HttpRequest
@@ -22,7 +21,6 @@ from drf_spectacular.utils import (
     inline_serializer,
 )
 from rest_framework import serializers, status
-from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.generics import (
     ListAPIView,
     RetrieveAPIView,
@@ -55,6 +53,7 @@ from users.serializers.profile import (
     MeProfileUpdateSerializer,
     PublicUserProfileSerializer,
     UserExperienceSerializer,
+    UserLikeSerializer,
     UserResponseCardSerializer,
 )
 from users.services import (
@@ -304,6 +303,48 @@ class ProfileLikeAPIView(APIView):
 
     permission_classes = (IsAuthenticated,)
 
+    @extend_schema(
+        summary='Переключение лайка пользователю',
+        description=(
+            'Позволяет поставить или убрать лайк пользователю. '
+            'Если лайк уже стоял — он удаляется (is_liked: false). '
+            'Если лайка не было — он создается (is_liked: true).'
+        ),
+        responses={
+            200: inline_serializer(
+                name='LikeDeletedResponse',
+                fields={'is_liked': serializers.BooleanField(default=False)},
+            ),
+            201: inline_serializer(
+                name='LikeCreatedResponse',
+                fields={'is_liked': serializers.BooleanField(default=True)},
+            ),
+            400: inline_serializer(
+                name='LikeValidationError',
+                fields={
+                    'detail': serializers.CharField(
+                        default='Текст ошибки бизнес-логики.',
+                    ),
+                },
+            ),
+            401: inline_serializer(
+                name='UnauthorizedError',
+                fields={
+                    'detail': serializers.CharField(
+                        default='Учетные данные не были предоставлены.',
+                    ),
+                },
+            ),
+            404: inline_serializer(
+                name='NotFoundError',
+                fields={
+                    'detail': serializers.CharField(
+                        default='Страница не найдена.',
+                    ),
+                },
+            ),
+        },
+    )
     def post(
         self,
         request: Request,
@@ -312,7 +353,7 @@ class ProfileLikeAPIView(APIView):
         **kwargs: Any,
     ) -> Response:
         """Переключение (toggle) лайка для указанного worker_id."""
-        employer: User = request.user
+        employer = request.user
         worker = get_object_or_404(User, user_id=worker_id)
 
         # 1. Попытка удалить существующий лайк (Toggle-выключение)
@@ -327,12 +368,14 @@ class ProfileLikeAPIView(APIView):
                 status=status.HTTP_200_OK,
             )
 
-        # 2. Попытка создать новый лайк (Toggle-включение)
-        try:
-            like = UserLike(employer=employer, worker=worker)
-            like.save()
-        except ValidationError as error:
-            raise DRFValidationError({'detail': error.messages})
+        # 2. Валидация бизнес-логики через сериализатор
+        serializer = UserLikeSerializer(
+            data={'worker': worker.user_id}, context={'request': request},
+        )
+        serializer.is_valid(raise_exception=True)
+
+        # 3. Создание лайка (Toggle-включение)
+        serializer.save(employer=employer)
 
         return Response(
             {'is_liked': True},
