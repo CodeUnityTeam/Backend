@@ -113,6 +113,7 @@ DATABASES = {
 }
 
 S3_ENDPOINT = os.getenv('S3_ENDPOINT_URL', 'http://minio:9000')
+S3_PUBLIC_URL = os.getenv('S3_PUBLIC_URL', '').rstrip('/')
 
 STORAGES = {
     'default': {
@@ -127,11 +128,11 @@ STORAGES = {
             'access_key': os.environ.get('AWS_ACCESS_KEY_ID'),
             'secret_key': os.environ.get('AWS_SECRET_ACCESS_KEY'),
             'bucket_name': os.environ.get('AWS_STORAGE_BUCKET_NAME'),
-            'endpoint_url': S3_ENDPOINT,  # Динамический хост
+            'endpoint_url': S3_ENDPOINT,
             'custom_domain': (
-                f'{os.environ.get("S3_ENDPOINT")}'
+                f'{S3_PUBLIC_URL}'
                 f'/{os.environ.get("AWS_STORAGE_BUCKET_NAME")}'
-            ),
+            ) if S3_PUBLIC_URL else None,
             'querystring_auth': False,
             'file_overwrite': False,
         },
@@ -147,9 +148,9 @@ STORAGES = {
             ),
             'endpoint_url': S3_ENDPOINT,
             'custom_domain': (
-                f'{os.environ.get("S3_ENDPOINT")}'
-                f'{os.environ.get("MINIO_IMAGES_BUCKET_NAME", "images")}'
-            ),
+                f'{S3_PUBLIC_URL}'
+                f'/{os.environ.get("MINIO_IMAGES_BUCKET_NAME", "images")}'
+            ) if S3_PUBLIC_URL else None,
             'querystring_auth': False,
             'file_overwrite': False,
         },
