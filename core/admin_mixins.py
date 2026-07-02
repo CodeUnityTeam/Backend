@@ -12,8 +12,6 @@ class RolePermissionsMixin:
         user = request.user
 
         role = getattr(user, 'role', None)
-        if role not in ['admin', 'moderator']:
-            return None
         if user.is_superuser or role == 'admin':
             return True
 
