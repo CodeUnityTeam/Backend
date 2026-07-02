@@ -2,6 +2,7 @@ volumes:
   pg_data:
   static:
   minio_data:
+  logs:
 
 services:
   db:
@@ -52,6 +53,7 @@ services:
       - DB_MODE=network
     volumes:
       - static:/backend_static/static/
+      - logs:/app/logs/
 
   nginx:
     build: ./nginx

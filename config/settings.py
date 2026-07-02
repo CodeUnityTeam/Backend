@@ -489,11 +489,58 @@ config = {
             'handlers': ['console', 'file'],
             'propagate': False,
         },
+        # Логгеры приложений наследуются от 'app'
+        'core': {
+            'level': 'DEBUG',
+            'handlers': ['console', 'file'],
+            'propagate': False,
+        },
+        'users': {
+            'level': 'DEBUG',
+            'handlers': ['console', 'file'],
+            'propagate': False,
+        },
+        'projects': {
+            'level': 'DEBUG',
+            'handlers': ['console', 'file'],
+            'propagate': False,
+        },
+        'qna': {
+            'level': 'DEBUG',
+            'handlers': ['console', 'file'],
+            'propagate': False,
+        },
+        'feedback': {
+            'level': 'DEBUG',
+            'handlers': ['console', 'file'],
+            'propagate': False,
+        },
+        'help': {
+            'level': 'DEBUG',
+            'handlers': ['console', 'file'],
+            'propagate': False,
+        },
+        # Стандартные django-логеры
+        'django.request': {
+            'level': 'ERROR',
+            'handlers': ['file'],
+            'propagate': False,
+        },
+        'django.db.backends': {
+            'level': 'ERROR',
+            'handlers': ['file'],
+            'propagate': False,
+        },
+        'django.security': {
+            'level': 'WARNING',
+            'handlers': ['file'],
+            'propagate': False,
+        },
     },
     # корневой логгер
     'root': {
         'level': 'WARNING',
-        'handlers': ['console'],
+        'handlers': ['console', 'file'],
     },
 }
 

@@ -6,6 +6,8 @@ from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
 from storages.backends.s3boto3 import S3Boto3Storage
 
+logger = logging.getLogger(__name__)
+
 
 class S3ClientError(Exception):
     """Кастомное исключение для ошибок S3-клиента."""
@@ -89,7 +91,6 @@ class MinioService:
             self._bucket_configured = True
 
         except Exception as err:
-            logger = logging.getLogger(__name__)
             logger.error(f'Ошибка настройки бакета {self.bucket_name}: {err}')
 
     def upload_file(self, cloud_path: str, file_obj: UploadedFile) -> str:
@@ -108,5 +109,4 @@ class MinioService:
                 file_path: str = file_url.split(bucket_prefix)[-1]
                 self.storage.delete(file_path)
         except Exception as err:
-            logger = logging.getLogger(__name__)
             logger.error(f'Ошибка удаления файла {file_url}: {err}')
