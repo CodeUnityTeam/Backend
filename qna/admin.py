@@ -88,7 +88,7 @@ class QuestionImageAdmin(admin.ModelAdmin):
 
         if file_obj:
             public_url: str = image_upload_handler(
-                file_obj=file_obj, prefix='questions'
+                file_obj=file_obj, prefix='questions',
             )
             obj.image_url = public_url
             obj.original_name = file_obj.name

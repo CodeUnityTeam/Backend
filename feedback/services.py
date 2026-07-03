@@ -1,6 +1,5 @@
 from uuid import uuid4
 
-from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
 
 from qna.services import image_minio_client

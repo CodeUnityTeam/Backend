@@ -15,7 +15,7 @@ image_minio_client = get_minio_client(
 
 
 def image_upload_handler(
-        file_obj: UploadedFile, prefix: str | None = None
+        file_obj: UploadedFile, prefix: str | None = None,
 ) -> str:
     """Загружает изображение в MinIO ВНЕ транзакции БД.
 

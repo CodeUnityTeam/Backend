@@ -104,8 +104,8 @@ class MinioService:
                 max_size_bytes = max_size_mb * 1024 * 1024
                 public_read_policy['Statement'][0]['Condition'] = {
                     'NumericLessThanEquals': {
-                        's3:content-length': str(max_size_bytes)
-                    }
+                        's3:content-length': str(max_size_bytes),
+                    },
                 }
 
             # 4. Применяем политику к бакету
@@ -126,7 +126,7 @@ class MinioService:
             self,
             cloud_path: str,
             file_obj: UploadedFile,
-            prefix: str | None = None
+            prefix: str | None = None,
         ) -> str:
         """Загружает файл и возвращает его полный публичный URL."""
         storage = self._get_storage()
