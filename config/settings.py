@@ -115,6 +115,10 @@ DATABASES = {
 S3_ENDPOINT = os.getenv('S3_ENDPOINT_URL', 'http://minio:9000')
 S3_PUBLIC_URL = os.getenv('S3_PUBLIC_URL', '').rstrip('/')
 
+ALLOW_AVATAR_SIZE_MB = 10
+ALLOW_IMAGE_SIZE_MB = 10
+ALLOW_FEEDBACK_SIZE_MB = 5
+
 STORAGES = {
     'default': {
         'BACKEND': 'django.core.files.storage.FileSystemStorage',
@@ -131,6 +135,7 @@ STORAGES = {
             'endpoint_url': S3_ENDPOINT,
             'querystring_auth': False,
             'file_overwrite': False,
+            'max_file_size_mb': ALLOW_AVATAR_SIZE_MB,
         },
     },
     'images': {
@@ -145,6 +150,7 @@ STORAGES = {
             'endpoint_url': S3_ENDPOINT,
             'querystring_auth': False,
             'file_overwrite': False,
+            'max_file_size_mb': ALLOW_IMAGE_SIZE_MB,
         },
     },
 }
@@ -162,10 +168,6 @@ STATIC_URL = '/static/'
 STATIC_ROOT = '/backend_static/static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-ALLOW_AVATAR_SIZE_MB = 10
-ALLOW_IMAGE_SIZE_MB = 10
-ALLOW_FEEDBACK_SIZE_MB = 5
 
 # =============================================================================
 # SECURITY, CORS & AUTH MODEL

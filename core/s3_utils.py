@@ -97,13 +97,24 @@ class MinioService:
                 ],
             }
 
-            # 3. Применяем политику к бакету
+            # 3. Ограничиваем максимальный размер файла
+            options = settings.STORAGES[self.storage_name]['OPTIONS']
+            max_size_mb = options.get('max_file_size_mb')
+            if max_size_mb is not None:
+                max_size_bytes = max_size_mb * 1024 * 1024
+                public_read_policy['Statement'][0]['Condition'] = {
+                    'NumericLessThanEquals': {
+                        's3:content-length': str(max_size_bytes)
+                    }
+                }
+
+            # 4. Применяем политику к бакету
             s3_client.put_bucket_policy(
                 Bucket=self.bucket_name,
                 Policy=json.dumps(public_read_policy),
             )
 
-            # 4. Устанавливаем флаг, что бакет настроен
+            # 5. Устанавливаем флаг, что бакет настроен
             self._bucket_configured = True
 
         except Exception as err:
