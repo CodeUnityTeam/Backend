@@ -3,11 +3,9 @@ from uuid import uuid4
 from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
 
-from core.s3_utils import MinioService
+from qna.services import image_minio_client
 
-feedback_image_minio_client = MinioService(
-    bucket_name=settings.STORAGES['images']['OPTIONS']['bucket_name'],
-)
+feedback_image_minio_client = image_minio_client  # Стоит сделать отдельный?
 
 
 def feedback_image_upload_handler(file_obj: UploadedFile) -> str:

@@ -4,11 +4,12 @@ from django.core.files.uploadedfile import UploadedFile
 from django.db.models import Model
 
 from config import settings
-from core.s3_utils import MinioService
+from core.s3_utils import get_minio_client
 from qna.selectors import count_likes, delete_like, get_or_create_like
 from users.services import update_user_rating
 
-image_minio_client = MinioService(
+image_minio_client = get_minio_client(
+    storage_name='images',
     bucket_name=settings.STORAGES['images']['OPTIONS']['bucket_name'],
 )
 

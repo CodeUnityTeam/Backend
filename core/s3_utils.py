@@ -1,5 +1,6 @@
 import json
 import logging
+from functools import cache
 from typing import Any
 
 from django.conf import settings
@@ -14,23 +15,40 @@ class S3ClientError(Exception):
 class MinioService:
     """Транспортный сервис для управления файлами в MinIO/S3."""
 
-    def __init__(self, bucket_name: str) -> None:
+    def __init__(self, storage_name: str, bucket_name: str) -> None:
         """Инициализировать имя бакета и настройки хранилища."""
         self.bucket_name: str = bucket_name
-        self.storage: S3Boto3Storage = self._init_storage()
+        self.storage_name: str = storage_name
+        self.storage: S3Boto3Storage | None = None
         self._bucket_configured: bool = False
-        self._ensure_bucket_templated()
+
+    def _get_storage(self) -> S3Boto3Storage:
+        """Лениво создает хранилище и настраивает бакет."""
+        if self.storage is None:
+            self.storage = self._init_storage()
+            self._ensure_bucket_templated()
+        return self.storage
 
     def _init_storage(self) -> S3Boto3Storage:
         """Внутренний метод инициализации S3-хранилища."""
-        options: dict[str, Any] = settings.STORAGES['avatars']['OPTIONS']
+        options: dict[str, Any] = (
+            settings.STORAGES[self.storage_name]['OPTIONS']
+        )
+
+        custom_domain: str | None = None
+        endpoint_url = options.get('endpoint_url')
+        if endpoint_url:
+            clean_domain: str = (
+                endpoint_url.replace('http://', '').replace('https://', '')
+            )
+            custom_domain = f'{clean_domain}/{self.bucket_name}'
 
         storage = S3Boto3Storage(
             access_key=options.get('access_key'),
             secret_key=options.get('secret_key'),
             bucket_name=self.bucket_name,
             endpoint_url=options.get('endpoint_url'),
-            custom_domain=options.get('custom_domain'),
+            custom_domain=custom_domain,
             querystring_auth=False,
             file_overwrite=False,
         )
@@ -50,7 +68,7 @@ class MinioService:
             return
 
         try:
-            s3_client: Any = self.storage.connection.meta.client
+            s3_client: Any = self._get_storage().connection.meta.client
 
             # 1. Проверяем существование бакета. Если нет — создаем.
             try:
@@ -94,8 +112,8 @@ class MinioService:
 
     def upload_file(self, cloud_path: str, file_obj: UploadedFile) -> str:
         """Загружает файл и возвращает его полный публичный URL."""
-        saved_name: str = self.storage.save(cloud_path, file_obj)
-        return self.storage.url(saved_name)
+        saved_name: str = self._get_storage().save(cloud_path, file_obj)
+        return storage.url(saved_name)
 
     def delete_file(self, file_url: str) -> None:
         """Удаляет файл из бакета по его полному URL."""
@@ -103,10 +121,17 @@ class MinioService:
             # Извлекаем ключ объекта из URL
             # URL формата: https://domain/bucket-name/path/to/file.ext
             # Нам нужно всё, что после bucket_name/
+            storage = self._get_storage()
             bucket_prefix = f'{self.bucket_name}/'
             if bucket_prefix in file_url:
                 file_path: str = file_url.split(bucket_prefix)[-1]
-                self.storage.delete(file_path)
+                storage.delete(file_path)
         except Exception as err:
             logger = logging.getLogger(__name__)
             logger.error(f'Ошибка удаления файла {file_url}: {err}')
+
+
+@cache
+def get_minio_client(storage_name: str, bucket_name: str) -> MinioService:
+    """Фабрика для создания MinioService."""
+    return MinioService(storage_name, bucket_name)

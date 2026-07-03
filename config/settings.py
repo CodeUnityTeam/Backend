@@ -129,10 +129,6 @@ STORAGES = {
             'secret_key': os.environ.get('AWS_SECRET_ACCESS_KEY'),
             'bucket_name': os.environ.get('AWS_STORAGE_BUCKET_NAME'),
             'endpoint_url': S3_ENDPOINT,
-            'custom_domain': (
-                f'{S3_PUBLIC_URL}'
-                f'/{os.environ.get("AWS_STORAGE_BUCKET_NAME")}'
-            ) if S3_PUBLIC_URL else None,
             'querystring_auth': False,
             'file_overwrite': False,
         },
@@ -147,10 +143,6 @@ STORAGES = {
                 'images',
             ),
             'endpoint_url': S3_ENDPOINT,
-            'custom_domain': (
-                f'{S3_PUBLIC_URL}'
-                f'/{os.environ.get("MINIO_IMAGES_BUCKET_NAME", "images")}'
-            ) if S3_PUBLIC_URL else None,
             'querystring_auth': False,
             'file_overwrite': False,
         },
