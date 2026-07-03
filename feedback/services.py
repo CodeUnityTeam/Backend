@@ -27,4 +27,5 @@ def feedback_image_upload_handler(file_obj: UploadedFile) -> str:
     )
     cloud_path: str = f'{uuid4().hex}.{ext}'
 
-    return feedback_image_minio_client.upload_file(cloud_path, file_obj)
+    return feedback_image_minio_client.upload_file(cloud_path, file_obj,
+                                                   'feedback')

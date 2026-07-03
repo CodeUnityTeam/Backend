@@ -109,10 +109,19 @@ class MinioService:
         except Exception as err:
             logger = logging.getLogger(__name__)
             logger.error(f'Ошибка настройки бакета {self.bucket_name}: {err}')
+            raise
 
-    def upload_file(self, cloud_path: str, file_obj: UploadedFile) -> str:
+    def upload_file(
+            self,
+            cloud_path: str,
+            file_obj: UploadedFile,
+            prefix: str | None = None
+        ) -> str:
         """Загружает файл и возвращает его полный публичный URL."""
-        saved_name: str = self._get_storage().save(cloud_path, file_obj)
+        storage = self._get_storage()
+        if prefix:
+            cloud_path = f'{prefix}/{cloud_path}'
+        saved_name: str = storage.save(cloud_path, file_obj)
         return storage.url(saved_name)
 
     def delete_file(self, file_url: str) -> None:
@@ -129,6 +138,7 @@ class MinioService:
         except Exception as err:
             logger = logging.getLogger(__name__)
             logger.error(f'Ошибка удаления файла {file_url}: {err}')
+            raise
 
 
 @cache

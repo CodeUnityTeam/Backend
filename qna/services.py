@@ -14,7 +14,9 @@ image_minio_client = get_minio_client(
 )
 
 
-def image_upload_handler(file_obj: UploadedFile) -> str:
+def image_upload_handler(
+        file_obj: UploadedFile, prefix: str | None = None
+) -> str:
     """Загружает изображение в MinIO ВНЕ транзакции БД.
 
     Возвращает публичный URL.
@@ -25,7 +27,7 @@ def image_upload_handler(file_obj: UploadedFile) -> str:
     )
     cloud_path: str = f'{uuid4().hex}.{ext}'
 
-    return image_minio_client.upload_file(cloud_path, file_obj)
+    return image_minio_client.upload_file(cloud_path, file_obj, prefix)
 
 
 def toggle_like(
