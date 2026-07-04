@@ -81,11 +81,6 @@ class User(TimestampMixin, AbstractUser):
         help_text=USER_EMAIL_HELP,
         unique=True,
     )
-    is_email_confirmed = models.BooleanField(
-        'Email подтверждён',
-        default=False,
-        help_text='Отмечает, подтверждён ли основной email пользователя.',
-    )
     new_email = models.EmailField(
         'Новая электронная почта',
         max_length=USER_EMAIL_LENGTH,
