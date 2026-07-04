@@ -15,15 +15,12 @@ class UUIDInFilter(django_filters.BaseInFilter):
         """Фильтрует queryset по списку UUID."""
         if not value:
             return qs
-        try:
-            valid_uuids = [UUID(v) for v in value]
-        except (ValueError, TypeError):
-            valid_uuids = []
-            for tag in value:
-                try:
-                    valid_uuids.append(UUID(tag))
-                except (ValueError, TypeError):
-                    pass
+        valid_uuids = []
+        for uuids_value in value:
+            try:
+                valid_uuids.append(UUID(uuids_value.strip()))
+            except (ValueError, TypeError, AttributeError):
+                pass 
         if not valid_uuids:
             return qs.none()
         return (
