@@ -28,19 +28,6 @@ class QuestionFilter(django_filters.FilterSet):
         model = Question
         fields = ()
 
-    # def filter_tags(
-    #     self,
-    #     queryset: QuerySet[Question],
-    #     name: str,
-    #     value: list[str] | None,
-    # ) -> QuerySet[Question]:
-    #     """Фильтрация вопросов по навыкам."""
-    #     if not value:
-    #         return queryset
-    #     return queryset.filter(
-    #         skills__skill_id__in=value
-    #     ).distinct()
-
     def filter_by_type(
         self,
         queryset: QuerySet[Question],
