@@ -20,7 +20,7 @@ class UUIDInFilter(django_filters.BaseInFilter):
             try:
                 valid_uuids.append(UUID(uuids_value.strip()))
             except (ValueError, TypeError, AttributeError):
-                pass 
+                pass
         if not valid_uuids:
             return qs.none()
         return (
