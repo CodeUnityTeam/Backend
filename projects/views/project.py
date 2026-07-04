@@ -547,13 +547,15 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
     ) -> DRFResponse:
         """Персональные рекомендации проектов на основе навыков пользователя.
 
-        Ключ: projects:recommendations:{user_id}, TTL 10 мин.
+        Ключ: projects:recommendations:{user_id}:{page}:{limit}, TTL 10 мин.
         Инвалидируется при изменении профиля или создании проекта.
         """
         user = request.user
+        page_num = request.query_params.get('page', '1')
+        page_limit = request.query_params.get('limit', '20')
         cache_key = (
             f'{CACHE_KEY_PROJECTS_PREFIX}:recommendations:'
-            f'{user.pk}'
+            f'{user.pk}:{page_num}:{page_limit}'
         )
         cached_response = cache.get(cache_key)
         if cached_response is not None:

@@ -35,7 +35,6 @@ dependencies = [
     "django-filter>=25.1",
     "django-storages[s3]>=1.14.6",
     "pillow>=12.2.0",
-    "urllib3>=2.7.0",
     "django-redis>=5.4.0,<6.0.0",
 ]
 

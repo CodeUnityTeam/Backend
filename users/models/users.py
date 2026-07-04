@@ -81,11 +81,6 @@ class User(TimestampMixin, AbstractUser):
         help_text=USER_EMAIL_HELP,
         unique=True,
     )
-    is_email_confirmed = models.BooleanField(
-        'Email подтверждён',
-        default=False,
-        help_text='Отмечает, подтверждён ли основной email пользователя.',
-    )
     new_email = models.EmailField(
         'Новая электронная почта',
         max_length=USER_EMAIL_LENGTH,
@@ -312,20 +307,6 @@ class UserLike(CreatedAtMixin, models.Model):
 
         if self.employer_id == self.worker_id:
             raise ValidationError('Нельзя лайкнуть свой профиль.')
-
-        if hasattr(self, 'worker') and not self.worker.is_active:
-            raise ValidationError(
-                'Можно лайкать только активных пользователей.',
-            )
-
-        if hasattr(self, 'employer') and (
-            self.employer.projects_relation !=
-            User.ProjectsRelationChoices.EMPLOYER
-        ):
-            raise ValidationError(
-                'Чтобы поставить лайк пользователь должен быть '
-                'автором проекта.',
-            )
 
     def save(self, *args: Any, **kwargs: Any) -> None:
         """Принудительный запуск валидации перед записью в БД."""
