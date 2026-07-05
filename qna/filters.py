@@ -4,14 +4,16 @@ import django_filters
 from django.db.models import Count, Q, QuerySet
 from rest_framework.exceptions import PermissionDenied
 
+from core.filters import UUIDInFilter
+
 from .models import Question
 
 
 class QuestionFilter(django_filters.FilterSet):
     """Фильтр вопросов."""
 
-    tags = django_filters.BaseInFilter(
-        method='filter_tags',
+    tags = UUIDInFilter(
+        field_name='skills__skill_id',
         label='Теги (по ID навыков)',
     )
     filter = django_filters.CharFilter(
@@ -25,19 +27,6 @@ class QuestionFilter(django_filters.FilterSet):
     class Meta:
         model = Question
         fields = ()
-
-    def filter_tags(
-        self,
-        queryset: QuerySet[Question],
-        name: str,
-        value: list[str] | None,
-    ) -> QuerySet[Question]:
-        """Фильтрация вопросов по навыкам."""
-        if not value:
-            return queryset
-        for skill_id in value:
-            queryset = queryset.filter(skills__skill_id=skill_id)
-        return queryset.distinct()
 
     def filter_by_type(
         self,

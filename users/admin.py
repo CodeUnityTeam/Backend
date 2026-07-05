@@ -1,10 +1,12 @@
 from typing import Any, Optional
 
+from allauth.account.models import EmailAddress
 from django import forms
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.contrib.auth.models import Group
 from django.core.files.uploadedfile import UploadedFile
+from django.db.models import QuerySet
 from django.http import HttpRequest
 from django.utils.safestring import mark_safe
 
@@ -26,11 +28,50 @@ from .services import avatar_delete_handler, avatar_upload_handler
 admin.site.unregister(Group)
 
 
+class EmailConfirmedFilter(admin.SimpleListFilter):
+    """Фильтр по подтверждённым email через allauth EmailAddress."""
+
+    title = 'Email подтверждён'
+    parameter_name = 'email_confirmed'
+
+    def lookups(
+        self,
+        request: HttpRequest,
+        model_admin: admin.ModelAdmin,
+    ) -> list[tuple[str, str]]:
+        """Возвращает варианты фильтра: 'Да' и 'Нет'."""
+        return (
+            ('yes', 'Да'),
+            ('no', 'Нет'),
+        )
+
+    def queryset(
+        self,
+        request: HttpRequest,
+        queryset: QuerySet,
+    ) -> QuerySet:
+        """Фильтрует пользователей по наличию подтверждённого EmailAddress."""
+        if self.value() == 'yes':
+            confirmed_users = (
+                EmailAddress.objects
+                .filter(verified=True)
+                .values_list('user_id', flat=True)
+            )
+            return queryset.filter(user_id__in=confirmed_users)
+        if self.value() == 'no':
+            confirmed_users = (
+                EmailAddress.objects
+                .filter(verified=True)
+                .values_list('user_id', flat=True)
+            )
+            return queryset.exclude(user_id__in=confirmed_users)
+        return queryset
+
+
 class BaseInline(admin.TabularInline):
     """Базовый класс для inline."""
 
     extra = 0
-    classes = ('collapse',)
 
 
 class UserSpecializationInline(BaseInline):
@@ -43,6 +84,14 @@ class UserSkillInline(BaseInline):
     """Inline для добавления навыков юзеру."""
 
     model = UserSkill
+
+
+class EmailAddressInline(BaseInline):
+    """Inline для добавления email адресов юзеру."""
+
+    model = EmailAddress
+    can_delete = False
+    readonly_fields = ('email', 'verified', 'primary')
 
 
 class UserWorkFormatInline(BaseInline):
@@ -133,10 +182,10 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
         'role',
         'projects_relation',
         'get_avatar',
-        'is_email_confirmed',
+        'get_email_confirmed',
         'rating',
     )
-    list_filter = ('role', 'is_email_confirmed')
+    list_filter = ('role', EmailConfirmedFilter)
     search_fields = ('email', 'first_name', 'last_name', 'phone_number')
     ordering = ('email',)
     fieldsets = (
@@ -175,11 +224,8 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
                     'is_active',
                     'is_staff',
                     'is_superuser',
-                    'is_email_confirmed',
                     'is_password_confirmed',
                     'is_agreed_to_terms',
-                    'groups',
-                    'user_permissions',
                 ),
             },
         ),
@@ -206,6 +252,7 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
         UserSpecializationInline,
         UserSkillInline,
         UserWorkFormatInline,
+        EmailAddressInline,
     )
 
     def get_form(
@@ -225,6 +272,15 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
         if obj.avatar_url:
             return f'<img src="{obj.avatar_url}" style="max-height: 100px;">'
         return ''
+
+    @admin.display(description='Email подтверждён', boolean=True)
+    def get_email_confirmed(self, obj: User) -> bool:
+        """Возвращает статус подтверждения основного email пользователя."""
+        try:
+            email_address = EmailAddress.objects.get(user=obj, primary=True)
+            return email_address.verified
+        except EmailAddress.DoesNotExist:
+            return False
 
     def save_model(
         self,

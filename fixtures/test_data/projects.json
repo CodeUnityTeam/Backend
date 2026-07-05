@@ -4,1164 +4,2194 @@
     "short_desc": "Создание платформы для проведения онлайн‑курсов с интерактивными заданиями",
     "full_desc": "Проект включает разработку: веб‑интерфейса для студентов и преподавателей; системы управления курсами; модуля интерактивных заданий; интеграции с платёжными системами.Требуется команда разработчиков, дизайнеров и тестировщиков.",
     "location": "Москва",
-    "start_date": "2026-08-01",
-    "end_date": "2026-10-01",
+    "start_date": "2026-08-30",
+    "end_date": "2026-10-30",
     "status_project": "published",
     "skills": [
-      {"skill_id": "07931edf-4f66-43e9-b6a4-e358f90bce26"},
-      {"skill_id": "0820ac05-16b0-49f0-9f91-d169eb43a7bc"}
+      {
+        "skill_id": "07931edf-4f66-43e9-b6a4-e358f90bce26"
+      },
+      {
+        "skill_id": "0820ac05-16b0-49f0-9f91-d169eb43a7bc"
+      }
     ],
     "specializations": [
-      {"spec_id": "0ba44169-978a-45a7-8dd5-244a59822a95"},
-      {"spec_id": "0bf36e2c-a5a3-4011-9e45-e2856b750fb7"}
+      {
+        "spec_id": "0ba44169-978a-45a7-8dd5-244a59822a95"
+      },
+      {
+        "spec_id": "0bf36e2c-a5a3-4011-9e45-e2856b750fb7"
+      }
     ],
-    "project_format": ["450eab94-627f-4805-81b0-e8bcca4a0e7c"]
+    "project_format": [
+      "450eab94-627f-4805-81b0-e8bcca4a0e7c"
+    ]
   },
   {
     "title": "Kristina фитнесс приложение",
     "short_desc": "Разработка кроссплатформенного приложения с трекингом тренировок и питанием",
     "full_desc": "Проект предполагает создание мобильного приложения для iOS и Android: трекер тренировок с видеоинструкциями; дневник питания с распознаванием продуктов по фото; интеграция с фитнес‑браслетами; система мотивации и достижений. Необходимы разработчики мобильных приложений, UX/UI дизайнеры, специалисты по анализу данных.",
     "location": "Петербург",
-    "start_date": "2026-09-15",
-    "end_date": "2027-02-15",
+    "start_date": "2026-10-14",
+    "end_date": "2027-03-16",
     "status_project": "published",
     "skills": [
-      {"skill_id": "170fe229-d52c-467d-b60e-e7cd13b29261"},
-      {"skill_id": "1b5014d0-b007-49ce-8d23-4df5896c47c7"}
+      {
+        "skill_id": "170fe229-d52c-467d-b60e-e7cd13b29261"
+      },
+      {
+        "skill_id": "1b5014d0-b007-49ce-8d23-4df5896c47c7"
+      }
     ],
     "specializations": [
-      {"spec_id": "111b86ff-5e30-4cf4-ba98-087b3ca77d4a"},
-      {"spec_id": "147d5cab-d565-44dc-855b-c93ee5c98778"}
+      {
+        "spec_id": "111b86ff-5e30-4cf4-ba98-087b3ca77d4a"
+      },
+      {
+        "spec_id": "147d5cab-d565-44dc-855b-c93ee5c98778"
+      }
     ],
-    "project_format": ["f2b7f6f4-6ebe-4374-b861-977f9297790c"]
+    "project_format": [
+      "f2b7f6f4-6ebe-4374-b861-977f9297790c"
+    ]
   },
   {
     "title": "Маркетплейс BarinoV",
     "short_desc": "Создание онлайн‑площадки для продажи товаров местных производителей",
     "full_desc": "Разработка маркетплейса с:\n- каталогом товаров и фильтров;\n- системой отзывов и рейтингов;\n- интеграцией с логистическими службами;\n- личным кабинетом продавца;\n- аналитикой продаж.\n\nНужны full‑stack разработчики, маркетологи, специалисты по UX.",
     "location": "Казань",
-    "start_date": "2026-10-01",
-    "end_date": "2027-03-31",
+    "start_date": "2026-10-30",
+    "end_date": "2027-04-29",
     "status_project": "draft",
     "skills": [
-      {"skill_id": "24220f1e-5546-4d59-a10b-def49eedd008"},
-      {"skill_id": "29dbd3f7-5a24-4541-b693-829f57d57b11"},
-      {"skill_id": "88e1bddc-1fc7-4bd5-8c01-5289fad5159e"}
+      {
+        "skill_id": "24220f1e-5546-4d59-a10b-def49eedd008"
+      },
+      {
+        "skill_id": "29dbd3f7-5a24-4541-b693-829f57d57b11"
+      },
+      {
+        "skill_id": "88e1bddc-1fc7-4bd5-8c01-5289fad5159e"
+      }
     ],
     "specializations": [
-      {"spec_id": "f534b34c-225c-40d8-ac27-aadff06d998b"},
-      {"spec_id": "f833788d-5218-419a-98c4-676300eecbe1"}
+      {
+        "spec_id": "f534b34c-225c-40d8-ac27-aadff06d998b"
+      },
+      {
+        "spec_id": "f833788d-5218-419a-98c4-676300eecbe1"
+      }
     ],
-    "project_format": ["220ed170-25ab-4026-9cd3-8a817c12348f"]
+    "project_format": [
+      "220ed170-25ab-4026-9cd3-8a817c12348f"
+    ]
   },
   {
     "title": "Хитрый Евгений",
     "short_desc": "Внедрение электронного документооборота с электронной подписью, законное уклонение от налогов",
     "full_desc": "Проект по созданию защищённой системы документооборота для госструктур: электронный архив документов;  workflow‑процессы согласования; интеграция с ЭЦП; ролевая модель доступа; отчётность и аудит.",
     "location": "Екатеринбург",
-    "start_date": "2026-11-01",
-    "end_date": "2027-05-01",
+    "start_date": "2026-11-30",
+    "end_date": "2027-05-30",
     "status_project": "published",
     "skills": [
-      {"skill_id": "055bb186-da44-4de2-8b2a-39ef9523f62c"},
-      {"skill_id": "07931edf-4f66-43e9-b6a4-e358f90bce26"}
+      {
+        "skill_id": "055bb186-da44-4de2-8b2a-39ef9523f62c"
+      },
+      {
+        "skill_id": "07931edf-4f66-43e9-b6a4-e358f90bce26"
+      }
     ],
     "specializations": [
-      {"spec_id": "f2a4022c-eb6c-4a03-8c72-511715165494"},
-      {"spec_id": "ebf19476-218f-491b-bd3b-b8cc8877321d"}
+      {
+        "spec_id": "f2a4022c-eb6c-4a03-8c72-511715165494"
+      },
+      {
+        "spec_id": "ebf19476-218f-491b-bd3b-b8cc8877321d"
+      }
     ],
-    "project_format": ["450eab94-627f-4805-81b0-e8bcca4a0e7c"]
+    "project_format": [
+      "450eab94-627f-4805-81b0-e8bcca4a0e7c"
+    ]
   },
   {
     "title": "Сервис книг от Натальи",
     "short_desc": "Платформа с алгоритмами рекомендаций на основе предпочтений пользователя",
     "full_desc": "Разработка онлайн‑сервиса для любителей чтения и аудиокниг с  персонализированной системой рекомендаций (на основе ML); каталог книг с аннотациями, рейтингами и рецензиями; интеграция с сервисами аудиокниг; личный кабинет с историей чтения/прослушивания; система сообществ и обсуждений.",
     "location": "Нижний Новгород",
-    "start_date": "2026-11-15",
-    "end_date": "2027-05-15",
+    "start_date": "2026-12-14",
+    "end_date": "2027-06-13",
     "status_project": "published",
     "skills": [
-      {"skill_id": "0adaba4a-e582-4e30-af84-5ecf7957f595"},
-      {"skill_id": "0b96fe31-f8c2-4750-ad92-946ce0ea71f0"}
+      {
+        "skill_id": "0adaba4a-e582-4e30-af84-5ecf7957f595"
+      },
+      {
+        "skill_id": "0b96fe31-f8c2-4750-ad92-946ce0ea71f0"
+      }
     ],
     "specializations": [
-      {"spec_id": "eb943c2d-0859-4363-8884-c51d42b4a587"},
-      {"spec_id": "ebf19476-218f-491b-bd3b-b8cc8877321d"}
+      {
+        "spec_id": "eb943c2d-0859-4363-8884-c51d42b4a587"
+      },
+      {
+        "spec_id": "ebf19476-218f-491b-bd3b-b8cc8877321d"
+      }
     ],
-    "project_format": ["450eab94-627f-4805-81b0-e8bcca4a0e7c"]
+    "project_format": [
+      "450eab94-627f-4805-81b0-e8bcca4a0e7c"
+    ]
   },
   {
     "title": "E-Commerce Platform",
     "short_desc": "Building a scalable online store with product catalog, cart, payment integration, and admin panel",
     "full_desc": "Full-featured e-commerce platform development:\n- Product catalog with search and filters;\n- Shopping cart and checkout flow;\n- Payment gateway integration (Stripe/PayPal);\n- User accounts with order history;\n- Admin dashboard for inventory management.\n\nTech stack: Python, Django, PostgreSQL, React.",
     "location": "Moscow",
-    "start_date": "2026-12-01",
-    "end_date": "2027-06-01",
+    "start_date": "2026-12-30",
+    "end_date": "2027-06-30",
     "status_project": "draft",
     "skills": [
-      {"skill_id": "3cd43ce5-ed0d-4430-a494-857f11a9c70f"},
-      {"skill_id": "dfa6d262-aea2-479c-86de-e3aa4622fd8b"},
-      {"skill_id": "e2504e26-5a3c-4f8a-8f0d-030e6d3a8bde"},
-      {"skill_id": "9edeec3e-171a-4b13-9f0a-c10d02fbfbf6"}
+      {
+        "skill_id": "3cd43ce5-ed0d-4430-a494-857f11a9c70f"
+      },
+      {
+        "skill_id": "dfa6d262-aea2-479c-86de-e3aa4622fd8b"
+      },
+      {
+        "skill_id": "e2504e26-5a3c-4f8a-8f0d-030e6d3a8bde"
+      },
+      {
+        "skill_id": "9edeec3e-171a-4b13-9f0a-c10d02fbfbf6"
+      }
     ],
     "specializations": [
-      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
-      {"spec_id": "43f449e6-c978-4248-86f7-dac3d7b9cece"},
-      {"spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"}
+      {
+        "spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"
+      },
+      {
+        "spec_id": "43f449e6-c978-4248-86f7-dac3d7b9cece"
+      },
+      {
+        "spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"
+      }
     ],
-    "project_format": ["f2b7f6f4-6ebe-4374-b861-977f9297790c"]
+    "project_format": [
+      "f2b7f6f4-6ebe-4374-b861-977f9297790c"
+    ]
   },
   {
     "title": "DevOps Infrastructure Automation",
     "short_desc": "Automating cloud infrastructure deployment with CI/CD pipelines and monitoring",
     "full_desc": "Project to build complete DevOps infrastructure:\n- Infrastructure as Code (Terraform);\n- CI/CD pipelines with GitHub Actions;\n- Docker containerization and Kubernetes orchestration;\n- Monitoring with Prometheus and Grafana;\n- Log aggregation with ELK stack.\n\nTech stack: Python, Docker, AWS, PostgreSQL.",
     "location": "Saint Petersburg",
-    "start_date": "2027-01-15",
-    "end_date": "2027-07-15",
+    "start_date": "2027-02-13",
+    "end_date": "2027-08-13",
     "status_project": "published",
     "skills": [
-      {"skill_id": "3cd43ce5-ed0d-4430-a494-857f11a9c70f"},
-      {"skill_id": "f301c3b0-91c3-4f4f-97e7-5a466efcaab0"},
-      {"skill_id": "86498eee-1938-476f-a945-3247438ae539"},
-      {"skill_id": "e2504e26-5a3c-4f8a-8f0d-030e6d3a8bde"}
+      {
+        "skill_id": "3cd43ce5-ed0d-4430-a494-857f11a9c70f"
+      },
+      {
+        "skill_id": "f301c3b0-91c3-4f4f-97e7-5a466efcaab0"
+      },
+      {
+        "skill_id": "86498eee-1938-476f-a945-3247438ae539"
+      },
+      {
+        "skill_id": "e2504e26-5a3c-4f8a-8f0d-030e6d3a8bde"
+      }
     ],
     "specializations": [
-      {"spec_id": "d1618b1e-bbf3-4fa2-9b4b-89fd343e6456"},
-      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
-      {"spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"}
+      {
+        "spec_id": "d1618b1e-bbf3-4fa2-9b4b-89fd343e6456"
+      },
+      {
+        "spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"
+      },
+      {
+        "spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"
+      }
     ],
-    "project_format": ["f2b7f6f4-6ebe-4374-b861-977f9297790c"]
+    "project_format": [
+      "f2b7f6f4-6ebe-4374-b861-977f9297790c"
+    ]
   },
   {
     "title": "DigitalBank — банковское приложение",
     "short_desc": "Разработка защищённого банковского приложения с поддержкой платежей и переводов",
     "full_desc": "Создание цифрового банковского сервиса: система управления счетами; денежные переводы и платежи; интеграция с платёжными системами; личный кабинет с историей операций; система безопасности и антифрод. Требуются Java-разработчики, архитекторы, специалисты по безопасности.",
     "location": "Москва",
-    "start_date": "2026-07-01",
-    "end_date": "2026-12-29",
+    "start_date": "2026-07-30",
+    "end_date": "2027-01-27",
     "status_project": "published",
     "skills": [
-      {"skill_id": "922206c6-7477-400f-b711-7465c37161b7"},
-      {"skill_id": "b5fd1009-ec04-453b-a8a0-516806c3074d"},
-      {"skill_id": "6037242d-1f2f-4627-9f1c-6e8bc19bf7bb"},
-      {"skill_id": "451353c0-62e5-44f0-be45-76a926b6d78e"},
-      {"skill_id": "12ff31a8-d700-42fd-8b44-34e23a133bd1"}
+      {
+        "skill_id": "922206c6-7477-400f-b711-7465c37161b7"
+      },
+      {
+        "skill_id": "b5fd1009-ec04-453b-a8a0-516806c3074d"
+      },
+      {
+        "skill_id": "6037242d-1f2f-4627-9f1c-6e8bc19bf7bb"
+      },
+      {
+        "skill_id": "451353c0-62e5-44f0-be45-76a926b6d78e"
+      },
+      {
+        "skill_id": "12ff31a8-d700-42fd-8b44-34e23a133bd1"
+      }
     ],
     "specializations": [
-      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
-      {"spec_id": "55b0d417-8d64-4ce1-b7d2-f9fe7025d469"},
-      {"spec_id": "191c6b8b-9582-456b-9bbf-03b140ddcab0"},
-      {"spec_id": "1b34b5f6-ad09-4d4b-990a-5fbf3a902662"},
-      {"spec_id": "e26bb5c1-5681-4361-bc21-8c8a88f4b10a"}
+      {
+        "spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"
+      },
+      {
+        "spec_id": "55b0d417-8d64-4ce1-b7d2-f9fe7025d469"
+      },
+      {
+        "spec_id": "191c6b8b-9582-456b-9bbf-03b140ddcab0"
+      },
+      {
+        "spec_id": "1b34b5f6-ad09-4d4b-990a-5fbf3a902662"
+      },
+      {
+        "spec_id": "e26bb5c1-5681-4361-bc21-8c8a88f4b10a"
+      }
     ],
-    "project_format": ["220ed170-25ab-4026-9cd3-8a817c12348f"]
+    "project_format": [
+      "220ed170-25ab-4026-9cd3-8a817c12348f"
+    ]
   },
   {
     "title": "WareHouse Pro — управление складом",
     "short_desc": "Система автоматизации складского учёта с поддержкой RFID и штрихкодов",
     "full_desc": "Разработка WMS-системы для крупного складского комплекса: приёмка и отгрузка товаров; управление остатками; интеграция с RFID-оборудованием; генерация отчётов; интеграция с 1С и SAP. Нужны backend-разработчики, DevOps, системные администраторы.",
     "location": "Екатеринбург",
-    "start_date": "2026-07-01",
-    "end_date": "2026-12-31",
+    "start_date": "2026-07-30",
+    "end_date": "2027-01-29",
     "status_project": "published",
     "skills": [
-      {"skill_id": "922206c6-7477-400f-b711-7465c37161b7"},
-      {"skill_id": "2e66037d-5b40-4026-abf4-f21248757c0a"},
-      {"skill_id": "7b6ddf7e-b074-4e0e-b04d-657f597215c9"},
-      {"skill_id": "8176d6d0-b548-494f-8e2f-855638473972"},
-      {"skill_id": "dd1ea677-45a4-4465-b370-a5b8ab8156eb"}
+      {
+        "skill_id": "922206c6-7477-400f-b711-7465c37161b7"
+      },
+      {
+        "skill_id": "2e66037d-5b40-4026-abf4-f21248757c0a"
+      },
+      {
+        "skill_id": "7b6ddf7e-b074-4e0e-b04d-657f597215c9"
+      },
+      {
+        "skill_id": "8176d6d0-b548-494f-8e2f-855638473972"
+      },
+      {
+        "skill_id": "dd1ea677-45a4-4465-b370-a5b8ab8156eb"
+      }
     ],
     "specializations": [
-      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
-      {"spec_id": "d1618b1e-bbf3-4fa2-9b4b-89fd343e6456"},
-      {"spec_id": "3da66a79-82ad-4e9d-97ad-873546efd594"},
-      {"spec_id": "1b34b5f6-ad09-4d4b-990a-5fbf3a902662"},
-      {"spec_id": "3f6715b0-2eee-4499-a41f-ff45693582bf"}
+      {
+        "spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"
+      },
+      {
+        "spec_id": "d1618b1e-bbf3-4fa2-9b4b-89fd343e6456"
+      },
+      {
+        "spec_id": "3da66a79-82ad-4e9d-97ad-873546efd594"
+      },
+      {
+        "spec_id": "1b34b5f6-ad09-4d4b-990a-5fbf3a902662"
+      },
+      {
+        "spec_id": "3f6715b0-2eee-4499-a41f-ff45693582bf"
+      }
     ],
-    "project_format": ["220ed170-25ab-4026-9cd3-8a817c12348f"]
+    "project_format": [
+      "220ed170-25ab-4026-9cd3-8a817c12348f"
+    ]
   },
   {
     "title": "EasyFin — онлайн-бухгалтерия",
     "short_desc": "Облачный сервис для ведения бухгалтерского учёта малого бизнеса",
     "full_desc": "Платформа для автоматизации бухгалтерии: учёт доходов и расходов; формирование отчётности; интеграция с налоговой; управление счетами и накладными; мультивалютность. Требуются Java-разработчики, тестировщики, финансовые аналитики.",
     "location": "Казань",
-    "start_date": "2026-07-01",
-    "end_date": "2026-12-29",
+    "start_date": "2026-07-30",
+    "end_date": "2027-01-27",
     "status_project": "published",
     "skills": [
-      {"skill_id": "922206c6-7477-400f-b711-7465c37161b7"},
-      {"skill_id": "b5fd1009-ec04-453b-a8a0-516806c3074d"},
-      {"skill_id": "4feb6bda-77ce-41f4-a2a7-ef86ef55f968"},
-      {"skill_id": "9684ab9d-204e-4fa9-af09-d5539725630e"},
-      {"skill_id": "39b9e37d-f5dc-4189-8a62-1a536b9fbdd2"}
+      {
+        "skill_id": "922206c6-7477-400f-b711-7465c37161b7"
+      },
+      {
+        "skill_id": "b5fd1009-ec04-453b-a8a0-516806c3074d"
+      },
+      {
+        "skill_id": "4feb6bda-77ce-41f4-a2a7-ef86ef55f968"
+      },
+      {
+        "skill_id": "9684ab9d-204e-4fa9-af09-d5539725630e"
+      },
+      {
+        "skill_id": "39b9e37d-f5dc-4189-8a62-1a536b9fbdd2"
+      }
     ],
     "specializations": [
-      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
-      {"spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"},
-      {"spec_id": "e6af36f6-6234-4e05-b48c-8b987b57a9eb"},
-      {"spec_id": "c2724a32-d768-4e94-adfb-6a3b28422908"},
-      {"spec_id": "2d4244ed-b9dd-435c-a50e-c799b9a14288"}
+      {
+        "spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"
+      },
+      {
+        "spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"
+      },
+      {
+        "spec_id": "e6af36f6-6234-4e05-b48c-8b987b57a9eb"
+      },
+      {
+        "spec_id": "c2724a32-d768-4e94-adfb-6a3b28422908"
+      },
+      {
+        "spec_id": "2d4244ed-b9dd-435c-a50e-c799b9a14288"
+      }
     ],
-    "project_format": ["450eab94-627f-4805-81b0-e8bcca4a0e7c"]
+    "project_format": [
+      "450eab94-627f-4805-81b0-e8bcca4a0e7c"
+    ]
   },
   {
     "title": "PayFlow — обработка платежей",
     "short_desc": "Высоконагруженный сервис для обработки электронных платежей и транзакций",
     "full_desc": "Разработка платёжного шлюза: обработка транзакций в реальном времени; интеграция с банковскими API; система фрод-мониторинга; личный кабинет мерчанта; дашборды аналитики. Нужны Java-разработчики, архитекторы, специалисты по безопасности.",
     "location": "Москва",
-    "start_date": "2026-07-01",
-    "end_date": "2027-01-01",
+    "start_date": "2026-07-30",
+    "end_date": "2027-01-30",
     "status_project": "published",
     "skills": [
-      {"skill_id": "922206c6-7477-400f-b711-7465c37161b7"},
-      {"skill_id": "2e66037d-5b40-4026-abf4-f21248757c0a"},
-      {"skill_id": "6037242d-1f2f-4627-9f1c-6e8bc19bf7bb"},
-      {"skill_id": "6a31fdfc-0055-48b0-9394-6f763be8e5e3"},
-      {"skill_id": "9db7d09e-cc90-40bb-839a-eb0906f529ba"}
+      {
+        "skill_id": "922206c6-7477-400f-b711-7465c37161b7"
+      },
+      {
+        "skill_id": "2e66037d-5b40-4026-abf4-f21248757c0a"
+      },
+      {
+        "skill_id": "6037242d-1f2f-4627-9f1c-6e8bc19bf7bb"
+      },
+      {
+        "skill_id": "6a31fdfc-0055-48b0-9394-6f763be8e5e3"
+      },
+      {
+        "skill_id": "9db7d09e-cc90-40bb-839a-eb0906f529ba"
+      }
     ],
     "specializations": [
-      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
-      {"spec_id": "55b0d417-8d64-4ce1-b7d2-f9fe7025d469"},
-      {"spec_id": "e26bb5c1-5681-4361-bc21-8c8a88f4b10a"},
-      {"spec_id": "d1618b1e-bbf3-4fa2-9b4b-89fd343e6456"},
-      {"spec_id": "f93f2875-d7b3-41d4-adf0-ad63af73f5f6"}
+      {
+        "spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"
+      },
+      {
+        "spec_id": "55b0d417-8d64-4ce1-b7d2-f9fe7025d469"
+      },
+      {
+        "spec_id": "e26bb5c1-5681-4361-bc21-8c8a88f4b10a"
+      },
+      {
+        "spec_id": "d1618b1e-bbf3-4fa2-9b4b-89fd343e6456"
+      },
+      {
+        "spec_id": "f93f2875-d7b3-41d4-adf0-ad63af73f5f6"
+      }
     ],
-    "project_format": ["f2b7f6f4-6ebe-4374-b861-977f9297790c"]
+    "project_format": [
+      "f2b7f6f4-6ebe-4374-b861-977f9297790c"
+    ]
   },
   {
     "title": "CorpPortal — корпоративный портал",
     "short_desc": "Внутренний портал для крупной компании с документами и коммуникациями",
     "full_desc": "Разработка корпоративного портала: лента новостей; каталог сотрудников; система документооборота; календари и задачи; интеграция с Active Directory. Требуются full-stack разработчики, UI/UX дизайнеры, проектный менеджер.",
     "location": "Санкт-Петербург",
-    "start_date": "2027-02-01",
-    "end_date": "2027-08-01",
+    "start_date": "2027-03-02",
+    "end_date": "2027-08-30",
     "status_project": "draft",
     "skills": [
-      {"skill_id": "922206c6-7477-400f-b711-7465c37161b7"},
-      {"skill_id": "b5fd1009-ec04-453b-a8a0-516806c3074d"},
-      {"skill_id": "43991eea-8baf-4d8f-a8de-0e9400aa7cea"},
-      {"skill_id": "0bda391f-98a9-4c65-867c-87c176f835e4"},
-      {"skill_id": "5b04b65e-f5cd-4d88-83a1-b7f16fc60b2f"}
+      {
+        "skill_id": "922206c6-7477-400f-b711-7465c37161b7"
+      },
+      {
+        "skill_id": "b5fd1009-ec04-453b-a8a0-516806c3074d"
+      },
+      {
+        "skill_id": "43991eea-8baf-4d8f-a8de-0e9400aa7cea"
+      },
+      {
+        "skill_id": "0bda391f-98a9-4c65-867c-87c176f835e4"
+      },
+      {
+        "skill_id": "5b04b65e-f5cd-4d88-83a1-b7f16fc60b2f"
+      }
     ],
     "specializations": [
-      {"spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"},
-      {"spec_id": "43f449e6-c978-4248-86f7-dac3d7b9cece"},
-      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
-      {"spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"},
-      {"spec_id": "1b34b5f6-ad09-4d4b-990a-5fbf3a902662"}
+      {
+        "spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"
+      },
+      {
+        "spec_id": "43f449e6-c978-4248-86f7-dac3d7b9cece"
+      },
+      {
+        "spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"
+      },
+      {
+        "spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"
+      },
+      {
+        "spec_id": "1b34b5f6-ad09-4d4b-990a-5fbf3a902662"
+      }
     ],
-    "project_format": ["450eab94-627f-4805-81b0-e8bcca4a0e7c"]
+    "project_format": [
+      "450eab94-627f-4805-81b0-e8bcca4a0e7c"
+    ]
   },
   {
     "title": "TeamChat — командный мессенджер",
     "short_desc": "Корпоративный мессенджер с поддержкой каналов, файлов и видеозвонков",
     "full_desc": "Создание защищённого мессенджера для бизнеса: текстовые чаты и каналы; обмен файлами; аудио- и видеозвонки; поиск по истории; интеграция с календарём. Нужны Node.js разработчики, DevOps, UI/UX дизайнеры.",
     "location": "Новосибирск",
-    "start_date": "2026-07-01",
-    "end_date": "2027-01-01",
+    "start_date": "2026-07-30",
+    "end_date": "2027-01-30",
     "status_project": "published",
     "skills": [
-      {"skill_id": "c964f05d-9a1f-4dde-b841-6a829251a9fd"},
-      {"skill_id": "d1e3de71-b615-41e4-9d25-6cb36ff59248"},
-      {"skill_id": "73c34091-a5d0-4191-af43-9a4475a51e07"},
-      {"skill_id": "1b5014d0-b007-49ce-8d23-4df5896c47c7"},
-      {"skill_id": "fe7d18a9-7ccb-41a6-a304-1c6e6b26c1c2"}
+      {
+        "skill_id": "c964f05d-9a1f-4dde-b841-6a829251a9fd"
+      },
+      {
+        "skill_id": "d1e3de71-b615-41e4-9d25-6cb36ff59248"
+      },
+      {
+        "skill_id": "73c34091-a5d0-4191-af43-9a4475a51e07"
+      },
+      {
+        "skill_id": "1b5014d0-b007-49ce-8d23-4df5896c47c7"
+      },
+      {
+        "skill_id": "fe7d18a9-7ccb-41a6-a304-1c6e6b26c1c2"
+      }
     ],
     "specializations": [
-      {"spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"},
-      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
-      {"spec_id": "d1618b1e-bbf3-4fa2-9b4b-89fd343e6456"},
-      {"spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"},
-      {"spec_id": "2d4244ed-b9dd-435c-a50e-c799b9a14288"}
+      {
+        "spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"
+      },
+      {
+        "spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"
+      },
+      {
+        "spec_id": "d1618b1e-bbf3-4fa2-9b4b-89fd343e6456"
+      },
+      {
+        "spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"
+      },
+      {
+        "spec_id": "2d4244ed-b9dd-435c-a50e-c799b9a14288"
+      }
     ],
-    "project_format": ["f2b7f6f4-6ebe-4374-b861-977f9297790c"]
+    "project_format": [
+      "f2b7f6f4-6ebe-4374-b861-977f9297790c"
+    ]
   },
   {
     "title": "BlogSpace — платформа для блогов",
     "short_desc": "Современная блог-платформа с персонализированной лентой рекомендаций",
     "full_desc": "Разработка блог-платформы: создание и редактирование постов; лента рекомендаций на основе ML; система тегов и категорий; комментарии и лайки; аналитика для авторов. Требуются frontend-разработчики, UI/UX дизайнеры, контент-менеджеры.",
     "location": "Казань",
-    "start_date": "2026-07-01",
-    "end_date": "2026-12-29",
+    "start_date": "2026-07-30",
+    "end_date": "2027-01-27",
     "status_project": "published",
     "skills": [
-      {"skill_id": "dc474032-432a-4486-8775-b7867e377c14"},
-      {"skill_id": "4aa47979-e702-4e66-94c4-4e68df253776"},
-      {"skill_id": "73c34091-a5d0-4191-af43-9a4475a51e07"},
-      {"skill_id": "746cce39-0c8b-466e-894c-8f31b9c2a7c7"},
-      {"skill_id": "3ce35307-38a4-43a0-99cf-f7d107f7689c"}
+      {
+        "skill_id": "dc474032-432a-4486-8775-b7867e377c14"
+      },
+      {
+        "skill_id": "4aa47979-e702-4e66-94c4-4e68df253776"
+      },
+      {
+        "skill_id": "73c34091-a5d0-4191-af43-9a4475a51e07"
+      },
+      {
+        "skill_id": "746cce39-0c8b-466e-894c-8f31b9c2a7c7"
+      },
+      {
+        "skill_id": "3ce35307-38a4-43a0-99cf-f7d107f7689c"
+      }
     ],
     "specializations": [
-      {"spec_id": "43f449e6-c978-4248-86f7-dac3d7b9cece"},
-      {"spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"},
-      {"spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"},
-      {"spec_id": "9385212d-ac6d-4ff5-9b30-c9b1dc75a74d"},
-      {"spec_id": "147d5cab-d565-44dc-855b-c93ee5c98778"}
+      {
+        "spec_id": "43f449e6-c978-4248-86f7-dac3d7b9cece"
+      },
+      {
+        "spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"
+      },
+      {
+        "spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"
+      },
+      {
+        "spec_id": "9385212d-ac6d-4ff5-9b30-c9b1dc75a74d"
+      },
+      {
+        "spec_id": "147d5cab-d565-44dc-855b-c93ee5c98778"
+      }
     ],
-    "project_format": ["f2b7f6f4-6ebe-4374-b861-977f9297790c"]
+    "project_format": [
+      "f2b7f6f4-6ebe-4374-b861-977f9297790c"
+    ]
   },
   {
     "title": "WebStats — аналитика сайтов",
     "short_desc": "Сервис веб-аналитики с отслеживанием посещений и поведением пользователей",
     "full_desc": "Платформа для сбора и анализа данных о посетителях сайтов: трекинг событий; тепловые карты; воронки конверсий; отчёты в реальном времени; интеграция с Google Analytics. Нужны backend-разработчики, аналитики данных, маркетологи.",
     "location": "Москва",
-    "start_date": "2026-07-01",
-    "end_date": "2026-12-30",
+    "start_date": "2026-07-30",
+    "end_date": "2027-01-28",
     "status_project": "published",
     "skills": [
-      {"skill_id": "c964f05d-9a1f-4dde-b841-6a829251a9fd"},
-      {"skill_id": "d1e3de71-b615-41e4-9d25-6cb36ff59248"},
-      {"skill_id": "4feb6bda-77ce-41f4-a2a7-ef86ef55f968"},
-      {"skill_id": "71780625-09e8-483c-852d-14d7674824ec"},
-      {"skill_id": "1b5014d0-b007-49ce-8d23-4df5896c47c7"}
+      {
+        "skill_id": "c964f05d-9a1f-4dde-b841-6a829251a9fd"
+      },
+      {
+        "skill_id": "d1e3de71-b615-41e4-9d25-6cb36ff59248"
+      },
+      {
+        "skill_id": "4feb6bda-77ce-41f4-a2a7-ef86ef55f968"
+      },
+      {
+        "skill_id": "71780625-09e8-483c-852d-14d7674824ec"
+      },
+      {
+        "skill_id": "1b5014d0-b007-49ce-8d23-4df5896c47c7"
+      }
     ],
     "specializations": [
-      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
-      {"spec_id": "43f449e6-c978-4248-86f7-dac3d7b9cece"},
-      {"spec_id": "c65be44f-83d0-4446-a975-4d2532031ecb"},
-      {"spec_id": "2d4244ed-b9dd-435c-a50e-c799b9a14288"},
-      {"spec_id": "5d3c650c-9d1b-404d-ac7a-95b0c410c9e8"}
+      {
+        "spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"
+      },
+      {
+        "spec_id": "43f449e6-c978-4248-86f7-dac3d7b9cece"
+      },
+      {
+        "spec_id": "c65be44f-83d0-4446-a975-4d2532031ecb"
+      },
+      {
+        "spec_id": "2d4244ed-b9dd-435c-a50e-c799b9a14288"
+      },
+      {
+        "spec_id": "5d3c650c-9d1b-404d-ac7a-95b0c410c9e8"
+      }
     ],
-    "project_format": ["450eab94-627f-4805-81b0-e8bcca4a0e7c"]
+    "project_format": [
+      "450eab94-627f-4805-81b0-e8bcca4a0e7c"
+    ]
   },
   {
     "title": "FreelanceHub — маркетплейс фриланса",
     "short_desc": "Биржа фриланс-услуг с системой рейтингов и безопасных сделок",
     "full_desc": "Платформа для поиска фрилансеров: каталог услуг; система заказов и тендеров; эскроу-счета для оплаты; рейтинг и отзывы; личные кабинеты заказчика и исполнителя. Требуются full-stack разработчики, UI/UX дизайнеры, продакт-менеджеры.",
     "location": "Санкт-Петербург",
-    "start_date": "2026-07-01",
-    "end_date": "2026-12-31",
+    "start_date": "2026-07-30",
+    "end_date": "2027-01-29",
     "status_project": "published",
     "skills": [
-      {"skill_id": "dc474032-432a-4486-8775-b7867e377c14"},
-      {"skill_id": "4aa47979-e702-4e66-94c4-4e68df253776"},
-      {"skill_id": "60a5a436-a549-41c8-ae87-c6b9cc6dfd97"},
-      {"skill_id": "c964f05d-9a1f-4dde-b841-6a829251a9fd"},
-      {"skill_id": "396508ac-d452-4a2e-9702-c814aa2b352a"}
+      {
+        "skill_id": "dc474032-432a-4486-8775-b7867e377c14"
+      },
+      {
+        "skill_id": "4aa47979-e702-4e66-94c4-4e68df253776"
+      },
+      {
+        "skill_id": "60a5a436-a549-41c8-ae87-c6b9cc6dfd97"
+      },
+      {
+        "skill_id": "c964f05d-9a1f-4dde-b841-6a829251a9fd"
+      },
+      {
+        "skill_id": "396508ac-d452-4a2e-9702-c814aa2b352a"
+      }
     ],
     "specializations": [
-      {"spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"},
-      {"spec_id": "43f449e6-c978-4248-86f7-dac3d7b9cece"},
-      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
-      {"spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"},
-      {"spec_id": "2d4244ed-b9dd-435c-a50e-c799b9a14288"}
+      {
+        "spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"
+      },
+      {
+        "spec_id": "43f449e6-c978-4248-86f7-dac3d7b9cece"
+      },
+      {
+        "spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"
+      },
+      {
+        "spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"
+      },
+      {
+        "spec_id": "2d4244ed-b9dd-435c-a50e-c799b9a14288"
+      }
     ],
-    "project_format": ["f2b7f6f4-6ebe-4374-b861-977f9297790c"]
+    "project_format": [
+      "f2b7f6f4-6ebe-4374-b861-977f9297790c"
+    ]
   },
   {
     "title": "LandingCraft — конструктор лендингов",
     "short_desc": "Визуальный конструктор посадочных страниц без кода",
     "full_desc": "Сервис для создания лендингов: drag-and-drop редактор; библиотека шаблонов; SEO-оптимизация; интеграция с CRM и платёжными системами; хостинг на поддомене. Нужны frontend-разработчики, UI/UX дизайнеры, маркетологи.",
     "location": "Нижний Новгород",
-    "start_date": "2027-04-01",
-    "end_date": "2027-10-01",
+    "start_date": "2027-04-30",
+    "end_date": "2027-10-30",
     "status_project": "draft",
     "skills": [
-      {"skill_id": "4ca3639c-c992-4456-9652-6c5be1828b43"},
-      {"skill_id": "5752e884-f20d-4ba4-8aed-ddecba7e5c42"},
-      {"skill_id": "2bf596f2-1cd0-41c9-946e-2df8fb891fc3"},
-      {"skill_id": "b4cce2d0-a09b-43af-8454-4d9df13a2ddf"},
-      {"skill_id": "94fdf5b3-a2a0-4a8a-a52f-739d2555840e"}
+      {
+        "skill_id": "4ca3639c-c992-4456-9652-6c5be1828b43"
+      },
+      {
+        "skill_id": "5752e884-f20d-4ba4-8aed-ddecba7e5c42"
+      },
+      {
+        "skill_id": "2bf596f2-1cd0-41c9-946e-2df8fb891fc3"
+      },
+      {
+        "skill_id": "b4cce2d0-a09b-43af-8454-4d9df13a2ddf"
+      },
+      {
+        "skill_id": "94fdf5b3-a2a0-4a8a-a52f-739d2555840e"
+      }
     ],
     "specializations": [
-      {"spec_id": "43f449e6-c978-4248-86f7-dac3d7b9cece"},
-      {"spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"},
-      {"spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"},
-      {"spec_id": "a98283c2-0dd4-4b00-b9c2-73167585903c"},
-      {"spec_id": "147d5cab-d565-44dc-855b-c93ee5c98778"}
+      {
+        "spec_id": "43f449e6-c978-4248-86f7-dac3d7b9cece"
+      },
+      {
+        "spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"
+      },
+      {
+        "spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"
+      },
+      {
+        "spec_id": "a98283c2-0dd4-4b00-b9c2-73167585903c"
+      },
+      {
+        "spec_id": "147d5cab-d565-44dc-855b-c93ee5c98778"
+      }
     ],
-    "project_format": ["f2b7f6f4-6ebe-4374-b861-977f9297790c"]
+    "project_format": [
+      "f2b7f6f4-6ebe-4374-b861-977f9297790c"
+    ]
   },
   {
     "title": "CorpBlog — корпоративный блог",
     "short_desc": "Многоязычная блог-платформа для крупной международной компании",
     "full_desc": "Разработка корпоративного блога: система управления контентом; мультиязычность; интеграция с соцсетями; аналитика вовлечённости; SEO-оптимизация. Требуются PHP-разработчики, контент-менеджеры, SEO-специалисты.",
     "location": "Москва",
-    "start_date": "2026-07-01",
-    "end_date": "2026-12-31",
+    "start_date": "2026-07-30",
+    "end_date": "2027-01-29",
     "status_project": "published",
     "skills": [
-      {"skill_id": "cdaf3d71-3a18-438a-86d4-1a95b6dc29e9"},
-      {"skill_id": "0e28df7b-ae43-4d9d-88d6-d6a3195638d3"},
-      {"skill_id": "4feb6bda-77ce-41f4-a2a7-ef86ef55f968"},
-      {"skill_id": "1b5014d0-b007-49ce-8d23-4df5896c47c7"},
-      {"skill_id": "7f621346-9350-4fe6-8106-b2d82bbad2d2"}
+      {
+        "skill_id": "cdaf3d71-3a18-438a-86d4-1a95b6dc29e9"
+      },
+      {
+        "skill_id": "0e28df7b-ae43-4d9d-88d6-d6a3195638d3"
+      },
+      {
+        "skill_id": "4feb6bda-77ce-41f4-a2a7-ef86ef55f968"
+      },
+      {
+        "skill_id": "1b5014d0-b007-49ce-8d23-4df5896c47c7"
+      },
+      {
+        "skill_id": "7f621346-9350-4fe6-8106-b2d82bbad2d2"
+      }
     ],
     "specializations": [
-      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
-      {"spec_id": "43f449e6-c978-4248-86f7-dac3d7b9cece"},
-      {"spec_id": "9385212d-ac6d-4ff5-9b30-c9b1dc75a74d"},
-      {"spec_id": "147d5cab-d565-44dc-855b-c93ee5c98778"},
-      {"spec_id": "1b34b5f6-ad09-4d4b-990a-5fbf3a902662"}
+      {
+        "spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"
+      },
+      {
+        "spec_id": "43f449e6-c978-4248-86f7-dac3d7b9cece"
+      },
+      {
+        "spec_id": "9385212d-ac6d-4ff5-9b30-c9b1dc75a74d"
+      },
+      {
+        "spec_id": "147d5cab-d565-44dc-855b-c93ee5c98778"
+      },
+      {
+        "spec_id": "1b34b5f6-ad09-4d4b-990a-5fbf3a902662"
+      }
     ],
-    "project_format": ["450eab94-627f-4805-81b0-e8bcca4a0e7c"]
+    "project_format": [
+      "450eab94-627f-4805-81b0-e8bcca4a0e7c"
+    ]
   },
   {
     "title": "HelpDesk Pro — система тикетов",
     "short_desc": "Сервис техподдержки с автоматической маршрутизацией заявок",
     "full_desc": "Разработка helpdesk-системы: приём и обработка заявок; база знаний; автоматическое распределение тикетов; SLA-метрики; интеграция с email и мессенджерами. Нужны PHP-разработчики, системные администраторы, специалисты техподдержки.",
     "location": "Екатеринбург",
-    "start_date": "2026-07-01",
-    "end_date": "2026-12-31",
+    "start_date": "2026-07-30",
+    "end_date": "2027-01-29",
     "status_project": "published",
     "skills": [
-      {"skill_id": "cdaf3d71-3a18-438a-86d4-1a95b6dc29e9"},
-      {"skill_id": "6bebee5a-fbee-4782-ac38-2f06606d92c0"},
-      {"skill_id": "43991eea-8baf-4d8f-a8de-0e9400aa7cea"},
-      {"skill_id": "9684ab9d-204e-4fa9-af09-d5539725630e"},
-      {"skill_id": "ba451d76-cc2a-4cd4-b8b7-87c9d9a817dc"}
+      {
+        "skill_id": "cdaf3d71-3a18-438a-86d4-1a95b6dc29e9"
+      },
+      {
+        "skill_id": "6bebee5a-fbee-4782-ac38-2f06606d92c0"
+      },
+      {
+        "skill_id": "43991eea-8baf-4d8f-a8de-0e9400aa7cea"
+      },
+      {
+        "skill_id": "9684ab9d-204e-4fa9-af09-d5539725630e"
+      },
+      {
+        "skill_id": "ba451d76-cc2a-4cd4-b8b7-87c9d9a817dc"
+      }
     ],
     "specializations": [
-      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
-      {"spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"},
-      {"spec_id": "3da66a79-82ad-4e9d-97ad-873546efd594"},
-      {"spec_id": "5c50c0e2-132d-47e6-b413-fee5aa3e81e8"},
-      {"spec_id": "1b34b5f6-ad09-4d4b-990a-5fbf3a902662"}
+      {
+        "spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"
+      },
+      {
+        "spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"
+      },
+      {
+        "spec_id": "3da66a79-82ad-4e9d-97ad-873546efd594"
+      },
+      {
+        "spec_id": "5c50c0e2-132d-47e6-b413-fee5aa3e81e8"
+      },
+      {
+        "spec_id": "1b34b5f6-ad09-4d4b-990a-5fbf3a902662"
+      }
     ],
-    "project_format": ["220ed170-25ab-4026-9cd3-8a817c12348f"]
+    "project_format": [
+      "220ed170-25ab-4026-9cd3-8a817c12348f"
+    ]
   },
   {
     "title": "WebinarIO — платформа вебинаров",
     "short_desc": "Сервис для проведения онлайн-вебинаров и видеоконференций",
     "full_desc": "Платформа для вебинаров: трансляции в реальном времени; чат и Q&A; демонстрация экрана; запись вебинаров; аналитика посещаемости. Требуются full-stack разработчики, UI/UX дизайнеры, DevOps инженеры.",
     "location": "Казань",
-    "start_date": "2027-05-01",
-    "end_date": "2027-11-01",
+    "start_date": "2027-05-30",
+    "end_date": "2027-11-30",
     "status_project": "draft",
     "skills": [
-      {"skill_id": "cdaf3d71-3a18-438a-86d4-1a95b6dc29e9"},
-      {"skill_id": "7cad9b44-00c4-4e06-b7f3-89eaaf8a6a5e"},
-      {"skill_id": "e2504e26-5a3c-4f8a-8f0d-030e6d3a8bde"},
-      {"skill_id": "f9905974-bcc9-4fba-91cf-ac9db1deeed4"},
-      {"skill_id": "b041e800-e664-4c47-9ee8-6861c3a97c6d"}
+      {
+        "skill_id": "cdaf3d71-3a18-438a-86d4-1a95b6dc29e9"
+      },
+      {
+        "skill_id": "7cad9b44-00c4-4e06-b7f3-89eaaf8a6a5e"
+      },
+      {
+        "skill_id": "e2504e26-5a3c-4f8a-8f0d-030e6d3a8bde"
+      },
+      {
+        "skill_id": "f9905974-bcc9-4fba-91cf-ac9db1deeed4"
+      },
+      {
+        "skill_id": "b041e800-e664-4c47-9ee8-6861c3a97c6d"
+      }
     ],
     "specializations": [
-      {"spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"},
-      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
-      {"spec_id": "43f449e6-c978-4248-86f7-dac3d7b9cece"},
-      {"spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"},
-      {"spec_id": "d1618b1e-bbf3-4fa2-9b4b-89fd343e6456"}
+      {
+        "spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"
+      },
+      {
+        "spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"
+      },
+      {
+        "spec_id": "43f449e6-c978-4248-86f7-dac3d7b9cece"
+      },
+      {
+        "spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"
+      },
+      {
+        "spec_id": "d1618b1e-bbf3-4fa2-9b4b-89fd343e6456"
+      }
     ],
-    "project_format": ["f2b7f6f4-6ebe-4374-b861-977f9297790c"]
+    "project_format": [
+      "f2b7f6f4-6ebe-4374-b861-977f9297790c"
+    ]
   },
   {
     "title": "RealtyCRM — CRM для риэлторов",
     "short_desc": "Специализированная CRM-система для управления недвижимостью",
     "full_desc": "CRM для агентств недвижимости: каталог объектов; управление сделками; интеграция с базами данных недвижимости; автоматизация рассылок; отчётность для руководителей. Нужны .NET-разработчики, администраторы БД, менеджеры по продажам.",
     "location": "Москва",
-    "start_date": "2026-07-01",
-    "end_date": "2026-12-29",
+    "start_date": "2026-07-30",
+    "end_date": "2027-01-27",
     "status_project": "published",
     "skills": [
-      {"skill_id": "86953b73-a739-4d25-acc6-aafb1a3e7a9f"},
-      {"skill_id": "50cfc108-768d-4a6e-aef8-b8a943def8c4"},
-      {"skill_id": "6a31fdfc-0055-48b0-9394-6f763be8e5e3"},
-      {"skill_id": "34775235-adcc-4317-8c4b-367b69a7fea8"},
-      {"skill_id": "ab93f24f-ddf8-4892-9860-514fa7773898"}
+      {
+        "skill_id": "86953b73-a739-4d25-acc6-aafb1a3e7a9f"
+      },
+      {
+        "skill_id": "50cfc108-768d-4a6e-aef8-b8a943def8c4"
+      },
+      {
+        "skill_id": "6a31fdfc-0055-48b0-9394-6f763be8e5e3"
+      },
+      {
+        "skill_id": "34775235-adcc-4317-8c4b-367b69a7fea8"
+      },
+      {
+        "skill_id": "ab93f24f-ddf8-4892-9860-514fa7773898"
+      }
     ],
     "specializations": [
-      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
-      {"spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"},
-      {"spec_id": "191c6b8b-9582-456b-9bbf-03b140ddcab0"},
-      {"spec_id": "2c7b11a5-e6d8-4f32-896d-900789fbccef"},
-      {"spec_id": "1b34b5f6-ad09-4d4b-990a-5fbf3a902662"}
+      {
+        "spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"
+      },
+      {
+        "spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"
+      },
+      {
+        "spec_id": "191c6b8b-9582-456b-9bbf-03b140ddcab0"
+      },
+      {
+        "spec_id": "2c7b11a5-e6d8-4f32-896d-900789fbccef"
+      },
+      {
+        "spec_id": "1b34b5f6-ad09-4d4b-990a-5fbf3a902662"
+      }
     ],
-    "project_format": ["220ed170-25ab-4026-9cd3-8a817c12348f"]
+    "project_format": [
+      "220ed170-25ab-4026-9cd3-8a817c12348f"
+    ]
   },
   {
     "title": "DocFlow — документооборот",
     "short_desc": "Система электронного документооборота с поддержкой ЭЦП",
     "full_desc": "Разработка СЭД: создание и согласование документов; электронная подпись; маршруты согласования; архив документов; аудит действий. Требуются .NET-разработчики, архитекторы, специалисты по комплаенс.",
     "location": "Санкт-Петербург",
-    "start_date": "2026-07-01",
-    "end_date": "2027-01-01",
+    "start_date": "2026-07-30",
+    "end_date": "2027-01-30",
     "status_project": "published",
     "skills": [
-      {"skill_id": "86953b73-a739-4d25-acc6-aafb1a3e7a9f"},
-      {"skill_id": "3711fa3e-23ab-4f7a-94c6-1cedd7d4bbe7"},
-      {"skill_id": "6a31fdfc-0055-48b0-9394-6f763be8e5e3"},
-      {"skill_id": "34775235-adcc-4317-8c4b-367b69a7fea8"},
-      {"skill_id": "d5e0b6f5-6da0-4b61-8853-df01ac7ba5b9"}
+      {
+        "skill_id": "86953b73-a739-4d25-acc6-aafb1a3e7a9f"
+      },
+      {
+        "skill_id": "3711fa3e-23ab-4f7a-94c6-1cedd7d4bbe7"
+      },
+      {
+        "skill_id": "6a31fdfc-0055-48b0-9394-6f763be8e5e3"
+      },
+      {
+        "skill_id": "34775235-adcc-4317-8c4b-367b69a7fea8"
+      },
+      {
+        "skill_id": "d5e0b6f5-6da0-4b61-8853-df01ac7ba5b9"
+      }
     ],
     "specializations": [
-      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
-      {"spec_id": "55b0d417-8d64-4ce1-b7d2-f9fe7025d469"},
-      {"spec_id": "3da66a79-82ad-4e9d-97ad-873546efd594"},
-      {"spec_id": "ce9c1bbc-22a8-4bec-86b8-de8295c22492"},
-      {"spec_id": "1b34b5f6-ad09-4d4b-990a-5fbf3a902662"}
+      {
+        "spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"
+      },
+      {
+        "spec_id": "55b0d417-8d64-4ce1-b7d2-f9fe7025d469"
+      },
+      {
+        "spec_id": "3da66a79-82ad-4e9d-97ad-873546efd594"
+      },
+      {
+        "spec_id": "ce9c1bbc-22a8-4bec-86b8-de8295c22492"
+      },
+      {
+        "spec_id": "1b34b5f6-ad09-4d4b-990a-5fbf3a902662"
+      }
     ],
-    "project_format": ["450eab94-627f-4805-81b0-e8bcca4a0e7c"]
+    "project_format": [
+      "450eab94-627f-4805-81b0-e8bcca4a0e7c"
+    ]
   },
   {
     "title": "TaskMaster — управление проектами",
     "short_desc": "Платформа для управления задачами и проектами с канбан-досками",
     "full_desc": "Создание системы управления проектами: канбан-доски; диаграммы Ганта; тайм-трекинг; отчёты по проектам; интеграция с календарём. Нужны full-stack разработчики, UI/UX дизайнеры, продакт-менеджеры.",
     "location": "Новосибирск",
-    "start_date": "2026-08-01",
-    "end_date": "2027-02-01",
+    "start_date": "2026-08-30",
+    "end_date": "2027-03-02",
     "status_project": "published",
     "skills": [
-      {"skill_id": "86953b73-a739-4d25-acc6-aafb1a3e7a9f"},
-      {"skill_id": "50cfc108-768d-4a6e-aef8-b8a943def8c4"},
-      {"skill_id": "4feb6bda-77ce-41f4-a2a7-ef86ef55f968"},
-      {"skill_id": "19889cbb-5799-4c60-a635-e23515026748"},
-      {"skill_id": "fe7d18a9-7ccb-41a6-a304-1c6e6b26c1c2"}
+      {
+        "skill_id": "86953b73-a739-4d25-acc6-aafb1a3e7a9f"
+      },
+      {
+        "skill_id": "50cfc108-768d-4a6e-aef8-b8a943def8c4"
+      },
+      {
+        "skill_id": "4feb6bda-77ce-41f4-a2a7-ef86ef55f968"
+      },
+      {
+        "skill_id": "19889cbb-5799-4c60-a635-e23515026748"
+      },
+      {
+        "skill_id": "fe7d18a9-7ccb-41a6-a304-1c6e6b26c1c2"
+      }
     ],
     "specializations": [
-      {"spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"},
-      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
-      {"spec_id": "43f449e6-c978-4248-86f7-dac3d7b9cece"},
-      {"spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"},
-      {"spec_id": "2d4244ed-b9dd-435c-a50e-c799b9a14288"}
+      {
+        "spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"
+      },
+      {
+        "spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"
+      },
+      {
+        "spec_id": "43f449e6-c978-4248-86f7-dac3d7b9cece"
+      },
+      {
+        "spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"
+      },
+      {
+        "spec_id": "2d4244ed-b9dd-435c-a50e-c799b9a14288"
+      }
     ],
-    "project_format": ["f2b7f6f4-6ebe-4374-b861-977f9297790c"]
+    "project_format": [
+      "f2b7f6f4-6ebe-4374-b861-977f9297790c"
+    ]
   },
   {
     "title": "LifePlanner — приложение-органайзер",
     "short_desc": "Мобильное приложение для планирования задач и управления временем",
     "full_desc": "Разработка кроссплатформенного органайзера: списки задач; календарь; напоминания; трекинг привычек; синхронизация между устройствами. Требуются мобильные разработчики, UI/UX дизайнеры, backend-разработчики.",
     "location": "Москва",
-    "start_date": "2026-07-01",
-    "end_date": "2026-12-29",
+    "start_date": "2026-07-30",
+    "end_date": "2027-01-27",
     "status_project": "published",
     "skills": [
-      {"skill_id": "f150271c-a4ec-40ed-b888-a19d3beefa3d"},
-      {"skill_id": "83086d78-c6ae-4574-8bb6-61bb0d14bbfe"},
-      {"skill_id": "2bf596f2-1cd0-41c9-946e-2df8fb891fc3"},
-      {"skill_id": "68cafae2-d3ee-44fb-95b5-10bac9b8011c"},
-      {"skill_id": "cfba1e06-05dd-49e5-b611-f51b1042cd42"}
+      {
+        "skill_id": "f150271c-a4ec-40ed-b888-a19d3beefa3d"
+      },
+      {
+        "skill_id": "83086d78-c6ae-4574-8bb6-61bb0d14bbfe"
+      },
+      {
+        "skill_id": "2bf596f2-1cd0-41c9-946e-2df8fb891fc3"
+      },
+      {
+        "skill_id": "68cafae2-d3ee-44fb-95b5-10bac9b8011c"
+      },
+      {
+        "skill_id": "cfba1e06-05dd-49e5-b611-f51b1042cd42"
+      }
     ],
     "specializations": [
-      {"spec_id": "58468414-6924-44ba-bc4b-54605beebc48"},
-      {"spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"},
-      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
-      {"spec_id": "e6af36f6-6234-4e05-b48c-8b987b57a9eb"},
-      {"spec_id": "2d4244ed-b9dd-435c-a50e-c799b9a14288"}
+      {
+        "spec_id": "58468414-6924-44ba-bc4b-54605beebc48"
+      },
+      {
+        "spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"
+      },
+      {
+        "spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"
+      },
+      {
+        "spec_id": "e6af36f6-6234-4e05-b48c-8b987b57a9eb"
+      },
+      {
+        "spec_id": "2d4244ed-b9dd-435c-a50e-c799b9a14288"
+      }
     ],
-    "project_format": ["450eab94-627f-4805-81b0-e8bcca4a0e7c"]
+    "project_format": [
+      "450eab94-627f-4805-81b0-e8bcca4a0e7c"
+    ]
   },
   {
     "title": "FlowerDash — доставка цветов",
     "short_desc": "Сервис заказа и доставки цветов с отслеживанием в реальном времени",
     "full_desc": "Мобильное приложение для доставки цветов: каталог букетов; онлайн-оплата; отслеживание курьера на карте; система лояльности; интеграция с CRM. Нужны React Native разработчики, дизайнеры, маркетологи.",
     "location": "Казань",
-    "start_date": "2026-07-01",
-    "end_date": "2027-01-01",
+    "start_date": "2026-07-30",
+    "end_date": "2027-01-30",
     "status_project": "published",
     "skills": [
-      {"skill_id": "29eb91c1-7be6-4d31-b622-97593775341d"},
-      {"skill_id": "4aa47979-e702-4e66-94c4-4e68df253776"},
-      {"skill_id": "2bf596f2-1cd0-41c9-946e-2df8fb891fc3"},
-      {"skill_id": "81b5d566-287a-4cc1-9d80-287451005ab7"},
-      {"skill_id": "f301c3b0-91c3-4f4f-97e7-5a466efcaab0"}
+      {
+        "skill_id": "29eb91c1-7be6-4d31-b622-97593775341d"
+      },
+      {
+        "skill_id": "4aa47979-e702-4e66-94c4-4e68df253776"
+      },
+      {
+        "skill_id": "2bf596f2-1cd0-41c9-946e-2df8fb891fc3"
+      },
+      {
+        "skill_id": "81b5d566-287a-4cc1-9d80-287451005ab7"
+      },
+      {
+        "skill_id": "f301c3b0-91c3-4f4f-97e7-5a466efcaab0"
+      }
     ],
     "specializations": [
-      {"spec_id": "58468414-6924-44ba-bc4b-54605beebc48"},
-      {"spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"},
-      {"spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"},
-      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
-      {"spec_id": "5d3c650c-9d1b-404d-ac7a-95b0c410c9e8"}
+      {
+        "spec_id": "58468414-6924-44ba-bc4b-54605beebc48"
+      },
+      {
+        "spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"
+      },
+      {
+        "spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"
+      },
+      {
+        "spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"
+      },
+      {
+        "spec_id": "5d3c650c-9d1b-404d-ac7a-95b0c410c9e8"
+      }
     ],
-    "project_format": ["f2b7f6f4-6ebe-4374-b861-977f9297790c"]
+    "project_format": [
+      "f2b7f6f4-6ebe-4374-b861-977f9297790c"
+    ]
   },
   {
     "title": "LinguaBee — изучение языков",
     "short_desc": "Мобильное приложение для изучения иностранных языков с геймификацией",
     "full_desc": "Приложение для изучения языков: интерактивные уроки; словарь с транскрипцией; распознавание речи; система достижений; ежедневные задания. Требуются Kotlin-разработчики, UI/UX дизайнеры, контент-менеджеры.",
     "location": "Санкт-Петербург",
-    "start_date": "2027-03-01",
-    "end_date": "2027-09-01",
+    "start_date": "2027-03-30",
+    "end_date": "2027-09-30",
     "status_project": "draft",
     "skills": [
-      {"skill_id": "b38aa7ce-66ee-434f-84d8-3da58a67ac9a"},
-      {"skill_id": "cfba1e06-05dd-49e5-b611-f51b1042cd42"},
-      {"skill_id": "2bf596f2-1cd0-41c9-946e-2df8fb891fc3"},
-      {"skill_id": "55cbd9f3-37be-4867-a2a8-fc4e4bb945fb"},
-      {"skill_id": "dd1ea677-45a4-4465-b370-a5b8ab8156eb"}
+      {
+        "skill_id": "b38aa7ce-66ee-434f-84d8-3da58a67ac9a"
+      },
+      {
+        "skill_id": "cfba1e06-05dd-49e5-b611-f51b1042cd42"
+      },
+      {
+        "skill_id": "2bf596f2-1cd0-41c9-946e-2df8fb891fc3"
+      },
+      {
+        "skill_id": "55cbd9f3-37be-4867-a2a8-fc4e4bb945fb"
+      },
+      {
+        "skill_id": "dd1ea677-45a4-4465-b370-a5b8ab8156eb"
+      }
     ],
     "specializations": [
-      {"spec_id": "58468414-6924-44ba-bc4b-54605beebc48"},
-      {"spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"},
-      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
-      {"spec_id": "e6af36f6-6234-4e05-b48c-8b987b57a9eb"},
-      {"spec_id": "9385212d-ac6d-4ff5-9b30-c9b1dc75a74d"}
+      {
+        "spec_id": "58468414-6924-44ba-bc4b-54605beebc48"
+      },
+      {
+        "spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"
+      },
+      {
+        "spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"
+      },
+      {
+        "spec_id": "e6af36f6-6234-4e05-b48c-8b987b57a9eb"
+      },
+      {
+        "spec_id": "9385212d-ac6d-4ff5-9b30-c9b1dc75a74d"
+      }
     ],
-    "project_format": ["f2b7f6f4-6ebe-4374-b861-977f9297790c"]
+    "project_format": [
+      "f2b7f6f4-6ebe-4374-b861-977f9297790c"
+    ]
   },
   {
     "title": "FitPulse — фитнес-трекер",
     "short_desc": "iOS-приложение для отслеживания тренировок и здоровья",
     "full_desc": "Фитнес-приложение для iOS: трекинг тренировок; дневник питания; графики прогресса; интеграция с Apple Watch; социальная лента друзей. Нужны iOS-разработчики, дизайнеры, аналитики данных.",
     "location": "Новосибирск",
-    "start_date": "2026-09-01",
-    "end_date": "2027-03-01",
+    "start_date": "2026-09-30",
+    "end_date": "2027-03-30",
     "status_project": "published",
     "skills": [
-      {"skill_id": "881015b4-e2f0-480e-b3c5-6328680c3a6e"},
-      {"skill_id": "68cafae2-d3ee-44fb-95b5-10bac9b8011c"},
-      {"skill_id": "2bf596f2-1cd0-41c9-946e-2df8fb891fc3"},
-      {"skill_id": "55cbd9f3-37be-4867-a2a8-fc4e4bb945fb"},
-      {"skill_id": "7f621346-9350-4fe6-8106-b2d82bbad2d2"}
+      {
+        "skill_id": "881015b4-e2f0-480e-b3c5-6328680c3a6e"
+      },
+      {
+        "skill_id": "68cafae2-d3ee-44fb-95b5-10bac9b8011c"
+      },
+      {
+        "skill_id": "2bf596f2-1cd0-41c9-946e-2df8fb891fc3"
+      },
+      {
+        "skill_id": "55cbd9f3-37be-4867-a2a8-fc4e4bb945fb"
+      },
+      {
+        "skill_id": "7f621346-9350-4fe6-8106-b2d82bbad2d2"
+      }
     ],
     "specializations": [
-      {"spec_id": "58468414-6924-44ba-bc4b-54605beebc48"},
-      {"spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"},
-      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
-      {"spec_id": "c65be44f-83d0-4446-a975-4d2532031ecb"},
-      {"spec_id": "2d4244ed-b9dd-435c-a50e-c799b9a14288"}
+      {
+        "spec_id": "58468414-6924-44ba-bc4b-54605beebc48"
+      },
+      {
+        "spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"
+      },
+      {
+        "spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"
+      },
+      {
+        "spec_id": "c65be44f-83d0-4446-a975-4d2532031ecb"
+      },
+      {
+        "spec_id": "2d4244ed-b9dd-435c-a50e-c799b9a14288"
+      }
     ],
-    "project_format": ["450eab94-627f-4805-81b0-e8bcca4a0e7c"]
+    "project_format": [
+      "450eab94-627f-4805-81b0-e8bcca4a0e7c"
+    ]
   },
   {
     "title": "WeatherAI — прогноз погоды",
     "short_desc": "Сервис прогнозирования погоды с использованием машинного обучения",
     "full_desc": "Разработка системы прогноза погоды на основе ML: сбор данных с метеостанций; обучение моделей; визуализация прогнозов; API для сторонних сервисов; исторические данные. Требуются data scientists, ML-инженеры, backend-разработчики.",
     "location": "Москва",
-    "start_date": "2026-07-01",
-    "end_date": "2027-01-01",
+    "start_date": "2026-07-30",
+    "end_date": "2027-01-30",
     "status_project": "published",
     "skills": [
-      {"skill_id": "3cd43ce5-ed0d-4430-a494-857f11a9c70f"},
-      {"skill_id": "c90d6a42-c8dc-4632-869c-7641ae2f96e5"},
-      {"skill_id": "0adaba4a-e582-4e30-af84-5ecf7957f595"},
-      {"skill_id": "c0a73500-6319-493a-be9d-abd41b448239"},
-      {"skill_id": "ea719288-2bc4-4ddf-bf56-1f9b79b5485e"}
+      {
+        "skill_id": "3cd43ce5-ed0d-4430-a494-857f11a9c70f"
+      },
+      {
+        "skill_id": "c90d6a42-c8dc-4632-869c-7641ae2f96e5"
+      },
+      {
+        "skill_id": "0adaba4a-e582-4e30-af84-5ecf7957f595"
+      },
+      {
+        "skill_id": "c0a73500-6319-493a-be9d-abd41b448239"
+      },
+      {
+        "skill_id": "ea719288-2bc4-4ddf-bf56-1f9b79b5485e"
+      }
     ],
     "specializations": [
-      {"spec_id": "f534b34c-225c-40d8-ac27-aadff06d998b"},
-      {"spec_id": "94fbe2de-1754-4381-b29e-2b1b57b8efda"},
-      {"spec_id": "fab038d1-08db-405f-842e-abfe3bd39d29"},
-      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
-      {"spec_id": "d1618b1e-bbf3-4fa2-9b4b-89fd343e6456"}
+      {
+        "spec_id": "f534b34c-225c-40d8-ac27-aadff06d998b"
+      },
+      {
+        "spec_id": "94fbe2de-1754-4381-b29e-2b1b57b8efda"
+      },
+      {
+        "spec_id": "fab038d1-08db-405f-842e-abfe3bd39d29"
+      },
+      {
+        "spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"
+      },
+      {
+        "spec_id": "d1618b1e-bbf3-4fa2-9b4b-89fd343e6456"
+      }
     ],
-    "project_format": ["450eab94-627f-4805-81b0-e8bcca4a0e7c"]
+    "project_format": [
+      "450eab94-627f-4805-81b0-e8bcca4a0e7c"
+    ]
   },
   {
     "title": "SocialScope — анализ соцсетей",
     "short_desc": "Платформа для мониторинга и анализа социальных медиа",
     "full_desc": "Сервис аналитики соцсетей: сбор данных из VK, Telegram, YouTube; тональность текстов; поиск трендов; дашборды для брендов; экспорт отчётов. Нужны data scientists, NLP-инженеры, аналитики данных.",
     "location": "Санкт-Петербург",
-    "start_date": "2026-07-01",
-    "end_date": "2026-12-29",
+    "start_date": "2026-07-30",
+    "end_date": "2027-01-27",
     "status_project": "published",
     "skills": [
-      {"skill_id": "3cd43ce5-ed0d-4430-a494-857f11a9c70f"},
-      {"skill_id": "cf39989a-43c1-4c4c-bbab-8d003318c1a8"},
-      {"skill_id": "5dda5976-b8fb-4ba8-8fc4-c12b919718c3"},
-      {"skill_id": "974319c7-2f11-4cdb-98fe-be188319e215"},
-      {"skill_id": "904b8194-eb4e-44ee-948b-56ba7454e095"}
+      {
+        "skill_id": "3cd43ce5-ed0d-4430-a494-857f11a9c70f"
+      },
+      {
+        "skill_id": "cf39989a-43c1-4c4c-bbab-8d003318c1a8"
+      },
+      {
+        "skill_id": "5dda5976-b8fb-4ba8-8fc4-c12b919718c3"
+      },
+      {
+        "skill_id": "974319c7-2f11-4cdb-98fe-be188319e215"
+      },
+      {
+        "skill_id": "904b8194-eb4e-44ee-948b-56ba7454e095"
+      }
     ],
     "specializations": [
-      {"spec_id": "f534b34c-225c-40d8-ac27-aadff06d998b"},
-      {"spec_id": "33a9cfb6-bf9c-48fb-a635-b79e9b07779b"},
-      {"spec_id": "c65be44f-83d0-4446-a975-4d2532031ecb"},
-      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
-      {"spec_id": "2d4244ed-b9dd-435c-a50e-c799b9a14288"}
+      {
+        "spec_id": "f534b34c-225c-40d8-ac27-aadff06d998b"
+      },
+      {
+        "spec_id": "33a9cfb6-bf9c-48fb-a635-b79e9b07779b"
+      },
+      {
+        "spec_id": "c65be44f-83d0-4446-a975-4d2532031ecb"
+      },
+      {
+        "spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"
+      },
+      {
+        "spec_id": "2d4244ed-b9dd-435c-a50e-c799b9a14288"
+      }
     ],
-    "project_format": ["f2b7f6f4-6ebe-4374-b861-977f9297790c"]
+    "project_format": [
+      "f2b7f6f4-6ebe-4374-b861-977f9297790c"
+    ]
   },
   {
     "title": "ContentAI — рекомендации контента",
     "short_desc": "Система персонализированных рекомендаций на основе ML",
     "full_desc": "ML-платформа для рекомендаций: коллаборативная фильтрация; обработка естественного языка; A/B тестирование алгоритмов; API для интеграции; мониторинг качества рекомендаций. Требуются ML-инженеры, data scientists, backend-разработчики.",
     "location": "Казань",
-    "start_date": "2026-07-01",
-    "end_date": "2026-12-31",
+    "start_date": "2026-07-30",
+    "end_date": "2027-01-29",
     "status_project": "published",
     "skills": [
-      {"skill_id": "3cd43ce5-ed0d-4430-a494-857f11a9c70f"},
-      {"skill_id": "eb0ef8c5-235f-4c0b-9f2d-baf3826177e8"},
-      {"skill_id": "65290809-c697-4cfb-8083-926eaa59701e"},
-      {"skill_id": "9c24e9fe-1282-4296-a6eb-fd3c43af17fe"},
-      {"skill_id": "ff33f2da-0233-4588-b68a-4da66093985a"}
+      {
+        "skill_id": "3cd43ce5-ed0d-4430-a494-857f11a9c70f"
+      },
+      {
+        "skill_id": "eb0ef8c5-235f-4c0b-9f2d-baf3826177e8"
+      },
+      {
+        "skill_id": "65290809-c697-4cfb-8083-926eaa59701e"
+      },
+      {
+        "skill_id": "9c24e9fe-1282-4296-a6eb-fd3c43af17fe"
+      },
+      {
+        "skill_id": "ff33f2da-0233-4588-b68a-4da66093985a"
+      }
     ],
     "specializations": [
-      {"spec_id": "94fbe2de-1754-4381-b29e-2b1b57b8efda"},
-      {"spec_id": "f534b34c-225c-40d8-ac27-aadff06d998b"},
-      {"spec_id": "fab038d1-08db-405f-842e-abfe3bd39d29"},
-      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
-      {"spec_id": "64abfae0-8541-48a9-b461-8c842e3043b1"}
+      {
+        "spec_id": "94fbe2de-1754-4381-b29e-2b1b57b8efda"
+      },
+      {
+        "spec_id": "f534b34c-225c-40d8-ac27-aadff06d998b"
+      },
+      {
+        "spec_id": "fab038d1-08db-405f-842e-abfe3bd39d29"
+      },
+      {
+        "spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"
+      },
+      {
+        "spec_id": "64abfae0-8541-48a9-b461-8c842e3043b1"
+      }
     ],
-    "project_format": ["f2b7f6f4-6ebe-4374-b861-977f9297790c"]
+    "project_format": [
+      "f2b7f6f4-6ebe-4374-b861-977f9297790c"
+    ]
   },
   {
     "title": "VisionAPI — компьютерное зрение",
     "short_desc": "Сервис компьютерного зрения для распознавания объектов и лиц",
     "full_desc": "Разработка API для компьютерного зрения: детекция объектов; распознавание лиц; анализ изображений; обучение кастомных моделей; интеграция через REST API. Нужны CV-инженеры, ML-инженеры, cloud-архитекторы.",
     "location": "Нижний Новгород",
-    "start_date": "2027-04-01",
-    "end_date": "2027-10-01",
+    "start_date": "2027-04-30",
+    "end_date": "2027-10-30",
     "status_project": "draft",
     "skills": [
-      {"skill_id": "3cd43ce5-ed0d-4430-a494-857f11a9c70f"},
-      {"skill_id": "61510b9a-6541-40be-9a18-fee5e67914b5"},
-      {"skill_id": "c90d6a42-c8dc-4632-869c-7641ae2f96e5"},
-      {"skill_id": "65290809-c697-4cfb-8083-926eaa59701e"},
-      {"skill_id": "86498eee-1938-476f-a945-3247438ae539"}
+      {
+        "skill_id": "3cd43ce5-ed0d-4430-a494-857f11a9c70f"
+      },
+      {
+        "skill_id": "61510b9a-6541-40be-9a18-fee5e67914b5"
+      },
+      {
+        "skill_id": "c90d6a42-c8dc-4632-869c-7641ae2f96e5"
+      },
+      {
+        "skill_id": "65290809-c697-4cfb-8083-926eaa59701e"
+      },
+      {
+        "skill_id": "86498eee-1938-476f-a945-3247438ae539"
+      }
     ],
     "specializations": [
-      {"spec_id": "aafc1f3a-e2fa-4b67-b248-4cd9b7523bce"},
-      {"spec_id": "94fbe2de-1754-4381-b29e-2b1b57b8efda"},
-      {"spec_id": "f534b34c-225c-40d8-ac27-aadff06d998b"},
-      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
-      {"spec_id": "a02ba914-75c8-4813-b8d2-791a067b0e11"}
+      {
+        "spec_id": "aafc1f3a-e2fa-4b67-b248-4cd9b7523bce"
+      },
+      {
+        "spec_id": "94fbe2de-1754-4381-b29e-2b1b57b8efda"
+      },
+      {
+        "spec_id": "f534b34c-225c-40d8-ac27-aadff06d998b"
+      },
+      {
+        "spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"
+      },
+      {
+        "spec_id": "a02ba914-75c8-4813-b8d2-791a067b0e11"
+      }
     ],
-    "project_format": ["450eab94-627f-4805-81b0-e8bcca4a0e7c"]
+    "project_format": [
+      "450eab94-627f-4805-81b0-e8bcca4a0e7c"
+    ]
   },
   {
     "title": "PuzzleQuest — игра-головоломка",
     "short_desc": "Мобильная игра-головоломка с уникальными уровнями и персонажами",
     "full_desc": "Разработка мобильной игры: более 500 уровней; система бустеров; персонажи с уникальными способностями; таблица лидеров; внутриигровые покупки. Требуются Unity-разработчики, гейм-дизайнеры, 3D-художники.",
     "location": "Москва",
-    "start_date": "2026-07-01",
-    "end_date": "2026-12-30",
+    "start_date": "2026-07-30",
+    "end_date": "2027-01-28",
     "status_project": "published",
     "skills": [
-      {"skill_id": "eb266de9-8f1a-4685-89ff-5194e095f6f5"},
-      {"skill_id": "86953b73-a739-4d25-acc6-aafb1a3e7a9f"},
-      {"skill_id": "cbbebe4f-8d1b-4406-b256-ddcc41b919d4"},
-      {"skill_id": "f03b2e34-e8ae-4142-b168-17e088035994"},
-      {"skill_id": "7f621346-9350-4fe6-8106-b2d82bbad2d2"}
+      {
+        "skill_id": "eb266de9-8f1a-4685-89ff-5194e095f6f5"
+      },
+      {
+        "skill_id": "86953b73-a739-4d25-acc6-aafb1a3e7a9f"
+      },
+      {
+        "skill_id": "cbbebe4f-8d1b-4406-b256-ddcc41b919d4"
+      },
+      {
+        "skill_id": "f03b2e34-e8ae-4142-b168-17e088035994"
+      },
+      {
+        "skill_id": "7f621346-9350-4fe6-8106-b2d82bbad2d2"
+      }
     ],
     "specializations": [
-      {"spec_id": "64c590ee-bb49-4bb1-8f22-eb828a475f43"},
-      {"spec_id": "269ebc58-29e4-49b8-9ef4-074e2fd547d8"},
-      {"spec_id": "7dd4e753-cf44-4efb-90d0-0bf93809c10f"},
-      {"spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"},
-      {"spec_id": "1b34b5f6-ad09-4d4b-990a-5fbf3a902662"}
+      {
+        "spec_id": "64c590ee-bb49-4bb1-8f22-eb828a475f43"
+      },
+      {
+        "spec_id": "269ebc58-29e4-49b8-9ef4-074e2fd547d8"
+      },
+      {
+        "spec_id": "7dd4e753-cf44-4efb-90d0-0bf93809c10f"
+      },
+      {
+        "spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"
+      },
+      {
+        "spec_id": "1b34b5f6-ad09-4d4b-990a-5fbf3a902662"
+      }
     ],
-    "project_format": ["220ed170-25ab-4026-9cd3-8a817c12348f"]
+    "project_format": [
+      "220ed170-25ab-4026-9cd3-8a817c12348f"
+    ]
   },
   {
     "title": "CityBuild — симулятор города",
     "short_desc": "Игра-симулятор строительства и управления городом",
     "full_desc": "Создание градостроительного симулятора: зонирование территорий; экономическая модель; погодные эффекты; система достижений; моддинг. Нужны разработчики Unreal Engine, 3D-художники, гейм-дизайнеры.",
     "location": "Санкт-Петербург",
-    "start_date": "2027-01-01",
-    "end_date": "2027-07-01",
+    "start_date": "2027-01-30",
+    "end_date": "2027-07-30",
     "status_project": "draft",
     "skills": [
-      {"skill_id": "88b6663c-1c66-4ab9-81ff-3357e21a3c20"},
-      {"skill_id": "cbbebe4f-8d1b-4406-b256-ddcc41b919d4"},
-      {"skill_id": "3da795bd-1380-4628-bdc3-ff4d15f9a628"},
-      {"skill_id": "35349b73-3a38-436b-ae1e-b589790f118e"},
-      {"skill_id": "f03b2e34-e8ae-4142-b168-17e088035994"}
+      {
+        "skill_id": "88b6663c-1c66-4ab9-81ff-3357e21a3c20"
+      },
+      {
+        "skill_id": "cbbebe4f-8d1b-4406-b256-ddcc41b919d4"
+      },
+      {
+        "skill_id": "3da795bd-1380-4628-bdc3-ff4d15f9a628"
+      },
+      {
+        "skill_id": "35349b73-3a38-436b-ae1e-b589790f118e"
+      },
+      {
+        "skill_id": "f03b2e34-e8ae-4142-b168-17e088035994"
+      }
     ],
     "specializations": [
-      {"spec_id": "64c590ee-bb49-4bb1-8f22-eb828a475f43"},
-      {"spec_id": "7dd4e753-cf44-4efb-90d0-0bf93809c10f"},
-      {"spec_id": "269ebc58-29e4-49b8-9ef4-074e2fd547d8"},
-      {"spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"},
-      {"spec_id": "1b34b5f6-ad09-4d4b-990a-5fbf3a902662"}
+      {
+        "spec_id": "64c590ee-bb49-4bb1-8f22-eb828a475f43"
+      },
+      {
+        "spec_id": "7dd4e753-cf44-4efb-90d0-0bf93809c10f"
+      },
+      {
+        "spec_id": "269ebc58-29e4-49b8-9ef4-074e2fd547d8"
+      },
+      {
+        "spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"
+      },
+      {
+        "spec_id": "1b34b5f6-ad09-4d4b-990a-5fbf3a902662"
+      }
     ],
-    "project_format": ["220ed170-25ab-4026-9cd3-8a817c12348f"]
+    "project_format": [
+      "220ed170-25ab-4026-9cd3-8a817c12348f"
+    ]
   },
   {
     "title": "Interior3D — редактор интерьеров",
     "short_desc": "3D-редактор для дизайна интерьеров с библиотекой мебели",
     "full_desc": "Инструмент для дизайна интерьеров: планировка помещений; библиотека 3D-моделей мебели; визуализация в реальном времени; экспорт в PDF; каталог материалов. Нужны 3D-художники, frontend-разработчики, продакт-менеджеры.",
     "location": "Казань",
-    "start_date": "2026-10-01",
-    "end_date": "2027-04-01",
+    "start_date": "2026-10-30",
+    "end_date": "2027-04-30",
     "status_project": "published",
     "skills": [
-      {"skill_id": "45d40533-66ea-4b1a-a8aa-4108bd3be999"},
-      {"skill_id": "cbbebe4f-8d1b-4406-b256-ddcc41b919d4"},
-      {"skill_id": "e6132e1a-6e50-4e62-8ec7-0e3868fbe539"},
-      {"skill_id": "774e920b-3d49-4307-a1d7-94192678ed4d"},
-      {"skill_id": "f03b2e34-e8ae-4142-b168-17e088035994"}
+      {
+        "skill_id": "45d40533-66ea-4b1a-a8aa-4108bd3be999"
+      },
+      {
+        "skill_id": "cbbebe4f-8d1b-4406-b256-ddcc41b919d4"
+      },
+      {
+        "skill_id": "e6132e1a-6e50-4e62-8ec7-0e3868fbe539"
+      },
+      {
+        "skill_id": "774e920b-3d49-4307-a1d7-94192678ed4d"
+      },
+      {
+        "skill_id": "f03b2e34-e8ae-4142-b168-17e088035994"
+      }
     ],
     "specializations": [
-      {"spec_id": "7dd4e753-cf44-4efb-90d0-0bf93809c10f"},
-      {"spec_id": "64c590ee-bb49-4bb1-8f22-eb828a475f43"},
-      {"spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"},
-      {"spec_id": "43f449e6-c978-4248-86f7-dac3d7b9cece"},
-      {"spec_id": "2d4244ed-b9dd-435c-a50e-c799b9a14288"}
+      {
+        "spec_id": "7dd4e753-cf44-4efb-90d0-0bf93809c10f"
+      },
+      {
+        "spec_id": "64c590ee-bb49-4bb1-8f22-eb828a475f43"
+      },
+      {
+        "spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"
+      },
+      {
+        "spec_id": "43f449e6-c978-4248-86f7-dac3d7b9cece"
+      },
+      {
+        "spec_id": "2d4244ed-b9dd-435c-a50e-c799b9a14288"
+      }
     ],
-    "project_format": ["450eab94-627f-4805-81b0-e8bcca4a0e7c"]
+    "project_format": [
+      "450eab94-627f-4805-81b0-e8bcca4a0e7c"
+    ]
   },
   {
     "title": "InfraWatch — мониторинг инфраструктуры",
     "short_desc": "Система мониторинга IT-инфраструктуры с алертами и дашбордами",
     "full_desc": "Платформа для мониторинга: сбор метрик с серверов; визуализация в дашбордах; настройка алертов; интеграция с Telegram/Slack; отчёты о доступности. Требуются DevOps-инженеры, SRE, системные администраторы.",
     "location": "Москва",
-    "start_date": "2026-07-01",
-    "end_date": "2026-12-29",
+    "start_date": "2026-07-30",
+    "end_date": "2027-01-27",
     "status_project": "published",
     "skills": [
-      {"skill_id": "9970986c-0ff7-4397-8bca-9dda2218b72a"},
-      {"skill_id": "33423ced-17cf-4a33-a808-096748470409"},
-      {"skill_id": "e23a0699-5bce-41c7-9a61-5a87f08656cd"},
-      {"skill_id": "47b40fd3-958f-47ac-8e18-a8478579e0b6"},
-      {"skill_id": "b8aff179-7e2c-4db1-b6db-4ac1d648b505"}
+      {
+        "skill_id": "9970986c-0ff7-4397-8bca-9dda2218b72a"
+      },
+      {
+        "skill_id": "33423ced-17cf-4a33-a808-096748470409"
+      },
+      {
+        "skill_id": "e23a0699-5bce-41c7-9a61-5a87f08656cd"
+      },
+      {
+        "skill_id": "47b40fd3-958f-47ac-8e18-a8478579e0b6"
+      },
+      {
+        "skill_id": "b8aff179-7e2c-4db1-b6db-4ac1d648b505"
+      }
     ],
     "specializations": [
-      {"spec_id": "d1618b1e-bbf3-4fa2-9b4b-89fd343e6456"},
-      {"spec_id": "28fd13c8-5b29-40d6-b0b1-68f054e44aa0"},
-      {"spec_id": "3da66a79-82ad-4e9d-97ad-873546efd594"},
-      {"spec_id": "3c650e86-4b78-41bf-8f8f-4d6e10e0e49b"},
-      {"spec_id": "a02ba914-75c8-4813-b8d2-791a067b0e11"}
+      {
+        "spec_id": "d1618b1e-bbf3-4fa2-9b4b-89fd343e6456"
+      },
+      {
+        "spec_id": "28fd13c8-5b29-40d6-b0b1-68f054e44aa0"
+      },
+      {
+        "spec_id": "3da66a79-82ad-4e9d-97ad-873546efd594"
+      },
+      {
+        "spec_id": "3c650e86-4b78-41bf-8f8f-4d6e10e0e49b"
+      },
+      {
+        "spec_id": "a02ba914-75c8-4813-b8d2-791a067b0e11"
+      }
     ],
-    "project_format": ["f2b7f6f4-6ebe-4374-b861-977f9297790c"]
+    "project_format": [
+      "f2b7f6f4-6ebe-4374-b861-977f9297790c"
+    ]
   },
   {
     "title": "ContainerOps — управление контейнерами",
     "short_desc": "Платформа для оркестрации контейнеров и управления микросервисами",
     "full_desc": "Разработка платформы контейнеризации: автоматическое развёртывание; масштабирование; балансировка нагрузки; мониторинг кластера; CI/CD интеграция. Требуются DevOps-инженеры, cloud-архитекторы, SRE.",
     "location": "Санкт-Петербург",
-    "start_date": "2026-07-01",
-    "end_date": "2027-01-01",
+    "start_date": "2026-07-30",
+    "end_date": "2027-01-30",
     "status_project": "published",
     "skills": [
-      {"skill_id": "9970986c-0ff7-4397-8bca-9dda2218b72a"},
-      {"skill_id": "f2b21754-e69b-4e87-98ca-dd4bb066aba5"},
-      {"skill_id": "c5e684af-61ad-4b22-b6cb-af8b7064dd9e"},
-      {"skill_id": "2b06493d-7acc-457e-ad24-9d5eeb6f5f74"},
-      {"skill_id": "f301c3b0-91c3-4f4f-97e7-5a466efcaab0"}
+      {
+        "skill_id": "9970986c-0ff7-4397-8bca-9dda2218b72a"
+      },
+      {
+        "skill_id": "f2b21754-e69b-4e87-98ca-dd4bb066aba5"
+      },
+      {
+        "skill_id": "c5e684af-61ad-4b22-b6cb-af8b7064dd9e"
+      },
+      {
+        "skill_id": "2b06493d-7acc-457e-ad24-9d5eeb6f5f74"
+      },
+      {
+        "skill_id": "f301c3b0-91c3-4f4f-97e7-5a466efcaab0"
+      }
     ],
     "specializations": [
-      {"spec_id": "d1618b1e-bbf3-4fa2-9b4b-89fd343e6456"},
-      {"spec_id": "a02ba914-75c8-4813-b8d2-791a067b0e11"},
-      {"spec_id": "28fd13c8-5b29-40d6-b0b1-68f054e44aa0"},
-      {"spec_id": "3da66a79-82ad-4e9d-97ad-873546efd594"},
-      {"spec_id": "e26bb5c1-5681-4361-bc21-8c8a88f4b10a"}
+      {
+        "spec_id": "d1618b1e-bbf3-4fa2-9b4b-89fd343e6456"
+      },
+      {
+        "spec_id": "a02ba914-75c8-4813-b8d2-791a067b0e11"
+      },
+      {
+        "spec_id": "28fd13c8-5b29-40d6-b0b1-68f054e44aa0"
+      },
+      {
+        "spec_id": "3da66a79-82ad-4e9d-97ad-873546efd594"
+      },
+      {
+        "spec_id": "e26bb5c1-5681-4361-bc21-8c8a88f4b10a"
+      }
     ],
-    "project_format": ["f2b7f6f4-6ebe-4374-b861-977f9297790c"]
+    "project_format": [
+      "f2b7f6f4-6ebe-4374-b861-977f9297790c"
+    ]
   },
   {
     "title": "BackupGuard — бекапы и восстановление",
     "short_desc": "Сервис автоматического резервного копирования и восстановления данных",
     "full_desc": "Система бекапов: автоматическое резервное копирование; дедупликация; восстановление на любой момент времени; хранение в облаке; отчёты о бекапах. Нужны DevOps-инженеры, системные администраторы, backend-разработчики.",
     "location": "Екатеринбург",
-    "start_date": "2027-06-01",
-    "end_date": "2027-12-01",
+    "start_date": "2027-06-30",
+    "end_date": "2027-12-30",
     "status_project": "draft",
     "skills": [
-      {"skill_id": "62cfd2bf-e42c-4b34-b479-f7c3727f81cf"},
-      {"skill_id": "3cd43ce5-ed0d-4430-a494-857f11a9c70f"},
-      {"skill_id": "86498eee-1938-476f-a945-3247438ae539"},
-      {"skill_id": "f301c3b0-91c3-4f4f-97e7-5a466efcaab0"},
-      {"skill_id": "741db4ad-504d-449c-ba27-80212ece21db"}
+      {
+        "skill_id": "62cfd2bf-e42c-4b34-b479-f7c3727f81cf"
+      },
+      {
+        "skill_id": "3cd43ce5-ed0d-4430-a494-857f11a9c70f"
+      },
+      {
+        "skill_id": "86498eee-1938-476f-a945-3247438ae539"
+      },
+      {
+        "skill_id": "f301c3b0-91c3-4f4f-97e7-5a466efcaab0"
+      },
+      {
+        "skill_id": "741db4ad-504d-449c-ba27-80212ece21db"
+      }
     ],
     "specializations": [
-      {"spec_id": "d1618b1e-bbf3-4fa2-9b4b-89fd343e6456"},
-      {"spec_id": "3da66a79-82ad-4e9d-97ad-873546efd594"},
-      {"spec_id": "28fd13c8-5b29-40d6-b0b1-68f054e44aa0"},
-      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
-      {"spec_id": "3f6715b0-2eee-4499-a41f-ff45693582bf"}
+      {
+        "spec_id": "d1618b1e-bbf3-4fa2-9b4b-89fd343e6456"
+      },
+      {
+        "spec_id": "3da66a79-82ad-4e9d-97ad-873546efd594"
+      },
+      {
+        "spec_id": "28fd13c8-5b29-40d6-b0b1-68f054e44aa0"
+      },
+      {
+        "spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"
+      },
+      {
+        "spec_id": "3f6715b0-2eee-4499-a41f-ff45693582bf"
+      }
     ],
-    "project_format": ["f2b7f6f4-6ebe-4374-b861-977f9297790c"]
+    "project_format": [
+      "f2b7f6f4-6ebe-4374-b861-977f9297790c"
+    ]
   },
   {
     "title": "TestLab — лаборатория тестирования",
     "short_desc": "Комплексная платформа для ручного и автоматизированного тестирования",
     "full_desc": "Создание тестовой лаборатории: управление тест-кейсами; автоматизация регрессионного тестирования; интеграция с CI/CD; отчёты о покрытии; баг-трекинг. Нужны QA-инженеры, automation QA, DevOps.",
     "location": "Нижний Новгород",
-    "start_date": "2026-07-01",
-    "end_date": "2027-01-01",
+    "start_date": "2026-07-30",
+    "end_date": "2027-01-30",
     "status_project": "published",
     "skills": [
-      {"skill_id": "5bfa214e-da47-4cf1-8961-92740347b563"},
-      {"skill_id": "aaf36b7e-dcd0-4eda-b6e8-4629f114296d"},
-      {"skill_id": "3cd43ce5-ed0d-4430-a494-857f11a9c70f"},
-      {"skill_id": "524e6d1b-77cf-4a9c-b7a3-28a31b608b2a"},
-      {"skill_id": "39b9e37d-f5dc-4189-8a62-1a536b9fbdd2"}
+      {
+        "skill_id": "5bfa214e-da47-4cf1-8961-92740347b563"
+      },
+      {
+        "skill_id": "aaf36b7e-dcd0-4eda-b6e8-4629f114296d"
+      },
+      {
+        "skill_id": "3cd43ce5-ed0d-4430-a494-857f11a9c70f"
+      },
+      {
+        "skill_id": "524e6d1b-77cf-4a9c-b7a3-28a31b608b2a"
+      },
+      {
+        "skill_id": "39b9e37d-f5dc-4189-8a62-1a536b9fbdd2"
+      }
     ],
     "specializations": [
-      {"spec_id": "a38c4213-9fde-4e85-ace8-78936c9fdf3c"},
-      {"spec_id": "f305426b-616f-4134-8a85-c91e569375f3"},
-      {"spec_id": "e6af36f6-6234-4e05-b48c-8b987b57a9eb"},
-      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
-      {"spec_id": "d1618b1e-bbf3-4fa2-9b4b-89fd343e6456"}
+      {
+        "spec_id": "a38c4213-9fde-4e85-ace8-78936c9fdf3c"
+      },
+      {
+        "spec_id": "f305426b-616f-4134-8a85-c91e569375f3"
+      },
+      {
+        "spec_id": "e6af36f6-6234-4e05-b48c-8b987b57a9eb"
+      },
+      {
+        "spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"
+      },
+      {
+        "spec_id": "d1618b1e-bbf3-4fa2-9b4b-89fd343e6456"
+      }
     ],
-    "project_format": ["220ed170-25ab-4026-9cd3-8a817c12348f"]
+    "project_format": [
+      "220ed170-25ab-4026-9cd3-8a817c12348f"
+    ]
   },
   {
     "title": "AutoTest — авто-тестирование",
     "short_desc": "Платформа для написания и запуска авто-тестов веб-приложений",
     "full_desc": "Сервис автоматизации тестирования: запись и воспроизведение тестов; кросс-браузерное тестирование; параллельный запуск; интеграция с CI; отчёты с видео. Требуются automation QA, frontend-разработчики, DevOps.",
     "location": "Казань",
-    "start_date": "2027-02-01",
-    "end_date": "2027-08-01",
+    "start_date": "2027-03-02",
+    "end_date": "2027-08-30",
     "status_project": "draft",
     "skills": [
-      {"skill_id": "1e13f5e6-3044-4ca3-8290-23f0da69f7a6"},
-      {"skill_id": "fe7d18a9-7ccb-41a6-a304-1c6e6b26c1c2"},
-      {"skill_id": "5b8c5918-c902-470e-9941-b98ec3cf5ced"},
-      {"skill_id": "cd6a855c-3389-478a-a840-fa74c839a81e"},
-      {"skill_id": "396508ac-d452-4a2e-9702-c814aa2b352a"}
+      {
+        "skill_id": "1e13f5e6-3044-4ca3-8290-23f0da69f7a6"
+      },
+      {
+        "skill_id": "fe7d18a9-7ccb-41a6-a304-1c6e6b26c1c2"
+      },
+      {
+        "skill_id": "5b8c5918-c902-470e-9941-b98ec3cf5ced"
+      },
+      {
+        "skill_id": "cd6a855c-3389-478a-a840-fa74c839a81e"
+      },
+      {
+        "skill_id": "396508ac-d452-4a2e-9702-c814aa2b352a"
+      }
     ],
     "specializations": [
-      {"spec_id": "a38c4213-9fde-4e85-ace8-78936c9fdf3c"},
-      {"spec_id": "e6af36f6-6234-4e05-b48c-8b987b57a9eb"},
-      {"spec_id": "43f449e6-c978-4248-86f7-dac3d7b9cece"},
-      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
-      {"spec_id": "d1618b1e-bbf3-4fa2-9b4b-89fd343e6456"}
+      {
+        "spec_id": "a38c4213-9fde-4e85-ace8-78936c9fdf3c"
+      },
+      {
+        "spec_id": "e6af36f6-6234-4e05-b48c-8b987b57a9eb"
+      },
+      {
+        "spec_id": "43f449e6-c978-4248-86f7-dac3d7b9cece"
+      },
+      {
+        "spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"
+      },
+      {
+        "spec_id": "d1618b1e-bbf3-4fa2-9b4b-89fd343e6456"
+      }
     ],
-    "project_format": ["450eab94-627f-4805-81b0-e8bcca4a0e7c"]
+    "project_format": [
+      "450eab94-627f-4805-81b0-e8bcca4a0e7c"
+    ]
   },
   {
     "title": "MailMaster — email-маркетинг",
     "short_desc": "Сервис email-рассылок с умной сегментацией аудитории",
     "full_desc": "Платформа email-маркетинга: конструктор писем; сегментация базы; A/B тестирование; аналитика открытий и кликов; интеграция с CRM. Нужны PHP-разработчики, маркетологи, аналитики данных.",
     "location": "Москва",
-    "start_date": "2026-07-01",
-    "end_date": "2027-01-01",
+    "start_date": "2026-07-30",
+    "end_date": "2027-01-30",
     "status_project": "published",
     "skills": [
-      {"skill_id": "cdaf3d71-3a18-438a-86d4-1a95b6dc29e9"},
-      {"skill_id": "4a13ff5d-9480-4895-be21-570a041120e0"},
-      {"skill_id": "b24bd770-cc35-445e-8406-203cab664f98"},
-      {"skill_id": "4feb6bda-77ce-41f4-a2a7-ef86ef55f968"},
-      {"skill_id": "35b1aa95-f43f-48fb-9b1c-ce285da0e36b"}
+      {
+        "skill_id": "cdaf3d71-3a18-438a-86d4-1a95b6dc29e9"
+      },
+      {
+        "skill_id": "4a13ff5d-9480-4895-be21-570a041120e0"
+      },
+      {
+        "skill_id": "b24bd770-cc35-445e-8406-203cab664f98"
+      },
+      {
+        "skill_id": "4feb6bda-77ce-41f4-a2a7-ef86ef55f968"
+      },
+      {
+        "skill_id": "35b1aa95-f43f-48fb-9b1c-ce285da0e36b"
+      }
     ],
     "specializations": [
-      {"spec_id": "4fccf88f-8ae6-46a9-bfb3-7a0e07863840"},
-      {"spec_id": "a98283c2-0dd4-4b00-b9c2-73167585903c"},
-      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
-      {"spec_id": "c65be44f-83d0-4446-a975-4d2532031ecb"},
-      {"spec_id": "5d3c650c-9d1b-404d-ac7a-95b0c410c9e8"}
+      {
+        "spec_id": "4fccf88f-8ae6-46a9-bfb3-7a0e07863840"
+      },
+      {
+        "spec_id": "a98283c2-0dd4-4b00-b9c2-73167585903c"
+      },
+      {
+        "spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"
+      },
+      {
+        "spec_id": "c65be44f-83d0-4446-a975-4d2532031ecb"
+      },
+      {
+        "spec_id": "5d3c650c-9d1b-404d-ac7a-95b0c410c9e8"
+      }
     ],
-    "project_format": ["450eab94-627f-4805-81b0-e8bcca4a0e7c"]
+    "project_format": [
+      "450eab94-627f-4805-81b0-e8bcca4a0e7c"
+    ]
   },
   {
     "title": "SEOWizard — SEO-аналитика",
     "short_desc": "Платформа для комплексного SEO-анализа и оптимизации сайтов",
     "full_desc": "Сервис SEO-аналитики: аудит сайтов; мониторинг позиций; анализ конкурентов; генерация отчётов; рекомендации по оптимизации. Нужны Python-разработчики, SEO-специалисты, аналитики данных.",
     "location": "Казань",
-    "start_date": "2026-07-01",
-    "end_date": "2026-12-31",
+    "start_date": "2026-07-30",
+    "end_date": "2027-01-29",
     "status_project": "published",
     "skills": [
-      {"skill_id": "3cd43ce5-ed0d-4430-a494-857f11a9c70f"},
-      {"skill_id": "382bde57-c02b-401a-8866-4dca72361d1a"},
-      {"skill_id": "57b0c9e1-9db4-41e2-9d65-fc426fe26224"},
-      {"skill_id": "ac5c492c-4ccc-481c-8ec0-f22ff2035088"},
-      {"skill_id": "ff33f2da-0233-4588-b68a-4da66093985a"}
+      {
+        "skill_id": "3cd43ce5-ed0d-4430-a494-857f11a9c70f"
+      },
+      {
+        "skill_id": "382bde57-c02b-401a-8866-4dca72361d1a"
+      },
+      {
+        "skill_id": "57b0c9e1-9db4-41e2-9d65-fc426fe26224"
+      },
+      {
+        "skill_id": "ac5c492c-4ccc-481c-8ec0-f22ff2035088"
+      },
+      {
+        "skill_id": "ff33f2da-0233-4588-b68a-4da66093985a"
+      }
     ],
     "specializations": [
-      {"spec_id": "147d5cab-d565-44dc-855b-c93ee5c98778"},
-      {"spec_id": "c65be44f-83d0-4446-a975-4d2532031ecb"},
-      {"spec_id": "a98283c2-0dd4-4b00-b9c2-73167585903c"},
-      {"spec_id": "5d3c650c-9d1b-404d-ac7a-95b0c410c9e8"},
-      {"spec_id": "9385212d-ac6d-4ff5-9b30-c9b1dc75a74d"}
+      {
+        "spec_id": "147d5cab-d565-44dc-855b-c93ee5c98778"
+      },
+      {
+        "spec_id": "c65be44f-83d0-4446-a975-4d2532031ecb"
+      },
+      {
+        "spec_id": "a98283c2-0dd4-4b00-b9c2-73167585903c"
+      },
+      {
+        "spec_id": "5d3c650c-9d1b-404d-ac7a-95b0c410c9e8"
+      },
+      {
+        "spec_id": "9385212d-ac6d-4ff5-9b30-c9b1dc75a74d"
+      }
     ],
-    "project_format": ["f2b7f6f4-6ebe-4374-b861-977f9297790c"]
+    "project_format": [
+      "f2b7f6f4-6ebe-4374-b861-977f9297790c"
+    ]
   },
   {
     "title": "FullAnalytics — сквозная аналитика",
     "short_desc": "Система сквозной аналитики для маркетинга и продаж",
     "full_desc": "Платформа сквозной аналитики: сбор данных из всех каналов; построение воронок; когортный анализ; дашборды для руководства; интеграция с CRM и рекламными кабинетами. Нужны аналитики данных, бизнес-аналитики, маркетологи.",
     "location": "Новосибирск",
-    "start_date": "2027-03-01",
-    "end_date": "2027-09-01",
+    "start_date": "2027-03-30",
+    "end_date": "2027-09-30",
     "status_project": "draft",
     "skills": [
-      {"skill_id": "3cd43ce5-ed0d-4430-a494-857f11a9c70f"},
-      {"skill_id": "a285637c-5722-40b1-a5b9-e972edbc4007"},
-      {"skill_id": "5fbd6afb-2271-415f-bc90-783a2af96e89"},
-      {"skill_id": "e9cc9a82-46ce-4d72-9a74-d6dfcf06d794"},
-      {"skill_id": "63b4bbbd-0dcc-4e8b-9a69-8f737507819b"}
+      {
+        "skill_id": "3cd43ce5-ed0d-4430-a494-857f11a9c70f"
+      },
+      {
+        "skill_id": "a285637c-5722-40b1-a5b9-e972edbc4007"
+      },
+      {
+        "skill_id": "5fbd6afb-2271-415f-bc90-783a2af96e89"
+      },
+      {
+        "skill_id": "e9cc9a82-46ce-4d72-9a74-d6dfcf06d794"
+      },
+      {
+        "skill_id": "63b4bbbd-0dcc-4e8b-9a69-8f737507819b"
+      }
     ],
     "specializations": [
-      {"spec_id": "c65be44f-83d0-4446-a975-4d2532031ecb"},
-      {"spec_id": "a7386fc2-51a4-4392-a810-19d48d11778d"},
-      {"spec_id": "f534b34c-225c-40d8-ac27-aadff06d998b"},
-      {"spec_id": "5d3c650c-9d1b-404d-ac7a-95b0c410c9e8"},
-      {"spec_id": "c2724a32-d768-4e94-adfb-6a3b28422908"}
+      {
+        "spec_id": "c65be44f-83d0-4446-a975-4d2532031ecb"
+      },
+      {
+        "spec_id": "a7386fc2-51a4-4392-a810-19d48d11778d"
+      },
+      {
+        "spec_id": "f534b34c-225c-40d8-ac27-aadff06d998b"
+      },
+      {
+        "spec_id": "5d3c650c-9d1b-404d-ac7a-95b0c410c9e8"
+      },
+      {
+        "spec_id": "c2724a32-d768-4e94-adfb-6a3b28422908"
+      }
     ],
-    "project_format": ["f2b7f6f4-6ebe-4374-b861-977f9297790c"]
+    "project_format": [
+      "f2b7f6f4-6ebe-4374-b861-977f9297790c"
+    ]
   },
   {
     "title": "MediCRM — медицинская CRM",
     "short_desc": "CRM-система для управления клиникой и записи пациентов",
     "full_desc": "CRM для медицинского центра: запись на приём; электронные карты пациентов; расписание врачей; интеграция с лабораториями; отчётность для руководства. Требуются Python/Django разработчики, администраторы БД, специалисты по безопасности.",
     "location": "Москва",
-    "start_date": "2026-07-01",
-    "end_date": "2027-01-01",
+    "start_date": "2026-07-30",
+    "end_date": "2027-01-30",
     "status_project": "published",
     "skills": [
-      {"skill_id": "3cd43ce5-ed0d-4430-a494-857f11a9c70f"},
-      {"skill_id": "dfa6d262-aea2-479c-86de-e3aa4622fd8b"},
-      {"skill_id": "e2504e26-5a3c-4f8a-8f0d-030e6d3a8bde"},
-      {"skill_id": "1b5014d0-b007-49ce-8d23-4df5896c47c7"},
-      {"skill_id": "f301c3b0-91c3-4f4f-97e7-5a466efcaab0"}
+      {
+        "skill_id": "3cd43ce5-ed0d-4430-a494-857f11a9c70f"
+      },
+      {
+        "skill_id": "dfa6d262-aea2-479c-86de-e3aa4622fd8b"
+      },
+      {
+        "skill_id": "e2504e26-5a3c-4f8a-8f0d-030e6d3a8bde"
+      },
+      {
+        "skill_id": "1b5014d0-b007-49ce-8d23-4df5896c47c7"
+      },
+      {
+        "skill_id": "f301c3b0-91c3-4f4f-97e7-5a466efcaab0"
+      }
     ],
     "specializations": [
-      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
-      {"spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"},
-      {"spec_id": "191c6b8b-9582-456b-9bbf-03b140ddcab0"},
-      {"spec_id": "e26bb5c1-5681-4361-bc21-8c8a88f4b10a"},
-      {"spec_id": "2d4244ed-b9dd-435c-a50e-c799b9a14288"}
+      {
+        "spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"
+      },
+      {
+        "spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"
+      },
+      {
+        "spec_id": "191c6b8b-9582-456b-9bbf-03b140ddcab0"
+      },
+      {
+        "spec_id": "e26bb5c1-5681-4361-bc21-8c8a88f4b10a"
+      },
+      {
+        "spec_id": "2d4244ed-b9dd-435c-a50e-c799b9a14288"
+      }
     ],
-    "project_format": ["220ed170-25ab-4026-9cd3-8a817c12348f"]
+    "project_format": [
+      "220ed170-25ab-4026-9cd3-8a817c12348f"
+    ]
   },
   {
     "title": "ChainVote — блокчейн-платформа",
     "short_desc": "Децентрализованная платформа для защищённого голосования",
     "full_desc": "Блокчейн-система для голосований: создание голосований; верификация участников; неизменяемость результатов; аудит транзакций; API для интеграции. Нужны Go-разработчики, блокчейн-инженеры, специалисты по безопасности.",
     "location": "Санкт-Петербург",
-    "start_date": "2027-05-01",
-    "end_date": "2027-11-01",
+    "start_date": "2027-05-30",
+    "end_date": "2027-11-30",
     "status_project": "draft",
     "skills": [
-      {"skill_id": "9970986c-0ff7-4397-8bca-9dda2218b72a"},
-      {"skill_id": "c964f05d-9a1f-4dde-b841-6a829251a9fd"},
-      {"skill_id": "73c34091-a5d0-4191-af43-9a4475a51e07"},
-      {"skill_id": "86498eee-1938-476f-a945-3247438ae539"},
-      {"skill_id": "f301c3b0-91c3-4f4f-97e7-5a466efcaab0"}
+      {
+        "skill_id": "9970986c-0ff7-4397-8bca-9dda2218b72a"
+      },
+      {
+        "skill_id": "c964f05d-9a1f-4dde-b841-6a829251a9fd"
+      },
+      {
+        "skill_id": "73c34091-a5d0-4191-af43-9a4475a51e07"
+      },
+      {
+        "skill_id": "86498eee-1938-476f-a945-3247438ae539"
+      },
+      {
+        "skill_id": "f301c3b0-91c3-4f4f-97e7-5a466efcaab0"
+      }
     ],
     "specializations": [
-      {"spec_id": "dfd1c374-6d4f-479f-a321-da4f4ee3aef1"},
-      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
-      {"spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"},
-      {"spec_id": "e26bb5c1-5681-4361-bc21-8c8a88f4b10a"},
-      {"spec_id": "55b0d417-8d64-4ce1-b7d2-f9fe7025d469"}
+      {
+        "spec_id": "dfd1c374-6d4f-479f-a321-da4f4ee3aef1"
+      },
+      {
+        "spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"
+      },
+      {
+        "spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"
+      },
+      {
+        "spec_id": "e26bb5c1-5681-4361-bc21-8c8a88f4b10a"
+      },
+      {
+        "spec_id": "55b0d417-8d64-4ce1-b7d2-f9fe7025d469"
+      }
     ],
-    "project_format": ["f2b7f6f4-6ebe-4374-b861-977f9297790c"]
+    "project_format": [
+      "f2b7f6f4-6ebe-4374-b861-977f9297790c"
+    ]
   },
   {
     "title": "AgriSense — IoT для сельского хозяйства",
     "short_desc": "IoT-платформа для мониторинга и автоматизации сельского хозяйства",
     "full_desc": "Разработка IoT-решения для агросектора: датчики влажности и температуры; автоматический полив; аналитика урожайности; управление техникой; дашборды фермера. Нужны IoT-разработчики, embedded-инженеры, DevOps.",
     "location": "Краснодар",
-    "start_date": "2026-08-01",
-    "end_date": "2027-02-01",
+    "start_date": "2026-08-30",
+    "end_date": "2027-03-02",
     "status_project": "published",
     "skills": [
-      {"skill_id": "3cd43ce5-ed0d-4430-a494-857f11a9c70f"},
-      {"skill_id": "86498eee-1938-476f-a945-3247438ae539"},
-      {"skill_id": "b8aff179-7e2c-4db1-b6db-4ac1d648b505"},
-      {"skill_id": "f301c3b0-91c3-4f4f-97e7-5a466efcaab0"},
-      {"skill_id": "62cfd2bf-e42c-4b34-b479-f7c3727f81cf"}
+      {
+        "skill_id": "3cd43ce5-ed0d-4430-a494-857f11a9c70f"
+      },
+      {
+        "skill_id": "86498eee-1938-476f-a945-3247438ae539"
+      },
+      {
+        "skill_id": "b8aff179-7e2c-4db1-b6db-4ac1d648b505"
+      },
+      {
+        "skill_id": "f301c3b0-91c3-4f4f-97e7-5a466efcaab0"
+      },
+      {
+        "skill_id": "62cfd2bf-e42c-4b34-b479-f7c3727f81cf"
+      }
     ],
     "specializations": [
-      {"spec_id": "2a02ba7d-e960-4f44-a348-db4859d9fc25"},
-      {"spec_id": "f2a4022c-eb6c-4a03-8c72-511715165494"},
-      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
-      {"spec_id": "d1618b1e-bbf3-4fa2-9b4b-89fd343e6456"},
-      {"spec_id": "67b19ba2-6b6f-4ca0-9b96-848009a3d7db"}
+      {
+        "spec_id": "2a02ba7d-e960-4f44-a348-db4859d9fc25"
+      },
+      {
+        "spec_id": "f2a4022c-eb6c-4a03-8c72-511715165494"
+      },
+      {
+        "spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"
+      },
+      {
+        "spec_id": "d1618b1e-bbf3-4fa2-9b4b-89fd343e6456"
+      },
+      {
+        "spec_id": "67b19ba2-6b6f-4ca0-9b96-848009a3d7db"
+      }
     ],
-    "project_format": ["450eab94-627f-4805-81b0-e8bcca4a0e7c"]
+    "project_format": [
+      "450eab94-627f-4805-81b0-e8bcca4a0e7c"
+    ]
   },
   {
     "title": "FurnitureAR — AR-приложение для мебели",
     "short_desc": "Приложение дополненной реальности для примерки мебели в интерьере",
     "full_desc": "AR-приложение для выбора мебели: каталог моделей; примерка в реальном размере через камеру; сохранение проектов; ссылки на магазины; интеграция с производителями. Нужны Unity-разработчики, 3D-художники, UI/UX дизайнеры.",
     "location": "Москва",
-    "start_date": "2027-07-01",
-    "end_date": "2027-12-01",
+    "start_date": "2027-07-30",
+    "end_date": "2027-12-30",
     "status_project": "draft",
     "skills": [
-      {"skill_id": "eb266de9-8f1a-4685-89ff-5194e095f6f5"},
-      {"skill_id": "86953b73-a739-4d25-acc6-aafb1a3e7a9f"},
-      {"skill_id": "cbbebe4f-8d1b-4406-b256-ddcc41b919d4"},
-      {"skill_id": "f03b2e34-e8ae-4142-b168-17e088035994"},
-      {"skill_id": "7f621346-9350-4fe6-8106-b2d82bbad2d2"}
+      {
+        "skill_id": "eb266de9-8f1a-4685-89ff-5194e095f6f5"
+      },
+      {
+        "skill_id": "86953b73-a739-4d25-acc6-aafb1a3e7a9f"
+      },
+      {
+        "skill_id": "cbbebe4f-8d1b-4406-b256-ddcc41b919d4"
+      },
+      {
+        "skill_id": "f03b2e34-e8ae-4142-b168-17e088035994"
+      },
+      {
+        "skill_id": "7f621346-9350-4fe6-8106-b2d82bbad2d2"
+      }
     ],
     "specializations": [
-      {"spec_id": "7625f836-8c35-49ec-90e6-56e3336b0f0c"},
-      {"spec_id": "7dd4e753-cf44-4efb-90d0-0bf93809c10f"},
-      {"spec_id": "64c590ee-bb49-4bb1-8f22-eb828a475f43"},
-      {"spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"},
-      {"spec_id": "2d4244ed-b9dd-435c-a50e-c799b9a14288"}
+      {
+        "spec_id": "7625f836-8c35-49ec-90e6-56e3336b0f0c"
+      },
+      {
+        "spec_id": "7dd4e753-cf44-4efb-90d0-0bf93809c10f"
+      },
+      {
+        "spec_id": "64c590ee-bb49-4bb1-8f22-eb828a475f43"
+      },
+      {
+        "spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"
+      },
+      {
+        "spec_id": "2d4244ed-b9dd-435c-a50e-c799b9a14288"
+      }
     ],
-    "project_format": ["220ed170-25ab-4026-9cd3-8a817c12348f"]
+    "project_format": [
+      "220ed170-25ab-4026-9cd3-8a817c12348f"
+    ]
   },
   {
     "title": "BeatStudio — создание музыки",
     "short_desc": "Онлайн-платформа для создания и редактирования музыки",
     "full_desc": "Веб-приложение для создания музыки: многодорожечный редактор; библиотека сэмплов; MIDI-поддержка; экспорт в популярные форматы; публикация треков. Нужны full-stack разработчики, UI/UX дизайнеры, продакт-менеджеры.",
     "location": "Санкт-Петербург",
-    "start_date": "2026-09-01",
-    "end_date": "2027-03-01",
+    "start_date": "2026-09-30",
+    "end_date": "2027-03-30",
     "status_project": "published",
     "skills": [
-      {"skill_id": "3cd43ce5-ed0d-4430-a494-857f11a9c70f"},
-      {"skill_id": "9edeec3e-171a-4b13-9f0a-c10d02fbfbf6"},
-      {"skill_id": "86498eee-1938-476f-a945-3247438ae539"},
-      {"skill_id": "f301c3b0-91c3-4f4f-97e7-5a466efcaab0"},
-      {"skill_id": "fe7d18a9-7ccb-41a6-a304-1c6e6b26c1c2"}
+      {
+        "skill_id": "3cd43ce5-ed0d-4430-a494-857f11a9c70f"
+      },
+      {
+        "skill_id": "9edeec3e-171a-4b13-9f0a-c10d02fbfbf6"
+      },
+      {
+        "skill_id": "86498eee-1938-476f-a945-3247438ae539"
+      },
+      {
+        "skill_id": "f301c3b0-91c3-4f4f-97e7-5a466efcaab0"
+      },
+      {
+        "skill_id": "fe7d18a9-7ccb-41a6-a304-1c6e6b26c1c2"
+      }
     ],
     "specializations": [
-      {"spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"},
-      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
-      {"spec_id": "43f449e6-c978-4248-86f7-dac3d7b9cece"},
-      {"spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"},
-      {"spec_id": "2d4244ed-b9dd-435c-a50e-c799b9a14288"}
+      {
+        "spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"
+      },
+      {
+        "spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"
+      },
+      {
+        "spec_id": "43f449e6-c978-4248-86f7-dac3d7b9cece"
+      },
+      {
+        "spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"
+      },
+      {
+        "spec_id": "2d4244ed-b9dd-435c-a50e-c799b9a14288"
+      }
     ],
-    "project_format": ["450eab94-627f-4805-81b0-e8bcca4a0e7c"]
+    "project_format": [
+      "450eab94-627f-4805-81b0-e8bcca4a0e7c"
+    ]
   },
   {
     "title": "CarRentalGo — аренда автомобилей",
     "short_desc": "Сервис аренды автомобилей с онлайн-бронированием",
     "full_desc": "Платформа для аренды авто: каталог автомобилей; календарь бронирования; онлайн-оплата; страховка; рейтинг водителей. Требуются Ruby on Rails разработчики, UI/UX дизайнеры, проектные менеджеры.",
     "location": "Казань",
-    "start_date": "2026-11-01",
-    "end_date": "2027-05-01",
+    "start_date": "2026-11-30",
+    "end_date": "2027-05-30",
     "status_project": "published",
     "skills": [
-      {"skill_id": "e5862cbe-092b-4739-b246-709532b1cf56"},
-      {"skill_id": "a4870678-94d7-4947-b447-c927fbf7de0c"},
-      {"skill_id": "e2504e26-5a3c-4f8a-8f0d-030e6d3a8bde"},
-      {"skill_id": "1b5014d0-b007-49ce-8d23-4df5896c47c7"},
-      {"skill_id": "7f621346-9350-4fe6-8106-b2d82bbad2d2"}
+      {
+        "skill_id": "e5862cbe-092b-4739-b246-709532b1cf56"
+      },
+      {
+        "skill_id": "a4870678-94d7-4947-b447-c927fbf7de0c"
+      },
+      {
+        "skill_id": "e2504e26-5a3c-4f8a-8f0d-030e6d3a8bde"
+      },
+      {
+        "skill_id": "1b5014d0-b007-49ce-8d23-4df5896c47c7"
+      },
+      {
+        "skill_id": "7f621346-9350-4fe6-8106-b2d82bbad2d2"
+      }
     ],
     "specializations": [
-      {"spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"},
-      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
-      {"spec_id": "43f449e6-c978-4248-86f7-dac3d7b9cece"},
-      {"spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"},
-      {"spec_id": "1b34b5f6-ad09-4d4b-990a-5fbf3a902662"}
+      {
+        "spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"
+      },
+      {
+        "spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"
+      },
+      {
+        "spec_id": "43f449e6-c978-4248-86f7-dac3d7b9cece"
+      },
+      {
+        "spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"
+      },
+      {
+        "spec_id": "1b34b5f6-ad09-4d4b-990a-5fbf3a902662"
+      }
     ],
-    "project_format": ["450eab94-627f-4805-81b0-e8bcca4a0e7c"]
+    "project_format": [
+      "450eab94-627f-4805-81b0-e8bcca4a0e7c"
+    ]
   },
   {
     "title": "ESportArena — киберспортивная платформа",
     "short_desc": "Платформа для организации и проведения киберспортивных турниров",
     "full_desc": "Сервис для киберспорта: создание турниров; сетка соревнований; стриминг матчей; рейтинг игроков; система ставок. Нужны Go и Node.js разработчики, DevOps, UI/UX дизайнеры.",
     "location": "Москва",
-    "start_date": "2027-08-01",
-    "end_date": "2027-12-01",
+    "start_date": "2027-08-30",
+    "end_date": "2027-12-30",
     "status_project": "draft",
     "skills": [
-      {"skill_id": "9970986c-0ff7-4397-8bca-9dda2218b72a"},
-      {"skill_id": "c964f05d-9a1f-4dde-b841-6a829251a9fd"},
-      {"skill_id": "1b5014d0-b007-49ce-8d23-4df5896c47c7"},
-      {"skill_id": "f301c3b0-91c3-4f4f-97e7-5a466efcaab0"},
-      {"skill_id": "ba451d76-cc2a-4cd4-b8b7-87c9d9a817dc"}
+      {
+        "skill_id": "9970986c-0ff7-4397-8bca-9dda2218b72a"
+      },
+      {
+        "skill_id": "c964f05d-9a1f-4dde-b841-6a829251a9fd"
+      },
+      {
+        "skill_id": "1b5014d0-b007-49ce-8d23-4df5896c47c7"
+      },
+      {
+        "skill_id": "f301c3b0-91c3-4f4f-97e7-5a466efcaab0"
+      },
+      {
+        "skill_id": "ba451d76-cc2a-4cd4-b8b7-87c9d9a817dc"
+      }
     ],
     "specializations": [
-      {"spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"},
-      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
-      {"spec_id": "d1618b1e-bbf3-4fa2-9b4b-89fd343e6456"},
-      {"spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"},
-      {"spec_id": "2d4244ed-b9dd-435c-a50e-c799b9a14288"}
+      {
+        "spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"
+      },
+      {
+        "spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"
+      },
+      {
+        "spec_id": "d1618b1e-bbf3-4fa2-9b4b-89fd343e6456"
+      },
+      {
+        "spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"
+      },
+      {
+        "spec_id": "2d4244ed-b9dd-435c-a50e-c799b9a14288"
+      }
     ],
-    "project_format": ["f2b7f6f4-6ebe-4374-b861-977f9297790c"]
+    "project_format": [
+      "f2b7f6f4-6ebe-4374-b861-977f9297790c"
+    ]
   },
   {
     "title": "NoteVault — приложение для заметок",
     "short_desc": "Безопасное приложение для заметок с синхронизацией между устройствами",
     "full_desc": "Приложение для заметок: Markdown-редактор; категории и теги; полнотекстовый поиск; синхронизация; совместное редактирование. Требуются Kotlin и Spring Boot разработчики, UI/UX дизайнеры, продакт-менеджеры.",
     "location": "Новосибирск",
-    "start_date": "2026-10-01",
-    "end_date": "2027-04-01",
+    "start_date": "2026-10-30",
+    "end_date": "2027-04-30",
     "status_project": "published",
     "skills": [
-      {"skill_id": "b38aa7ce-66ee-434f-84d8-3da58a67ac9a"},
-      {"skill_id": "b5fd1009-ec04-453b-a8a0-516806c3074d"},
-      {"skill_id": "e2504e26-5a3c-4f8a-8f0d-030e6d3a8bde"},
-      {"skill_id": "1b5014d0-b007-49ce-8d23-4df5896c47c7"},
-      {"skill_id": "f301c3b0-91c3-4f4f-97e7-5a466efcaab0"}
+      {
+        "skill_id": "b38aa7ce-66ee-434f-84d8-3da58a67ac9a"
+      },
+      {
+        "skill_id": "b5fd1009-ec04-453b-a8a0-516806c3074d"
+      },
+      {
+        "skill_id": "e2504e26-5a3c-4f8a-8f0d-030e6d3a8bde"
+      },
+      {
+        "skill_id": "1b5014d0-b007-49ce-8d23-4df5896c47c7"
+      },
+      {
+        "skill_id": "f301c3b0-91c3-4f4f-97e7-5a466efcaab0"
+      }
     ],
     "specializations": [
-      {"spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"},
-      {"spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"},
-      {"spec_id": "58468414-6924-44ba-bc4b-54605beebc48"},
-      {"spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"},
-      {"spec_id": "2d4244ed-b9dd-435c-a50e-c799b9a14288"}
+      {
+        "spec_id": "2b4a9c82-b6f8-4441-9268-ef5883595833"
+      },
+      {
+        "spec_id": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1"
+      },
+      {
+        "spec_id": "58468414-6924-44ba-bc4b-54605beebc48"
+      },
+      {
+        "spec_id": "63d6eeaf-7291-4baa-92df-22f42fd188f3"
+      },
+      {
+        "spec_id": "2d4244ed-b9dd-435c-a50e-c799b9a14288"
+      }
     ],
-    "project_format": ["f2b7f6f4-6ebe-4374-b861-977f9297790c"]
+    "project_format": [
+      "f2b7f6f4-6ebe-4374-b861-977f9297790c"
+    ]
   }
 ]

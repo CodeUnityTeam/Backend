@@ -115,6 +115,10 @@ DATABASES = {
 S3_ENDPOINT = os.getenv('S3_ENDPOINT_URL', 'http://minio:9000')
 S3_PUBLIC_URL = os.getenv('S3_PUBLIC_URL', '').rstrip('/')
 
+ALLOW_AVATAR_SIZE_MB = 10
+ALLOW_IMAGE_SIZE_MB = 10
+ALLOW_FEEDBACK_SIZE_MB = 5
+
 STORAGES = {
     'default': {
         'BACKEND': 'django.core.files.storage.FileSystemStorage',
@@ -129,12 +133,9 @@ STORAGES = {
             'secret_key': os.environ.get('AWS_SECRET_ACCESS_KEY'),
             'bucket_name': os.environ.get('AWS_STORAGE_BUCKET_NAME'),
             'endpoint_url': S3_ENDPOINT,
-            'custom_domain': (
-                f'{S3_PUBLIC_URL}'
-                f'/{os.environ.get("AWS_STORAGE_BUCKET_NAME")}'
-            ) if S3_PUBLIC_URL else None,
             'querystring_auth': False,
             'file_overwrite': False,
+            'max_file_size_mb': ALLOW_AVATAR_SIZE_MB,
         },
     },
     'images': {
@@ -147,12 +148,9 @@ STORAGES = {
                 'images',
             ),
             'endpoint_url': S3_ENDPOINT,
-            'custom_domain': (
-                f'{S3_PUBLIC_URL}'
-                f'/{os.environ.get("MINIO_IMAGES_BUCKET_NAME", "images")}'
-            ) if S3_PUBLIC_URL else None,
             'querystring_auth': False,
             'file_overwrite': False,
+            'max_file_size_mb': ALLOW_IMAGE_SIZE_MB,
         },
     },
 }
@@ -170,10 +168,6 @@ STATIC_URL = '/static/'
 STATIC_ROOT = '/backend_static/static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-ALLOW_AVATAR_SIZE_MB = 10
-ALLOW_IMAGE_SIZE_MB = 10
-ALLOW_FEEDBACK_SIZE_MB = 5
 
 # =============================================================================
 # SECURITY, CORS & AUTH MODEL
@@ -489,11 +483,58 @@ config = {
             'handlers': ['console', 'file'],
             'propagate': False,
         },
+        # Логгеры приложений наследуются от 'app'
+        'core': {
+            'level': 'DEBUG',
+            'handlers': ['console', 'file'],
+            'propagate': False,
+        },
+        'users': {
+            'level': 'DEBUG',
+            'handlers': ['console', 'file'],
+            'propagate': False,
+        },
+        'projects': {
+            'level': 'DEBUG',
+            'handlers': ['console', 'file'],
+            'propagate': False,
+        },
+        'qna': {
+            'level': 'DEBUG',
+            'handlers': ['console', 'file'],
+            'propagate': False,
+        },
+        'feedback': {
+            'level': 'DEBUG',
+            'handlers': ['console', 'file'],
+            'propagate': False,
+        },
+        'help': {
+            'level': 'DEBUG',
+            'handlers': ['console', 'file'],
+            'propagate': False,
+        },
+        # Стандартные django-логеры
+        'django.request': {
+            'level': 'ERROR',
+            'handlers': ['file'],
+            'propagate': False,
+        },
+        'django.db.backends': {
+            'level': 'ERROR',
+            'handlers': ['file'],
+            'propagate': False,
+        },
+        'django.security': {
+            'level': 'WARNING',
+            'handlers': ['file'],
+            'propagate': False,
+        },
     },
     # корневой логгер
     'root': {
         'level': 'WARNING',
-        'handlers': ['console'],
+        'handlers': ['console', 'file'],
     },
 }
 

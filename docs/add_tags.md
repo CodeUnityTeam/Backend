@@ -15,28 +15,20 @@ python manage.py loaddata fixtures/tags/*
 
 Для добавления тестовых данных в проект имеются два скрипта ```create_users.sh``` и ```create_obj.sh```, они отправляют curl-запросы на эндпоинты с данными из соответсвующих json-файлов.
 
-**Для регистрации пользователей в проекте, запущенном локально, используем команду**
+**Для регистрации пользователей в проекте, запущенном локально, и подтверждения email используем команду**
 ```bash
 bash fixtures/test_data/create_users.sh
 ```
-**Если запуск на dev-сервере, то в BASE_URL передаём нужный адрес (можно поменять в скрипте)**
-```bash
-BASE_URL="https://dev.code-unity.ru/api/v1" bash fixtures/test_data/create_users.sh
-```
-
-> **Важно:** Для запуска следующего скрипта нужно подтвердить email пользователей. Через админку проще всего.
-
-Или можно проверить эндпоинт `user/auth/registration/verify-email/` и подтвердить email через него для каждого пользователя.
-> **Важно:** `ACCOUNT_EMAIL_VERIFICATION = "mandatory"` — подтверждение email обязательно. Письмо приходит в консоль Django (на dev-сервере `EMAIL_BACKEND=console`). Ссылка для подтверждения имеет формат: `{HOST_URL}/{key}`.
-
 **Для добавления данных в проект, запущенный локально, используем команду**
 ```bash
 bash fixtures/test_data/create_obj.sh
 ```
-**Если запуск на dev-сервере, то в BASE_URL передаём нужный адрес (можно поменять в скрипте)**
+
+**На сервере используется [`load_on_dev.sh`](../fixtures/test_data/load_on_dev.sh), который сам подставляет нужные переменные:**
 ```bash
-BASE_URL="https://dev.code-unity.ru/api/v1" bash fixtures/test_data/create_obj.sh
+sudo docker compose -f docker-compose.dev.yaml exec backend bash fixtures/test_data/load_on_dev.sh
 ```
+
 Что делает скрипт:
 * Получает токены
 * Обновляется профиль автора - меняем статус, информацию, скиллы; загружается аватар для автора.

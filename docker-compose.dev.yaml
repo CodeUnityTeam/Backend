@@ -2,6 +2,7 @@ volumes:
   pg_data:
   static:
   minio_data:
+  logs:
 
 services:
   db:
@@ -13,7 +14,7 @@ services:
       - pg_data:/var/lib/postgresql/data
 
   minio:
-    image: minio/minio:latest
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z-cpuv1
     container_name: backend_minio
     restart: unless-stopped
     env_file: .env
@@ -52,6 +53,7 @@ services:
       - DB_MODE=network
     volumes:
       - static:/backend_static/static/
+      - logs:/app/logs/
 
   nginx:
     build: ./nginx

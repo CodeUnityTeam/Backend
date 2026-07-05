@@ -4,16 +4,19 @@ from django.core.files.uploadedfile import UploadedFile
 from django.db.models import Model
 
 from config import settings
-from core.s3_utils import MinioService
+from core.s3_utils import get_minio_client
 from qna.selectors import count_likes, delete_like, get_or_create_like
 from users.services import update_user_rating
 
-image_minio_client = MinioService(
+image_minio_client = get_minio_client(
+    storage_name='images',
     bucket_name=settings.STORAGES['images']['OPTIONS']['bucket_name'],
 )
 
 
-def image_upload_handler(file_obj: UploadedFile) -> str:
+def image_upload_handler(
+        file_obj: UploadedFile, prefix: str | None = None,
+) -> str:
     """Загружает изображение в MinIO ВНЕ транзакции БД.
 
     Возвращает публичный URL.
@@ -24,7 +27,7 @@ def image_upload_handler(file_obj: UploadedFile) -> str:
     )
     cloud_path: str = f'{uuid4().hex}.{ext}'
 
-    return image_minio_client.upload_file(cloud_path, file_obj)
+    return image_minio_client.upload_file(cloud_path, file_obj, prefix)
 
 
 def toggle_like(
