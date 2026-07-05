@@ -28,6 +28,7 @@ from core.constants.cache import (
 from qna.filters import QuestionFilter
 from qna.models import QuestionLike
 from qna.paginations import CustomQuestionOffsetPagination
+from qna.permissions import CanUpdateDeleteQNA
 from qna.selectors import (
     get_light_question_queryset,
     get_question_detail_queryset,
@@ -107,6 +108,8 @@ class QuestionViewSet(CacheRetrieveMixin, viewsets.ModelViewSet):
         """
         if self.action in ('list', 'retrieve'):
             return (AllowAny(),)
+        if self.action in ('partial_update', 'destroy'):
+            return (CanUpdateDeleteQNA(),)
         return (IsAuthenticated(),)
 
     def list(

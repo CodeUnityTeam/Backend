@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from qna.models import AnswerLike
-from qna.permissions import CanDeleteAnswer
+from qna.permissions import CanUpdateDeleteQNA
 from qna.selectors import get_answer_detail_queryset
 from qna.serializers.answer import AnswerDetailSerializer
 from qna.serializers.like import LikeSerializer
@@ -28,7 +28,7 @@ class AnswerViewSet(DestroyModelMixin, GenericViewSet):
 
     queryset = get_answer_detail_queryset()
     serializer_class = AnswerDetailSerializer
-    permission_classes = [IsAuthenticated, CanDeleteAnswer]
+    permission_classes = (IsAuthenticated, CanUpdateDeleteQNA)
 
     @extend_schema(
             tags=['Answers'],

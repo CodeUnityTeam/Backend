@@ -24,6 +24,7 @@ from core.constants.projects import (
     PUBLISHED,
     RECRUITING_CLOSED,
 )
+from core.filters import UUIDInFilter
 from projects.models import Project, ProjectFavorite
 
 User = get_user_model()
@@ -102,13 +103,13 @@ class ProjectFilter(django_filters.FilterSet):
     выполняется в ProjectViewSet.get_queryset.
     """
 
-    format_id = django_filters.BaseInFilter(
+    format_id = UUIDInFilter(
         field_name='project_format__format_id',
     )
-    spec_id = django_filters.BaseInFilter(
+    spec_id = UUIDInFilter(
         field_name='specializations__spec_id',
     )
-    skills_id = django_filters.BaseInFilter(
+    skills_id = UUIDInFilter(
         field_name='skills__skill_id',
     )
     # Фильтруем по дням
