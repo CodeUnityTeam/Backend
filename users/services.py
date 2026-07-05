@@ -11,7 +11,7 @@ from django.utils import timezone
 
 from config import settings
 from core.constants.users import LAST_LOGIN_UPDATE_INTERVAL
-from core.s3_utils import MinioService
+from core.s3_utils import get_minio_client
 from projects.models import Response as ProjectResponse
 from users.models.users import User
 from users.selectors import (
@@ -19,7 +19,8 @@ from users.selectors import (
     get_employer_profiles_selector,
 )
 
-avatar_minio_client = MinioService(
+avatar_minio_client = get_minio_client(
+    storage_name='avatars',
     bucket_name=settings.STORAGES['avatars']['OPTIONS']['bucket_name'],
 )
 

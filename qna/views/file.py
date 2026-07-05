@@ -48,7 +48,7 @@ class FileUploadView(APIView):
         serializer.is_valid(raise_exception=True)
 
         file: UploadedFile = serializer.validated_data['file']
-        public_url: str = image_upload_handler(file_obj=file)
+        public_url: str = image_upload_handler(file_obj=file, prefix='images')
 
         return Response(
             {
