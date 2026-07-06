@@ -11,6 +11,7 @@ from django.db.models.signals import (
 from django.dispatch import receiver
 
 from core.constants.cache import CACHE_KEY_QNA_PREFIX
+from core.s3_utils import S3Service, MediaType
 from feedback.models import FeedbackImage
 from qna.models import (
     Answer,
@@ -20,9 +21,8 @@ from qna.models import (
     QuestionImage,
     QuestionLike,
 )
-from qna.services import image_minio_client
 from users.models import User
-from users.services import avatar_minio_client, update_user_rating
+from users.services import update_user_rating
 
 
 @receiver(post_save, sender=Question)
@@ -123,6 +123,57 @@ def change_author_rating_on_save(
         update_user_rating(user=instance.user, delta=-likes_count)
 
 
+@receiver(pre_delete, sender=Question)
+def delete_question_images_from_minio(
+    sender: type,
+    instance: Question,
+    **kwargs: object,
+) -> None:
+    """Удаляет файлы из MinIO при каскадном удалении вопроса.
+
+    Django при удалении Question с CASCADE удаляет связанные QuestionImage,
+    но post_delete для QuestionImage может не сработать, т.к. Django
+    удаляет related objects напрямую через QuerySet.delete(), минуя
+    индивидуальные delete() каждого экземпляра.
+
+    Поэтому собираем URL изображений ДО удаления и планируем удаление
+    файлов после коммита транзакции.
+    """
+    image_urls: list[str] = list(
+        instance.images.values_list('image_url', flat=True),
+    )
+    if image_urls:
+        transaction.on_commit(
+            lambda urls=image_urls: [
+                S3Service.delete(MediaType.QUESTION_IMAGE, url)
+                for url in urls
+            ],
+        )
+
+
+@receiver(pre_delete, sender=Answer)
+def delete_answer_images_from_minio(
+    sender: type,
+    instance: Answer,
+    **kwargs: object,
+) -> None:
+    """Удаляет файлы из MinIO при каскадном удалении ответа.
+
+    Аналогично delete_question_images_from_minio — собираем URL
+    изображений ДО удаления ответа.
+    """
+    image_urls: list[str] = list(
+        instance.images.values_list('image_url', flat=True),
+    )
+    if image_urls:
+        transaction.on_commit(
+            lambda urls=image_urls: [
+                S3Service.delete(MediaType.ANSWER_IMAGE, url)
+                for url in urls
+            ],
+        )
+
+
 @receiver(post_delete, sender=QuestionImage)
 def delete_question_image_from_minio(
     sender: type,
@@ -133,7 +184,9 @@ def delete_question_image_from_minio(
     if instance.image_url:
         image_url: str = instance.image_url
         transaction.on_commit(
-            lambda url=image_url: image_minio_client.delete_file(url),
+            lambda url=image_url: S3Service.delete(
+                MediaType.QUESTION_IMAGE, url,
+            ),
         )
 
 
@@ -147,7 +200,9 @@ def delete_answer_image_from_minio(
     if instance.image_url:
         image_url: str = instance.image_url
         transaction.on_commit(
-            lambda url=image_url: image_minio_client.delete_file(url),
+            lambda url=image_url: S3Service.delete(
+                MediaType.ANSWER_IMAGE, url,
+            ),
         )
 
 
@@ -161,7 +216,9 @@ def delete_feedback_image_from_minio(
     if instance.image_url:
         image_url: str = instance.image_url
         transaction.on_commit(
-            lambda url=image_url: image_minio_client.delete_file(url),
+            lambda url=image_url: S3Service.delete(
+                MediaType.FEEDBACK_IMAGE, url,
+            ),
         )
 
 
@@ -173,4 +230,9 @@ def delete_avatar_from_minio(
 ) -> None:
     """Удаляет файл из MinIO при удалении avatar_url."""
     if instance.avatar_url:
-        avatar_minio_client.delete_file(instance.avatar_url)
+        avatar_url: str = instance.avatar_url
+        transaction.on_commit(
+            lambda url=avatar_url: S3Service.delete(
+                MediaType.AVATAR, url,
+            ),
+        )

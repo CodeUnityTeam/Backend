@@ -1,30 +1,15 @@
-from uuid import uuid4
-
 from django.core.files.uploadedfile import UploadedFile
 
-from qna.services import image_minio_client
-
-feedback_image_minio_client = image_minio_client  # Стоит сделать отдельный?
+from core.s3_utils import S3Service, MediaType
 
 
 def feedback_image_upload_handler(file_obj: UploadedFile) -> str:
     """Загружает изображение для обратной связи в MinIO.
-
-    Генерирует уникальное имя файла на основе UUID,
-    загружает в бакет и возвращает публичный URL.
 
     Args:
         file_obj: Загруженный файл от пользователя.
 
     Returns:
         Публичный URL загруженного изображения.
-
     """
-    file_name_parts: list[str] = file_obj.name.split('.')
-    ext: str = (
-        file_name_parts[-1].lower() if len(file_name_parts) > 1 else 'jpg'
-    )
-    cloud_path: str = f'{uuid4().hex}.{ext}'
-
-    return feedback_image_minio_client.upload_file(cloud_path, file_obj,
-                                                   'feedback')
+    return S3Service.upload(MediaType.FEEDBACK_IMAGE, file_obj)

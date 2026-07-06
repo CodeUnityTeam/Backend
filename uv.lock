@@ -83,7 +83,6 @@ dependencies = [
     { name = "pillow" },
     { name = "psycopg2-binary" },
     { name = "python-dotenv" },
-    { name = "urllib3" },
 ]
 
 [package.optional-dependencies]
@@ -121,7 +120,6 @@ requires-dist = [
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.0" },
     { name = "pytest-django", marker = "extra == 'dev'", specifier = ">=4.5" },
     { name = "python-dotenv", specifier = "==1.2.2" },
-    { name = "urllib3", specifier = ">=2.7.0" },
 ]
 provides-extras = ["dev"]
 

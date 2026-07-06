@@ -10,7 +10,6 @@ class FileUploadSerializer(serializers.Serializer):
 class FileUploadResponseSerializer(serializers.Serializer):
     """Сериализатор ответа на загрузку файла."""
 
-    image_id = serializers.UUIDField()
     image_url = serializers.URLField()
     original_name = serializers.CharField()
     file_size = serializers.IntegerField()
