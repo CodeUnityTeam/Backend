@@ -88,6 +88,11 @@ class User(TimestampMixin, AbstractUser):
         blank=True,
         default='',
     )
+    is_email_confirmed = models.BooleanField(
+        'Email подтверждён',
+        default=False,
+        help_text='Отмечает, подтверждён ли email пользователя.',
+    )
     is_password_confirmed = models.BooleanField(
         'Пароль подтверждён',
         default=False,

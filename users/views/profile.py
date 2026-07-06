@@ -193,7 +193,7 @@ class UserAvatarAPIView(APIView):
 
     permission_classes: list[type[IsAuthenticated]] = [IsAuthenticated]
     parser_classes: list[type[MultiPartParser]] = [MultiPartParser]
-    allow_upload_size: int = settings.ALLOW_AVATAR_SIZE_MB * 1024 * 1024
+    allow_upload_size: int = settings.S3_MAX_FILE_SIZE_MB * 1024 * 1024
 
     def post(
         self,
