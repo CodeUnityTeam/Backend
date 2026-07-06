@@ -8,6 +8,7 @@ from django.db import transaction
 from django.db.models import F, QuerySet
 from django.utils import timezone
 
+from core.constants.users import LAST_LOGIN_UPDATE_INTERVAL
 from core.s3_utils import S3Service, MediaType
 from projects.models import Response as ProjectResponse
 from users.models.users import User
