@@ -1,6 +1,6 @@
 from datetime import timedelta
 from typing import Any, Union
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from allauth.account.models import EmailAddress
 from django.core.files.uploadedfile import UploadedFile
@@ -9,7 +9,7 @@ from django.db.models import F, QuerySet
 from django.utils import timezone
 
 from core.constants.users import LAST_LOGIN_UPDATE_INTERVAL
-from core.s3_utils import S3Service, MediaType
+from core.s3_utils import MediaType, S3Service
 from projects.models import Response as ProjectResponse
 from users.models.users import User
 from users.selectors import (

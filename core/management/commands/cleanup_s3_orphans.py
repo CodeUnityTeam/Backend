@@ -1,5 +1,4 @@
-"""
-Management command для очистки "сиротских" файлов из S3/MinIO.
+"""Management command для очистки "сиротских" файлов из S3/MinIO.
 
 Файлы считаются сиротами, если они загружены в S3, но не привязаны
 ни к одной записи в БД. Это может происходить, когда пользователь
@@ -16,7 +15,7 @@ from typing import Any
 
 from django.core.management.base import BaseCommand
 
-from core.s3_utils import S3Service, MediaType
+from core.s3_utils import MediaType, S3Service
 from feedback.models import FeedbackImage
 from qna.models import AnswerImage, QuestionImage
 from users.models import User
@@ -41,6 +40,7 @@ class Command(BaseCommand):
     )
 
     def add_arguments(self, parser: Any) -> None:
+        """Добавляет аргументы командной строки для команды."""
         parser.add_argument(
             '--dry-run',
             action='store_true',
@@ -102,7 +102,10 @@ class Command(BaseCommand):
         storage = S3Service._get_storage(media_type)  # noqa: SLF001
         return storage.url(object_key)
 
-    def handle(self, *args: Any, **options: Any) -> str | None:  # noqa: ARG002
+    def handle(  # noqa: ARG002
+        self, *args: Any, **options: Any,
+    ) -> str | None:
+        """Собирает URL из БД и удаляет сиротские файлы в S3."""
         dry_run: bool = options['dry_run']
         force: bool = options['force']
 
@@ -152,7 +155,7 @@ class Command(BaseCommand):
                             self._delete_s3_object(media_type, object_key)
                             self.stdout.write(
                                 self.style.SUCCESS(
-                                    f'    ✓ Удалён',
+                                    '    ✓ Удалён',
                                 ),
                             )
                         except Exception as e:

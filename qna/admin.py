@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.core.files.uploadedfile import UploadedFile
 from django.http import HttpRequest
 
-from core.s3_utils import S3Service, MediaType
+from core.s3_utils import MediaType, S3Service
 from qna.forms import ImageAdminForm
 
 from .models import (

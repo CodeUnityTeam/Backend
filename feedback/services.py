@@ -1,6 +1,6 @@
 from django.core.files.uploadedfile import UploadedFile
 
-from core.s3_utils import S3Service, MediaType
+from core.s3_utils import MediaType, S3Service
 
 
 def feedback_image_upload_handler(file_obj: UploadedFile) -> str:
@@ -11,5 +11,6 @@ def feedback_image_upload_handler(file_obj: UploadedFile) -> str:
 
     Returns:
         Публичный URL загруженного изображения.
+
     """
     return S3Service.upload(MediaType.FEEDBACK_IMAGE, file_obj)

@@ -15,6 +15,7 @@ class MediaType(StrEnum):
     Каждый тип соответствует отдельному бакету в S3/MinIO.
     Значение enum используется как префикс-директория внутри бакета.
     """
+
     AVATAR = 'avatars'
     QUESTION_IMAGE = 'questions'
     ANSWER_IMAGE = 'answers'
@@ -137,7 +138,9 @@ class S3Service:
             secret_key=options.get('secret_key'),
             bucket_name=bucket_name,
             endpoint_url=options.get('endpoint_url'),
-            custom_domain=f'{custom_domain}/{bucket_name}' if custom_domain else None,
+            custom_domain=(
+                f'{custom_domain}/{bucket_name}' if custom_domain else None
+            ),
             querystring_auth=False,
             file_overwrite=False,
         )
