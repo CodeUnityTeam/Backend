@@ -115,7 +115,8 @@ jobs:
         with:
           host: ${{ secrets.TEST_HOST }}
           username: ${{ secrets.TEST_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          key: ${{ secrets.TEST_SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.TEST_SSH_PASSPHRASE }}
           source: "docker-compose.test.yaml"
           target: "/opt/user123"
 
@@ -124,7 +125,8 @@ jobs:
         with:
           host: ${{ secrets.TEST_HOST }}
           username: ${{ secrets.TEST_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          key: ${{ secrets.TEST_SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.TEST_SSH_PASSPHRASE }}
           script: |
             cd /opt/user123/
             sudo docker compose -f docker-compose.test.yaml pull
