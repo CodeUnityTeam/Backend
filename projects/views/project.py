@@ -617,7 +617,6 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
     ) -> DRFResponse:
         """Персональные рекомендации проектов на основе навыков пользователя.
 
-<<<<<<< HEAD
         Ключ: projects:recommendations:{user_id}:page:{page_number},TTL 10 мин.
         Инвалидируется при изменении профиля или создании проекта.
         """

@@ -338,7 +338,7 @@ class ResponseStatusViewSet(GenericViewSet):
             'response_id=%s.',
             request.user.pk,
             request.user.projects_relation,
-            kwargs['project_id'],
+            response.project.pk,
             response.pk,
         )
         serializer = UpdateResponseStatusSerializer(
@@ -355,7 +355,7 @@ class ResponseStatusViewSet(GenericViewSet):
             'response_id=%s, old_status=%s, new_status=%s.',
             request.user.pk,
             request.user.projects_relation,
-            kwargs['project_id'],
+            response.project.pk,
             response.pk,
             old_status,
             update_status.status_resp,
