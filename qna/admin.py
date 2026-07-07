@@ -2,8 +2,8 @@ from django.contrib import admin
 from django.core.files.uploadedfile import UploadedFile
 from django.http import HttpRequest
 
+from core.s3_utils import MediaType, S3Service
 from qna.forms import ImageAdminForm
-from qna.services import image_upload_handler
 
 from .models import (
     Answer,
@@ -87,8 +87,8 @@ class QuestionImageAdmin(admin.ModelAdmin):
         file_obj: UploadedFile | None = request.FILES.get('file')
 
         if file_obj:
-            public_url: str = image_upload_handler(
-                file_obj=file_obj, prefix='questions',
+            public_url: str = S3Service.upload(
+                MediaType.QUESTION_IMAGE, file_obj,
             )
             obj.image_url = public_url
             obj.original_name = file_obj.name
@@ -122,8 +122,9 @@ class AnswerImageAdmin(admin.ModelAdmin):
         file_obj: UploadedFile | None = request.FILES.get('file')
 
         if file_obj:
-            public_url: str = image_upload_handler(
-                file_obj=file_obj, prefix='answers')
+            public_url: str = S3Service.upload(
+                MediaType.ANSWER_IMAGE, file_obj,
+            )
             obj.image_url = public_url
             obj.original_name = file_obj.name
             obj.file_size = file_obj.size

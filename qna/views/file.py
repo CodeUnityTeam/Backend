@@ -1,5 +1,3 @@
-from uuid import uuid4
-
 from django.core.files.uploadedfile import UploadedFile
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
@@ -8,11 +6,11 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from core.s3_utils import MediaType, S3Service
 from qna.serializers.file import (
     FileUploadResponseSerializer,
     FileUploadSerializer,
 )
-from qna.services import image_upload_handler
 
 
 @extend_schema(
@@ -48,11 +46,10 @@ class FileUploadView(APIView):
         serializer.is_valid(raise_exception=True)
 
         file: UploadedFile = serializer.validated_data['file']
-        public_url: str = image_upload_handler(file_obj=file, prefix='images')
+        public_url: str = S3Service.upload(MediaType.UPLOAD_IMAGE, file)
 
         return Response(
             {
-                'image_id': uuid4(),
                 'image_url': public_url,
                 'original_name': file.name,
                 'file_size': file.size,
