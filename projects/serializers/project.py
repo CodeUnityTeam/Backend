@@ -1,11 +1,16 @@
+import errno
+import logging
+from typing import Any
 
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
 from django.utils import timezone
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError as DRFValidationError
+from rest_framework_simplejwt.settings import api_settings
 
 from core.constants.projects import (
-    ARCHIVED,
     AUTHOR,
     DRAFT,
     PUBLISHED,
@@ -38,6 +43,8 @@ from .user import (
 from .work_format import WorkFormatSerializer
 
 User = get_user_model()
+
+logger = logging.getLogger('app.' + __name__)
 
 
 class SkillIdSerializer(serializers.Serializer):
@@ -81,9 +88,16 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = (
-            'title', 'short_desc', 'full_desc',
-            'location', 'start_date', 'end_date',
-            'status_project', 'skills', 'specializations', 'project_format',
+            'title',
+            'short_desc',
+            'full_desc',
+            'location',
+            'start_date',
+            'end_date',
+            'status_project',
+            'skills',
+            'specializations',
+            'project_format',
         )
         extra_kwargs = {
             'title': {
@@ -121,8 +135,7 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
                 'error_messages': {
                     'required': 'Дата начала проекта обязательна.',
                     'invalid': (
-                        'Неверный формат даты начала. '
-                        'Ожидается ГГГГ-ММ-ДД.'
+                        'Неверный формат даты начала. Ожидается ГГГГ-ММ-ДД.'
                     ),
                 },
             },
@@ -132,8 +145,7 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
                 'error_messages': {
                     'required': 'Дата окончания проекта обязательна.',
                     'invalid': (
-                        'Неверный формат даты окончания. '
-                        'Ожидается ГГГГ-ММ-ДД.'
+                        'Неверный формат даты окончания. Ожидается ГГГГ-ММ-ДД.'
                     ),
                 },
             },
@@ -151,16 +163,38 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
         - статус проекта
         - даты начала и окончания (если обе переданы)
         """
-        status_project = data.get('status_project')
-        if status_project:
-            validate_create_project_status(status_project)
-        # Валидация даты периода проекта (если обе даты переданы)
-        start_date = data.get('start_date')
-        end_date = data.get('end_date')
-        if start_date and end_date:
-            validate_project_dates(start_date, end_date)
         user = self.context['request'].user
-        return validate_project_data(data, user)
+        try:
+            status_project = data.get('status_project')
+            if status_project:
+                validate_create_project_status(status_project)
+            start_date = data.get('start_date')
+            end_date = data.get('end_date')
+            if start_date and end_date:
+                validate_project_dates(start_date, end_date)
+            user = self.context['request'].user
+            return validate_project_data(data, user)
+        except DjangoValidationError as err:
+            logger.warning(
+                'Ошибка валидации при создании проекта: user_id=%s, reason=%s',
+                user.pk,
+                str(err),
+            )
+            if hasattr(err, 'message_dict'):
+                raise DRFValidationError(err.message_dict)
+            raise DRFValidationError(
+                {'non_field_errors': err.messages},
+            )
+        except ValueError as err:
+            logger.warning(
+                'Ошибка значения (ValueError) при создании проекта: '
+                'user_id=%s, reason=%s',
+                user.pk,
+                str(err),
+            )
+            raise DRFValidationError(
+                {'non_field_errors': [str(err)]},
+            )
 
     @transaction.atomic
     def create(self, validated_data: dict) -> Project:
@@ -253,8 +287,13 @@ class ProjectDetailSerializer(ProjectShortSerializer):
 
     class Meta(ProjectShortSerializer.Meta):
         fields = ProjectShortSerializer.Meta.fields + (
-            'full_desc', 'end_date', 'specializations',
-            'project_format', 'likes_count', 'participants', 'author',
+            'full_desc',
+            'end_date',
+            'specializations',
+            'project_format',
+            'likes_count',
+            'participants',
+            'author',
         )
 
     def _is_author_employer(self, project: Project) -> bool:
@@ -337,14 +376,9 @@ class ProjectDetailSerializer(ProjectShortSerializer):
 
 
 class ProjectArchiveSerializer(serializers.Serializer):
-    """Сериализатор для архивирования проекта."""
+    """Сериализатор для перевода проекта в архив."""
 
-    def save(self, **kwargs: dict) -> Project:
-        """Архивирует проект: переводит в статус 'archived'."""
-        project = self.instance
-        project.status_project = ARCHIVED
-        project.save(update_fields=['status_project'])
-        return project
+    pass
 
 
 class ProjectUpdateSerializer(serializers.ModelSerializer):
@@ -372,9 +406,16 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = (
-            'title', 'short_desc', 'full_desc',
-            'location', 'start_date', 'end_date',
-            'status_project', 'skills', 'specializations', 'project_format',
+            'title',
+            'short_desc',
+            'full_desc',
+            'location',
+            'start_date',
+            'end_date',
+            'status_project',
+            'skills',
+            'specializations',
+            'project_format',
         )
         extra_kwargs = {
             'title': {'required': False},
@@ -387,8 +428,7 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
                 'error_messages': {
                     'required': 'Дата окончания проекта обязательна.',
                     'invalid': (
-                        'Неверный формат даты окончания. '
-                        'Ожидается ГГГГ-ММ-ДД.'
+                        'Неверный формат даты окончания. Ожидается ГГГГ-ММ-ДД.'
                     ),
                 },
             },
@@ -403,15 +443,15 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
         1. Черновик → публикация (draft → published):
            - validate_project_dates — проверка дат.
            - validate_project_data — полная проверка всех обязательных полей.
-             Если поле не передано в PATCH —
-             подставляется текущее значение из БД.
+             Если поле не передано в PATCH — подставляется текущее значение
+             из БД.
 
         2. Изменение опубликованного проекта
            (published / recruiting_closed, включая смену статуса между ними):
            - validate_published_project_dates — защита start_date в прошлом,
              end_date не в прошлом, end_date не раньше start_date.
            - Обычная валидация переданных полей (skills, specializations,
-             project_format).
+           project_format).
 
         3. Черновик (без смены статуса):
            - validate_project_dates — если даты переданы, проверяет,
@@ -420,6 +460,94 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
            - Обычная валидация переданных полей.
         """
         project = self.instance
+        user = self.context['request'].user
+        project_id = getattr(project, 'project_id', 'unknown')
+        try:
+            return self._run_update_validation_scenarios(data, project, user)
+        except serializers.ValidationError as err:
+            logger.warning(
+                'Ошибка валидации DRF при обновлении проекта: '
+                'project_id=%s, user_id=%s, reason=%s',
+                project_id,
+                user.pk,
+                str(err.detail),
+            )
+            raise
+        except DjangoValidationError as err:
+            logger.warning(
+                'Ошибка валидации Django при обновлении проекта: '
+                'project_id=%s, user_id=%s, reason=%s',
+                project_id,
+                user.pk,
+                str(errno),
+            )
+            if hasattr(err, 'message_dict'):
+                raise serializers.ValidationError(err.message_dict)
+            raise serializers.ValidationError(
+                {str(api_settings.NON_FIELD_ERRORS_KEY): err.messages},
+            )
+        except ValueError as e:
+            logger.warning(
+                'Ошибка значения (ValueError) при обновлении проекта: '
+                'project_id=%s, user_id=%s, reason=%s',
+                project_id,
+                user.pk,
+                str(e),
+            )
+            raise serializers.ValidationError(
+                {str(api_settings.NON_FIELD_ERRORS_KEY): [str(e)]},
+            )
+
+    def _validate_publishing_flow(
+        self,
+        data: dict,
+        project: Any,
+        user: Any,
+    ) -> dict:
+        """Сценарий 1. Черновик → публикация (draft → published).
+
+        - validate_project_dates — проверка дат.
+        - validate_project_data — полная проверка всех обязательных полей.
+          Если поле не передано в PATCH — подставляется текущее значение из БД.
+        """
+        start_date = data.get('start_date', project.start_date)
+        end_date = data.get('end_date', project.end_date)
+        if start_date and end_date:
+            validate_project_dates(start_date, end_date)
+        full_data = {
+            'title': data.get('title', project.title),
+            'short_desc': data.get('short_desc', project.short_desc),
+            'full_desc': data.get('full_desc', project.full_desc),
+            'location': data.get('location', project.location),
+            'status_project': PUBLISHED,
+            'skills': data.get('skills'),
+            'specializations': data.get('specializations'),
+            'project_format': data.get('project_format'),
+        }
+        # Если навыки/специализации/форматы не переданы — берём из БД
+        if full_data['skills'] is None:
+            full_data['skills'] = [
+                {'skill_id': str(s.skill_id)} for s in project.skills.all()
+            ]
+        if full_data['specializations'] is None:
+            full_data['specializations'] = [
+                {'spec_id': str(s.spec_id)}
+                for s in project.specializations.all()
+            ]
+        if full_data['project_format'] is None:
+            full_data['project_format'] = [
+                str(f.format_id) for f in project.project_format.all()
+            ]
+        return validate_project_data(full_data, user)
+
+    def _run_update_validation_scenarios(
+        self,
+        data: dict,
+        project: Any,
+        user: Any,
+    ) -> dict:
+        """Выполняет проверку полей и определяет один из трех сценариев."""
+        # Сценарий защиты: запрет изменения даты начала после публикации
         if (
             project.status_project in (PUBLISHED, RECRUITING_CLOSED)
             and isinstance(self.initial_data, dict)
@@ -438,39 +566,10 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
             and project is not None
             and project.status_project == DRAFT
         )
+        # 1. Черновик → публикация (draft → published)
         if is_publishing:
-            start_date = data.get('start_date', project.start_date)
-            end_date = data.get('end_date', project.end_date)
-            if start_date and end_date:
-                validate_project_dates(start_date, end_date)
-            full_data = {
-                'title': data.get('title', project.title),
-                'short_desc': data.get('short_desc', project.short_desc),
-                'full_desc': data.get('full_desc', project.full_desc),
-                'location': data.get('location', project.location),
-                'status_project': PUBLISHED,
-                'skills': data.get('skills'),
-                'specializations': data.get('specializations'),
-                'project_format': data.get('project_format'),
-            }
-            # Если навыки/специализации/форматы не переданы — берём из БД
-            if full_data['skills'] is None:
-                full_data['skills'] = [
-                    {'skill_id': str(s.skill_id)}
-                    for s in project.skills.all()
-                ]
-            if full_data['specializations'] is None:
-                full_data['specializations'] = [
-                    {'spec_id': str(s.spec_id)}
-                    for s in project.specializations.all()
-                ]
-            if full_data['project_format'] is None:
-                full_data['project_format'] = [
-                    str(f.format_id) for f in project.project_format.all()
-                ]
-            user = self.context['request'].user
-            return validate_project_data(full_data, user)
-        # Изменение опубликованного проекта или с закрытым набором
+            return self._validate_publishing_flow(data, project, user)
+        # 2. Изменение опубликованного проекта
         published_statuses = (PUBLISHED, RECRUITING_CLOSED)
         if (
             project is not None
@@ -481,10 +580,12 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
                 end_date=data.get('end_date'),
                 current_start_date=project.start_date,
             )
+        # 3. Черновик (без смены статуса)
         start_date = data.get('start_date')
         end_date = data.get('end_date')
         if start_date and end_date:
             validate_project_dates(start_date, end_date)
+
         self._validate_relationship_fields(data)
         return data
 
@@ -507,7 +608,10 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
                     'skills': 'Необходимо указать хотя бы один навык.',
                 })
             validated_skills = _validate_related_ids(
-                skills, 'skill_id', Skill, 'навыки',
+                skills,
+                'skill_id',
+                Skill,
+                'навыки',
             )
             data['_validated_skills'] = validated_skills
         specializations = data.get('specializations')
@@ -519,27 +623,50 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
                     ),
                 })
             validated_specializations = _validate_related_ids(
-                specializations, 'spec_id', Specialization, 'специализации',
+                specializations,
+                'spec_id',
+                Specialization,
+                'специализации',
             )
             data['_validated_specializations'] = validated_specializations
 
     def validate_status_project(self, status_project: str) -> str:
         """Валидация статуса проекта."""
+        project = self.instance
         if status_project is None:
             return status_project
         valid_statuses = (DRAFT, PUBLISHED, RECRUITING_CLOSED)
-        if status_project not in valid_statuses:
-            raise serializers.ValidationError(
-                f'Статус должен быть одним из: {", ".join(valid_statuses)}.',
+        user = self.context['request'].user
+        try:
+            if status_project not in valid_statuses:
+                raise serializers.ValidationError(
+                    'Статус должен быть одним из: '
+                    f'{", ".join(valid_statuses)}.',
+                )
+            # Проверяем бизнес-логику перехода между статусами
+            if project is not None:
+                validate_update_project_status(
+                    current_status=project.status_project,
+                    new_status=status_project,
+                )
+            return status_project
+        except (
+            serializers.ValidationError,
+            DjangoValidationError,
+            ValueError,
+        ) as err:
+            logger.warning(
+                'Ошибка валидации статуса проекта: project_id=%s, user_id=%s, '
+                'current_status=%s, attempted_status=%s, reason=%s',
+                project.project_id,
+                user.pk,
+                getattr(project, 'status_project', 'none'),
+                status_project,
+                str(err),
             )
-        # Проверяем правильно ли переключаем статус проекта.
-        project = self.instance
-        if project is not None:
-            validate_update_project_status(
-                current_status=project.status_project,
-                new_status=status_project,
-            )
-        return status_project
+            if isinstance(err, serializers.ValidationError):
+                raise
+            raise serializers.ValidationError(str(err))
 
     @transaction.atomic
     def update(self, project: Project, validated_data: dict) -> Project:
@@ -571,8 +698,17 @@ class ProjectUpdateResponseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = (
-            'project_id', 'title', 'short_desc', 'full_desc',
-            'location', 'start_date', 'end_date',
-            'status_project', 'published_at', 'created_at',
-            'skills', 'specializations', 'project_format',
+            'project_id',
+            'title',
+            'short_desc',
+            'full_desc',
+            'location',
+            'start_date',
+            'end_date',
+            'status_project',
+            'published_at',
+            'created_at',
+            'skills',
+            'specializations',
+            'project_format',
         )

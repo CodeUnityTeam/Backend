@@ -1,3 +1,4 @@
+import logging
 from uuid import UUID
 
 from django.contrib.auth import get_user_model
@@ -29,6 +30,8 @@ from .models import (
 )
 
 User = get_user_model()
+
+logger = logging.getLogger(__name__)
 
 
 def _annotate_is_liked_by_me(
@@ -216,6 +219,9 @@ def get_recommended_projects_queryset(user: User) -> QuerySet[Project]:
         user.skills.values_list('skill_id', flat=True),
     )
     if not user_skill_ids:
+        logger.debug(
+            'Рекомендации: у пользователя %s отсутствуют навыки.', user.pk,
+        )
         return Project.objects.none()
     qs = (
         Project.objects

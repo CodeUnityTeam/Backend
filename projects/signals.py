@@ -1,3 +1,4 @@
+import logging
 from typing import Any
 
 from django.core.cache import cache
@@ -16,6 +17,8 @@ from projects.models import (
     Response,
 )
 
+logger = logging.getLogger(__name__)
+
 
 @receiver(post_save, sender=Project)
 @receiver(post_delete, sender=Project)
@@ -28,11 +31,13 @@ def invalidate_project_cache(
 
     Очищает детали, список и рекомендации — для всех пользователей.
     """
+    project_id = instance.project_id
     cache.delete_pattern(
-        f'{CACHE_KEY_PROJECTS_PREFIX}:detail:{instance.project_id}:*',
+        f'{CACHE_KEY_PROJECTS_PREFIX}:detail:{project_id}:*',
     )
     cache.delete_pattern(f'{CACHE_KEY_PROJECTS_PREFIX}:list:*')
     cache.delete_pattern(f'{CACHE_KEY_PROJECTS_PREFIX}:recommendations:*')
+    logger.debug('Очищен кэш проекта %s', project_id)
 
 
 @receiver(post_save, sender=ProjectLike)
@@ -54,6 +59,10 @@ def invalidate_project_like_cache(
     cache.delete_pattern(
         f'{CACHE_KEY_PROJECTS_PREFIX}:list:{instance.user_id}:*',
     )
+    logger.debug(
+        f'Кэш проекта {instance.project_id} инвалидирован после изменения '
+        'статуса лайка ',
+    )
 
 
 @receiver(post_save, sender=Response)
@@ -65,19 +74,12 @@ def invalidate_response_feed_cache(
 ) -> None:
     """Инвалидирует кэш ленты откликов при создании/изменении/удалении.
 
-    Очищает кэш для автора отклика и автора проекта
-    (если это разные пользователи).
+    Очищает кэш ленты только для worker'а, создавшего отклик
+    (instance.user_id).
     """
-    # Инвалидируем кэш для пользователя, который создал отклик
     cache.delete_pattern(
         f'{CACHE_KEY_RESPONSES_PREFIX}:feed:{instance.user_id}:*',
     )
-    # Инвалидируем кэш для автора проекта (если это не тот же пользователь)
-    author_id = instance.project.author_id
-    if str(author_id) != str(instance.user_id):
-        cache.delete_pattern(
-            f'{CACHE_KEY_RESPONSES_PREFIX}:feed:{author_id}:*',
-        )
 
 
 @receiver(post_save, sender=ProjectParticipant)

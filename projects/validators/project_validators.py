@@ -418,7 +418,7 @@ def validate_project_data(data: dict, user: User) -> dict:
     if not specializations_data:
         raise serializers.ValidationError({
             'specializations': (
-                'Необходимо указать хотя бы одну специализацию.'
+                'Необходимо указать хотя бы одну специализацию.',
             ),
         })
     validated_specializations = _validate_related_ids(
