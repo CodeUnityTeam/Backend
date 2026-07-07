@@ -1,7 +1,7 @@
 from typing import Any
 
 from django.core.cache import cache
-from django.db.models.signals import post_delete, post_save
+from django.db.models.signals import m2m_changed, post_delete, post_save
 from django.dispatch import receiver
 
 from core.constants.cache import (
@@ -11,19 +11,50 @@ from core.constants.cache import (
 from users.models import User
 from users.models.users import UserLike
 
+CRITICAL_LIST_FIELDS = {
+    'first_name',
+    'last_name',
+    'city',
+    'avatar_url',
+    'rating',
+    'is_active',
+    'projects_relation',
+}
+
 
 @receiver(post_save, sender=User)
+def invalidate_user_profile_save(
+    sender: Any,
+    instance: User,
+    update_fields: Any = None,
+    **kwargs: Any,
+) -> None:
+    """Инвалидирует кэш профиля и списков при сохранении пользователя."""
+    cache.delete_pattern(
+        f'{CACHE_KEY_USERS_PREFIX}:detail:{instance.user_id}:*',
+    )
+    cache.delete(
+        f'{CACHE_KEY_PROJECTS_PREFIX}:recommendations:{instance.user_id}',
+    )
+
+    is_created = kwargs.get('created', False)
+    should_invalidate_list = (
+        is_created
+        or update_fields is None
+        or bool(set(update_fields) & CRITICAL_LIST_FIELDS)
+    )
+
+    if should_invalidate_list:
+        cache.delete_pattern(f'{CACHE_KEY_USERS_PREFIX}:list:*')
+
+
 @receiver(post_delete, sender=User)
-def invalidate_user_profile_cache(
+def invalidate_user_profile_delete(
     sender: Any,
     instance: User,
     **kwargs: Any,
 ) -> None:
-    """Инвалидирует кэш при изменении профиля пользователя.
-
-    Очищает детали и список профилей (для всех), а также
-    рекомендации проектов для этого пользователя.
-    """
+    """Инвалидирует кэш профиля и списков при удалении пользователя."""
     cache.delete_pattern(
         f'{CACHE_KEY_USERS_PREFIX}:detail:{instance.user_id}:*',
     )
@@ -31,6 +62,23 @@ def invalidate_user_profile_cache(
     cache.delete(
         f'{CACHE_KEY_PROJECTS_PREFIX}:recommendations:{instance.user_id}',
     )
+
+
+@receiver(m2m_changed, sender=User.skills.through)
+@receiver(m2m_changed, sender=User.specializations.through)
+@receiver(m2m_changed, sender=User.workformats.through)
+def invalidate_user_m2m_cache(
+    sender: Any,
+    instance: User,
+    action: str,
+    **kwargs: Any,
+) -> None:
+    """Инвалидирует кэш при изменении Many-to-Many связей пользователя."""
+    if action in ('post_add', 'post_remove', 'post_clear'):
+        cache.delete_pattern(
+            f'{CACHE_KEY_USERS_PREFIX}:detail:{instance.user_id}:*',
+        )
+        cache.delete_pattern(f'{CACHE_KEY_USERS_PREFIX}:list:*')
 
 
 @receiver(post_save, sender=UserLike)

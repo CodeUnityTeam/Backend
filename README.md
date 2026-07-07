@@ -24,20 +24,20 @@ uv run python manage.py runserver
 На сервере используется [`load_on_dev.sh`](../fixtures/test_data/load_on_dev.sh), который сам подставляет нужные переменные:
 
 ```bash
-bash fixtures/test_data/load_on_dev.sh
+sudo docker compose -f docker-compose.dev.yaml exec backend bash fixtures/test_data/load_on_dev.sh
 ```
 
 Скрипт автоматически:
 1. Регистрирует пользователей через API `https://dev.code-unity.ru/api/v1`
-2. Подтверждает email через `docker exec backend python manage.py shell`
+2. Подтверждает email через `python manage.py shell`
 3. Создаёт проекты, вопросы, ответы и остальные тестовые данные
 
 При необходимости можно переопределить переменные:
 
 ```bash
-BASE_URL="https://custom.domain/api/v1" \
-DOCKER_CONTAINER="my_backend" \
-bash fixtures/test_data/load_on_dev.sh
+sudo docker compose -f docker-compose.dev.yaml exec \
+  -e BASE_URL="https://custom.domain/api/v1" \
+  backend bash fixtures/test_data/load_on_dev.sh
 ```
 ---
 

@@ -29,13 +29,18 @@ def invalidate_project_cache(
 ) -> None:
     """Инвалидирует кэш проекта при создании/изменении/удалении.
 
-    Очищает детали, список и рекомендации — для всех пользователей.
+    Очищает:
+    - детали проекта — для всех пользователей (меняются сами данные)
+    - список проектов — только для автора (остальные видят те же данные)
+    - рекомендации — для всех (появился/изменился проект)
     """
     project_id = instance.project_id
     cache.delete_pattern(
         f'{CACHE_KEY_PROJECTS_PREFIX}:detail:{project_id}:*',
     )
-    cache.delete_pattern(f'{CACHE_KEY_PROJECTS_PREFIX}:list:*')
+    cache.delete_pattern(
+        f'{CACHE_KEY_PROJECTS_PREFIX}:list:{instance.author_id}:*',
+    )
     cache.delete_pattern(f'{CACHE_KEY_PROJECTS_PREFIX}:recommendations:*')
     logger.debug('Очищен кэш проекта %s', project_id)
 

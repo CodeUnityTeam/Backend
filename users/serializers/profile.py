@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils import timezone
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from config import settings
 from core.validators import file_size_validator
@@ -256,3 +257,34 @@ class UserResponseCardSerializer(serializers.ModelSerializer):
             'profile',
         )
         read_only_fields = fields
+
+
+class UserLikeSerializer(serializers.ModelSerializer):
+    """Сериализатор для валидации и создания лайков."""
+
+    class Meta:
+        model = UserLike
+        fields = ('worker',)
+
+    def validate(self, attrs: dict) -> dict:
+        """Проверка бизнес-правил перед созданием лайка."""
+        employer = self.context['request'].user
+        worker = attrs.get('worker')
+
+        # 1. Проверяем роль автора лайка
+        if (
+            employer.projects_relation
+            != User.ProjectsRelationChoices.EMPLOYER
+        ):
+            raise ValidationError(
+                'Чтобы поставить лайк, пользователь должен быть '
+                'автором проекта.',
+            )
+
+        # 2. Проверяем активность лайкаемого пользователя
+        if not worker.is_active:
+            raise ValidationError(
+                'Можно лайкать только активных пользователей.',
+            )
+
+        return attrs

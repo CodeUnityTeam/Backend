@@ -2,12 +2,11 @@ volumes:
   pg_data:
   static:
   minio_data:
-  logs:
 
 services:
   db:
     image: postgres:16-alpine
-    container_name: backend_db
+    container_name: test_db
     restart: unless-stopped
     env_file: .env
     volumes:
@@ -15,7 +14,7 @@ services:
 
   minio:
     image: minio/minio:latest
-    container_name: backend_minio
+    container_name: test_minio
     restart: unless-stopped
     env_file: .env
     volumes:
@@ -29,10 +28,15 @@ services:
 
   redis:
     image: redis:alpine
-    container_name: backend_redis
+    container_name: test_redis
     restart: unless-stopped
     env_file: .env
-    command: redis-server --requirepass ${REDIS_PASSWORD}
+    command: >
+      sh -c 'if [ -n "$REDIS_PASSWORD" ]; then
+        redis-server --requirepass "$REDIS_PASSWORD";
+      else
+        redis-server;
+      fi'
     healthcheck:
       test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 5s
@@ -40,9 +44,8 @@ services:
       retries: 5
 
   backend:
-    build: .
-    image: enigmatica33/backend:latest
-    container_name: backend
+    image: maxwell884/code-unity-backend:latest
+    container_name: test_backend
     restart: unless-stopped
     depends_on:
       - db
@@ -53,12 +56,16 @@ services:
       - DB_MODE=network
     volumes:
       - static:/backend_static/static/
-      - logs:/app/logs/
+
+  frontend:
+    image: maxwell884/code-unity-frontend:latest
+    container_name: test_frontend
+    restart: unless-stopped
+    env_file: .env
 
   nginx:
-    build: ./nginx
-    image: hihix/backend-nginx:latest
-    container_name: backend_nginx
+    image: maxwell884/code-unity-backend-nginx:latest
+    container_name: test_nginx
     restart: unless-stopped
     ports:
       - "8080:80"

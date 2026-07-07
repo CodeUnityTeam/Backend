@@ -1,5 +1,5 @@
 import uuid
-from typing import List
+from typing import Any, List
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
@@ -10,10 +10,77 @@ from core.constants.feedback import (
     MAX_IMAGE_COUNT_FEEDBACK,
     MAX_IMAGE_SIZE_FEEDBACK,
 )
-from feedback.models import FeedbackForm, FeedbackImage
+from feedback.models import FeedbackForm, FeedbackImage, Review
+from feedback.selectors import create_review
 from feedback.services import feedback_image_upload_handler
+from projects.serializers.specialization import SpecializationSerializer
 
 User = get_user_model()
+
+
+class ReviewCreateSerializer(serializers.ModelSerializer):
+    """Сериализатор создания отзыва."""
+
+    class Meta:
+        model = Review
+        fields = (
+            'text',
+        )
+
+    def create(self, validated_data: dict) -> Review:
+        """Создаёт отзыв от текущего пользователя."""
+        user = self.context['request'].user
+        return create_review(user=user, text=validated_data['text'])
+
+
+class ReviewBaseSerializer(serializers.ModelSerializer):
+    """Базовый сериализатор отзыва с полями автора."""
+
+    author_name = serializers.CharField(read_only=True)
+    author_avatar = serializers.URLField(
+        source='user.avatar_url',
+        read_only=True,
+    )
+    author_specializations = SpecializationSerializer(
+        many=True,
+        source='user.specializations',
+        read_only=True,
+    )
+
+    class Meta:
+        model = Review
+        fields = (
+            'review_id',
+            'author_name',
+            'author_avatar',
+            'author_specializations',
+            'text',
+            'created_at',
+        )
+
+
+class ReviewListSerializer(ReviewBaseSerializer):
+    """Сериализатор для списка отзывов."""
+
+    class Meta(ReviewBaseSerializer.Meta):
+        pass
+
+
+class ReviewDetailSerializer(ReviewBaseSerializer):
+    """Сериализатор детального отзыва."""
+
+    class Meta(ReviewBaseSerializer.Meta):
+        fields = ReviewBaseSerializer.Meta.fields + ('updated_at',)
+
+
+class ReviewUpdateSerializer(serializers.ModelSerializer):
+    """Сериализатор обновления отзыва."""
+
+    class Meta:
+        model = Review
+        fields = (
+            'text',
+        )
 
 
 class FeedbackCreateSerializer(serializers.ModelSerializer):
@@ -51,9 +118,10 @@ class FeedbackCreateSerializer(serializers.ModelSerializer):
                 )
         return feedback
 
-    def validate_attachments(self, value: List) -> List:
+    def validate_attachments(self, value: List) -> List[Any]:
         """Валидация изображений прикреплённых к форме обратной связи.
 
+        Выполняет следующие проверки:
         - Количество - не более 5.
         - Размер каждого изображения - не более 5 МБ.
         - Формат изображений - только JPEG/PNG.
