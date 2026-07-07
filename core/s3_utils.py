@@ -1,6 +1,6 @@
-import json
 import logging
-from typing import Any
+from enum import StrEnum
+from uuid import uuid4
 
 from django.conf import settings
 from django.core.files.uploadedfile import UploadedFile
@@ -9,104 +9,172 @@ from storages.backends.s3boto3 import S3Boto3Storage
 logger = logging.getLogger(__name__)
 
 
-class S3ClientError(Exception):
-    """Кастомное исключение для ошибок S3-клиента."""
+class MediaType(StrEnum):
+    """Типы медиа-контента.
+
+    Каждый тип соответствует отдельному бакету в S3/MinIO.
+    Значение enum используется как префикс-директория внутри бакета.
+    """
+
+    AVATAR = 'avatars'
+    QUESTION_IMAGE = 'questions'
+    ANSWER_IMAGE = 'answers'
+    FEEDBACK_IMAGE = 'feedback'
+    PROJECT_IMAGE = 'projects'
+    UPLOAD_IMAGE = 'images'
 
 
-class MinioService:
-    """Транспортный сервис для управления файлами в MinIO/S3."""
+class S3Service:
+    """Единый сервис для работы с S3/MinIO.
 
-    def __init__(self, bucket_name: str) -> None:
-        """Инициализировать имя бакета и настройки хранилища."""
-        self.bucket_name: str = bucket_name
-        self.storage: S3Boto3Storage = self._init_storage()
-        self._bucket_configured: bool = False
-        self._ensure_bucket_templated()
+    При первом обращении к бакету автоматически создаёт его в S3/MinIO,
+    если он ещё не существует.
 
-    def _init_storage(self) -> S3Boto3Storage:
-        """Внутренний метод инициализации S3-хранилища."""
-        options: dict[str, Any] = settings.STORAGES['avatars']['OPTIONS']
+    Usage:
+        >>> from core.s3_utils import S3Service, MediaType
+        >>> url = S3Service.upload(MediaType.AVATAR, file_obj)
+        >>> S3Service.delete(MediaType.AVATAR, url)
+    """
+
+    _storages: dict[str, S3Boto3Storage] = {}
+
+    # ------------------------------------------------------------------
+    # Публичные методы
+    # ------------------------------------------------------------------
+
+    @classmethod
+    def upload(
+        cls,
+        media_type: MediaType,
+        file_obj: UploadedFile,
+    ) -> str:
+        """Загружает файл в S3 и возвращает публичный URL."""
+        storage = cls._get_storage(media_type)
+        cloud_path = cls._generate_cloud_path(media_type, file_obj.name)
+        saved_name = storage.save(cloud_path, file_obj)
+        return storage.url(saved_name)
+
+    @classmethod
+    def delete(cls, media_type: MediaType, file_url: str) -> None:
+        """Удаляет файл из S3 по его публичному URL."""
+        try:
+            storage = cls._get_storage(media_type)
+            bucket_name = cls._get_bucket_name(media_type)
+            bucket_prefix = f'{bucket_name}/'
+            if bucket_prefix in file_url:
+                file_path = file_url.split(bucket_prefix)[-1]
+                storage.delete(file_path)
+        except Exception as err:
+            logger.error(
+                'Ошибка удаления файла %s (%s): %s',
+                file_url, media_type, err,
+            )
+            raise
+
+    @classmethod
+    def generate_presigned_upload_url(
+        cls,
+        media_type: MediaType,
+        filename: str,
+        expires_in: int = 3600,
+    ) -> dict:
+        """Генерирует presigned URL для загрузки файла напрямую в S3.
+
+        Позволяет фронтенду загружать файлы напрямую в S3 минуя Django.
+        """
+        storage = cls._get_storage(media_type)
+        s3_client = storage.connection.meta.client
+        bucket_name = cls._get_bucket_name(media_type)
+        cloud_path = cls._generate_cloud_path(media_type, filename)
+
+        url = s3_client.generate_presigned_url(
+            ClientMethod='put_object',
+            Params={
+                'Bucket': bucket_name,
+                'Key': cloud_path,
+            },
+            ExpiresIn=expires_in,
+        )
+
+        return {
+            'url': url,
+            'object_key': cloud_path,
+            'public_url': storage.url(cloud_path),
+        }
+
+    # ------------------------------------------------------------------
+    # Внутренние методы
+    # ------------------------------------------------------------------
+
+    @classmethod
+    def _get_bucket_name(cls, media_type: MediaType) -> str:
+        """Возвращает имя бакета для типа медиа из настроек."""
+        return settings.S3_BUCKETS[media_type]
+
+    @classmethod
+    def _get_storage(cls, media_type: MediaType) -> S3Boto3Storage:
+        """Лениво создаёт и кэширует S3Boto3Storage для типа медиа.
+
+        При первом создании проверяет существование бакета
+        и создаёт его, если он отсутствует.
+        """
+        bucket_name = cls._get_bucket_name(media_type)
+
+        if bucket_name not in cls._storages:
+            storage = cls._init_storage(bucket_name)
+            cls._ensure_bucket_exists(storage, bucket_name)
+            cls._storages[bucket_name] = storage
+
+        return cls._storages[bucket_name]
+
+    @classmethod
+    def _init_storage(cls, bucket_name: str) -> S3Boto3Storage:
+        """Инициализирует S3Boto3Storage для указанного бакета."""
+        options = settings.STORAGES['s3']['OPTIONS']
+        custom_domain = settings.S3_CUSTOM_DOMAIN
 
         storage = S3Boto3Storage(
             access_key=options.get('access_key'),
             secret_key=options.get('secret_key'),
-            bucket_name=self.bucket_name,
+            bucket_name=bucket_name,
             endpoint_url=options.get('endpoint_url'),
-            custom_domain=options.get('custom_domain'),
+            custom_domain=(
+                f'{custom_domain}/{bucket_name}' if custom_domain else None
+            ),
             querystring_auth=False,
             file_overwrite=False,
         )
 
-        # Добавляем Cache-Control для иммутабельных файлов.
+        # Cache-Control для иммутабельных файлов.
         # Все файлы имеют UUID в имени, поэтому новый файл = новый URL.
-        # Это позволяет браузеру кэшировать их навсегда.
         storage.object_parameters['CacheControl'] = (
             'public, max-age=31536000, immutable'
         )
 
         return storage
 
-    def _ensure_bucket_templated(self) -> None:
-        """Проверить наличие бакета и сделать его публичным на чтение."""
-        if self._bucket_configured:
-            return
-
+    @classmethod
+    def _ensure_bucket_exists(
+        cls,
+        storage: S3Boto3Storage,
+        bucket_name: str,
+    ) -> None:
+        """Проверяет существование бакета и создаёт его при необходимости."""
         try:
-            s3_client: Any = self.storage.connection.meta.client
-
-            # 1. Проверяем существование бакета. Если нет — создаем.
+            s3_client = storage.connection.meta.client
+            s3_client.head_bucket(Bucket=bucket_name)
+        except Exception:
             try:
-                s3_client.head_bucket(Bucket=self.bucket_name)
-            except Exception as e:
-                error_code = getattr(e, 'response', {},
-                                     ).get('Error', {}).get('Code', '')
-                if error_code == '404':
-                    s3_client.create_bucket(Bucket=self.bucket_name)
-                elif isinstance(e, S3ClientError):
-                    raise e
-                else:
-                    raise S3ClientError(str(e)) from e
+                s3_client.create_bucket(Bucket=bucket_name)
+                logger.info('Создан бакет %s', bucket_name)
+            except Exception as err:
+                logger.warning(
+                    'Не удалось создать бакет %s: %s', bucket_name, err,
+                )
 
-            # 2. Формируем политику анонимного чтения файлов
-            public_read_policy = {
-                'Version': '2012-10-17',
-                'Statement': [
-                    {
-                        'Sid': 'PublicReadGetObject',
-                        'Effect': 'Allow',
-                        'Principal': '*',
-                        'Action': ['s3:GetObject'],
-                        'Resource': [f'arn:aws:s3:::{self.bucket_name}/*'],
-                    },
-                ],
-            }
-
-            # 3. Применяем политику к бакету
-            s3_client.put_bucket_policy(
-                Bucket=self.bucket_name,
-                Policy=json.dumps(public_read_policy),
-            )
-
-            # 4. Устанавливаем флаг, что бакет настроен
-            self._bucket_configured = True
-
-        except Exception as err:
-            logger.error(f'Ошибка настройки бакета {self.bucket_name}: {err}')
-
-    def upload_file(self, cloud_path: str, file_obj: UploadedFile) -> str:
-        """Загружает файл и возвращает его полный публичный URL."""
-        saved_name: str = self.storage.save(cloud_path, file_obj)
-        return self.storage.url(saved_name)
-
-    def delete_file(self, file_url: str) -> None:
-        """Удаляет файл из бакета по его полному URL."""
-        try:
-            # Извлекаем ключ объекта из URL
-            # URL формата: https://domain/bucket-name/path/to/file.ext
-            # Нам нужно всё, что после bucket_name/
-            bucket_prefix = f'{self.bucket_name}/'
-            if bucket_prefix in file_url:
-                file_path: str = file_url.split(bucket_prefix)[-1]
-                self.storage.delete(file_path)
-        except Exception as err:
-            logger.error(f'Ошибка удаления файла {file_url}: {err}')
+    @classmethod
+    def _generate_cloud_path(cls, media_type: MediaType, filename: str) -> str:
+        """Генерирует путь к файлу в облаке: {prefix}/{uuid}.{ext}."""
+        parts = filename.split('.')
+        ext = parts[-1].lower() if len(parts) > 1 else 'jpg'
+        return f'{media_type.value}/{uuid4().hex}.{ext}'

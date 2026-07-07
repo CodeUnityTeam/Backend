@@ -54,6 +54,7 @@ INSTALLED_APPS = (
     'rest_framework_simplejwt',
     'corsheaders',
     # Project apps
+    'core.apps.CoreConfig',
     'users.apps.UsersConfig',
     'projects.apps.ProjectsConfig',
     'qna.apps.QnaConfig',
@@ -115,6 +116,29 @@ DATABASES = {
 S3_ENDPOINT = os.getenv('S3_ENDPOINT_URL', 'http://minio:9000')
 S3_PUBLIC_URL = os.getenv('S3_PUBLIC_URL', '').rstrip('/')
 
+# Кастомный домен для публичных URL файлов (без протокола).
+# Используется nginx для прокси на MinIO.
+# Пример: "dev.code-unity.ru/media"
+S3_CUSTOM_DOMAIN = (
+    S3_PUBLIC_URL.replace('http://', '').replace('https://', '')
+    if S3_PUBLIC_URL
+    else S3_ENDPOINT.replace('http://', '').replace('https://', '')
+)
+
+# Имена бакетов для каждого типа медиа.
+# Ключи должны соответствовать значениям MediaType из core.s3_utils.
+S3_BUCKETS = {
+    'avatars': os.getenv('AVATARS_BUCKET', 'user-avatars'),
+    'questions': os.getenv('QUESTION_IMAGES_BUCKET', 'question-images'),
+    'answers': os.getenv('ANSWER_IMAGES_BUCKET', 'answer-images'),
+    'feedback': os.getenv('FEEDBACK_IMAGES_BUCKET', 'feedback-images'),
+    'projects': os.getenv('PROJECT_IMAGES_BUCKET', 'project-images'),
+    'images': os.getenv('UPLOAD_IMAGES_BUCKET', 'upload-images'),
+}
+
+# Максимальный размер файла для всех типов (в MB)
+S3_MAX_FILE_SIZE_MB = 10
+
 STORAGES = {
     'default': {
         'BACKEND': 'django.core.files.storage.FileSystemStorage',
@@ -122,35 +146,12 @@ STORAGES = {
     'staticfiles': {
         'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
     },
-    'avatars': {
+    's3': {
         'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage',
         'OPTIONS': {
             'access_key': os.environ.get('AWS_ACCESS_KEY_ID'),
             'secret_key': os.environ.get('AWS_SECRET_ACCESS_KEY'),
-            'bucket_name': os.environ.get('AWS_STORAGE_BUCKET_NAME'),
             'endpoint_url': S3_ENDPOINT,
-            'custom_domain': (
-                f'{S3_PUBLIC_URL}'
-                f'/{os.environ.get("AWS_STORAGE_BUCKET_NAME")}'
-            ) if S3_PUBLIC_URL else None,
-            'querystring_auth': False,
-            'file_overwrite': False,
-        },
-    },
-    'images': {
-        'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage',
-        'OPTIONS': {
-            'access_key': os.environ.get('AWS_ACCESS_KEY_ID'),
-            'secret_key': os.environ.get('AWS_SECRET_ACCESS_KEY'),
-            'bucket_name': os.environ.get(
-                'MINIO_IMAGES_BUCKET_NAME',
-                'images',
-            ),
-            'endpoint_url': S3_ENDPOINT,
-            'custom_domain': (
-                f'{S3_PUBLIC_URL}'
-                f'/{os.environ.get("MINIO_IMAGES_BUCKET_NAME", "images")}'
-            ) if S3_PUBLIC_URL else None,
             'querystring_auth': False,
             'file_overwrite': False,
         },
@@ -170,10 +171,6 @@ STATIC_URL = '/static/'
 STATIC_ROOT = '/backend_static/static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-ALLOW_AVATAR_SIZE_MB = 10
-ALLOW_IMAGE_SIZE_MB = 10
-ALLOW_FEEDBACK_SIZE_MB = 5
 
 # =============================================================================
 # SECURITY, CORS & AUTH MODEL

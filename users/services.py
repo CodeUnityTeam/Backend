@@ -1,7 +1,6 @@
 from datetime import timedelta
-from functools import partial
 from typing import Any, Union
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from allauth.account.models import EmailAddress
 from django.core.files.uploadedfile import UploadedFile
@@ -9,18 +8,13 @@ from django.db import transaction
 from django.db.models import F, QuerySet
 from django.utils import timezone
 
-from config import settings
 from core.constants.users import LAST_LOGIN_UPDATE_INTERVAL
-from core.s3_utils import MinioService
+from core.s3_utils import MediaType, S3Service
 from projects.models import Response as ProjectResponse
 from users.models.users import User
 from users.selectors import (
     get_employer_base_queryset,
     get_employer_profiles_selector,
-)
-
-avatar_minio_client = MinioService(
-    bucket_name=settings.STORAGES['avatars']['OPTIONS']['bucket_name'],
 )
 
 
@@ -30,17 +24,8 @@ def avatar_upload_handler(
     """Бизнес-логика загрузки аватара с гарантией целостности БД."""
     old_avatar_url: str = getattr(user, 'avatar_url', '')
 
-    # 1. Генерируем путь и загружаем в MinIO ВНЕ транзакции БД
-    file_name_parts: list[str] = file_obj.name.split('.')
-    ext: str = (
-        file_name_parts[-1].lower() if len(file_name_parts) > 1 else 'png'
-    )
-    random_filename: str = uuid4().hex
-    cloud_path: str = f'avatars/{random_filename}.{ext}'
-
-    public_url: str = avatar_minio_client.upload_file(
-        cloud_path, file_obj,
-    )
+    # 1. Загружаем в MinIO ВНЕ транзакции БД
+    public_url: str = S3Service.upload(MediaType.AVATAR, file_obj)
 
     # 2. Атомарно сохраняем изменения в БД
     with transaction.atomic():
@@ -50,7 +35,9 @@ def avatar_upload_handler(
         # 3. Удаляем старый файл только после успешного коммита транзакции
         if old_avatar_url:
             transaction.on_commit(
-                partial(avatar_minio_client.delete_file, old_avatar_url),
+                lambda url=old_avatar_url: S3Service.delete(
+                    MediaType.AVATAR, url,
+                ),
             )
 
     return public_url
@@ -66,7 +53,9 @@ def avatar_delete_handler(user: User) -> None:
 
         if old_avatar_url:
             transaction.on_commit(
-                lambda: avatar_minio_client.delete_file(old_avatar_url),
+                lambda url=old_avatar_url: S3Service.delete(
+                    MediaType.AVATAR, url,
+                ),
             )
 
 
