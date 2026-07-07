@@ -76,7 +76,7 @@ services:
       - static:/backend_static/static/
 
   frontend:
-    image: maxwell884/code-unity-frontend:test
+    image: maxwell884/code-unity-frontend:latest
     container_name: test_frontend
     restart: unless-stopped
     depends_on:
