@@ -12,6 +12,7 @@ class AnswerDetailSerializer(serializers.ModelSerializer):
     author_rating = serializers.SerializerMethodField()
     images = serializers.SerializerMethodField()
     likes_count = serializers.IntegerField(read_only=True)
+    is_owned_by_me = serializers.SerializerMethodField()
 
     class Meta:
         model = Answer
@@ -24,6 +25,7 @@ class AnswerDetailSerializer(serializers.ModelSerializer):
             'created_at',
             'likes_count',
             'images',
+            'is_owned_by_me',
         )
 
     def get_author_name(self, obj: Answer) -> str:
@@ -40,6 +42,19 @@ class AnswerDetailSerializer(serializers.ModelSerializer):
     def get_images(self, obj: Answer) -> list[str]:
         """Возвращает список URL изображений."""
         return [img.image_url for img in obj.images.all()]
+
+    def get_is_owned_by_me(self, obj: Answer) -> bool:
+        """Проверяет, принадлежит ли ответ текущему пользователю.
+
+        Используется фронтендом для отображения кнопок
+        редактирования/удаления только для собственных ответов.
+        """
+        request = self.context.get('request')
+        if request is None or not hasattr(request, 'user'):
+            return False
+        if request.user.is_anonymous:
+            return False
+        return obj.user == request.user
 
 
 class AnswerImageMetaSerializer(serializers.Serializer):
