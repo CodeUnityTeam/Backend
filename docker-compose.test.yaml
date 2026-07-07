@@ -74,6 +74,7 @@ services:
       DB_MODE: network
     volumes:
       - static:/backend_static/static/
+      - ./fixtures:/opt/user123/fixtures
 
   frontend:
     image: maxwell884/code-unity-frontend:latest
