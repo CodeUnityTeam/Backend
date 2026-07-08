@@ -31,8 +31,42 @@ from users.serializers.auth import (
     SocialAuthCodeRequestSerializer,
     SocialAuthUrlResponseSerializer,
 )
+from users.serializers.profile import MeProfileRetrieveSerializer
 
 UserModel = get_user_model()
+
+
+SOCIAL_LOGIN_SUCCESS_SERIALIZER: serializers.Serializer = inline_serializer(
+    name='SocialLoginSuccessResponse',
+    fields={
+        'access': serializers.CharField(
+            help_text='JWT access токен для аутентификации запросов.',
+        ),
+        'refresh': serializers.CharField(
+            help_text='JWT refresh токен для обновления access токена.',
+        ),
+        'user': MeProfileRetrieveSerializer(),
+        'access_expiration': serializers.DateTimeField(
+            help_text='Дата и время истечения access токена.',
+        ),
+        'refresh_expiration': serializers.DateTimeField(
+            help_text='Дата и время истечения refresh токена.',
+        ),
+    },
+)
+
+SOCIAL_LOGIN_ERROR_SERIALIZER: serializers.Serializer = inline_serializer(
+    name='SocialLoginErrorResponse',
+    fields={
+        'non_field_errors': serializers.ListField(
+            child=serializers.CharField(),
+            default=[
+                'Не удалось авторизоваться через социальную сеть. '
+                'Неверный или истекший code.',
+            ],
+        ),
+    },
+)
 
 
 class SocialAuthUrlView(APIView):
@@ -141,7 +175,15 @@ class GoogleAuthUrlView(APIView):
     post=extend_schema(
         tags=['social_auth'],
         summary='Вход через Google',
+        description=(
+            'Принимает код авторизации от Google и возвращает '
+            'JWT-токены с данными профиля.'
+        ),
         request=SocialAuthCodeRequestSerializer,
+        responses={
+            200: SOCIAL_LOGIN_SUCCESS_SERIALIZER,
+            400: SOCIAL_LOGIN_ERROR_SERIALIZER,
+        },
     ),
 )
 class GoogleLogin(SocialLogin):
@@ -192,7 +234,15 @@ class YandexAuthUrlView(APIView):
     post=extend_schema(
         tags=['social_auth'],
         summary='Вход через Yandex',
+        description=(
+            'Принимает код авторизации от Yandex и возвращает '
+            'JWT-токены с данными профиля.'
+        ),
         request=SocialAuthCodeRequestSerializer,
+        responses={
+            200: SOCIAL_LOGIN_SUCCESS_SERIALIZER,
+            400: SOCIAL_LOGIN_ERROR_SERIALIZER,
+        },
     ),
 )
 class YandexLogin(SocialLogin):
@@ -239,7 +289,15 @@ class MailRuAuthUrlView(APIView):
     post=extend_schema(
         tags=['social_auth'],
         summary='Вход через Mail.ru',
+        description=(
+            'Принимает код авторизации от Mail.ru и возвращает '
+            'JWT-токены с данными профиля.'
+        ),
         request=SocialAuthCodeRequestSerializer,
+        responses={
+            200: SOCIAL_LOGIN_SUCCESS_SERIALIZER,
+            400: SOCIAL_LOGIN_ERROR_SERIALIZER,
+        },
     ),
 )
 class MailRuLogin(SocialLogin):
