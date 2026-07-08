@@ -349,6 +349,20 @@ SPECTACULAR_SETTINGS = {
     'TERMS_OF_SERVICE': '',
     'CONTACT': {'name': '', 'email': ''},
     'LICENSE': {'name': ''},
+    'COMPONENT_SPLIT_REQUEST': True,
+    'APPEND_COMPONENTS': {
+        'securitySchemes': {
+            'jwt_cookie_auth': {
+                'type': 'http',
+                'scheme': 'bearer',
+                'bearerFormat': 'JWT',
+                'description': (
+                    'Авторизация dj_rest_auth. '
+                    'Передайте токен в формате: Bearer <token>'
+                ),
+            },
+        },
+    },
     'TAG_SORT_ORDER': 'definition',
     'TAGS': (
         {'name': 'Questions', 'description': 'Вопросы'},

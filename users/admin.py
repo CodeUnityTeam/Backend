@@ -11,7 +11,7 @@ from django.http import HttpRequest
 from django.utils.safestring import mark_safe
 
 from core.admin_mixins import RolePermissionsMixin
-from users.forms import UserImageAdminForm
+from users.forms import UserAdminAddForm, UserImageAdminForm
 
 from .models import (
     Skill,
@@ -262,7 +262,10 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
             **kwargs: Any,
     ) -> forms.ModelForm:
         """Замена формы для отображения кнопки загрузки аватара."""
-        kwargs['form'] = UserImageAdminForm
+        if obj is None:
+            kwargs['form'] = UserAdminAddForm
+        else:
+            kwargs['form'] = UserImageAdminForm
         return super().get_form(request, obj, **kwargs)
 
     @admin.display(description='Аватар')
