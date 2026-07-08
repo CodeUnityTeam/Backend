@@ -17,6 +17,7 @@ from drf_spectacular.utils import (
     OpenApiTypes,
     PolymorphicProxySerializer,
     extend_schema,
+    extend_schema_field,
     extend_schema_view,
     inline_serializer,
 )
@@ -131,6 +132,25 @@ class MeProfileView(RetrieveUpdateDestroyAPIView):
             return MeProfileUpdateSerializer
         return MeProfileRetrieveSerializer
 
+    def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        """Обновить профиль и вернуть полные данные профиля."""
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+
+        serializer = self.get_serializer(
+            instance, data=request.data, partial=partial,
+        )
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            instance._prefetched_objects_cache = {}
+
+        response_serializer = MeProfileRetrieveSerializer(
+            instance, context={'request': request},
+        )
+        return Response(response_serializer.data, status=status.HTTP_200_OK)
+
     def perform_destroy(self, instance: User) -> None:
         """Перевести флаги активности и согласия в False."""
         deactivate_user_account(instance)
@@ -162,7 +182,9 @@ class MeProfileView(RetrieveUpdateDestroyAPIView):
             'multipart/form-data': inline_serializer(
                 name='AvatarUploadRequest',
                 fields={
-                    'file': serializers.ImageField(help_text='Файл аватара'),
+                    'file': extend_schema_field(OpenApiTypes.BINARY)(
+                        serializers.FileField(help_text='Файл аватара'),
+                    ),
                 },
             ),
         },
@@ -174,6 +196,7 @@ class MeProfileView(RetrieveUpdateDestroyAPIView):
             status.HTTP_400_BAD_REQUEST: OpenApiTypes.OBJECT,
         },
         tags=['Files'],
+        auth=[{'jwt_cookie_auth': []}],
     ),
     delete=extend_schema(
         summary='Удалить аватар пользователя',
@@ -186,6 +209,7 @@ class MeProfileView(RetrieveUpdateDestroyAPIView):
             status.HTTP_400_BAD_REQUEST: OpenApiTypes.OBJECT,
         },
         tags=['Files'],
+        auth=[{'jwt_cookie_auth': []}],
     ),
 )
 class UserAvatarAPIView(APIView):

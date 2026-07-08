@@ -1,5 +1,4 @@
 from django import forms
-from django.contrib.auth.forms import SetPasswordForm
 
 from qna.forms import ImageAdminForm
 from users.models import User
