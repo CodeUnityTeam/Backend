@@ -32,7 +32,7 @@ class UserAdminAddForm(UserImageAdminForm):
     )
 
     class Meta(UserImageAdminForm.Meta):
-        fields = '__all__'
+        pass
 
     def clean_password2(self) -> str:
         """Проверка, что пароли совпадают."""
