@@ -1,4 +1,3 @@
-
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils import timezone
@@ -81,9 +80,16 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = (
-            'title', 'short_desc', 'full_desc',
-            'location', 'start_date', 'end_date',
-            'status_project', 'skills', 'specializations', 'project_format',
+            'title',
+            'short_desc',
+            'full_desc',
+            'location',
+            'start_date',
+            'end_date',
+            'status_project',
+            'skills',
+            'specializations',
+            'project_format',
         )
         extra_kwargs = {
             'title': {
@@ -121,8 +127,7 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
                 'error_messages': {
                     'required': 'Дата начала проекта обязательна.',
                     'invalid': (
-                        'Неверный формат даты начала. '
-                        'Ожидается ГГГГ-ММ-ДД.'
+                        'Неверный формат даты начала. Ожидается ГГГГ-ММ-ДД.'
                     ),
                 },
             },
@@ -132,8 +137,7 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
                 'error_messages': {
                     'required': 'Дата окончания проекта обязательна.',
                     'invalid': (
-                        'Неверный формат даты окончания. '
-                        'Ожидается ГГГГ-ММ-ДД.'
+                        'Неверный формат даты окончания. Ожидается ГГГГ-ММ-ДД.'
                     ),
                 },
             },
@@ -253,8 +257,14 @@ class ProjectDetailSerializer(ProjectShortSerializer):
 
     class Meta(ProjectShortSerializer.Meta):
         fields = ProjectShortSerializer.Meta.fields + (
-            'full_desc', 'end_date', 'specializations',
-            'project_format', 'likes_count', 'participants', 'author',
+            'full_desc',
+            'start_date',
+            'end_date',
+            'specializations',
+            'project_format',
+            'likes_count',
+            'participants',
+            'author',
         )
 
     def _is_author_employer(self, project: Project) -> bool:
@@ -372,9 +382,16 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = (
-            'title', 'short_desc', 'full_desc',
-            'location', 'start_date', 'end_date',
-            'status_project', 'skills', 'specializations', 'project_format',
+            'title',
+            'short_desc',
+            'full_desc',
+            'location',
+            'start_date',
+            'end_date',
+            'status_project',
+            'skills',
+            'specializations',
+            'project_format',
         )
         extra_kwargs = {
             'title': {'required': False},
@@ -387,8 +404,7 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
                 'error_messages': {
                     'required': 'Дата окончания проекта обязательна.',
                     'invalid': (
-                        'Неверный формат даты окончания. '
-                        'Ожидается ГГГГ-ММ-ДД.'
+                        'Неверный формат даты окончания. Ожидается ГГГГ-ММ-ДД.'
                     ),
                 },
             },
@@ -456,8 +472,7 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
             # Если навыки/специализации/форматы не переданы — берём из БД
             if full_data['skills'] is None:
                 full_data['skills'] = [
-                    {'skill_id': str(s.skill_id)}
-                    for s in project.skills.all()
+                    {'skill_id': str(s.skill_id)} for s in project.skills.all()
                 ]
             if full_data['specializations'] is None:
                 full_data['specializations'] = [
@@ -469,7 +484,11 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
                     str(f.format_id) for f in project.project_format.all()
                 ]
             user = self.context['request'].user
-            return validate_project_data(full_data, user)
+            return validate_project_data(
+                full_data,
+                user,
+                exclude_project_id=str(project.project_id),
+            )
         # Изменение опубликованного проекта или с закрытым набором
         published_statuses = (PUBLISHED, RECRUITING_CLOSED)
         if (
@@ -507,7 +526,10 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
                     'skills': 'Необходимо указать хотя бы один навык.',
                 })
             validated_skills = _validate_related_ids(
-                skills, 'skill_id', Skill, 'навыки',
+                skills,
+                'skill_id',
+                Skill,
+                'навыки',
             )
             data['_validated_skills'] = validated_skills
         specializations = data.get('specializations')
@@ -519,7 +541,10 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
                     ),
                 })
             validated_specializations = _validate_related_ids(
-                specializations, 'spec_id', Specialization, 'специализации',
+                specializations,
+                'spec_id',
+                Specialization,
+                'специализации',
             )
             data['_validated_specializations'] = validated_specializations
 
@@ -571,8 +596,17 @@ class ProjectUpdateResponseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = (
-            'project_id', 'title', 'short_desc', 'full_desc',
-            'location', 'start_date', 'end_date',
-            'status_project', 'published_at', 'created_at',
-            'skills', 'specializations', 'project_format',
+            'project_id',
+            'title',
+            'short_desc',
+            'full_desc',
+            'location',
+            'start_date',
+            'end_date',
+            'status_project',
+            'published_at',
+            'created_at',
+            'skills',
+            'specializations',
+            'project_format',
         )
