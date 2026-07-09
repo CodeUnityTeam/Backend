@@ -17,6 +17,7 @@ from django.db.models.expressions import ExpressionWrapper
 from rest_framework import serializers
 
 from core.constants.projects import (
+    ARCHIVED,
     BLOCKED,
     MAX_FILTER_DAYS,
     MEMBER,
@@ -234,7 +235,7 @@ class ProjectFilter(django_filters.FilterSet):
         """Фильтрует проекты, где пользователь — автор или участник.
 
         - Наниматель (employer): возвращаются его проекты
-          (за исключением blocked).
+          (за исключением archived, blocked).
         - Работник (worker): возвращаются проекты, где он участник,
           со статусом published или recruiting_closed.
         - Админам и суперюзеру видно всё.
@@ -246,10 +247,10 @@ class ProjectFilter(django_filters.FilterSet):
             return queryset
 
         if user.projects_relation == User.ProjectsRelationChoices.EMPLOYER:
-            # Наниматель — свои проекты (кроме blocked)
+            # Наниматель — свои проекты (кроме archived, blocked)
             return queryset.filter(
                 author=user,
-            ).exclude(status_project=BLOCKED)
+            ).exclude(status_project__in=[ARCHIVED, BLOCKED])
 
         # Работник — проекты, где он участник
         return queryset.filter(
