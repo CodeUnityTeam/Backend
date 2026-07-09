@@ -30,6 +30,12 @@ class AnswerViewSet(DestroyModelMixin, GenericViewSet):
     serializer_class = AnswerDetailSerializer
     permission_classes = (IsAuthenticated, CanUpdateDeleteQNA)
 
+    def get_permissions(self) -> list:
+        """Возвращает permissions в зависимости от действия."""
+        if self.action == 'like':
+            return [IsAuthenticated()]
+        return super().get_permissions()
+
     @extend_schema(
             tags=['Answers'],
             summary='Лайк/снятие лайка ответа',
