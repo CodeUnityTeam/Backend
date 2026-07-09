@@ -407,6 +407,7 @@ def validate_project_data(
             - _validated_skills: список объектов Skill
             - _validated_specializations: список объектов Specialization
             - _validated_formats: список объектов WorkFormat
+
     """
     # Валидиция лимита проектов у автора
     validate_project_count_per_author(user)
