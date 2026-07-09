@@ -1,4 +1,3 @@
-import errno
 import logging
 from typing import Any
 
@@ -480,7 +479,7 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
                 'project_id=%s, user_id=%s, reason=%s',
                 project_id,
                 user.pk,
-                str(errno),
+                str(err),
             )
             if hasattr(err, 'message_dict'):
                 raise serializers.ValidationError(err.message_dict)
