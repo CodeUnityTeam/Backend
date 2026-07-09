@@ -1,7 +1,3 @@
-import errno
-import logging
-from typing import Any
-
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
@@ -288,6 +284,7 @@ class ProjectDetailSerializer(ProjectShortSerializer):
     class Meta(ProjectShortSerializer.Meta):
         fields = ProjectShortSerializer.Meta.fields + (
             'full_desc',
+            'start_date',
             'end_date',
             'specializations',
             'project_format',
@@ -568,8 +565,41 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
         )
         # 1. Черновик → публикация (draft → published)
         if is_publishing:
-            return self._validate_publishing_flow(data, project, user)
-        # 2. Изменение опубликованного проекта
+            start_date = data.get('start_date', project.start_date)
+            end_date = data.get('end_date', project.end_date)
+            if start_date and end_date:
+                validate_project_dates(start_date, end_date)
+            full_data = {
+                'title': data.get('title', project.title),
+                'short_desc': data.get('short_desc', project.short_desc),
+                'full_desc': data.get('full_desc', project.full_desc),
+                'location': data.get('location', project.location),
+                'status_project': PUBLISHED,
+                'skills': data.get('skills'),
+                'specializations': data.get('specializations'),
+                'project_format': data.get('project_format'),
+            }
+            # Если навыки/специализации/форматы не переданы — берём из БД
+            if full_data['skills'] is None:
+                full_data['skills'] = [
+                    {'skill_id': str(s.skill_id)} for s in project.skills.all()
+                ]
+            if full_data['specializations'] is None:
+                full_data['specializations'] = [
+                    {'spec_id': str(s.spec_id)}
+                    for s in project.specializations.all()
+                ]
+            if full_data['project_format'] is None:
+                full_data['project_format'] = [
+                    str(f.format_id) for f in project.project_format.all()
+                ]
+            user = self.context['request'].user
+            return validate_project_data(
+                full_data,
+                user,
+                exclude_project_id=str(project.project_id),
+            )
+        # Изменение опубликованного проекта или с закрытым набором
         published_statuses = (PUBLISHED, RECRUITING_CLOSED)
         if (
             project is not None
