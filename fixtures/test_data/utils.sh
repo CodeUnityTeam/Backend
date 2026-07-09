@@ -8,11 +8,12 @@ GREEN='\033[0;32m'; RED='\033[0;31m'; YELLOW='\033[1;33m'; NC='\033[0m'
 
 # Конфигурация
 BASE_URL="${BASE_URL:-http://127.0.0.1:8000/api/v1}"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -W 2>/dev/null || pwd)"
 DATA_DIR="$SCRIPT_DIR"
 USERS_FILE="$DATA_DIR/users.json"
 ROLES_FILE="$DATA_DIR/roles.json"
-PYTHON="${FIXTURES_PYTHON:-uv run python}"
+PYTHON="${FIXTURES_PYTHON:-python}"
+export PYTHONIOENCODING=utf-8
 
 # =============================================================================
 # Загрузка данных
@@ -22,7 +23,7 @@ load_users() {
   while IFS= read -r line; do USERS_JSON+=("$line"); done < <(
     $PYTHON -c "
 import json, sys
-with open('$USERS_FILE') as f:
+with open(r'$USERS_FILE', encoding='utf-8') as f:
     users = json.load(f)
 for u in users:
     sys.stdout.write(json.dumps(u, ensure_ascii=False) + '\n')
@@ -35,7 +36,7 @@ load_roles() {
   while IFS= read -r line; do ROLES_USERS+=("$line"); done < <(
     $PYTHON -c "
 import json, sys
-with open('$ROLES_FILE') as f:
+with open(r'$ROLES_FILE', encoding='utf-8') as f:
     roles = json.load(f)
 for item in roles.get('users', []):
     sys.stdout.write(json.dumps(item, ensure_ascii=False) + '\n')
@@ -50,11 +51,20 @@ load_user_ids() {
     echo -e "${RED}  ✗ Файл $USER_IDS_FILE не найден. Сначала выполните create_users.sh${NC}"
     return 1
   fi
-  while IFS= read -r line; do user_ids+=("$line"); done < <(
+  while IFS= read -r line; do
+    # Удаляем \r (carriage return), который может появиться
+    # при работе в Git Bash на Windows из-за преобразования
+    # \n в \r\n в stdout Python
+    line="${line%%$'\r'}"
+    [ -z "$line" ] && continue
+    user_ids+=("$line")
+  done < <(
+    # Используем buffer для избежания преобразования \n в \r\n
     $PYTHON -c "
 import json, sys
-for uid in json.load(open('$USER_IDS_FILE')):
-    sys.stdout.write(str(uid) + '\n')
+with open(r'$USER_IDS_FILE', encoding='utf-8') as f:
+    for uid in json.load(f):
+        sys.stdout.buffer.write((str(uid) + '\n').encode('utf-8'))
 ")
   echo -e "${GREEN}  ✓ Загружено ${#user_ids[@]} id пользователей${NC}"
 }
@@ -90,15 +100,16 @@ json_from_file() {  # filename index
 import json, os, sys
 filename = '$filename'
 index = $index
+data_dir = r'$DATA_DIR'
 try:
-    with open(os.path.join('$DATA_DIR', filename)) as f:
+    with open(os.path.join(data_dir, filename), encoding='utf-8') as f:
         data = json.load(f)
     print(json.dumps(data[index], ensure_ascii=False))
 except IndexError:
     print(f'ERROR: Индекс {index} отсутствует в файле {filename}. Доступны индексы 0..{len(data)-1}.', file=sys.stderr)
     sys.exit(1)
 except FileNotFoundError:
-    print(f'ERROR: Файл {filename} не найден в $DATA_DIR.', file=sys.stderr)
+    print(f'ERROR: Файл {filename} не найден в {data_dir}.', file=sys.stderr)
     sys.exit(1)
 "
 }
@@ -107,9 +118,19 @@ except FileNotFoundError:
 # HTTP-запросы
 # =============================================================================
 api_request() {  # method url token [json_body]
-  local curl_args=(-s -w "\nHTTP_CODE:%{http_code}" -X "$1" "$2" -H "Authorization: Bearer $3")
-  [ -n "$4" ] && curl_args+=(-H "Content-Type: application/json; charset=utf-8" -d "$4")
-  local response=$(curl "${curl_args[@]}")
+  local method=$1 url=$2 token=$3 json_body=$4
+  if [ -n "$json_body" ]; then
+    # Передаём тело запроса через stdin, чтобы избежать повреждения UTF-8
+    local response=$(echo "$json_body" | curl -s -w "\nHTTP_CODE:%{http_code}" \
+      -X "$method" "$url" \
+      -H "Authorization: Bearer $token" \
+      -H "Content-Type: application/json; charset=utf-8" \
+      --data-binary @-)
+  else
+    local response=$(curl -s -w "\nHTTP_CODE:%{http_code}" \
+      -X "$method" "$url" \
+      -H "Authorization: Bearer $token")
+  fi
   local code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
   local body=$(echo "$response" | sed -n '/^{/,/^HTTP_CODE:/p' | grep -v "HTTP_CODE:")
   echo "$code|$body"
