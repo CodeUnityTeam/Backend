@@ -1,3 +1,6 @@
+import logging
+from typing import Any
+
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
@@ -476,7 +479,7 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
                 'project_id=%s, user_id=%s, reason=%s',
                 project_id,
                 user.pk,
-                str(errno),
+                str(err),
             )
             if hasattr(err, 'message_dict'):
                 raise serializers.ValidationError(err.message_dict)
