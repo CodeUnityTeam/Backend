@@ -288,6 +288,7 @@ class ProjectDetailSerializer(ProjectShortSerializer):
     class Meta(ProjectShortSerializer.Meta):
         fields = ProjectShortSerializer.Meta.fields + (
             'full_desc',
+            'start_date',
             'end_date',
             'specializations',
             'project_format',
