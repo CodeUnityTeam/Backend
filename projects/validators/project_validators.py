@@ -27,7 +27,11 @@ from projects.models import Project, WorkFormat
 User = get_user_model()
 
 
-def validate_title_project(value: str, user: User) -> str:
+def validate_title_project(
+    value: str,
+    user: User,
+    exclude_project_id: str | None = None,
+) -> str:
     """Валидирует название проекта с проверкой на дубликаты пользователя.
 
     Выполняет следующие проверки:
@@ -40,6 +44,8 @@ def validate_title_project(value: str, user: User) -> str:
         - Сравнение выполняется регистронезависимо через `__iexact`,
           поэтому 'МойПроект' и 'мойпроект' считаются дубликатами.
         - Проверка дубликатов выполняется только в рамках одного автора.
+        - Если передан exclude_project_id — проект с этим ID исключается
+          из проверки (используется при обновлении проекта).
     """
     cleaned_value: str = value.strip()
     if not MIN_LEN_TITLE <= len(cleaned_value) <= MAX_LEN_TITLE:
@@ -48,10 +54,13 @@ def validate_title_project(value: str, user: User) -> str:
             f'до {MAX_LEN_TITLE} символов. Сейчас {len(cleaned_value)}',
         )
     project_model = apps.get_model('projects', 'Project')
-    if project_model.objects.filter(
+    qs = project_model.objects.filter(
         author=user,
         title__iexact=cleaned_value,
-    ).exists():
+    )
+    if exclude_project_id is not None:
+        qs = qs.exclude(project_id=exclude_project_id)
+    if qs.exists():
         raise serializers.ValidationError({
             'title': 'Проект с таким названием у вас уже существует.',
         })
@@ -90,6 +99,8 @@ def validate_full_desc_project(value: str) -> str:
         2. Проверяет длину описания на превышение максимально допустимого
            значения.
     """
+    if value is None:
+        return value
     cleaned_value: str = value.strip()
     if len(cleaned_value) > MAX_LEN_FULL_DESC:
         raise serializers.ValidationError(
@@ -108,6 +119,8 @@ def validate_location_project(value: str) -> str:
         3. Проверяет, что строка содержит только разрешённые символы:
         буквы (A-Za-z, А-Яа-я), цифры (0-9), пробелы и дефисы (-).
     """
+    if value is None:
+        return value
     cleaned_value = value.strip()
     if len(cleaned_value) > MAX_LEN_LOCATION:
         raise serializers.ValidationError(
@@ -369,8 +382,12 @@ def validate_update_project_status(
         })
 
 
-def validate_project_data(data: dict, user: User) -> dict:
-    """Единая валидация всех данных для создания проекта.
+def validate_project_data(
+    data: dict,
+    user: User,
+    exclude_project_id: str | None = None,
+) -> dict:
+    """Единая валидация всех данных для создания/обновления проекта.
 
     Проверяет:
         1. Количество активных проектов у пользователя
@@ -379,16 +396,25 @@ def validate_project_data(data: dict, user: User) -> dict:
         3. Наличие и количество навыков (не более MAX_SKILLS_COUNT).
         4. Существование всех переданных skills, specializations, work formats.
 
+    Args:
+        data: Словарь с данными проекта.
+        user: Пользователь — автор проекта.
+        exclude_project_id: ID проекта, который нужно исключить из проверки
+            на дубликат названия (используется при обновлении).
+
     Возвращает:
         Словарь data с добавленными ключами:
             - _validated_skills: список объектов Skill
             - _validated_specializations: список объектов Specialization
             - _validated_formats: список объектов WorkFormat
+
     """
     # Валидиция лимита проектов у автора
     validate_project_count_per_author(user)
     # Валидация текстовых полей
-    data['title'] = validate_title_project(data['title'], user)
+    data['title'] = validate_title_project(
+        data['title'], user, exclude_project_id=exclude_project_id,
+    )
     data['short_desc'] = validate_short_desc_project(data['short_desc'])
     data['full_desc'] = validate_full_desc_project(data['full_desc'])
     data['location'] = validate_location_project(data['location'])
