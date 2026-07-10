@@ -116,6 +116,12 @@ DATABASES = {
 S3_ENDPOINT = os.getenv('S3_ENDPOINT_URL', 'http://minio:9000')
 S3_PUBLIC_URL = os.getenv('S3_PUBLIC_URL', '').rstrip('/')
 
+# Протокол для публичных URL (http: или https:).
+# По умолчанию S3Boto3Storage использует "https:", что ломает локальную
+# разработку, где MinIO работает по HTTP.
+# В продакшене через nginx проксирование — всегда https:.
+AWS_S3_URL_PROTOCOL = os.getenv('AWS_S3_URL_PROTOCOL', 'https:')
+
 # Кастомный домен для публичных URL файлов (без протокола).
 # Используется nginx для прокси на MinIO.
 # Пример: "dev.code-unity.ru/media"
