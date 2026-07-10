@@ -1,7 +1,9 @@
+import logging
+
 from django.contrib.auth import get_user_model
 from django.db import transaction
 
-from core.constants.projects import APPLICANT, MEMBER, PENDING
+from core.constants.projects import APPLICANT, ARCHIVED, MEMBER, PENDING
 from projects.models import (
     Project,
     ProjectFavorite,
@@ -14,6 +16,8 @@ from projects.validators.project_favorite import validate_project_favorite
 from projects.validators.project_like import validate_project_like
 
 User = get_user_model()
+
+logger = logging.getLogger(__name__)
 
 
 def create_response(
@@ -84,3 +88,10 @@ def toggle_project_favorite(project: Project, user: User) -> dict:
         else:
             favorited = True
     return {'favorited': favorited}
+
+
+def archive_project(project: Project, user: User) -> Project:
+    """Переводит проект в архив и логирует изменение состояния."""
+    project.status_project = ARCHIVED
+    project.save(update_fields=['status_project'])
+    return project

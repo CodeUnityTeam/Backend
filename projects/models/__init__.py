@@ -1,5 +1,5 @@
 # ruff: noqa
-from . project import (
+from .project import (
     Project,
     ProjectParticipant,
     ProjectLike,

@@ -1,4 +1,5 @@
 import hashlib
+import logging
 from typing import Any, Type
 
 from django.core.cache import cache
@@ -42,6 +43,8 @@ from projects.serializers import (
     UpdateResponseStatusResponseSerializer,
     UpdateResponseStatusSerializer,
 )
+
+logger = logging.getLogger(__name__)
 
 
 @extend_schema_view(
@@ -132,6 +135,12 @@ class ResponseFeedViewSet(ListModelMixin, GenericViewSet):
         )
         cached_response = cache.get(cache_key)
         if cached_response is not None:
+            logger.debug(
+                'Кэшированный ответ для ленты откликов/приглашений: '
+                'user_id=%s, cache_key=%s.',
+                request.user.pk,
+                cache_key,
+            )
             return DRFResponse(cached_response)
         response = super().list(request, *args, **kwargs)
         if response.status_code == status.HTTP_200_OK:
@@ -139,6 +148,10 @@ class ResponseFeedViewSet(ListModelMixin, GenericViewSet):
                 cache_key,
                 response.data,
                 timeout=RESPONSE_FEED_CACHE_TIMEOUT,
+            )
+            logger.debug(
+                'Лента откликов/приглашений выдана из БД: user_id=%s.',
+                request.user.pk,
             )
         return response
 
@@ -199,12 +212,27 @@ class ProjectResponseViewSet(GenericViewSet):
         **kwargs: Any,
     ) -> DRFResponse:
         """Откликнуться на проект (только для worker)."""
+        logger.info(
+            'Получен запрос на создание отклика: user_id=%s, project_id=%s.',
+            request.user.pk,
+            kwargs['project_id'],
+        )
         serializer = self.get_serializer(data={})
         serializer.is_valid(raise_exception=True)
         response = serializer.save()
+        logger.info(
+            'Отклик на проект успешно создан: '
+            'user_id=%s, project_id=%s, response_id=%s',
+            request.user.pk,
+            kwargs['project_id'],
+            response.pk,
+        )
         return DRFResponse(
-            ResponseResponseCreateProjectSerializer(response).data,
-            status=status.HTTP_201_CREATED,
+            ResponseResponseCreateProjectSerializer(
+                response,
+                context={'request': request},
+            ).data,
+            status=status.HTTP_200_OK,
         )
 
     @extend_schema(
@@ -228,12 +256,28 @@ class ProjectResponseViewSet(GenericViewSet):
         user_id: str,
     ) -> DRFResponse:
         """Пригласить пользователя в проект (только для employer-автора)."""
+        logger.info(
+            'Получен запрос на приглашение пользователя в проект: '
+            'employer=%s, invited=%s, project_id=%s.',
+            request.user.pk,
+            user_id,
+            project_id,
+        )
         serializer = self.get_serializer(data={})
         serializer.is_valid(raise_exception=True)
         response_instance = serializer.save()
+        logger.info(
+            'Приглашение на проект успешно отправлено: '
+            'employer=%s, invited=%s, project_id=%s, response_id=%s',
+            request.user.pk,
+            user_id,
+            project_id,
+            response_instance.pk,
+        )
         return DRFResponse(
             ResponseResponseCreateProjectSerializer(
                 response_instance,
+                context={'request': request},
             ).data,
             status=status.HTTP_200_OK,
         )
@@ -287,13 +331,35 @@ class ResponseStatusViewSet(GenericViewSet):
     ) -> DRFResponse:
         """Изменить статус отклика/приглашения."""
         response = self.get_object()
+        old_status = response.status_resp
+        logger.info(
+            'Получен запрос на изменение статуса отклика/приглашения: '
+            'user_id=%s, projects_relation=%s, project_id=%s, '
+            'response_id=%s.',
+            request.user.pk,
+            request.user.projects_relation,
+            response.project.pk,
+            response.pk,
+        )
         serializer = UpdateResponseStatusSerializer(
             instance=response,
             data=request.data,
             context={'request': request},
+            partial=True,
         )
         serializer.is_valid(raise_exception=True)
         update_status = serializer.save()
+        logger.info(
+            'Статус отклика/приглашения успешно изменен: '
+            'user_id=%s, projects_relation=%s, project_id=%s, '
+            'response_id=%s, old_status=%s, new_status=%s.',
+            request.user.pk,
+            request.user.projects_relation,
+            response.project.pk,
+            response.pk,
+            old_status,
+            update_status.status_resp,
+        )
         return DRFResponse(
             self.get_serializer(update_status).data,
             status=status.HTTP_200_OK,
