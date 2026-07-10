@@ -74,7 +74,7 @@ do_respond() {
   for p_idx in $(json_extract "$action" "project_indices"); do
     local pid="${ref[$p_idx]}"
     echo "    Отклик на проект $pid..."
-    local body; body=$(call_api "POST" "$BASE_URL/projects/$pid/responses/" "$token" "" 200) || continue
+    local body; body=$(call_api "POST" "$BASE_URL/projects/$pid/responses/" "$token" "" 201) || continue
     local rid; rid=$(json_extract "$body" "response_id")
     resp_ref["$p_idx"]="$rid"; echo -e "${GREEN}    ✓ Отклик создан response_id: $rid (индекс $p_idx)${NC}"
   done
@@ -170,7 +170,7 @@ do_like() {
   for idx in $(json_extract "$action" "$indices_key"); do
     local obj_id="${ref[$idx]}"
     local url="${url_template//\{id\}/$obj_id}"
-    echo "    Лайк $label $obj_id..." >&2
+    echo "    Лайк $label $obj_id..."
     local body; body=$(call_api "POST" "$url" "$token" "$json_body" "$success_code") || return 1
     echo -e "${GREEN}    ✓ Лайк $label: $(json_extract "$body" "liked")${NC}"
   done

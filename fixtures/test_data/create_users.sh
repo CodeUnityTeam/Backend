@@ -120,12 +120,11 @@ for i in $(seq 0 $((users_count - 1))); do
   echo ""
 done
 
-# Сохраняем массив id в JSON-файл
-# Используем sys.stdout.buffer для избежания преобразования \n в \r\n на Windows
+# Сохраняем массив id в JSON-файл 
 printf '%s\n' "${user_ids[@]}" | $PYTHON -c "
 import json, sys
 ids = [line.strip() for line in sys.stdin if line.strip()]
-with open('$USER_IDS_FILE', 'w', newline='') as f:
+with open('$USER_IDS_FILE', 'w') as f:
     json.dump(ids, f, ensure_ascii=False)
 "
 
