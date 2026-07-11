@@ -98,8 +98,8 @@ EXAMPLE_DETAIL_RESPONSE_PROJECT = [
                 {
                     **participant, 'avatar': participant.get(
                         'avatar',
-                        'https://...'
-                    )
+                        'https://...',
+                    ),
                 }
                 for participant in BASE_PROJECT_RESPONSE['participants']
             ],
