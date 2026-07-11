@@ -7,6 +7,7 @@ from django.db import transaction
 from django.db.models import QuerySet
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import (
+    OpenApiExample,
     OpenApiResponse,
     extend_schema,
     extend_schema_view,
@@ -100,6 +101,144 @@ logger = logging.getLogger(__name__)
             ' контактные данные автора проекта.\n\n'
             ' - Доступно для аутентифицированного пользователя'
         ),
+        examples=[
+            OpenApiExample(
+                'Обычный пользователь',
+                summary='Обычный пользователь (не автор, не участник)',
+                value={
+                    'project_id': '79af30fc-e011-4a30-8592-2e115c4a2a50',
+                    'title': 'LifePlanner — приложение-органайзер',
+                    'short_desc': (
+                        'Мобильное приложение для планирования задач'
+                    ),
+                    'location': 'Москва',
+                    'status_project': 'published',
+                    'published_at': '2026-07-08T20:09:21+03:00',
+                    'participants_count': 1,
+                    'is_liked_by_me': False,
+                    'is_favorite_by_me': False,
+                    'skills': [
+                        {
+                            'skill_id': '040beef5-07e2-4f45-8292-5f46ef228568',
+                            'name': 'Flutter'
+                        },
+                        {
+                            'skill_id': '040beef5-07e2-4f45-8292-5f46ef228569',
+                            'name': 'Dart'
+                        },
+                    ],
+                    'participants': [
+                        {
+                            'user_id': '1fd641f6-1413-4021-948f-f6165562af70',
+                            'full_name': 'Анна Петрова',
+                            'avatar': 'https://...',
+                        },
+                        {
+                            'user_id': 'b04571cc-4442-483b-8593-3434fb7c657c',
+                            'full_name': 'Иван Иванов',
+                            'avatar': 'https://...',
+                        },
+                    ],
+                    'author': {
+                        'user_id': 'b04571cc-4442-483b-8593-3434fb7c657c',
+                        'full_name': 'Иван Иванов',
+                        'avatar': 'https://...',
+                        'last_activity_at': '2026-07-11T17:53:46.079975+03:00',
+                    },
+                },
+            ),
+            OpenApiExample(
+                'Автор проекта',
+                summary='Автор проекта видит полные контакты участников',
+                value={
+                    'project_id': '79af30fc-e011-4a30-8592-2e115c4a2a50',
+                    'title': 'LifePlanner',
+                    'short_desc': 'Мобильное приложение',
+                    'location': 'Москва',
+                    'status_project': 'published',
+                    'published_at': '2026-07-08T20:09:21+03:00',
+                    'participants_count': 1,
+                    'is_liked_by_me': False,
+                    'is_favorite_by_me': False,
+                    'full_desc': 'Полное описание проекта...',
+                    'skills': [
+                        {
+                            'skill_id': '040beef5-07e2-4f45-8292-5f46ef228568',
+                            'name': 'Flutter',
+                        },
+                    ],
+                    'participants': [
+                        {
+                            'user_id': '1fd641f6-1413-4021-948f-f6165562af70',
+                            'full_name': 'Анна Петрова',
+                            'avatar': '',
+                            'email': 'anna@example.com',
+                            'phone': '+79001234567',
+                        },
+                        {
+                            'user_id': '1fd641f6-1413-4021-948f-f6165562af70',
+                            'full_name': 'Иван Иванов',
+                            'avatar': 'https://...',
+                            'email': 'ivan@example.com',
+                            'phone': '+79001112233',
+                        },
+                    ],
+                    'author': {
+                        'user_id': '1fd641f6-1413-4021-948f-f6165562af70',
+                        'full_name': 'Иван Иванов',
+                        'avatar': 'https://...',
+                        'email': 'ivan@example.com',
+                        'phone': '+79001112233',
+                        'last_activity_at': '2026-07-11T17:53:46.079975+03:00',
+                    },
+                },
+            ),
+            OpenApiExample(
+                'Участник проекта',
+                summary=(
+                    'Участник проекта видит контакты автора, '
+                    'но не других участников'
+                ),
+                value={
+                    'project_id': '79af30fc-e011-4a30-8592-2e115c4a2a50',
+                    'title': 'LifePlanner',
+                    'short_desc': 'Мобильное приложение',
+                    'location': 'Москва',
+                    'status_project': 'published',
+                    'published_at': '2026-07-08T20:09:21+03:00',
+                    'participants_count': 1,
+                    'is_liked_by_me': False,
+                    'is_favorite_by_me': False,
+                    'full_desc': 'Полное описание проекта бла бла',
+                    'skills': [
+                        {
+                            'skill_id': '040beef5-07e2-4f45-8292-5f46ef228568',
+                            'name': 'Flutter',
+                        },
+                    ],
+                    'participants': [
+                        {
+                            'user_id': '1fd641f6-1413-4021-948f-f6165562af70',
+                            'full_name': 'Анна Петрова',
+                            'avatar': 'https://...',
+                        },
+                        {
+                            'user_id': 'b04571cc-4442-483b-8593-3434fb7c657c',
+                            'full_name': 'Иван Иванов',
+                            'avatar': 'https://...',
+                        },
+                    ],
+                    'author': {
+                        'user_id': 'b04571cc-4442-483b-8593-3434fb7c657c',
+                        'full_name': 'Иван Иванов',
+                        'avatar': 'https://...',
+                        'email': 'ivan@example.com',
+                        'phone': '+79001112233',
+                        'last_activity_at': '2026-07-11T17:53:46.079975+03:00',
+                    },
+                },
+            ),
+        ],
     ),
     partial_update=extend_schema(
         tags=['Проекты'],

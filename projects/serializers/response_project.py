@@ -111,9 +111,13 @@ class UpdateResponseStatusSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
         """Валидация прав на изменение статуса."""
+        if 'status' not in attrs:
+            raise serializers.ValidationError({
+                'status': 'Это поле обязательно для заполнения.',
+            })
         if self.instance is None:
             raise serializers.ValidationError(
-                'Изменение статуса возможно только для существующего ответа.',
+                'Изменение статуса возможно только для существующего отклика.',
             )
         user_response = self.instance
         user = self.context['request'].user

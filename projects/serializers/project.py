@@ -315,8 +315,6 @@ class ProjectDetailSerializer(ProjectShortSerializer):
             UserAuthorSerializer if is_author_employer else UserBaseSerializer
         )
         participants_qs = project.participants.all()
-        if is_author_employer:
-            participants_qs = participants_qs.exclude(user=project.author)
         users = [p.user for p in participants_qs]
         return serializer_class(
             users,

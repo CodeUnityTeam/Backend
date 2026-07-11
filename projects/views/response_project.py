@@ -51,6 +51,14 @@ logger = logging.getLogger(__name__)
     list=extend_schema(
         tags=['Отклики'],
         summary='Лента откликов/приглашений',
+        description=(
+            'Лента откликов/приглашений с фильтрацией и пагинацией.\n\n'
+            'Эндпоинт доступен только работнику (worker).\n\n'
+            'Пользователь видит свои отклики на проекты.\n\n'
+            ' - Имеется возможность фильтрации по ID-проекта;\n\n'
+            ' - Имеется возможность фильтрации по статусу отклика;\n\n'
+            ' - Имеется возможность сортировки по убыванию или возрастанию.\n\n'
+        ),
         parameters=[
             OpenApiParameter(
                 name='status',
@@ -298,9 +306,25 @@ class ProjectResponseViewSet(GenericViewSet):
         examples=[
             OpenApiExample(
                 name='Отозвать отклик',
-                summary='Пример: пользователь отзывает свой отклик',
+                summary='Пользователь отзывает свой отклик',
                 description='Пользователь отменяет свой отклик на проект',
                 value={'status': 'withdrawn'},
+                request_only=True,
+                response_only=False,
+            ),
+            OpenApiExample(
+                name='Принять отклик',
+                summary='Пользователь одобряет отклик',
+                description='Пользователь одобряет отклик',
+                value={'status': 'approved'},
+                request_only=True,
+                response_only=False,
+            ),
+            OpenApiExample(
+                name='Отклонить отклик',
+                summary='Пользователь отклоняет отклик',
+                description='Пользователь отклоняет отклик',
+                value={'status': 'rejected'},
                 request_only=True,
                 response_only=False,
             ),
@@ -322,6 +346,10 @@ class ResponseStatusViewSet(GenericViewSet):
         """
         return get_response_for_status_update_queryset()
 
+    @extend_schema(
+        request=UpdateResponseStatusSerializer,
+        responses={200: UpdateResponseStatusSerializer},
+    )
     @transaction.atomic
     def update(
         self,
@@ -329,7 +357,14 @@ class ResponseStatusViewSet(GenericViewSet):
         *args: Any,
         **kwargs: Any,
     ) -> DRFResponse:
-        """Изменить статус отклика/приглашения."""
+        """Изменить статус отклика/приглашения.
+        
+        Учитываем права и статусы отклика.
+        - Наниматель (employer) может отклонить, одобрять отклики только от
+         работников. Может отозвать свой отклик.
+        - Работник (worker) может отклонить, одобрять отклики только от
+         нанимателя. Может отозвать свой отклик.
+        """
         response = self.get_object()
         old_status = response.status_resp
         logger.info(
