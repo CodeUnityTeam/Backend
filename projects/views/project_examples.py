@@ -95,8 +95,13 @@ EXAMPLE_DETAIL_RESPONSE_PROJECT = [
             **BASE_PROJECT_RESPONSE,
             'full_desc': 'Полное описание проекта бла бла',
             'participants': [
-                {**p, 'avatar': p.get('avatar', 'https://...')}
-                for p in BASE_PROJECT_RESPONSE['participants'][:1]
+                {
+                    **participant, 'avatar': participant.get(
+                        'avatar',
+                        'https://...'
+                    )
+                }
+                for participant in BASE_PROJECT_RESPONSE['participants']
             ],
             'author': {
                 **BASE_PROJECT_RESPONSE['author'],
