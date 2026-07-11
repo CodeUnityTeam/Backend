@@ -32,8 +32,11 @@ from projects.validators import (
 from users.models.skills import Skill
 from users.models.specializations import Specialization
 
-from .skill import SkillSerializer
-from .specialization import SpecializationSerializer
+from .skill import SkillIdSerializer, SkillSerializer
+from .specialization import (
+    SpecializationIdSerializer,
+    SpecializationSerializer,
+)
 from .user import (
     UserAuthorSerializer,
     UserAuthorShortSerializer,
@@ -44,22 +47,6 @@ from .work_format import WorkFormatSerializer
 User = get_user_model()
 
 logger = logging.getLogger('app.' + __name__)
-
-
-class SkillIdSerializer(serializers.Serializer):
-    """Сериализатор для передачи skill_id в теле запроса."""
-
-    skill_id = serializers.UUIDField(
-        help_text='UUID навыка',
-    )
-
-
-class SpecializationIdSerializer(serializers.Serializer):
-    """Сериализатор для передачи spec_id в теле запроса."""
-
-    spec_id = serializers.UUIDField(
-        help_text='UUID специализации',
-    )
 
 
 class ProjectCreateSerializer(serializers.ModelSerializer):
