@@ -195,7 +195,10 @@ class FeedbackAndInvitationFeedSerializer(serializers.Serializer):
         source='project.short_desc',
         read_only=True,
     )
-    skills = serializers.SerializerMethodField()
+    skills = serializers.ListField(
+        child=serializers.CharField(),
+        read_only=True,
+    )
     location = serializers.CharField(
         source='project.location',
         read_only=True,

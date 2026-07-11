@@ -7,8 +7,6 @@ from django.db import transaction
 from django.db.models import QuerySet
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import (
-    OpenApiExample,
-    OpenApiParameter,
     OpenApiResponse,
     extend_schema,
     extend_schema_view,
@@ -60,6 +58,11 @@ from projects.services import (
     toggle_project_like,
 )
 
+from .project_parameters import (
+    PROJECT_LIST_PARAMETERS,
+    PROJECT_RECOMENDATIONS_PARAMETERS,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -71,137 +74,7 @@ logger = logging.getLogger(__name__)
             'Возвращает список проектов (краткое описание) с пагинацией.'
             'Эндпоинт доступен всем пользователям.'
         ),
-        parameters=[
-            OpenApiParameter(
-                name='format_id',
-                type=str,
-                location=OpenApiParameter.QUERY,
-                description='Список ID форматов через запятую',
-                required=False,
-            ),
-            OpenApiParameter(
-                name='spec_id',
-                type=str,
-                location=OpenApiParameter.QUERY,
-                description='Список ID специализаций через запятую',
-                required=False,
-            ),
-            OpenApiParameter(
-                name='skills_id',
-                type=str,
-                location=OpenApiParameter.QUERY,
-                description='Список ID навыков через запятую',
-                required=False,
-            ),
-            OpenApiParameter(
-                name='duration_min',
-                type=int,
-                location=OpenApiParameter.QUERY,
-                description='Минимальная длительность в днях (от 7 до 365)',
-                required=False,
-            ),
-            OpenApiParameter(
-                name='duration_max',
-                type=int,
-                location=OpenApiParameter.QUERY,
-                description='Максимальная длительность в днях (от 7 до 365)',
-                required=False,
-            ),
-            OpenApiParameter(
-                name='duration_operator',
-                type=str,
-                location=OpenApiParameter.QUERY,
-                description=(
-                    'Оператор: less (меньше), '
-                    'greater (больше), '
-                    'between (между)'
-                ),
-                required=False,
-                enum=['less', 'greater', 'between'],
-            ),
-            OpenApiParameter(
-                name='search',
-                type=str,
-                location=OpenApiParameter.QUERY,
-                description='Поиск по title и short_desc',
-                required=False,
-            ),
-            OpenApiParameter(
-                name='status',
-                type=str,
-                location=OpenApiParameter.QUERY,
-                description=(
-                    'Статус проекта: draft, published, recruiting_closed. '
-                    'При фильтрации по специализации проекты со статусом '
-                    'recruiting_closed не отображаются.'
-                ),
-                required=False,
-                enum=['draft', 'published', 'recruiting_closed'],
-            ),
-            OpenApiParameter(
-                name='sort_by',
-                type=str,
-                location=OpenApiParameter.QUERY,
-                description=(
-                    'Сортировка: like (по лайкам),'
-                    'published_at (по дате публикации), '
-                    'relevance (по релевантности — только при наличии search).'
-                    'По умолчанию: published_at.'
-                ),
-                required=False,
-                enum=['like', 'relevance', 'published_at'],
-            ),
-            OpenApiParameter(
-                name='my_project',
-                type=bool,
-                location=OpenApiParameter.QUERY,
-                description=(
-                    'Проекты, где пользователь — автор или участник. '
-                    'Если автор: все проекты (кроме - blocked).'
-                    'Если участник: только published или recruiting_closed.'
-                ),
-                required=False,
-            ),
-            OpenApiParameter(
-                name='favourites',
-                type=bool,
-                location=OpenApiParameter.QUERY,
-                description=(
-                    'Проекты, которые пользователь добавил в избранное. '
-                    'Избранные проекты могут быть только со статусами: '
-                    'published, recruiting_closed.'
-                ),
-                required=False,
-            ),
-            OpenApiParameter(
-                name='page',
-                type=int,
-                location=OpenApiParameter.QUERY,
-                description='Номер страницы (по умолчанию 1)',
-                required=False,
-            ),
-            OpenApiParameter(
-                name='limit',
-                type=int,
-                location=OpenApiParameter.QUERY,
-                description='Записей на странице (по умолчанию 20, макс 100)',
-                required=False,
-                examples=[
-                    OpenApiExample('Default', value=20),
-                    OpenApiExample('Max', value=100),
-                ],
-            ),
-            OpenApiParameter(
-                name='load_more',
-                type=bool,
-                location=OpenApiParameter.QUERY,
-                description='Флаг подгрузки (бесконечный скролл)',
-                required=False,
-            ),
-        ],
-        responses={
-            200: ProjectShortSerializer(many=True),
-        },
+        parameters=PROJECT_LIST_PARAMETERS,
     ),
     create=extend_schema(
         tags=['Проекты'],
@@ -243,71 +116,6 @@ logger = logging.getLogger(__name__)
         ),
     ),
     destroy=extend_schema(tags=['Проекты'], summary='Мягкое удаление проекта'),
-    recommendations=extend_schema(
-        tags=['Проекты'],
-        summary='Персональные рекомендации проектов',
-        description=(
-            'Эндпоинт для получения персональных рекомендаций проектов.\n\n'
-            'Доступен только Работнику (worker).\n\n'
-            'Фильтрует проекты в зависимости от навыков пользователя:\n\n'
-            ' - Если пользователь не указал навыки - '
-            'возвращается пустой список.\n\n'
-            ' - Нет проектов с совпадающими навыками - '
-            'возвращаются пустой список.\n\n'
-            ' - Пользователь уже участвует в проекте - '
-            'проект исключаентся из рекомендаций.\n\n'
-            ' - Пользователь является автором проекта - '
-            'проект исключается из рекомендаций.\n\n'
-        ),
-        parameters=[
-            OpenApiParameter(
-                name='page',
-                type=int,
-                location=OpenApiParameter.QUERY,
-                description='Номер страницы (по умолчанию 1)',
-                required=False,
-                examples=[
-                    OpenApiExample('Default', value=1),
-                    OpenApiExample('Custom', value=2),
-                ],
-            ),
-            OpenApiParameter(
-                name='limit',
-                type=int,
-                location=OpenApiParameter.QUERY,
-                description='Записей на странице (по умолчанию 20, макс 100)',
-                required=False,
-                examples=[
-                    OpenApiExample('Default', value=20),
-                    OpenApiExample('Max', value=100),
-                ],
-            ),
-        ],
-        responses={
-            200: OpenApiResponse(
-                response=inline_serializer(
-                    name='ProjectRecommendationsResponse',
-                    fields={
-                        'items': ProjectShortSerializer(many=True),
-                        'total': serializers.IntegerField(),
-                        'has_more': serializers.BooleanField(),
-                    },
-                ),
-                description='Успешный ответ с рекомендациями проектов',
-            ),
-        },
-        examples=[
-            OpenApiExample(
-                'Success',
-                summary='Успешный ответ',
-                value={
-                    'items': [],
-                    'total': 0,
-                    'has_more': False,
-                },
-            ),
-        ],
-    ),
 )
 class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
     """Вьюсет для работы с проектами."""
@@ -563,31 +371,19 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
         tags=['Проекты'],
         summary='Персональные рекомендации проектов',
         description=(
-            'Фильтрация проектов в зависимости от навыков пользователя'
+            'Эндпоинт для получения персональных рекомендаций проектов.\n\n'
+            'Доступен только Работнику (worker).\n\n'
+            'Фильтрует проекты в зависимости от навыков пользователя:\n\n'
+            ' - Если пользователь не указал навыки - '
+            'возвращается пустой список.\n\n'
+            ' - Нет проектов с совпадающими навыками - '
+            'возвращаются пустой список.\n\n'
+            ' - Пользователь уже участвует в проекте - '
+            'проект исключаентся из рекомендаций.\n\n'
+            ' - Пользователь является автором проекта - '
+            'проект исключается из рекомендаций.\n\n'
         ),
-        parameters=[
-            OpenApiParameter(
-                name='page',
-                type=int,
-                location=OpenApiParameter.QUERY,
-                description='Номер страницы (по умолчанию 1)',
-                required=False,
-                examples=[
-                    OpenApiExample('Default', value=1),
-                ],
-            ),
-            OpenApiParameter(
-                name='limit',
-                type=int,
-                location=OpenApiParameter.QUERY,
-                description='Записей на странице (по умолчанию 20, макс 100)',
-                required=False,
-                examples=[
-                    OpenApiExample('Default', value=20),
-                    OpenApiExample('Max', value=100),
-                ],
-            ),
-        ],
+        parameters=PROJECT_RECOMENDATIONS_PARAMETERS,
         responses={
             200: inline_serializer(
                 name='RecommendationsResponse',
@@ -598,17 +394,6 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
                 },
             ),
         },
-        examples=[
-            OpenApiExample(
-                'Success',
-                summary='Успешный ответ',
-                value={
-                    'items': [],
-                    'total': 0,
-                    'has_more': False,
-                },
-            ),
-        ],
     )
     @action(detail=False, methods=['get'], url_path='recommendations')
     def recommendations(

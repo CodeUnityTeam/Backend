@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
 from django.utils import timezone
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework_simplejwt.settings import api_settings
@@ -297,6 +298,7 @@ class ProjectDetailSerializer(ProjectShortSerializer):
             == User.ProjectsRelationChoices.EMPLOYER
         )
 
+    @extend_schema_field(UserBaseSerializer(many=True))
     def get_participants(self, project: Project) -> list:
         """Получает инфу об участниках проекта.
 
@@ -321,6 +323,7 @@ class ProjectDetailSerializer(ProjectShortSerializer):
             many=True,
         ).data
 
+    @extend_schema_field(UserAuthorSerializer(many=False))
     def get_author(self, project: Project) -> dict:
         """Метод для показа информации об авторе проекта.
 
