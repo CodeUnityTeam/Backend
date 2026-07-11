@@ -6,10 +6,8 @@ from django.core.cache import cache
 from django.db import transaction
 from django.db.models import QuerySet
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import (
     OpenApiExample,
-    OpenApiParameter,
     extend_schema,
     extend_schema_view,
 )
@@ -44,6 +42,12 @@ from projects.serializers import (
     UpdateResponseStatusSerializer,
 )
 
+from .resp_project_parametres import (
+    INVITE_RESPONSES_PARAMETER,
+    RESPONSE_LIST_PARAMETERS,
+    RESPONSE_UPDATE_PARAMETER,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -59,51 +63,7 @@ logger = logging.getLogger(__name__)
             ' - Имеется фильтрация по статусу отклика;\n\n'
             ' - Имеется сортировка по убыванию или возрастанию.\n\n'
         ),
-        parameters=[
-            OpenApiParameter(
-                name='status',
-                description='Фильтр по статусу отклика/приглашения',
-                required=False,
-                type=str,
-                enum=['all', 'pending', 'approved', 'rejected', 'withdrawn'],
-                location=OpenApiParameter.QUERY,
-            ),
-            OpenApiParameter(
-                name='project_id',
-                description='Фильтр по конкретному проекту',
-                required=False,
-                type=OpenApiTypes.UUID,
-                location=OpenApiParameter.QUERY,
-            ),
-            OpenApiParameter(
-                name='page',
-                description='Номер страницы',
-                required=False,
-                type=int,
-                location=OpenApiParameter.QUERY,
-            ),
-            OpenApiParameter(
-                name='limit',
-                description='Количество элементов на странице',
-                required=False,
-                type=int,
-                location=OpenApiParameter.QUERY,
-            ),
-            OpenApiParameter(
-                name='sort_order',
-                description=(
-                    'Порядок сортировки по created_at.\n\n'
-                    'Допустимые значения:\n\n'
-                    '  • "asc" — по возрастанию (старые сначала)\n\n'
-                    '  • "desc" — по убыванию (новые сначала).\n\n'
-                    'По умолчанию — "desc".'
-                ),
-                required=False,
-                type=str,
-                enum=['asc', 'desc'],
-                location=OpenApiParameter.QUERY,
-            ),
-        ],
+        parameters=RESPONSE_LIST_PARAMETERS,
     ),
 )
 class ResponseFeedViewSet(ListModelMixin, GenericViewSet):
@@ -246,14 +206,7 @@ class ProjectResponseViewSet(GenericViewSet):
     @extend_schema(
         tags=['Отклики'],
         summary='Пригласить пользователя в проект.',
-        parameters=[
-            OpenApiParameter(
-                name='user_id',
-                type=OpenApiTypes.UUID,
-                location=OpenApiParameter.PATH,
-                description='ID пользователя, которого приглашают в проект',
-            ),
-        ],
+        parameters=INVITE_RESPONSES_PARAMETER,
         request=None,
     )
     @transaction.atomic
@@ -295,14 +248,7 @@ class ProjectResponseViewSet(GenericViewSet):
     update=extend_schema(
         tags=['Отклики'],
         summary='Изменить статус отклика для проекта.',
-        parameters=[
-            OpenApiParameter(
-                name='response_id',
-                type=OpenApiTypes.UUID,
-                location=OpenApiParameter.PATH,
-                description='ID отклика, который хотите изменить',
-            ),
-        ],
+        parameters=RESPONSE_UPDATE_PARAMETER,
         examples=[
             OpenApiExample(
                 name='Отозвать отклик',
