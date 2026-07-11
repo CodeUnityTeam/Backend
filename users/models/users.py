@@ -70,7 +70,7 @@ class User(TimestampMixin, AbstractUser):
         help_text='Роль пользователя в системе.',
     )
     projects_relation = models.CharField(
-        'Роль по отношению к проектам',
+        'Роль в проектах',
         choices=ProjectsRelationChoices.choices,
         default=ProjectsRelationChoices.WORKER,
         help_text='Роль по отношению к проектам (наниматель или исполнитель).',
@@ -87,11 +87,6 @@ class User(TimestampMixin, AbstractUser):
         help_text=USER_EMAIL_HELP,
         blank=True,
         default='',
-    )
-    is_email_confirmed = models.BooleanField(
-        'Email подтверждён',
-        default=False,
-        help_text='Отмечает, подтверждён ли email пользователя.',
     )
     is_password_confirmed = models.BooleanField(
         'Пароль подтверждён',
@@ -193,7 +188,7 @@ class User(TimestampMixin, AbstractUser):
         blank=True,
     )
     rating = models.PositiveIntegerField(
-        'Рейтинг пользователя (сумма лайков)',
+        'Рейтинг пользователя',
         default=0,
         help_text='Сумма лайков ко всем вопросам и ответам пользователя',
     )

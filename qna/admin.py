@@ -1,9 +1,13 @@
-from django.contrib import admin
-from django.core.files.uploadedfile import UploadedFile
-from django.http import HttpRequest
 
-from core.s3_utils import MediaType, S3Service
-from qna.forms import ImageAdminForm
+from django.contrib import admin
+
+from core.admin_mixins import (
+    BaseImageInline,
+    BaseLikeInline,
+    LikeCountMixin,
+    SaveImageFormsetMixin,
+)
+from core.s3_utils import MediaType
 
 from .models import (
     Answer,
@@ -15,139 +19,59 @@ from .models import (
 )
 
 
-class QuestionImageInline(admin.TabularInline):
+class QuestionLikeInline(BaseLikeInline):
+    """Инлайн для управления лайками вопроса."""
+
+    model = QuestionLike
+    verbose_name = 'Лайк вопроса'
+    verbose_name_plural = 'Лайки вопроса'
+
+
+class AnswerLikeInline(BaseLikeInline):
+    """Инлайн для управления лайками ответа."""
+
+    model = AnswerLike
+    verbose_name = 'Лайк ответа'
+    verbose_name_plural = 'Лайки ответа'
+
+
+class QuestionImageInline(BaseImageInline):
     """Изображения, прикреплённые к вопросу."""
 
     model = QuestionImage
-    form = ImageAdminForm
-    extra = 0
-    fields = ('post_image', 'image_url')
-    readonly_fields = ('post_image', 'image_url')
-    can_delete = True
+    media_type = MediaType.QUESTION_IMAGE
 
 
-class AnswerImageInline(admin.TabularInline):
+class AnswerImageInline(BaseImageInline):
     """Изображения, прикреплённые к ответу."""
 
     model = AnswerImage
-    form = ImageAdminForm
-    extra = 0
-    fields = ('post_image', 'image_url')
-    readonly_fields = ('post_image', 'image_url')
-    can_delete = True
+    media_type = MediaType.ANSWER_IMAGE
 
 
 @admin.register(Question)
-class QuestionAdmin(admin.ModelAdmin):
+class QuestionAdmin(SaveImageFormsetMixin, LikeCountMixin, admin.ModelAdmin):
     """Админ‑панель для модели Question."""
 
     list_display = (
         'question_id',
         'user',
         'title',
+        'like_count',
         'created_at',
     )
-    inlines = (QuestionImageInline,)
+    inlines = (QuestionImageInline, QuestionLikeInline)
 
 
 @admin.register(Answer)
-class AnswerAdmin(admin.ModelAdmin):
+class AnswerAdmin(SaveImageFormsetMixin, LikeCountMixin, admin.ModelAdmin):
     """Админ‑панель для модели Answer."""
 
     list_display = (
         'answer_id',
         'question',
         'user',
+        'like_count',
         'created_at',
     )
-    inlines = (AnswerImageInline,)
-
-
-@admin.register(QuestionImage)
-class QuestionImageAdmin(admin.ModelAdmin):
-    """Админ‑панель для модели QuestionImage."""
-
-    form = ImageAdminForm
-    list_display = (
-        'question',
-        'image_id',
-        'image_url',
-        'post_image',
-    )
-    exclude = ('image_url', 'original_name', 'file_size', 'mime_type')
-
-    def save_model(
-        self,
-        request: HttpRequest,
-        obj: QuestionImage,
-        form: any,
-        change: bool,
-    ) -> None:
-        """Загружает файл в MinIO и сохраняет URL в модель."""
-        file_obj: UploadedFile | None = request.FILES.get('file')
-
-        if file_obj:
-            public_url: str = S3Service.upload(
-                MediaType.QUESTION_IMAGE, file_obj,
-            )
-            obj.image_url = public_url
-            obj.original_name = file_obj.name
-            obj.file_size = file_obj.size
-            obj.mime_type = file_obj.content_type or 'image/jpeg'
-
-        super().save_model(request, obj, form, change)
-
-
-@admin.register(AnswerImage)
-class AnswerImageAdmin(admin.ModelAdmin):
-    """Админ‑панель для модели AnswerImage."""
-
-    form = ImageAdminForm
-    list_display = (
-        'answer',
-        'image_id',
-        'image_url',
-        'post_image',
-    )
-    exclude = ('image_url', 'original_name', 'file_size', 'mime_type')
-
-    def save_model(
-        self,
-        request: HttpRequest,
-        obj: AnswerImage,
-        form: any,
-        change: bool,
-    ) -> None:
-        """Загружает файл в MinIO и сохраняет URL в модель."""
-        file_obj: UploadedFile | None = request.FILES.get('file')
-
-        if file_obj:
-            public_url: str = S3Service.upload(
-                MediaType.ANSWER_IMAGE, file_obj,
-            )
-            obj.image_url = public_url
-            obj.original_name = file_obj.name
-            obj.file_size = file_obj.size
-            obj.mime_type = file_obj.content_type or 'image/jpeg'
-
-        super().save_model(request, obj, form, change)
-
-
-@admin.register(QuestionLike)
-class QuestionLikeAdmin(admin.ModelAdmin):
-    """Админ‑панель для модели QuestionLike."""
-
-    list_display = (
-        'question',
-        'user',
-    )
-
-
-@admin.register(AnswerLike)
-class AnswerLikeAdmin(admin.ModelAdmin):
-    """Админ‑панель для модели AnswerLike."""
-
-    list_display = (
-        'answer',
-        'user',
-    )
+    inlines = (AnswerImageInline, AnswerLikeInline)

@@ -3,7 +3,6 @@ import uuid
 from django.contrib.auth import get_user_model
 from django.core.validators import MinLengthValidator
 from django.db import models
-from django.utils.safestring import SafeString, mark_safe
 
 from core.constants.feedback import (
     MAX_CONTENT_FEEDBACK,
@@ -121,24 +120,6 @@ class FeedbackForm(TimestampMixin, models.Model):
     def __str__(self) -> str:
         return f'{self.subject} — {self.user.first_name} ({self.status})'
 
-    def image_preview(self) -> SafeString:
-        """Если у данной формы есть изображения.
-
-        Cобираем ссылки на них в строку и передаём в html-блоке
-         для вывода в админ-панели.
-        """
-        if self.images.exists():
-            links = ''
-            for x in self.images.all():
-                links += (
-                    f'<a href="{x.image_url}" target="_blank" style="display: '
-                    f'inline-block; margin: 15px;"><img src="{x.image_url}" "'
-                    f'"width="150" height="150" style="object-fit: cover;"'
-                    f' /></a>'
-                )
-            return mark_safe(links)
-        return mark_safe('<p>Нет изображения</p>')
-
 
 class FeedbackImage(BaseImageMixin):
     """Изображение, прикреплённое к форме обратной связи.
@@ -168,13 +149,3 @@ class FeedbackImage(BaseImageMixin):
 
     def __str__(self) -> str:
         return f'Изображение: {self.original_name} для {self.feedback.subject}'
-
-    def image_preview(self) -> SafeString:
-        """Отображает превью изображения в админ-панели."""
-        if self.image_id:
-            return mark_safe(
-                f'<a href="{self.image_url}" target="_blank"><img '
-                f'src="{self.image_url}" width="150" height="150" '
-                f'style="object-fit: cover;" /></a>',
-            )
-        return 'Нет изображения'

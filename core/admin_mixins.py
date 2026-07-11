@@ -1,7 +1,15 @@
-from typing import Optional
+from typing import Any, Optional
 
-from django.db.models import Model
+from django.apps import apps
+from django.contrib import admin
+from django.db import models
+from django.db.models import Model, QuerySet
 from django.http import HttpRequest
+
+from core.admin_forms import ImageAdminForm
+from qna.mixins import BaseImageMixin
+
+User = apps.get_model('users', 'User')
 
 
 class RolePermissionsMixin:
@@ -11,8 +19,7 @@ class RolePermissionsMixin:
         """Проверка прав."""
         user = request.user
 
-        role = getattr(user, 'role', None)
-        if user.is_superuser or role == 'admin':
+        if user.is_superuser or user.role == User.RoleChoices.ADMIN:
             return True
 
         if action == 'view':
@@ -62,3 +69,104 @@ class RolePermissionsMixin:
         if request.user.is_staff and request.user.is_active:
             return True
         return False
+
+
+class BaseLikeInline(admin.TabularInline):
+    """Базовый инлайн для управления лайками в админке.
+
+    Позволяет просматривать, добавлять и удалять лайки.
+    Редактирование лайка запрещено (только создание/удаление).
+    """
+
+    extra = 0
+    fields = ('user', 'created_at')
+    readonly_fields = ('created_at',)
+    autocomplete_fields = ('user',)
+    verbose_name = 'Лайк'
+    verbose_name_plural = 'Лайки'
+
+    def has_change_permission(
+        self,
+        request: HttpRequest,
+        obj: Optional[Model] = None,
+    ) -> bool:
+        """Запрет на редактирование лайка."""
+        return False
+
+
+class LikeCountMixin:
+    """Миксин для ModelAdmin, добавляющий кол-во лайков в list_display."""
+
+    def get_queryset(self, request: HttpRequest) -> QuerySet:
+        """Аннотирует каждый объект количеством лайков."""
+        return super().get_queryset(request).annotate(
+            _like_count=models.Count('likes'),
+        )
+
+    @admin.display(description='Кол-во лайков')
+    def like_count(self, obj: Model) -> int:
+        """Возвращает количество лайков для объекта."""
+        return getattr(obj, '_like_count', 0)
+
+
+class BaseImageInline(admin.TabularInline):
+    """Базовый класс для inline-классов для изображений."""
+
+    form = ImageAdminForm
+    extra = 0
+    fields = ('post_image', 'image_url', 'file')
+    readonly_fields = ('post_image', 'image_url')
+    can_delete = True
+
+    def get_formset(
+        self,
+        request: HttpRequest,
+        obj: Optional[Model] = None,
+        **kwargs: Any,
+    ) -> Any:
+        """Подставляет parent_obj и request в форму для корректной загрузки."""
+        formset = super().get_formset(request, obj, **kwargs)
+        media_type = getattr(self, 'media_type', None)
+        formset.form = type(
+            'DynamicCoverForm',
+            (formset.form,),
+            {
+                '__init__': lambda self, *args, **kwargs:
+                    ImageAdminForm.__init__(
+                        self, *args, parent_obj=obj, request=request, **kwargs,
+                    ),
+                '_media_type': media_type,
+            },
+        )
+        return formset
+
+
+class SaveImageFormsetMixin:
+    """Миксин для ModelAdmin, проставляющий uploaded_by в инлайн-изображениях.
+
+    После сохранения родительской формы проходит по всем инлайн-формам
+    и для моделей-наследников BaseImageMixin проставляет uploaded_by
+    из родительского объекта (form.instance.user), если он не был заполнен.
+    """
+
+    def save_formset(
+        self,
+        request: HttpRequest,
+        form: Any,
+        formset: Any,
+        change: bool,
+    ) -> None:
+        """Сохраняет формсет и проставляет uploaded_by для изображений.
+
+        1. Сохраняет новые/изменённые объекты с проставлением uploaded_by.
+        2. Вызывает formset.save() для обработки deleted_objects,
+           чтобы сработали сигналы post_delete (удаление из MinIO).
+        """
+        instances = formset.save(commit=False)
+        for i, instance in enumerate(instances):
+            if (isinstance(instance, BaseImageMixin)
+                and not instance.uploaded_by_id):
+                instance.uploaded_by = form.instance.user
+            instance.save()
+
+        formset.save()
