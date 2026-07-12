@@ -66,5 +66,5 @@ ALLOWED_STATUSED_FOR_LIKE = (PUBLISHED, RECRUITING_CLOSED)
 MAX_SKILLS_COUNT = 10
 # Максимальное количество проектов у пользователя
 MAX_PROJECTS_PER_AUTHOR = 10
-# Максимальное количество проектов у пользователя
+# Максимальное количество проектов у пользователя - где он участник.
 MAX_PROJECTS_PER_MEMBER = 3
