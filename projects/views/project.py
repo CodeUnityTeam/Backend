@@ -99,7 +99,7 @@ logger = logging.getLogger(__name__)
             'Информация о проекте зависит от роли пользователя, '
             'а также от того учавствует он в проекте или нет.\n\n'
             ' - Для обычных пользователей поля full_desc, author.email, '
-            'author.phone, participants отсутствуют в ответе.\n\n'
+            'author.phone отсутствуют в ответе.\n\n'
             ' - Для автора проекта в объекте participants дополнительно '
             'возвращаются контакты участников (email, phone).\n\n'
             ' - Для участника проекта дополнительно возвращаются'
@@ -190,7 +190,7 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
         """Оптимизированный queryset с предзагрузкой связанных данных.
 
         Аннотирует is_liked_by_me, is_participant, participants_count,
-        likes_count через подзапросы на уровне БД — без N+1.
+        likes_count через подзапросы на уровне БД.
 
         Логика видимости в зависимости от action вынесена в selectors:
         - list (без my_project): get_visible_projects_for_list
