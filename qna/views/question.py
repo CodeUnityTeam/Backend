@@ -62,6 +62,13 @@ from qna.services import toggle_like
         ),
         parameters=[
             OpenApiParameter(
+                name='tags',
+                type=str,
+                location=OpenApiParameter.QUERY,
+                description='Список ID навыков через запятую',
+                required=False,
+            ),
+            OpenApiParameter(
                 name='filter',
                 description=(
                     'Варианты:'

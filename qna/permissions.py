@@ -1,9 +1,12 @@
 from typing import Any
 
+from django.contrib.auth import get_user_model
 from rest_framework import permissions
 from rest_framework.request import Request
 
 from qna.models import Answer, Question
+
+User = get_user_model()
 
 
 class CanUpdateDeleteQNA(permissions.BasePermission):
@@ -21,7 +24,7 @@ class CanUpdateDeleteQNA(permissions.BasePermission):
         user = request.user
         return (
             obj.user == user
-            or user.role == 'moderator'
-            or user.role == 'admin'
+            or user.role == User.RoleChoices.MODERATOR
+            or user.role == User.RoleChoices.ADMIN
             or user.is_superuser
         )

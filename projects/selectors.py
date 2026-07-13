@@ -34,6 +34,29 @@ User = get_user_model()
 logger = logging.getLogger(__name__)
 
 
+def _annotate_is_participant(
+    qs: QuerySet[Project],
+    user: User | None,
+) -> QuerySet[Project]:
+    """Аннотирует queryset проектов полем is_participant.
+
+    Добавляет булево поле is_participant через подзапрос Exists.
+    Если user не передан или не аутентифицирован — аннотирует False.
+    """
+    if user is not None and user.is_authenticated:
+        return qs.annotate(
+            is_participant=Exists(
+                ProjectParticipant.objects.filter(
+                    project=OuterRef('project_id'),
+                    user=user,
+                ),
+            ),
+        )
+    return qs.annotate(
+        is_participant=Value(False, output_field=BooleanField()),
+    )
+
+
 def _annotate_is_liked_by_me(
     qs: QuerySet[Project],
     user: User | None,
@@ -121,35 +144,12 @@ def get_optimized_project_queryset(
             queryset=ProjectParticipant.objects.select_related('user'),
         ),
     ).annotate(
-        participants_count=Count('participants'),
-        likes_count=Count('likes'),
+        participants_count=Count('participants', distinct=True),
+        likes_count=Count('likes', distinct=True),
     )
     qs = _annotate_is_liked_by_me(qs, user)
     qs = _annotate_is_favorite_by_me(qs, user)
     return _annotate_is_participant(qs, user)
-
-
-def _annotate_is_participant(
-    qs: QuerySet[Project],
-    user: User | None,
-) -> QuerySet[Project]:
-    """Аннотирует queryset проектов полем is_participant.
-
-    Добавляет булево поле is_participant через подзапрос Exists.
-    Если user не передан или не аутентифицирован — аннотирует False.
-    """
-    if user is not None and user.is_authenticated:
-        return qs.annotate(
-            is_participant=Exists(
-                ProjectParticipant.objects.filter(
-                    project=OuterRef('project_id'),
-                    user=user,
-                ),
-            ),
-        )
-    return qs.annotate(
-        is_participant=Value(False, output_field=BooleanField()),
-    )
 
 
 def get_response_feed_queryset(user: User) -> QuerySet:

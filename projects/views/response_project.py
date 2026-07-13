@@ -6,10 +6,8 @@ from django.core.cache import cache
 from django.db import transaction
 from django.db.models import QuerySet
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import (
     OpenApiExample,
-    OpenApiParameter,
     extend_schema,
     extend_schema_view,
 )
@@ -44,6 +42,12 @@ from projects.serializers import (
     UpdateResponseStatusSerializer,
 )
 
+from .resp_project_parametres import (
+    INVITE_RESPONSES_PARAMETER,
+    RESPONSE_LIST_PARAMETERS,
+    RESPONSE_UPDATE_PARAMETER,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -51,51 +55,15 @@ logger = logging.getLogger(__name__)
     list=extend_schema(
         tags=['Отклики'],
         summary='Лента откликов/приглашений',
-        parameters=[
-            OpenApiParameter(
-                name='status',
-                description='Фильтр по статусу отклика/приглашения',
-                required=False,
-                type=str,
-                enum=['all', 'pending', 'approved', 'rejected', 'withdrawn'],
-                location=OpenApiParameter.QUERY,
-            ),
-            OpenApiParameter(
-                name='project_id',
-                description='Фильтр по конкретному проекту',
-                required=False,
-                type=OpenApiTypes.UUID,
-                location=OpenApiParameter.QUERY,
-            ),
-            OpenApiParameter(
-                name='page',
-                description='Номер страницы',
-                required=False,
-                type=int,
-                location=OpenApiParameter.QUERY,
-            ),
-            OpenApiParameter(
-                name='limit',
-                description='Количество элементов на странице',
-                required=False,
-                type=int,
-                location=OpenApiParameter.QUERY,
-            ),
-            OpenApiParameter(
-                name='sort_order',
-                description=(
-                    'Порядок сортировки по created_at.\n\n'
-                    'Допустимые значения:\n\n'
-                    '  • "asc" — по возрастанию (старые сначала)\n\n'
-                    '  • "desc" — по убыванию (новые сначала).\n\n'
-                    'По умолчанию — "desc".'
-                ),
-                required=False,
-                type=str,
-                enum=['asc', 'desc'],
-                location=OpenApiParameter.QUERY,
-            ),
-        ],
+        description=(
+            'Лента откликов/приглашений с фильтрацией и пагинацией.\n\n'
+            'Эндпоинт доступен только работнику (worker).\n\n'
+            'Пользователь видит свои отклики на проекты.\n\n'
+            ' - Имеется фильтрация по ID-проекта;\n\n'
+            ' - Имеется фильтрация по статусу отклика;\n\n'
+            ' - Имеется сортировка по убыванию или возрастанию.\n\n'
+        ),
+        parameters=RESPONSE_LIST_PARAMETERS,
     ),
 )
 class ResponseFeedViewSet(ListModelMixin, GenericViewSet):
@@ -238,14 +206,7 @@ class ProjectResponseViewSet(GenericViewSet):
     @extend_schema(
         tags=['Отклики'],
         summary='Пригласить пользователя в проект.',
-        parameters=[
-            OpenApiParameter(
-                name='user_id',
-                type=OpenApiTypes.UUID,
-                location=OpenApiParameter.PATH,
-                description='ID пользователя, которого приглашают в проект',
-            ),
-        ],
+        parameters=INVITE_RESPONSES_PARAMETER,
         request=None,
     )
     @transaction.atomic
@@ -287,20 +248,29 @@ class ProjectResponseViewSet(GenericViewSet):
     update=extend_schema(
         tags=['Отклики'],
         summary='Изменить статус отклика для проекта.',
-        parameters=[
-            OpenApiParameter(
-                name='response_id',
-                type=OpenApiTypes.UUID,
-                location=OpenApiParameter.PATH,
-                description='ID отклика, который хотите изменить',
-            ),
-        ],
+        parameters=RESPONSE_UPDATE_PARAMETER,
         examples=[
             OpenApiExample(
                 name='Отозвать отклик',
-                summary='Пример: пользователь отзывает свой отклик',
+                summary='Пользователь отзывает свой отклик',
                 description='Пользователь отменяет свой отклик на проект',
                 value={'status': 'withdrawn'},
+                request_only=True,
+                response_only=False,
+            ),
+            OpenApiExample(
+                name='Принять отклик',
+                summary='Пользователь одобряет отклик',
+                description='Пользователь одобряет отклик',
+                value={'status': 'approved'},
+                request_only=True,
+                response_only=False,
+            ),
+            OpenApiExample(
+                name='Отклонить отклик',
+                summary='Пользователь отклоняет отклик',
+                description='Пользователь отклоняет отклик',
+                value={'status': 'rejected'},
                 request_only=True,
                 response_only=False,
             ),
@@ -322,6 +292,10 @@ class ResponseStatusViewSet(GenericViewSet):
         """
         return get_response_for_status_update_queryset()
 
+    @extend_schema(
+        request=UpdateResponseStatusSerializer,
+        responses={200: UpdateResponseStatusSerializer},
+    )
     @transaction.atomic
     def update(
         self,
@@ -329,7 +303,14 @@ class ResponseStatusViewSet(GenericViewSet):
         *args: Any,
         **kwargs: Any,
     ) -> DRFResponse:
-        """Изменить статус отклика/приглашения."""
+        """Изменить статус отклика/приглашения.
+
+        Учитываем права и статусы отклика.
+        - Наниматель (employer) может отклонить, одобрять отклики только от
+         работников. Может отозвать свой отклик.
+        - Работник (worker) может отклонить, одобрять отклики только от
+         нанимателя. Может отозвать свой отклик.
+        """
         response = self.get_object()
         old_status = response.status_resp
         logger.info(

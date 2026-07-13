@@ -243,14 +243,18 @@ class ProjectFilter(django_filters.FilterSet):
         if not value or value == 'false':
             return queryset
         user = self.request.user
-        if user.is_superuser or user.is_staff or user.role == 'admin':
+        if not user.is_authenticated:
+            return queryset.none()
+        if (user.is_superuser or
+            user.is_staff or
+            user.role == User.RoleChoices.ADMIN
+        ):
             return queryset
-
         if user.projects_relation == User.ProjectsRelationChoices.EMPLOYER:
             # Наниматель — свои проекты (кроме archived, blocked)
             return queryset.filter(
                 author=user,
-            ).exclude(status_project__in=[ARCHIVED, BLOCKED])
+            ).exclude(status_project__in=(ARCHIVED, BLOCKED))
 
         # Работник — проекты, где он участник
         return queryset.filter(
