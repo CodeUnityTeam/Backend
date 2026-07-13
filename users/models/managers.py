@@ -11,10 +11,10 @@ class UserManager(BaseUserManager):
 
     def create_user(
             self,
-            email :str,
-            password :str,
+            email: str,
+            password: str,
             **extra_fields: dict[str, Any],
-        )-> object:
+    ) -> object:
         """Создает и сохраняет обычного пользователя."""
         if not email:
             raise ValueError('Поле emal не может быть пустым!')
@@ -26,10 +26,10 @@ class UserManager(BaseUserManager):
 
     def create_superuser(
             self,
-            email :str,
-            password :str,
+            email: str,
+            password: str,
             **extra_fields: dict[str, Any],
-        )-> object:
+    ) -> object:
         """Создает и сохраняет суперпользователя."""
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
