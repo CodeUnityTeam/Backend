@@ -1,6 +1,7 @@
 from typing import Any, Optional
 
 from allauth.account.models import EmailAddress
+from allauth.socialaccount.models import SocialAccount, SocialApp, SocialToken
 from django import forms
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
@@ -8,7 +9,8 @@ from django.contrib.auth.models import Group
 from django.core.files.uploadedfile import UploadedFile
 from django.db.models import QuerySet
 from django.http import HttpRequest
-from django.utils.safestring import mark_safe
+from django.utils.html import format_html
+from fieldsets_with_inlines import FieldsetsInlineMixin
 
 from core.admin_mixins import RolePermissionsMixin
 from users.forms import UserAdminAddForm, UserImageAdminForm
@@ -26,10 +28,14 @@ from .models import (
 from .services import avatar_delete_handler, avatar_upload_handler
 
 admin.site.unregister(Group)
+admin.site.unregister(SocialAccount)
+admin.site.unregister(SocialApp)
+admin.site.unregister(SocialToken)
+admin.site.unregister(EmailAddress)
 
 
 class EmailConfirmedFilter(admin.SimpleListFilter):
-    """Фильтр по подтверждённым email через allauth EmailAddress."""
+    """Фильтр по подтверждённым email через Allauth EmailAddress."""
 
     title = 'Email подтверждён'
     parameter_name = 'email_confirmed'
@@ -86,12 +92,16 @@ class UserSkillInline(BaseInline):
     model = UserSkill
 
 
+class UserExperienceInline(BaseInline):
+    """Inline для добавления опыта работы юзеру."""
+
+    model = UserExperience
+
+
 class EmailAddressInline(BaseInline):
     """Inline для добавления email адресов юзеру."""
 
     model = EmailAddress
-    can_delete = False
-    readonly_fields = ('email', 'verified', 'primary')
 
 
 class UserWorkFormatInline(BaseInline):
@@ -108,47 +118,12 @@ class SpecializationAdmin(RolePermissionsMixin, admin.ModelAdmin):
     search_fields = ('^name',)
 
 
-@admin.register(UserSpecialization)
-class UserSpecializationAdmin(RolePermissionsMixin, admin.ModelAdmin):
-    """Админ-панель для связи пользователей и специализаций."""
-
-    list_display = ('user', 'specialization')
-    list_filter = ('specialization',)
-    search_fields = ('^user__email', '^specialization__name')
-
-
 @admin.register(Skill)
 class SkillAdmin(RolePermissionsMixin, admin.ModelAdmin):
     """Админ-панель для модели навыков."""
 
     list_display = ('skill_id', 'name')
     search_fields = ('name',)
-
-
-@admin.register(UserSkill)
-class UserSkillAdmin(RolePermissionsMixin, admin.ModelAdmin):
-    """Админ-панель для связи пользователей и навыков."""
-
-    list_display = ('user', 'skill')
-    list_filter = ('skill',)
-    search_fields = ('^user__email', '^skill__name')
-
-
-@admin.register(UserExperience)
-class UserExperienceAdmin(RolePermissionsMixin, admin.ModelAdmin):
-    """Админ-панель для модели опыта работы."""
-
-    list_display = (
-        'exp_id',
-        'user',
-        'company',
-        'position',
-        'responsibilities',
-        'start_date',
-        'end_date',
-        )
-    list_filter = ('position',)
-    search_fields = ('^user__email', 'company')
 
 
 @admin.register(UserLike)
@@ -159,17 +134,8 @@ class UserLikeAdmin(RolePermissionsMixin, admin.ModelAdmin):
     search_fields = ('^employer__email', 'worker__email')
 
 
-@admin.register(UserWorkFormat)
-class UserWorkFormatAdmin(RolePermissionsMixin, admin.ModelAdmin):
-    """Админ-панель для связи пользователей и форматов работы."""
-
-    list_display = ('user', 'workformat')
-    list_filter = ('workformat',)
-    search_fields = ('^user__email',)
-
-
 @admin.register(User)
-class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
+class UserAdmin(RolePermissionsMixin, FieldsetsInlineMixin, DjangoUserAdmin):
     """Админ-панель для модели пользователя с расширенными полями."""
 
     form = UserImageAdminForm
@@ -181,15 +147,30 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
         'last_name',
         'role',
         'projects_relation',
-        'get_avatar',
         'get_email_confirmed',
-        'rating',
+        'get_rating',
     )
-    list_filter = ('role', EmailConfirmedFilter)
-    search_fields = ('email', 'first_name', 'last_name', 'phone_number')
-    ordering = ('email',)
-    fieldsets = (
-        (None, {'fields': ('email', 'password')}),
+    list_filter = (
+        'role',
+        'workformats__name',
+        'projects_relation',
+        EmailConfirmedFilter,
+    )
+    search_fields = (
+        'email',
+        'first_name',
+        'last_name',
+        'phone_number',
+        'experiences__company',
+        'experiences__position',
+        'specializations__name',
+        'skills__name',
+        )
+    ordering = ('-created_at',)
+    list_editable = ('role', 'projects_relation')
+    fieldsets_with_inlines = (
+        (None, {'fields': ('email', 'password', 'new_email')}),
+        EmailAddressInline,
         (
             'Персональные данные',
             {
@@ -204,7 +185,6 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
                 ),
             },
         ),
-        ('Рейтинг пользователя', {'fields': ('rating',)}),
         (
             'Аватар',
             {
@@ -216,6 +196,7 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
                 ),
             },
         ),
+        ('Рейтинг пользователя', {'fields': ('rating',)}),
         (
             'Права и статусы',
             {
@@ -224,13 +205,16 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
                     'is_active',
                     'is_staff',
                     'is_superuser',
-                    'is_password_confirmed',
                     'is_agreed_to_terms',
                 ),
             },
         ),
+        ('Профессиональные данные', {'fields': ('projects_relation',)}),
+        UserSpecializationInline,
+        UserSkillInline,
+        UserExperienceInline,
+        UserWorkFormatInline,
         ('Важные даты', {'fields': ('last_login', 'date_joined')}),
-        ('Смена email', {'fields': ('new_email',)}),
     )
     add_fieldsets = (
         (
@@ -253,6 +237,7 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
         UserSkillInline,
         UserWorkFormatInline,
         EmailAddressInline,
+        UserExperienceInline,
     )
 
     def get_form(
@@ -269,14 +254,19 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
         return super().get_form(request, obj, **kwargs)
 
     @admin.display(description='Аватар')
-    @mark_safe
     def get_avatar(self, obj: User) -> str:
         """Метод для отображения аватара."""
         if obj.avatar_url:
-            return f'<img src="{obj.avatar_url}" style="max-height: 100px;">'
-        return ''
+            return format_html(
+                '<img src="{}" style="max-height: 200px;">',
+                obj.avatar_url,
+            )
+        return 'Не загружено'
 
-    @admin.display(description='Email подтверждён', boolean=True)
+    @admin.display(
+            description=format_html('Email<br>подтверждён'),
+            boolean=True,
+        )
     def get_email_confirmed(self, obj: User) -> bool:
         """Возвращает статус подтверждения основного email пользователя."""
         try:
@@ -284,6 +274,11 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
             return email_address.verified
         except EmailAddress.DoesNotExist:
             return False
+
+    @admin.display(description=format_html('Рейтинг<br>пользователя'))
+    def get_rating(self, obj: User) -> int:
+        """Возвращает рейтинг пользователя."""
+        return obj.rating
 
     def save_model(
         self,

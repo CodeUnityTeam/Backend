@@ -1,6 +1,10 @@
 from django.contrib import admin
 
-from core.admin_mixins import RolePermissionsMixin
+from core.admin_mixins import (
+    BaseLikeInline,
+    LikeCountMixin,
+    RolePermissionsMixin,
+)
 
 from .models import (
     Project,
@@ -11,8 +15,16 @@ from .models import (
 )
 
 
+class ProjectLikeInline(BaseLikeInline):
+    """Инлайн для управления лайками проекта."""
+
+    model = ProjectLike
+    verbose_name = 'Лайк проекта'
+    verbose_name_plural = 'Лайки проекта'
+
+
 @admin.register(Project)
-class ProjectAdmin(RolePermissionsMixin, admin.ModelAdmin):
+class ProjectAdmin(LikeCountMixin, RolePermissionsMixin, admin.ModelAdmin):
     """Админ-панель для модели проекта."""
 
     list_display = (
@@ -22,11 +34,13 @@ class ProjectAdmin(RolePermissionsMixin, admin.ModelAdmin):
         'short_desc',
         'status_project',
         'location',
+        'like_count',
     )
     filter_horizontal = ('skills', 'project_format', 'specializations')
     list_filter = ('author', 'location')
     search_fields = ('title ', 'short_desc')
     ordering = ('start_date',)
+    inlines = (ProjectLikeInline,)
 
 
 @admin.register(ProjectParticipant)

@@ -73,6 +73,7 @@ dependencies = [
     { name = "django" },
     { name = "django-allauth" },
     { name = "django-cors-headers" },
+    { name = "django-fieldsets-with-inlines" },
     { name = "django-filter" },
     { name = "django-redis" },
     { name = "django-storages", extra = ["s3"] },
@@ -106,6 +107,7 @@ requires-dist = [
     { name = "django", specifier = ">=4.2,<5.0" },
     { name = "django-allauth", specifier = ">=65.16.1" },
     { name = "django-cors-headers", specifier = ">=4.0,<5.0" },
+    { name = "django-fieldsets-with-inlines", specifier = ">=0.6" },
     { name = "django-filter", specifier = ">=25.1" },
     { name = "django-redis", specifier = ">=5.4.0,<6.0.0" },
     { name = "django-storages", extras = ["s3"], specifier = ">=1.14.6" },
@@ -419,6 +421,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/21/39/55822b15b7ec87410f34cd16ce04065ff390e50f9e29f31d6d116fc80456/django_cors_headers-4.9.0.tar.gz", hash = "sha256:fe5d7cb59fdc2c8c646ce84b727ac2bca8912a247e6e68e1fb507372178e59e8", size = 21458, upload-time = "2025-09-18T10:40:52.326Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/30/d8/19ed1e47badf477d17fb177c1c19b5a21da0fd2d9f093f23be3fb86c5fab/django_cors_headers-4.9.0-py3-none-any.whl", hash = "sha256:15c7f20727f90044dcee2216a9fd7303741a864865f0c3657e28b7056f61b449", size = 12809, upload-time = "2025-09-18T10:40:50.843Z" },
+]
+
+[[package]]
+name = "django-fieldsets-with-inlines"
+version = "0.6"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/1c/71/d4c5e0ac11afd144e4842598c706901dc5d66a62ab37f8a9c87b6b410c40/django_fieldsets_with_inlines-0.6.tar.gz", hash = "sha256:dec73d0d91f238906c93a7b99c545167a8ab0cc98f8af202d01df0cfc32a71cb", size = 4297, upload-time = "2020-07-03T09:33:08.732Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/0c/75/c9082217ee0fc6e7cad6a6393ef25ccea25bfc48a0e157e936543771e027/django_fieldsets_with_inlines-0.6-py3-none-any.whl", hash = "sha256:26eb222ef96a009c6a9ef301c8c906d8314c557a9814fc8bdaaa0ac22728580d", size = 5374, upload-time = "2020-07-03T09:33:06.164Z" },
 ]
 
 [[package]]
