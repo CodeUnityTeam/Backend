@@ -10,3 +10,11 @@ class SpecializationSerializer(serializers.ModelSerializer):
         model = Specialization
         fields = ('spec_id', 'name')
         read_only_fields = ('name',)
+
+
+class SpecializationIdSerializer(serializers.Serializer):
+    """Сериализатор для передачи spec_id в теле запроса."""
+
+    spec_id = serializers.UUIDField(
+        help_text='UUID специализации',
+    )

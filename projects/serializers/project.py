@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
 from django.utils import timezone
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework_simplejwt.settings import api_settings
@@ -32,8 +33,11 @@ from projects.validators import (
 from users.models.skills import Skill
 from users.models.specializations import Specialization
 
-from .skill import SkillSerializer
-from .specialization import SpecializationSerializer
+from .skill import SkillIdSerializer, SkillSerializer
+from .specialization import (
+    SpecializationIdSerializer,
+    SpecializationSerializer,
+)
 from .user import (
     UserAuthorSerializer,
     UserAuthorShortSerializer,
@@ -44,22 +48,6 @@ from .work_format import WorkFormatSerializer
 User = get_user_model()
 
 logger = logging.getLogger('app.' + __name__)
-
-
-class SkillIdSerializer(serializers.Serializer):
-    """Сериализатор для передачи skill_id в теле запроса."""
-
-    skill_id = serializers.UUIDField(
-        help_text='UUID навыка',
-    )
-
-
-class SpecializationIdSerializer(serializers.Serializer):
-    """Сериализатор для передачи spec_id в теле запроса."""
-
-    spec_id = serializers.UUIDField(
-        help_text='UUID специализации',
-    )
 
 
 class ProjectCreateSerializer(serializers.ModelSerializer):
@@ -310,6 +298,7 @@ class ProjectDetailSerializer(ProjectShortSerializer):
             == User.ProjectsRelationChoices.EMPLOYER
         )
 
+    @extend_schema_field(UserBaseSerializer(many=True))
     def get_participants(self, project: Project) -> list:
         """Получает инфу об участниках проекта.
 
@@ -326,14 +315,13 @@ class ProjectDetailSerializer(ProjectShortSerializer):
             UserAuthorSerializer if is_author_employer else UserBaseSerializer
         )
         participants_qs = project.participants.all()
-        if is_author_employer:
-            participants_qs = participants_qs.exclude(user=project.author)
         users = [p.user for p in participants_qs]
         return serializer_class(
             users,
             many=True,
         ).data
 
+    @extend_schema_field(UserAuthorSerializer(many=False))
     def get_author(self, project: Project) -> dict:
         """Метод для показа информации об авторе проекта.
 

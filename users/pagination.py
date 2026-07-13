@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Dict
 
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
@@ -43,3 +43,22 @@ class ProfileListPagination(PageNumberPagination):
             'next_page': next_page,
             'remaining': remaining,
         })
+
+    def get_paginated_response_schema(
+        self,
+        schema: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        """Схема ответа для Swagger."""
+        return {
+            'type': 'object',
+            'properties': {
+                'items': schema,
+                'total': {'type': 'integer'},
+                'has_more': {'type': 'boolean'},
+                'next_page': {
+                    'type': 'integer',
+                    'nullable': True,
+                },
+                'remaining': {'type': 'integer'},
+            },
+        }
