@@ -1,4 +1,5 @@
 import hashlib
+import logging
 import uuid
 from typing import Any, Type
 
@@ -66,8 +67,10 @@ from users.services import (
 
 UserModel = get_user_model()
 
+logger = logging.getLogger(__name__)
 
 # ============================== MeProfile ===================================
+
 
 @extend_schema_view(
     get=extend_schema(
@@ -135,19 +138,42 @@ class MeProfileView(RetrieveUpdateDestroyAPIView):
     def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Обновить профиль и вернуть полные данные профиля."""
         partial = kwargs.pop('partial', False)
+        logger.info(
+            'Запрос на редактирование профиля пользователя: '
+            'user_id=%s, fields=%s',
+            request.user.user_id,
+            list(request.data.keys()),
+        )
         instance = self.get_object()
 
         serializer = self.get_serializer(
-            instance, data=request.data, partial=partial,
+            instance,
+            data=request.data,
+            partial=partial,
         )
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
 
         if getattr(instance, '_prefetched_objects_cache', None):
+            logger.debug(
+                'Обнаружен кэш профиля пользователя, произведена очистка: '
+                'user_id=%s',
+                instance.pk,
+            )
             instance._prefetched_objects_cache = {}
-
+        else:
+            logger.debug(
+                'Кэш профиля у пользователя отсутствует, очистка не требуется:'
+                ' user_id=%s',
+                instance.pk,
+            )
+        logger.info(
+            'Профиль пользователя успешно обновлён: user_id=%s',
+            request.user.user_id,
+        )
         response_serializer = MeProfileRetrieveSerializer(
-            instance, context={'request': request},
+            instance,
+            context={'request': request},
         )
         return Response(response_serializer.data, status=status.HTTP_200_OK)
 
@@ -162,7 +188,15 @@ class MeProfileView(RetrieveUpdateDestroyAPIView):
         **kwargs: Any,
     ) -> Response:
         """Мягко удалить аккаунт и вернуть статус HTTP 200."""
+        logger.info(
+            'Запрос на архивирование пользователя: user_id=%s',
+            request.user.user_id,
+        )
         self.destroy(request, *args, **kwargs)
+        logger.info(
+            'Пользователь успешно переведён в архив: user_id=%s',
+            request.user.user_id,
+        )
         return Response(
             {'detail': 'Аккаунт успешно удален.'},
             status=status.HTTP_200_OK,
@@ -170,6 +204,7 @@ class MeProfileView(RetrieveUpdateDestroyAPIView):
 
 
 # ================================== Avatar ===================================
+
 
 @extend_schema_view(
     post=extend_schema(
@@ -226,6 +261,10 @@ class UserAvatarAPIView(APIView):
         **kwargs: Any,  # noqa: ARG002
     ) -> Response:
         """Загрузить новый аватар и удалить старый при наличии."""
+        logger.info(
+            'Запрос на загрузку аватара: user_id=%s',
+            request.user.user_id,
+        )
         serializer: AvatarUploadSerializer = AvatarUploadSerializer(
             data=request.data,
         )
@@ -236,8 +275,15 @@ class UserAvatarAPIView(APIView):
 
         public_url: str = avatar_upload_handler(user, file_obj)
 
+        logger.info(
+            'Аватар успешно загружен: user_id=%s, avatar_url=%s',
+            request.user.user_id,
+            public_url,
+        )
+
         return Response(
-            {'avatar_url': public_url}, status=status.HTTP_201_CREATED,
+            {'avatar_url': public_url},
+            status=status.HTTP_201_CREATED,
         )
 
     def delete(
@@ -250,17 +296,32 @@ class UserAvatarAPIView(APIView):
         user: User = request.user  # type: ignore[valid-type]
 
         if not user.avatar_url:
+            logger.warning(
+                'Попытка удалить аватар при его отсутствии: user_id=%s',
+                request.user.user_id,
+            )
             return Response(
                 {'detail': 'Аватар отсутствует.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        logger.info(
+            'Запрос на удаление аватара: user_id=%s, avatar_url=%s',
+            request.user.user_id,
+            user.avatar_url,
+        )
         avatar_delete_handler(user)
+
+        logger.info(
+            'Аватар успешно удалён: user_id=%s',
+            request.user.user_id,
+        )
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 # ================================ Experience =================================
+
 
 @extend_schema_view(
     create=extend_schema(
@@ -300,6 +361,7 @@ class MeExperienceViewSet(ModelViewSet):
 
 # ============================== UserProfile ==================================
 
+
 @extend_schema_view(
     get=extend_schema(
         tags=['profile'],
@@ -316,6 +378,21 @@ class UserProfileView(CacheRetrieveMixin, RetrieveAPIView):
     permission_classes = [IsAuthenticated]
     retrieve_cache_timeout = USER_PROFILE_CACHE_TIMEOUT
     retrieve_cache_key_prefix = 'users'
+
+    def retrieve(
+        self,
+        request: Request,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Response:
+        """Просмотр профиля пользователя с логированием."""
+        logger.info(
+            'Запрос на просмотр профиля пользователя: '
+            'viewer_id=%s, target_user_id=%s',
+            request.user.user_id,
+            kwargs.get(self.lookup_field, ''),
+        )
+        return super().retrieve(request, *args, **kwargs)
 
 
 # ================================ UserLikes ==================================
@@ -380,6 +457,19 @@ class ProfileLikeAPIView(APIView):
         employer = request.user
         worker = get_object_or_404(User, user_id=worker_id)
 
+        is_liked_before = UserLike.objects.filter(
+            employer=employer,
+            worker=worker,
+        ).exists()
+
+        logger.info(
+            'Запрос на переключение лайка: автор_лайка_(employer)=%s, '
+            'получатель_лайка_(worker)=%s, изменяемый_статус_лайка=%s',
+            employer,
+            worker,
+            is_liked_before,
+        )
+
         # 1. Попытка удалить существующий лайк (Toggle-выключение)
         deleted_count, _ = UserLike.objects.filter(
             employer=employer,
@@ -387,22 +477,43 @@ class ProfileLikeAPIView(APIView):
         ).delete()
 
         if deleted_count > 0:
+            is_liked = False
+
+            logger.info(
+                'Статус лайка изменен: автор_лайка_(employer)=%s, '
+                'получатель_лайка_(worker)=%s, is_liked=%s',
+                employer,
+                worker,
+                is_liked,
+            )
+
             return Response(
-                {'is_liked': False},
+                {'is_liked': is_liked},
                 status=status.HTTP_200_OK,
             )
 
         # 2. Валидация бизнес-логики через сериализатор
         serializer = UserLikeSerializer(
-            data={'worker': worker.user_id}, context={'request': request},
+            data={'worker': worker.user_id},
+            context={'request': request},
         )
         serializer.is_valid(raise_exception=True)
 
         # 3. Создание лайка (Toggle-включение)
         serializer.save(employer=employer)
 
+        is_liked = True
+
+        logger.info(
+            'Статус лайка изменен: автор_лайка_(employer)=%s, '
+            'получатель_лайка_(worker)=%s, is_liked=%s',
+            employer,
+            worker,
+            is_liked,
+        )
+
         return Response(
-            {'is_liked': True},
+            {'is_liked': is_liked},
             status=status.HTTP_201_CREATED,
         )
 
@@ -535,7 +646,10 @@ class UserProfileListView(ListAPIView):
         )
 
     def list(
-        self, request: Request, *args: Any, **kwargs: Any,
+        self,
+        request: Request,
+        *args: Any,
+        **kwargs: Any,
     ) -> Response:
         """Кэширует список профилей.
 
@@ -551,7 +665,22 @@ class UserProfileListView(ListAPIView):
         cache_key = f'users:list:{user.pk}:{params_str}'
 
         cached_response = cache.get(cache_key)
+
+        logger.info(
+            'Запрос списка профилей: user_id=%s, params=%s, cache_key=%s',
+            request.user.pk,
+            query_params,
+            cache_key,
+        )
+
         if cached_response is not None:
+            logger.info(
+                'Получен список профилей из кеша: user_id=%s, params=%s, '
+                'cache_key=%s',
+                request.user.pk,
+                query_params,
+                cache_key,
+            )
             return Response(cached_response)
 
         response = super().list(request, *args, **kwargs)
@@ -562,5 +691,8 @@ class UserProfileListView(ListAPIView):
                 response.data,
                 timeout=USER_PROFILE_LIST_CACHE_TIMEOUT,
             )
-
+            logger.info(
+                'Получен список профилей из БД: user_id=%s.',
+                user.pk,
+            )
         return response
