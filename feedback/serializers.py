@@ -1,3 +1,4 @@
+import logging
 import uuid
 from typing import Any, List
 
@@ -14,6 +15,8 @@ from feedback.models import FeedbackForm, FeedbackImage, Review
 from feedback.selectors import create_review
 from feedback.services import feedback_image_upload_handler
 from projects.serializers.specialization import SpecializationSerializer
+
+logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
@@ -104,6 +107,12 @@ class FeedbackCreateSerializer(serializers.ModelSerializer):
         """Создание обратной связи."""
         attachments = validated_data.pop('attachments', [])
         user = self.context['request'].user
+        logger.info(
+            'Создание обратной связи: user_id=%s, subject=%s, files=%d',
+            user.user_id,
+            validated_data.get('subject'),
+            len(attachments),
+        )
         with transaction.atomic():
             feedback = FeedbackForm.objects.create(user=user, **validated_data)
             for image in attachments:
@@ -116,6 +125,13 @@ class FeedbackCreateSerializer(serializers.ModelSerializer):
                     file_size=image.size,
                     mime_type=image.content_type.split('/')[1],
                 )
+        logger.info(
+            'Обратная связь успешно создана: user_id=%s, feedback_id=%s, '
+            'files=%d',
+            user.user_id,
+            feedback.feedback_id,
+            len(attachments),
+        )
         return feedback
 
     def validate_attachments(self, value: List) -> List[Any]:
