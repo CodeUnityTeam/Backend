@@ -1,3 +1,5 @@
+import logging
+
 from django.core.files.uploadedfile import UploadedFile
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
@@ -11,6 +13,8 @@ from qna.serializers.file import (
     FileUploadResponseSerializer,
     FileUploadSerializer,
 )
+
+logger = logging.getLogger(__name__)
 
 
 @extend_schema(
@@ -46,7 +50,18 @@ class FileUploadView(APIView):
         serializer.is_valid(raise_exception=True)
 
         file: UploadedFile = serializer.validated_data['file']
+        logger.info(
+            'Загрузка файла: name=%s, size=%d, mime=%s',
+            file.name,
+            file.size,
+            file.content_type,
+        )
         public_url: str = S3Service.upload(MediaType.UPLOAD_IMAGE, file)
+        logger.info(
+            'Файл успешно загружен: name=%s, url=%s',
+            file.name,
+            public_url,
+        )
 
         return Response(
             {
