@@ -161,7 +161,7 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
         )
         cached_response = cache.get(cache_key)
         logger.info(
-            'Запрос списка проектов: ',
+            'Запрос списка проектов: '
             'user_id=%s, role=%s, params=%s, cache_key=%s',
             user.pk if user.is_authenticated else 'anonymous',
             user.projects_relation if user.is_authenticated else 'anonymous',
