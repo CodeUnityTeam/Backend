@@ -55,7 +55,8 @@ services:
       - logs:/app/logs/
 
   nginx:
-    image: maxwell884/code-unity-backend-nginx:dev
+    build: ./nginx
+    image: hihix/backend-nginx:latest
     container_name: backend_nginx
     restart: unless-stopped
     ports:
