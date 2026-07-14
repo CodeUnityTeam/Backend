@@ -500,14 +500,6 @@ config = {
         },
     },
     'loggers': {
-        # логгер для приложений:
-        # core, users, projects, qna, feedback, help
-        'app': {
-            'level': 'DEBUG',
-            'handlers': ['console', 'file'],
-            'propagate': False,
-        },
-        # Логгеры приложений наследуются от 'app'
         'core': {
             'level': 'DEBUG',
             'handlers': ['console', 'file'],
