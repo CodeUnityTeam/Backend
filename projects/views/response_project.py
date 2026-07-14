@@ -1,14 +1,13 @@
 import hashlib
+import logging
 from typing import Any, Type
 
 from django.core.cache import cache
 from django.db import transaction
 from django.db.models import QuerySet
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import (
     OpenApiExample,
-    OpenApiParameter,
     extend_schema,
     extend_schema_view,
 )
@@ -43,56 +42,28 @@ from projects.serializers import (
     UpdateResponseStatusSerializer,
 )
 
+from .resp_project_parametres import (
+    INVITE_RESPONSES_PARAMETER,
+    RESPONSE_LIST_PARAMETERS,
+    RESPONSE_UPDATE_PARAMETER,
+)
+
+logger = logging.getLogger(__name__)
+
 
 @extend_schema_view(
     list=extend_schema(
         tags=['Отклики'],
         summary='Лента откликов/приглашений',
-        parameters=[
-            OpenApiParameter(
-                name='status',
-                description='Фильтр по статусу отклика/приглашения',
-                required=False,
-                type=str,
-                enum=['all', 'pending', 'approved', 'rejected', 'withdrawn'],
-                location=OpenApiParameter.QUERY,
-            ),
-            OpenApiParameter(
-                name='project_id',
-                description='Фильтр по конкретному проекту',
-                required=False,
-                type=OpenApiTypes.UUID,
-                location=OpenApiParameter.QUERY,
-            ),
-            OpenApiParameter(
-                name='page',
-                description='Номер страницы',
-                required=False,
-                type=int,
-                location=OpenApiParameter.QUERY,
-            ),
-            OpenApiParameter(
-                name='limit',
-                description='Количество элементов на странице',
-                required=False,
-                type=int,
-                location=OpenApiParameter.QUERY,
-            ),
-            OpenApiParameter(
-                name='sort_order',
-                description=(
-                    'Порядок сортировки по created_at.\n\n'
-                    'Допустимые значения:\n\n'
-                    '  • "asc" — по возрастанию (старые сначала)\n\n'
-                    '  • "desc" — по убыванию (новые сначала).\n\n'
-                    'По умолчанию — "desc".'
-                ),
-                required=False,
-                type=str,
-                enum=['asc', 'desc'],
-                location=OpenApiParameter.QUERY,
-            ),
-        ],
+        description=(
+            'Лента откликов/приглашений с фильтрацией и пагинацией.\n\n'
+            'Эндпоинт доступен только работнику (worker).\n\n'
+            'Пользователь видит свои отклики на проекты.\n\n'
+            ' - Имеется фильтрация по ID-проекта;\n\n'
+            ' - Имеется фильтрация по статусу отклика;\n\n'
+            ' - Имеется сортировка по убыванию или возрастанию.\n\n'
+        ),
+        parameters=RESPONSE_LIST_PARAMETERS,
     ),
 )
 class ResponseFeedViewSet(ListModelMixin, GenericViewSet):
@@ -132,6 +103,12 @@ class ResponseFeedViewSet(ListModelMixin, GenericViewSet):
         )
         cached_response = cache.get(cache_key)
         if cached_response is not None:
+            logger.debug(
+                'Кэшированный ответ для ленты откликов/приглашений: '
+                'user_id=%s, cache_key=%s.',
+                request.user.pk,
+                cache_key,
+            )
             return DRFResponse(cached_response)
         response = super().list(request, *args, **kwargs)
         if response.status_code == status.HTTP_200_OK:
@@ -139,6 +116,10 @@ class ResponseFeedViewSet(ListModelMixin, GenericViewSet):
                 cache_key,
                 response.data,
                 timeout=RESPONSE_FEED_CACHE_TIMEOUT,
+            )
+            logger.debug(
+                'Лента откликов/приглашений выдана из БД: user_id=%s.',
+                request.user.pk,
             )
         return response
 
@@ -199,25 +180,33 @@ class ProjectResponseViewSet(GenericViewSet):
         **kwargs: Any,
     ) -> DRFResponse:
         """Откликнуться на проект (только для worker)."""
+        logger.info(
+            'Получен запрос на создание отклика: user_id=%s, project_id=%s.',
+            request.user.pk,
+            kwargs['project_id'],
+        )
         serializer = self.get_serializer(data={})
         serializer.is_valid(raise_exception=True)
         response = serializer.save()
+        logger.info(
+            'Отклик на проект успешно создан: '
+            'user_id=%s, project_id=%s, response_id=%s',
+            request.user.pk,
+            kwargs['project_id'],
+            response.pk,
+        )
         return DRFResponse(
-            ResponseResponseCreateProjectSerializer(response).data,
-            status=status.HTTP_201_CREATED,
+            ResponseResponseCreateProjectSerializer(
+                response,
+                context={'request': request},
+            ).data,
+            status=status.HTTP_200_OK,
         )
 
     @extend_schema(
         tags=['Отклики'],
         summary='Пригласить пользователя в проект.',
-        parameters=[
-            OpenApiParameter(
-                name='user_id',
-                type=OpenApiTypes.UUID,
-                location=OpenApiParameter.PATH,
-                description='ID пользователя, которого приглашают в проект',
-            ),
-        ],
+        parameters=INVITE_RESPONSES_PARAMETER,
         request=None,
     )
     @transaction.atomic
@@ -228,12 +217,28 @@ class ProjectResponseViewSet(GenericViewSet):
         user_id: str,
     ) -> DRFResponse:
         """Пригласить пользователя в проект (только для employer-автора)."""
+        logger.info(
+            'Получен запрос на приглашение пользователя в проект: '
+            'employer=%s, invited=%s, project_id=%s.',
+            request.user.pk,
+            user_id,
+            project_id,
+        )
         serializer = self.get_serializer(data={})
         serializer.is_valid(raise_exception=True)
         response_instance = serializer.save()
+        logger.info(
+            'Приглашение на проект успешно отправлено: '
+            'employer=%s, invited=%s, project_id=%s, response_id=%s',
+            request.user.pk,
+            user_id,
+            project_id,
+            response_instance.pk,
+        )
         return DRFResponse(
             ResponseResponseCreateProjectSerializer(
                 response_instance,
+                context={'request': request},
             ).data,
             status=status.HTTP_200_OK,
         )
@@ -243,20 +248,29 @@ class ProjectResponseViewSet(GenericViewSet):
     update=extend_schema(
         tags=['Отклики'],
         summary='Изменить статус отклика для проекта.',
-        parameters=[
-            OpenApiParameter(
-                name='response_id',
-                type=OpenApiTypes.UUID,
-                location=OpenApiParameter.PATH,
-                description='ID отклика, который хотите изменить',
-            ),
-        ],
+        parameters=RESPONSE_UPDATE_PARAMETER,
         examples=[
             OpenApiExample(
                 name='Отозвать отклик',
-                summary='Пример: пользователь отзывает свой отклик',
+                summary='Пользователь отзывает свой отклик',
                 description='Пользователь отменяет свой отклик на проект',
                 value={'status': 'withdrawn'},
+                request_only=True,
+                response_only=False,
+            ),
+            OpenApiExample(
+                name='Принять отклик',
+                summary='Пользователь одобряет отклик',
+                description='Пользователь одобряет отклик',
+                value={'status': 'approved'},
+                request_only=True,
+                response_only=False,
+            ),
+            OpenApiExample(
+                name='Отклонить отклик',
+                summary='Пользователь отклоняет отклик',
+                description='Пользователь отклоняет отклик',
+                value={'status': 'rejected'},
                 request_only=True,
                 response_only=False,
             ),
@@ -278,6 +292,10 @@ class ResponseStatusViewSet(GenericViewSet):
         """
         return get_response_for_status_update_queryset()
 
+    @extend_schema(
+        request=UpdateResponseStatusSerializer,
+        responses={200: UpdateResponseStatusSerializer},
+    )
     @transaction.atomic
     def update(
         self,
@@ -285,15 +303,44 @@ class ResponseStatusViewSet(GenericViewSet):
         *args: Any,
         **kwargs: Any,
     ) -> DRFResponse:
-        """Изменить статус отклика/приглашения."""
+        """Изменить статус отклика/приглашения.
+
+        Учитываем права и статусы отклика.
+        - Наниматель (employer) может отклонить, одобрять отклики только от
+         работников. Может отозвать свой отклик.
+        - Работник (worker) может отклонить, одобрять отклики только от
+         нанимателя. Может отозвать свой отклик.
+        """
         response = self.get_object()
+        old_status = response.status_resp
+        logger.info(
+            'Получен запрос на изменение статуса отклика/приглашения: '
+            'user_id=%s, projects_relation=%s, project_id=%s, '
+            'response_id=%s.',
+            request.user.pk,
+            request.user.projects_relation,
+            response.project.pk,
+            response.pk,
+        )
         serializer = UpdateResponseStatusSerializer(
             instance=response,
             data=request.data,
             context={'request': request},
+            partial=True,
         )
         serializer.is_valid(raise_exception=True)
         update_status = serializer.save()
+        logger.info(
+            'Статус отклика/приглашения успешно изменен: '
+            'user_id=%s, projects_relation=%s, project_id=%s, '
+            'response_id=%s, old_status=%s, new_status=%s.',
+            request.user.pk,
+            request.user.projects_relation,
+            response.project.pk,
+            response.pk,
+            old_status,
+            update_status.status_resp,
+        )
         return DRFResponse(
             self.get_serializer(update_status).data,
             status=status.HTTP_200_OK,

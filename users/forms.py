@@ -1,11 +1,16 @@
 from django import forms
 
-from qna.forms import ImageAdminForm
 from users.models import User
 
 
-class UserImageAdminForm(ImageAdminForm):
+class UserImageAdminForm(forms.ModelForm):
     """Форма для загрузки и удаления изображения в модель юзера."""
+
+    file = forms.ImageField(
+        required=False,
+        label='Загрузить файл',
+        help_text='Выберите изображение',
+    )
 
     clear_image = forms.BooleanField(
         required=False,
