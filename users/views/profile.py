@@ -667,18 +667,14 @@ class UserProfileListView(ListAPIView):
         cached_response = cache.get(cache_key)
 
         logger.info(
-            'Запрос списка профилей: user_id=%s, params=%s, cache_key=%s',
+            'Запрос списка профилей: user_id=%s, cache_key=%s',
             request.user.pk,
-            query_params,
             cache_key,
         )
 
         if cached_response is not None:
             logger.info(
-                'Получен список профилей из кеша: user_id=%s, params=%s, '
-                'cache_key=%s',
-                request.user.pk,
-                query_params,
+                'Передача списка профилей из кеша: cache_key=%s',
                 cache_key,
             )
             return Response(cached_response)
@@ -692,7 +688,8 @@ class UserProfileListView(ListAPIView):
                 timeout=USER_PROFILE_LIST_CACHE_TIMEOUT,
             )
             logger.info(
-                'Получен список профилей из БД: user_id=%s.',
-                user.pk,
+                'Кэширование списка профилей, передача пользователю: '
+                'cache_key=%s',
+                cache_key,
             )
         return response
