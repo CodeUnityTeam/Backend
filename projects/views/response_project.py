@@ -118,8 +118,9 @@ class ResponseFeedViewSet(ListModelMixin, GenericViewSet):
                 timeout=RESPONSE_FEED_CACHE_TIMEOUT,
             )
             logger.debug(
-                'Лента откликов/приглашений выдана из БД: user_id=%s.',
-                request.user.pk,
+                'Кэширование ленты откликов/приглашений, передача '
+                'пользователю: user_id=%s.',
+                request.user.user_id,
             )
         return response
 
