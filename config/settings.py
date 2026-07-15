@@ -53,6 +53,7 @@ INSTALLED_APPS = (
     'dj_rest_auth.registration',
     'rest_framework_simplejwt',
     'corsheaders',
+    'fieldsets_with_inlines',
     # Project apps
     'core.apps.CoreConfig',
     'users.apps.UsersConfig',

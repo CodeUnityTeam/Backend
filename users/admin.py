@@ -10,6 +10,7 @@ from django.core.files.uploadedfile import UploadedFile
 from django.db.models import QuerySet
 from django.http import HttpRequest
 from django.utils.html import format_html
+from fieldsets_with_inlines import FieldsetsInlineMixin
 
 from core.admin_mixins import RolePermissionsMixin
 from users.forms import UserAdminAddForm, UserImageAdminForm
@@ -134,7 +135,7 @@ class UserLikeAdmin(RolePermissionsMixin, admin.ModelAdmin):
 
 
 @admin.register(User)
-class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
+class UserAdmin(RolePermissionsMixin, FieldsetsInlineMixin, DjangoUserAdmin):
     """Админ-панель для модели пользователя с расширенными полями."""
 
     form = UserImageAdminForm
@@ -167,8 +168,9 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
         )
     ordering = ('-created_at',)
     list_editable = ('role', 'projects_relation')
-    fieldsets = (
+    fieldsets_with_inlines = (
         (None, {'fields': ('email', 'password', 'new_email')}),
+        EmailAddressInline,
         (
             'Персональные данные',
             {
@@ -207,6 +209,11 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
                 ),
             },
         ),
+        ('Профессиональные данные', {'fields': ('projects_relation',)}),
+        UserSpecializationInline,
+        UserSkillInline,
+        UserExperienceInline,
+        UserWorkFormatInline,
         ('Важные даты', {'fields': ('last_login', 'date_joined')}),
         ('Профессиональные данные', {'fields': ('projects_relation',)}),
     )
@@ -230,8 +237,8 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
         UserSpecializationInline,
         UserSkillInline,
         UserWorkFormatInline,
-        UserExperienceInline,
         EmailAddressInline,
+        UserExperienceInline,
     )
 
     def get_form(
