@@ -75,17 +75,3 @@ class WorkFormatAdmin(RolePermissionsMixin, admin.ModelAdmin):
 
     list_display = ('format_id', 'name')
     search_fields = ('name',)
-
-
-@admin.register(ProjectLike)
-class ProjectLikeAdmin(admin.ModelAdmin):
-    """Админ‑панель для модели лайков."""
-
-    list_display = (
-        'project',
-        'user',
-    )
-    search_fields =(
-        'project__title',
-        '^user__email',
-    )
