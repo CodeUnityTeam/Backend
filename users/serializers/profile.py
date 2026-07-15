@@ -112,6 +112,7 @@ class MeProfileUpdateSerializer(UserDetailsSerializer):
             'skills',
             'specializations',
             'workformats',
+            'last_login',
         )
 
     def update(self, instance: Any, validated_data: dict) -> Any:
@@ -219,13 +220,15 @@ class DetailUserProfileSerializer(PublicUserProfileSerializer):
         many=True, read_only=True,
     )
 
-    class Meta(PublicUserProfileSerializer.Meta):
+    class Meta:
+        model = UserModel
         fields = PublicUserProfileSerializer.Meta.fields + (
             'country',
             'role',
             'soft_skills',
             'about_me',
             'experiences',
+            'last_login',
         )
         read_only_fields = fields
 
