@@ -54,7 +54,7 @@ BASE_PROJECT_RESPONSE = {
         'avatar': 'https://...',
         'last_activity_at': '2026-07-11T17:53:46.079975+03:00',
     },
-    'telegram_contact': '@clsvood'
+    'telegram_contact': '@clsvood',
 }
 
 EXAMPLE_DETAIL_RESPONSE_PROJECT = [
