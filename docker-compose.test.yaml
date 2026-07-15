@@ -77,7 +77,7 @@ services:
       - ./fixtures:/opt/user123/fixtures
 
   frontend:
-    image: maxwell884/code-unity-frontend:test
+    image: maxwell884/code-unity-frontend:latest
     container_name: test_frontend
     restart: unless-stopped
     depends_on:
