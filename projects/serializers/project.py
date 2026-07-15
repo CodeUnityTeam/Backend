@@ -85,6 +85,7 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
             'skills',
             'specializations',
             'project_format',
+            'telegram_contact',
         )
         extra_kwargs = {
             'title': {
@@ -135,6 +136,12 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
                         'Неверный формат даты окончания. Ожидается ГГГГ-ММ-ДД.'
                     ),
                 },
+            },
+            'telegram_contact': {
+                'required': False,
+                'allow_blank': True,
+                'allow_null': True,
+                'default': None,
             },
         }
 
@@ -282,6 +289,7 @@ class ProjectDetailSerializer(ProjectShortSerializer):
             'likes_count',
             'participants',
             'author',
+            'telegram_contact',
         )
 
     def _is_author_employer(self, project: Project) -> bool:
@@ -404,6 +412,7 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
             'skills',
             'specializations',
             'project_format',
+            'telegram_contact',
         )
         extra_kwargs = {
             'title': {'required': False},
@@ -421,6 +430,11 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
                 },
             },
             'status_project': {'required': False},
+            'telegram_contact': {
+                'required': False,
+                'allow_blank': True,
+                'allow_null': True,
+            },
         }
 
     def validate(self, data: dict) -> dict:
@@ -699,4 +713,5 @@ class ProjectUpdateResponseSerializer(serializers.ModelSerializer):
             'skills',
             'specializations',
             'project_format',
+            'telegram_contact',
         )

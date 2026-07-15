@@ -34,6 +34,7 @@ class ProjectAdmin(LikeCountMixin, RolePermissionsMixin, admin.ModelAdmin):
         'short_desc',
         'status_project',
         'location',
+        'telegram_contact',
         'like_count',
     )
     filter_horizontal = ('skills', 'project_format', 'specializations')
