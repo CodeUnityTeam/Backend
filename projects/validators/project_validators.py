@@ -348,11 +348,11 @@ def validate_create_project_status(status_project: str) -> None:
         })
 
 
-def validate_telegram_contact(value: str | None) -> str | None:
+def validate_telegram_contact(value: str) -> str:
     """Валидирует Telegram-контакт.
 
     Проверки:
-        1. Если None или пустая строка — пропускаем.
+        1. Если пустая строка — пропускаем.
         2. Длина не более MAX_LEN_TELEGRAM.
         3. Формат: @username (только латиница, цифры, подчёркивание).
     """

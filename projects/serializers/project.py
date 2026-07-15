@@ -28,6 +28,7 @@ from projects.validators import (
     validate_project_data,
     validate_project_dates,
     validate_published_project_dates,
+    validate_telegram_contact,
     validate_update_project_status,
 )
 from users.models.skills import Skill
@@ -140,8 +141,7 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
             'telegram_contact': {
                 'required': False,
                 'allow_blank': True,
-                'allow_null': True,
-                'default': None,
+                'default': '',
             },
         }
 
@@ -433,7 +433,6 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
             'telegram_contact': {
                 'required': False,
                 'allow_blank': True,
-                'allow_null': True,
             },
         }
 
@@ -525,6 +524,9 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
             'skills': data.get('skills'),
             'specializations': data.get('specializations'),
             'project_format': data.get('project_format'),
+            'telegram_contact': data.get(
+                'telegram_contact', project.telegram_contact or '',
+            ),
         }
         # Если навыки/специализации/форматы не переданы — берём из БД
         if full_data['skills'] is None:
@@ -561,6 +563,11 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
                         'Нельзя изменить дату начала проекта после публикации.'
                     ),
                 },
+            )
+        # Валидация telegram_contact для всех сценариев обновления
+        if 'telegram_contact' in data:
+            data['telegram_contact'] = validate_telegram_contact(
+                data['telegram_contact'],
             )
         new_status = data.get('status_project')
         is_publishing = (

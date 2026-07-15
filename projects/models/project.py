@@ -68,8 +68,7 @@ class Project(TimestampMixin, models.Model):
         verbose_name='Telegram для связи',
         help_text='Имя пользователя Telegram (например, @username)',
         blank=True,
-        null=True,
-        default=None,
+        default='',
     )
     start_date = models.DateField(
         default=date.today,
