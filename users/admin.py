@@ -208,7 +208,7 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
             },
         ),
         ('Важные даты', {'fields': ('last_login', 'date_joined')}),
-        ('Профессиональные данные', {'fields': ('projects_relation',)})
+        ('Профессиональные данные', {'fields': ('projects_relation',)}),
     )
     add_fieldsets = (
         (
