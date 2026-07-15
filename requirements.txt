@@ -43,7 +43,6 @@ django-allauth==65.16.1
     #   dj-rest-auth
 django-cors-headers==4.9.0
     # via backend (pyproject.toml)
-django-fieldsets-with-inlines>=0.6
 django-filter==25.1
     # via backend (pyproject.toml)
 django-redis==5.4.0
