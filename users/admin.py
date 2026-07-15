@@ -215,7 +215,6 @@ class UserAdmin(RolePermissionsMixin, FieldsetsInlineMixin, DjangoUserAdmin):
         UserExperienceInline,
         UserWorkFormatInline,
         ('Важные даты', {'fields': ('last_login', 'date_joined')}),
-        ('Профессиональные данные', {'fields': ('projects_relation',)}),
     )
     add_fieldsets = (
         (
