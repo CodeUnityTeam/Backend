@@ -13,6 +13,7 @@ from core.constants.projects import (
     DRAFT,
     MAX_LEN_FULL_DESC,
     MAX_LEN_LOCATION,
+    MAX_LEN_TELEGRAM,
     MAX_LEN_TITLE,
     MAX_PROJECTS_PER_AUTHOR,
     MAX_SHORT_DESC,
@@ -347,6 +348,30 @@ def validate_create_project_status(status_project: str) -> None:
         })
 
 
+def validate_telegram_contact(value: str) -> str:
+    """Валидирует Telegram-контакт.
+
+    Проверки:
+        1. Если пустая строка — пропускаем.
+        2. Длина не более MAX_LEN_TELEGRAM.
+        3. Формат: @username (только латиница, цифры, подчёркивание).
+    """
+    if not value:
+        return value
+    cleaned_value = value.strip()
+    if len(cleaned_value) > MAX_LEN_TELEGRAM:
+        raise serializers.ValidationError(
+            f'Telegram-контакт не должен превышать '
+            f'{MAX_LEN_TELEGRAM} символов. Сейчас: {len(cleaned_value)}.',
+        )
+    if not re.match(r'^@[a-zA-Z0-9_]+$', cleaned_value):
+        raise serializers.ValidationError(
+            'Telegram-контакт должен начинаться с @ и содержать '
+            'только латинские буквы, цифры и подчёркивание.',
+        )
+    return cleaned_value
+
+
 def validate_update_project_status(
     current_status: str,
     new_status: str,
@@ -418,6 +443,9 @@ def validate_project_data(
     data['short_desc'] = validate_short_desc_project(data['short_desc'])
     data['full_desc'] = validate_full_desc_project(data['full_desc'])
     data['location'] = validate_location_project(data['location'])
+    data['telegram_contact'] = validate_telegram_contact(
+        data.get('telegram_contact'),
+    )
     # Валидация навыков
     skills_data = data.get('skills', [])
     if not skills_data:

@@ -152,6 +152,7 @@ class MeProfileRetrieveSerializer(MeProfileUpdateSerializer):
             'role',
             'experiences',
             'rating',
+            'last_login',
         ) + MeProfileUpdateSerializer.Meta.fields
         read_only_fields = fields
 
@@ -219,13 +220,15 @@ class DetailUserProfileSerializer(PublicUserProfileSerializer):
         many=True, read_only=True,
     )
 
-    class Meta(PublicUserProfileSerializer.Meta):
+    class Meta:
+        model = UserModel
         fields = PublicUserProfileSerializer.Meta.fields + (
             'country',
             'role',
             'soft_skills',
             'about_me',
             'experiences',
+            'last_login',
         )
         read_only_fields = fields
 
