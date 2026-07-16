@@ -1,8 +1,12 @@
+import logging
 from typing import Any
 
+from allauth.account.models import EmailAddress
+from allauth.account.signals import email_confirmed
 from django.core.cache import cache
 from django.db.models.signals import m2m_changed, post_delete, post_save
 from django.dispatch import receiver
+from django.http import HttpRequest
 
 from core.constants.cache import (
     CACHE_KEY_PROJECTS_PREFIX,
@@ -20,6 +24,9 @@ CRITICAL_LIST_FIELDS = {
     'is_active',
     'projects_relation',
 }
+
+
+logger = logging.getLogger(__name__)
 
 
 @receiver(post_save, sender=User)
@@ -47,6 +54,15 @@ def invalidate_user_profile_save(
     if should_invalidate_list:
         cache.delete_pattern(f'{CACHE_KEY_USERS_PREFIX}:list:*')
 
+    logger.debug(
+        'Кэш пользователя инвалидирован post_save: user_id=%s, '
+        'created=%s, update_fields=%s, list_invalidated=%s',
+        instance.user_id,
+        is_created,
+        update_fields,
+        should_invalidate_list,
+    )
+
 
 @receiver(post_delete, sender=User)
 def invalidate_user_profile_delete(
@@ -61,6 +77,10 @@ def invalidate_user_profile_delete(
     cache.delete_pattern(f'{CACHE_KEY_USERS_PREFIX}:list:*')
     cache.delete(
         f'{CACHE_KEY_PROJECTS_PREFIX}:recommendations:{instance.user_id}',
+    )
+    logger.debug(
+        'Кэш пользователя инвалидирован post_delete: user_id=%s',
+        instance.user_id,
     )
 
 
@@ -79,6 +99,13 @@ def invalidate_user_m2m_cache(
             f'{CACHE_KEY_USERS_PREFIX}:detail:{instance.user_id}:*',
         )
         cache.delete_pattern(f'{CACHE_KEY_USERS_PREFIX}:list:*')
+        logger.debug(
+            'Кэш пользователя инвалидирован m2m_changed: user_id=%s, '
+            'sender=%s, action=%s',
+            instance.user_id,
+            sender.__name__,
+            action,
+        )
 
 
 @receiver(post_save, sender=UserLike)
@@ -101,4 +128,23 @@ def invalidate_user_like_cache(
     cache.delete_pattern(
         f'{CACHE_KEY_USERS_PREFIX}:detail:'
         f'{instance.worker_id}:{instance.employer_id}',
+    )
+    logger.debug(
+        'Кэш лайков пользователя инвалидирован: employer_id=%s, worker_id=%s',
+        instance.employer_id,
+        instance.worker_id,
+    )
+
+
+@receiver(email_confirmed)
+def log_email_confirmed(
+    request: HttpRequest,
+    email_address: EmailAddress,
+    **kwargs: Any,
+) -> None:
+    """Логирует успешное подтверждение email."""
+    logger.info(
+        'Email пользователя подтверждён. user=%s, email=%s',
+        email_address.user,
+        email_address.email,
     )

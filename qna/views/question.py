@@ -1,4 +1,5 @@
 import hashlib
+import logging
 from typing import Any
 
 from django.core.cache import cache
@@ -48,6 +49,8 @@ from qna.serializers.question import (
 )
 from qna.services import toggle_like
 
+logger = logging.getLogger(__name__)
+
 
 @extend_schema_view(
     list=extend_schema(
@@ -81,7 +84,8 @@ from qna.services import toggle_like
                 location=OpenApiParameter.QUERY,
                 type=str,
             ),
-        ]),
+        ],
+    ),
     create=extend_schema(tags=['Questions'], summary='Создать вопрос'),
     retrieve=extend_schema(
         tags=['Questions'],
@@ -120,7 +124,10 @@ class QuestionViewSet(CacheRetrieveMixin, viewsets.ModelViewSet):
         return (IsAuthenticated(),)
 
     def list(
-        self, request: Request, *args: Any, **kwargs: Any,
+        self,
+        request: Request,
+        *args: Any,
+        **kwargs: Any,
     ) -> Response:
         """Кэширует список вопросов.
 
@@ -135,7 +142,15 @@ class QuestionViewSet(CacheRetrieveMixin, viewsets.ModelViewSet):
         cache_key = f'{CACHE_KEY_QNA_PREFIX}:list:{params_str}'
 
         cached_response = cache.get(cache_key)
+        logger.info(
+            'Запрос списка вопросов: cache_key=%s.',
+            cache_key,
+        )
         if cached_response is not None:
+            logger.info(
+                'Передача кешированного списка вопросов: cache_key=%s.',
+                cache_key,
+            )
             return Response(cached_response)
 
         response = super().list(request, *args, **kwargs)
@@ -146,7 +161,11 @@ class QuestionViewSet(CacheRetrieveMixin, viewsets.ModelViewSet):
                 response.data,
                 timeout=QUESTION_LIST_CACHE_TIMEOUT,
             )
-
+            logger.info(
+                'Кеширование списка вопросов, передача пользователю: '
+                'cache_key=%s.',
+                cache_key,
+            )
         return response
 
     def get_serializer_class(self) -> type[serializers.BaseSerializer]:
@@ -165,17 +184,26 @@ class QuestionViewSet(CacheRetrieveMixin, viewsets.ModelViewSet):
         return qs
 
     @extend_schema(
-            request=QuestionCreateSerializer,
-            responses=QuestionCreateResponseSerializer,
-        )
+        request=QuestionCreateSerializer,
+        responses=QuestionCreateResponseSerializer,
+    )
     def create(self, request: Request) -> Response:
         """Создаёт вопрос."""
+        logger.info(
+            'Запрос создания вопроса: user_id=%s.',
+            request.user.user_id,
+        )
         serializer = QuestionCreateSerializer(
             data=request.data,
             context={'request': request},
         )
         serializer.is_valid(raise_exception=True)
         question = serializer.save()
+        logger.info(
+            'Вопрос успешно создан: user_id=%s, question_id=%s.',
+            request.user.user_id,
+            question.question_id,
+        )
         return Response(
             QuestionCreateResponseSerializer(question).data,
             status=status.HTTP_201_CREATED,
@@ -193,6 +221,12 @@ class QuestionViewSet(CacheRetrieveMixin, viewsets.ModelViewSet):
     ) -> Response:
         """Обновляет вопрос частично."""
         question = self.get_object()
+        logger.info(
+            'Запрос частичного обновления вопроса: user_id=%s, '
+            'question_id=%s.',
+            request.user.user_id,
+            question.question_id,
+        )
         serializer = QuestionUpdateSerializer(
             question,
             data=request.data,
@@ -201,6 +235,11 @@ class QuestionViewSet(CacheRetrieveMixin, viewsets.ModelViewSet):
         )
         serializer.is_valid(raise_exception=True)
         question = serializer.save()
+        logger.info(
+            'Вопрос успешно обновлен: user_id=%s, question_id=%s.',
+            request.user.user_id,
+            question.question_id,
+        )
         return Response(
             QuestionCreateResponseSerializer(question).data,
             status=status.HTTP_200_OK,
@@ -217,16 +256,27 @@ class QuestionViewSet(CacheRetrieveMixin, viewsets.ModelViewSet):
         self,
         request: Request,
         *args,  # noqa ANN:002
-        **kwargs  # noqa ANN:003
+        **kwargs,  # noqa ANN:003
     ) -> Response:
         """Создаёт ответ на вопрос."""
         question = get_question_or_404(question_id=self.kwargs['pk'])
+        logger.info(
+            'Запрос создания ответа на вопрос: user_id=%s, question_id=%s.',
+            request.user.user_id,
+            question.question_id,
+        )
         serializer = AnswerCreateSerializer(
             data=request.data,
             context={'request': request, 'question': question},
         )
         serializer.is_valid(raise_exception=True)
         answer = serializer.save()
+        logger.info(
+            'Ответ успешно создан: user_id=%s, question_id=%s, answer_id=%s.',
+            request.user.user_id,
+            question.question_id,
+            answer.answer_id,
+        )
         return Response(
             AnswerCreateResponseSerializer(answer).data,
             status=status.HTTP_201_CREATED,
@@ -243,7 +293,7 @@ class QuestionViewSet(CacheRetrieveMixin, viewsets.ModelViewSet):
         self,
         request: Request,
         *args,  # noqa ANN:002
-        **kwargs  # noqa ANN:003
+        **kwargs,  # noqa ANN:003
     ) -> Response:
         """Ставит или снимает лайк на вопрос."""
         question = get_question_or_404(question_id=self.kwargs['pk'])
@@ -252,5 +302,12 @@ class QuestionViewSet(CacheRetrieveMixin, viewsets.ModelViewSet):
             target_obj=question,
             user=request.user,
             target_field='question',
+        )
+        logger.info(
+            'Статус лайка для вопроса изменён: user_id=%s, question_id=%s, '
+            'liked=%s.',
+            request.user.user_id,
+            question.question_id,
+            result['liked'],
         )
         return Response(result)

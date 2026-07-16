@@ -500,14 +500,7 @@ config = {
         },
     },
     'loggers': {
-        # логгер для приложений:
-        # core, users, projects, qna, feedback, help
-        'app': {
-            'level': 'DEBUG',
-            'handlers': ['console', 'file'],
-            'propagate': False,
-        },
-        # Логгеры приложений наследуются от 'app'
+        # логгеры приложений
         'core': {
             'level': 'DEBUG',
             'handlers': ['console', 'file'],
@@ -538,7 +531,7 @@ config = {
             'handlers': ['console', 'file'],
             'propagate': False,
         },
-        # Стандартные django-логеры
+        # стандартные django-логгеры
         'django.request': {
             'level': 'ERROR',
             'handlers': ['file'],

@@ -1,3 +1,4 @@
+import logging
 from typing import Any
 from urllib.parse import unquote, urlencode
 
@@ -34,6 +35,8 @@ from users.serializers.auth import (
 from users.serializers.profile import MeProfileRetrieveSerializer
 
 UserModel = get_user_model()
+
+logger = logging.getLogger(__name__)
 
 
 SOCIAL_LOGIN_SUCCESS_SERIALIZER: serializers.Serializer = inline_serializer(
@@ -77,14 +80,22 @@ class SocialAuthUrlView(APIView):
     adapter_class: any = None
 
     def get(
-        self, request: HttpRequest, *args: any, **kwargs: any,
+        self,
+        request: HttpRequest,
+        *args: any,
+        **kwargs: any,
     ) -> Response:
         """Обрабатывает GET-запрос и возвращает URL для авторизации."""
+        logger.info(
+            'Запуск генерации URL социальной авторизации. Провайдер: %s',
+            self.provider_id,
+        )
         adapter = get_adapter()
         app: SocialApp = adapter.get_app(request, provider=self.provider_id)
 
         provider: Provider = registry.get_class(self.provider_id)(
-            request, app=app,
+            request,
+            app=app,
         )
 
         # Создаем OAuth2View и привязываем к нему наш request и адаптер
@@ -109,6 +120,12 @@ class SocialAuthUrlView(APIView):
             **auth_params,
         )
 
+        logger.info(
+            'Успешно сгенерирован URL авторизации для %s: %s',
+            self.provider_id,
+            auth_url,
+        )
+
         return Response(
             {'authorization_url': auth_url},
             status=status.HTTP_200_OK,
@@ -124,15 +141,35 @@ class SocialLogin(SocialLoginView):
     client_class = OAuth2Client
 
     def post(
-        self, request: HttpRequest, *args: any, **kwargs: any,
+        self,
+        request: HttpRequest,
+        *args: any,
+        **kwargs: any,
     ) -> Response:
         """Перехватывает запрос и очищает URL-кодированный code."""
+        provider_name: str = self.adapter_class.__name__.replace(
+            'OAuth2Adapter',
+            '',
+        )
+
+        logger.info(
+            'Запрос на авторизацию через %s аккаунт',
+            provider_name,
+        )
+
         if request.data and 'code' in request.data:
-            # Извлекаем сырой код, очищаем его и записываем обратно
             raw_code: str = request.data.get('code', '')
             request.data['code'] = unquote(raw_code)
 
-        return super().post(request, *args, **kwargs)
+        response = super().post(request, *args, **kwargs)
+
+        logger.info(
+            'Авторизация через %s аккаунт успешна: user_id=%s',
+            provider_name,
+            request.user.user_id,
+        )
+
+        return response
 
 
 @extend_schema_view(
@@ -148,9 +185,14 @@ class GoogleAuthUrlView(APIView):
     permission_classes = [AllowAny]
 
     def get(
-        self, request: HttpRequest, *args: any, **kwargs: any,
+        self,
+        request: HttpRequest,
+        *args: any,
+        **kwargs: any,
     ) -> Response:
         """Обрабатывает GET-запрос и формирует прямую ссылку для Google."""
+        logger.info('Запуск генерации URL авторизации Google.')
+
         config: dict[str, any] = SOCIALACCOUNT_PROVIDERS['google']
 
         query_params: dict[str, str] = {
@@ -164,6 +206,11 @@ class GoogleAuthUrlView(APIView):
 
         base_url = 'https://accounts.google.com/o/oauth2/v2/auth'
         auth_url = f'{base_url}?{urlencode(query_params)}'
+
+        logger.info(
+            'Успешно сгенерирован URL авторизации Google. redirect_uri: %s',
+            config['CALLBACK_URL'],
+        )
 
         return Response(
             {'authorization_url': auth_url},
@@ -192,6 +239,39 @@ class GoogleLogin(SocialLogin):
     adapter_class = GoogleOAuth2Adapter
     callback_url = SOCIALACCOUNT_PROVIDERS['google']['CALLBACK_URL']
 
+    def post(
+        self,
+        request: HttpRequest,
+        *args: any,
+        **kwargs: any,
+    ) -> Response:
+        """Перехватывает запрос и очищает URL-кодированный code."""
+        code: str | None = request.data.get('code') if request.data else None
+        logger.info(
+            'Запрос на авторизацию через Google. '
+            'code (первые 20 символов): %s',
+            code[:20] if code else None,
+        )
+
+        if code:
+            request.data['code'] = unquote(code)
+            logger.info(
+                'Google: code декодирован из URL-encoding. '
+                'Было: %s..., стало: %s...',
+                code[:20],
+                request.data['code'][:20],
+            )
+
+        response = super().post(request, *args, **kwargs)
+
+        logger.info(
+            'Google: авторизация успешна. user_id=%s, status=%s',
+            request.user.user_id,
+            response.status_code,
+        )
+
+        return response
+
 
 @extend_schema_view(
     get=extend_schema(
@@ -206,9 +286,17 @@ class YandexAuthUrlView(APIView):
     permission_classes = [AllowAny]
 
     def get(
-        self, request: HttpRequest, *args: any, **kwargs: any,
+        self,
+        request: HttpRequest,
+        *args: any,
+        **kwargs: any,
     ) -> Response:
         """Обрабатывает GET-запрос и формирует прямую ссылку для Yandex."""
+        logger.info(
+            'Запуск генерации URL авторизации Yandex. Переданный state: %s',
+            request.GET.get('state', '<не передан>'),
+        )
+
         config: dict[str, any] = SOCIALACCOUNT_PROVIDERS['yandex']
 
         # Если фронтенд передает свой state для защиты или контекста
@@ -223,6 +311,13 @@ class YandexAuthUrlView(APIView):
 
         base_url = 'https://oauth.yandex.ru/authorize'
         auth_url = f'{base_url}?{urlencode(query_params)}'
+
+        logger.info(
+            'Успешно сгенерирован URL авторизации Yandex. '
+            'redirect_uri: %s, state: %s',
+            config['CALLBACK_URL'],
+            state,
+        )
 
         return Response(
             {'authorization_url': auth_url},
@@ -251,6 +346,39 @@ class YandexLogin(SocialLogin):
     adapter_class = YandexOAuth2Adapter
     callback_url = SOCIALACCOUNT_PROVIDERS['yandex']['CALLBACK_URL']
 
+    def post(
+        self,
+        request: HttpRequest,
+        *args: any,
+        **kwargs: any,
+    ) -> Response:
+        """Перехватывает запрос и очищает URL-кодированный code."""
+        code: str | None = request.data.get('code') if request.data else None
+        logger.info(
+            'Запрос на авторизацию через Yandex. '
+            'code (первые 20 символов): %s',
+            code[:20] if code else None,
+        )
+
+        if code:
+            request.data['code'] = unquote(code)
+            logger.info(
+                'Yandex: code декодирован из URL-encoding. '
+                'Было: %s..., стало: %s...',
+                code[:20],
+                request.data['code'][:20],
+            )
+
+        response = super().post(request, *args, **kwargs)
+
+        logger.info(
+            'Yandex: авторизация успешна. user_id=%s, status=%s',
+            request.user.user_id,
+            response.status_code,
+        )
+
+        return response
+
 
 @extend_schema_view(
     get=extend_schema(
@@ -265,9 +393,14 @@ class MailRuAuthUrlView(APIView):
     permission_classes = [AllowAny]
 
     def get(
-        self, request: HttpRequest, *args: any, **kwargs: any,
+        self,
+        request: HttpRequest,
+        *args: any,
+        **kwargs: any,
     ) -> Response:
         """Обрабатывает GET-запрос и формирует прямую ссылку для Mail.ru."""
+        logger.info('Запуск генерации URL авторизации Mail.ru.')
+
         config: dict[str, any] = SOCIALACCOUNT_PROVIDERS['mailru']
 
         query_params: dict[str, str] = {
@@ -278,6 +411,11 @@ class MailRuAuthUrlView(APIView):
 
         base_url = 'https://connect.mail.ru/oauth/authorize'
         auth_url = f'{base_url}?{urlencode(query_params)}'
+
+        logger.info(
+            'Успешно сгенерирован URL авторизации Mail.ru. redirect_uri: %s',
+            config['CALLBACK_URL'],
+        )
 
         return Response(
             {'authorization_url': auth_url},
@@ -305,6 +443,39 @@ class MailRuLogin(SocialLogin):
 
     adapter_class = MailRuOAuth2Adapter
     callback_url = SOCIALACCOUNT_PROVIDERS['mailru']['CALLBACK_URL']
+
+    def post(
+        self,
+        request: HttpRequest,
+        *args: any,
+        **kwargs: any,
+    ) -> Response:
+        """Перехватывает запрос и очищает URL-кодированный code."""
+        code: str | None = request.data.get('code') if request.data else None
+        logger.info(
+            'Запрос на авторизацию через Mail.ru. '
+            'code (первые 20 символов): %s',
+            code[:20] if code else None,
+        )
+
+        if code:
+            request.data['code'] = unquote(code)
+            logger.info(
+                'Mail.ru: code декодирован из URL-encoding. '
+                'Было: %s..., стало: %s...',
+                code[:20],
+                request.data['code'][:20],
+            )
+
+        response = super().post(request, *args, **kwargs)
+
+        logger.info(
+            'Mail.ru: авторизация успешна. user_id=%s, status=%s',
+            request.user.user_id,
+            response.status_code,
+        )
+
+        return response
 
 
 @extend_schema_view(
@@ -346,12 +517,27 @@ class EmailChangeView(APIView):
 
     def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Обработать POST-запрос на изменение email пользователя."""
+        logger.info(
+            'Запрос на изменение email пользователя. user_id=%s, old_email=%s',
+            request.user.user_id,
+            request.user.email,
+        )
         serializer = EmailChangeSerializer(
             data=request.data,
             context={'request': request},
         )
         serializer.is_valid(raise_exception=True)
+
+        new_email: str = serializer.validated_data['new_email']
         serializer.save()
+
+        logger.info(
+            'Отправлено письмо подтверждения на новый email. '
+            'user_id=%s, old_email=%s, new_email=%s',
+            request.user.user_id,
+            request.user.email,
+            new_email,
+        )
 
         return Response(
             {
