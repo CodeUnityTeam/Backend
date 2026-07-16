@@ -161,11 +161,12 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
         )
         cached_response = cache.get(cache_key)
         logger.info(
-            'Запрос списка проектов: ',
+            'Запрос списка проектов: '
             'user_id=%s, role=%s, params=%s, cache_key=%s',
             user.pk if user.is_authenticated else 'anonymous',
             user.projects_relation if user.is_authenticated else 'anonymous',
             query_params,
+            cache_key,
         )
         if cached_response is not None:
             logger.info(
@@ -275,15 +276,13 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
         """
         project = self.get_object()
         logger.info(
-            'Запрос на "мягкое удаление" проекта: '
-            'project=%s, user=%s.',
+            'Запрос на "мягкое удаление" проекта: project=%s, user=%s.',
             project.project_id,
             request.user,
         )
         archive_project(project, user=request.user)
         logger.info(
-            'Изменен статус проекта на "archive": '
-            'project=%s, user=%s.',
+            'Изменен статус проекта на "archive": project=%s, user=%s.',
             project.project_id,
             request.user,
         )
@@ -309,7 +308,8 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
         """Эндпоинт для постановки/снятия лайка проекту."""
         project = self.get_object()
         is_liked_before = ProjectLike.objects.filter(
-            project=project, user=request.user,
+            project=project,
+            user=request.user,
         ).exists()
         logger.info(
             'Запрос на изменение статуса лайка для проекта: '
@@ -429,7 +429,8 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
         cached_response = cache.get(cache_key)
         if cached_response is not None:
             logger.debug(
-                'Рекомендации получены из кэша: user_id=%s', user.pk,
+                'Рекомендации получены из кэша: user_id=%s',
+                user.pk,
             )
             return DRFResponse(cached_response)
         logger.debug('Кэш пуст, вычисление рекомендаций: user_id=%s', user.pk)

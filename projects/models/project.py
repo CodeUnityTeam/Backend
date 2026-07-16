@@ -11,6 +11,7 @@ from core.constants.projects import (
     MAX_LEN_LOCATION,
     MAX_LEN_STATUS,
     MAX_LEN_STATUS_PARTICIPANT,
+    MAX_LEN_TELEGRAM,
     MAX_LEN_TITLE,
     MAX_SHORT_DESC,
     MIN_LEN_TITLE,
@@ -61,6 +62,13 @@ class Project(TimestampMixin, models.Model):
         verbose_name='Местоположение',
         blank=False,
         null=False,
+    )
+    telegram_contact = models.CharField(
+        max_length=MAX_LEN_TELEGRAM,
+        verbose_name='Telegram для связи',
+        help_text='Имя пользователя Telegram (например, @username)',
+        blank=True,
+        default='',
     )
     start_date = models.DateField(
         default=date.today,
