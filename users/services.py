@@ -1,3 +1,4 @@
+import logging
 from datetime import timedelta
 from typing import Any, Union
 from uuid import UUID
@@ -17,9 +18,12 @@ from users.selectors import (
     get_employer_profiles_selector,
 )
 
+logger = logging.getLogger(__name__)
+
 
 def avatar_upload_handler(
-    user: User, file_obj: UploadedFile,
+    user: User,
+    file_obj: UploadedFile,
 ) -> str:
     """Бизнес-логика загрузки аватара с гарантией целостности БД."""
     old_avatar_url: str = getattr(user, 'avatar_url', '')
@@ -31,13 +35,28 @@ def avatar_upload_handler(
     with transaction.atomic():
         setattr(user, 'avatar_url', public_url)
         user.save(update_fields=['avatar_url'])
+        logger.debug(
+            'Новый аватар загружен в S3: user_id=%s, avatar_url=%s, size=%s '
+            'avatar_name=%s',
+            user.user_id,
+            public_url,
+            file_obj.size,
+            file_obj.name,
+        )
 
         # 3. Удаляем старый файл только после успешного коммита транзакции
         if old_avatar_url:
             transaction.on_commit(
                 lambda url=old_avatar_url: S3Service.delete(
-                    MediaType.AVATAR, url,
+                    MediaType.AVATAR,
+                    url,
                 ),
+            )
+            logger.debug(
+                'Запланировано удаление старого аватара из S3: '
+                'user_id=%s, old_avatar_url=%s',
+                user.user_id,
+                old_avatar_url,
             )
 
     return public_url
@@ -54,7 +73,8 @@ def avatar_delete_handler(user: User) -> None:
         if old_avatar_url:
             transaction.on_commit(
                 lambda url=old_avatar_url: S3Service.delete(
-                    MediaType.AVATAR, url,
+                    MediaType.AVATAR,
+                    url,
                 ),
             )
 
@@ -68,18 +88,43 @@ def deactivate_user_account(user: User) -> None:
     - Удаляет отклики Response
     - Сбрасывает активность пользователя и верификацию email
     """
+    logger.info(
+        'Деактивация пользователя: user_id=%s, email=%s',
+        user.user_id,
+        user.email,
+    )
     with transaction.atomic():
         # 1. Закрываем формы обратной связи
-        user.feedback_forms.update(status='Closed')
+        closed_count = user.feedback_forms.update(status='Closed')
+        logger.debug(
+            'Закрыто форм обратной связи: user_id=%s, count=%s',
+            user.user_id,
+            closed_count,
+        )
 
         # 2. Архивируем проекты автора
-        user.projects.update(status_project='ARCHIVED')
+        archived_count = user.projects.update(status_project='ARCHIVED')
+        logger.debug(
+            'Архивировано проектов: user_id=%s, count=%s',
+            user.user_id,
+            archived_count,
+        )
 
         # 3. Удаляем участия в проектах
-        user.project_participations.all().delete()
+        participations_count = user.project_participations.all().delete()[0]
+        logger.debug(
+            'Удалено участий в проектах: user_id=%s, count=%s',
+            user.user_id,
+            participations_count,
+        )
 
         # 4. Удаляем отклики и приглашения
-        user.responses.all().delete()
+        responses_count = user.responses.all().delete()[0]
+        logger.debug(
+            'Удалено откликов: user_id=%s, count=%s',
+            user.user_id,
+            responses_count,
+        )
 
         # 5. Деактивируем самого пользователя
         user.is_active = False
@@ -87,10 +132,15 @@ def deactivate_user_account(user: User) -> None:
         user.save()
 
         # 6. Сбрасываем верификацию почты
-        EmailAddress.objects.filter(
+        updated = EmailAddress.objects.filter(
             user=user,
             email__iexact=user.email,
         ).update(verified=False)
+        logger.debug(
+            'Сброшена верификация email: user_id=%s, updated=%s',
+            user.user_id,
+            updated,
+        )
 
 
 def _is_valid_uuid(val: str) -> bool:
@@ -103,11 +153,12 @@ def _is_valid_uuid(val: str) -> bool:
 
 
 def get_profiles_for_employer_service(
-    current_user: Any, query_params: dict[str, Any],
+    current_user: Any,
+    query_params: dict[str, Any],
 ) -> Union[QuerySet[ProjectResponse], QuerySet[User]]:
     """Получить фильтрованный и сортированный список пользователей.
 
-    Выбитрает базовый queryset в зависимости от сценария запроса (все,
+    Выбирает базовый queryset в зависимости от сценария запроса (все,
     избранное, отклики) и подготавливает данные для запроса в базу.
     """
     # 1. Определяем сценарий
@@ -128,7 +179,8 @@ def get_profiles_for_employer_service(
     # 2. Инициализируем базовые параметры таблиц СУБД под сценарий
     if scenario == 'responses':
         base_queryset: QuerySet[Any] = (
-            ProjectResponse.objects.filter(project__author=current_user)
+            ProjectResponse.objects
+            .filter(project__author=current_user)
             .exclude(user=current_user)
             .select_related('project', 'user')
         )
@@ -147,15 +199,18 @@ def get_profiles_for_employer_service(
 
     skill_ids: tuple[str, ...] = (
         tuple(filter(_is_valid_uuid, raw_skills.split(',')))
-        if raw_skills else ()
+        if raw_skills
+        else ()
     )
     spec_ids: tuple[str, ...] = (
         tuple(filter(_is_valid_uuid, raw_specs.split(',')))
-        if raw_specs else ()
+        if raw_specs
+        else ()
     )
     format_ids: tuple[str, ...] = (
         tuple(filter(_is_valid_uuid, raw_formats.split(',')))
-        if raw_formats else ()
+        if raw_formats
+        else ()
     )
 
     # 4. Вызываем общий для всех запросов селектор
@@ -194,7 +249,12 @@ def update_last_login(user: User) -> None:
 
 
 def update_user_rating(user: User, delta: int) -> None:
-    """Обновляет рейтиинг пользователя при постановке/снятии лайка."""
+    """Обновляет рейтинг пользователя при постановке/снятии лайка."""
     User.objects.filter(pk=user.pk).update(
         rating=F('rating') + delta,
+    )
+    logger.debug(
+        'Рейтинг пользователя обновлён: user_id=%s, delta=%s',
+        user.user_id,
+        delta,
     )

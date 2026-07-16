@@ -18,6 +18,7 @@ from .project_validators import (
     validate_project_dates,
     validate_published_project_dates,
     validate_short_desc_project,
+    validate_telegram_contact,
     validate_title_project,
     validate_update_project_status,
 )
