@@ -35,11 +35,6 @@ class DocumentsListView(APIView):
         },
     }
 
-    # Словарь документов: slug -> {title, filename}
-    DOCUMENTS_DESCRIPTION: dict[str, str] = {
-        'privacy_policy': 'Политика конфиденциал',
-    }
-
     @extend_schema(
         tags=['Documents'],
         summary='Список документов',
