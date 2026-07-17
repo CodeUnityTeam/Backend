@@ -1,0 +1,22 @@
+{% extends "account/email/base_message.txt" %}
+{% load account %}
+{% load i18n %}
+
+{% block content %}{% autoescape off %}
+{% user_display user as user_display %}{% blocktranslate with site_name=current_site.name site_domain=current_site.domain %}
+Вы получили это письмо, потому что пользователь {{ user_display }} указал ваш email для регистрации на платформе {{ site_domain }}.
+{% endblocktranslate %}
+
+{% if code %}{% blocktranslate %}
+Ваш код подтверждения: {{ code }}
+
+Введите этот код в открытом окне браузера для подтверждения email.
+{% endblocktranslate %}{% else %}{% blocktranslate %}
+Чтобы подтвердить email, перейдите по ссылке:
+{{ activate_url }}
+{% endblocktranslate %}{% endif %}
+
+{% blocktranslate with site_name=current_site.name %}
+Если вы не регистрировались на {{ site_name }}, просто проигнорируйте это письмо.
+{% endblocktranslate %}
+{% endautoescape %}{% endblock content %}

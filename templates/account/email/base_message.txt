@@ -1,0 +1,7 @@
+{% load i18n %}{% autoescape off %}{% blocktranslate with site_name=current_site.name %}Здравствуйте!{% endblocktranslate %}
+
+{% block content %}{% endblock content %}
+
+{% blocktranslate with site_name=current_site.name site_domain=current_site.domain %}С уважением, команда {{ site_name }}
+{{ site_domain }}{% endblocktranslate %}
+{% endautoescape %}
