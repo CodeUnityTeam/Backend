@@ -70,6 +70,12 @@ class CustomAccountAdapter(DefaultAccountAdapter):
             status=status.HTTP_201_CREATED,
         )
 
+    def send_mail(self, template_prefix, email, context):
+        """Отправить HTML-письмо вместо текстового."""
+        msg = self.render_mail(template_prefix, email, context)
+        msg.content_subtype = 'html'
+        msg.send()
+
 
 class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
     """Адаптер для контроля реактивации пользователя через провайдера."""
