@@ -1,10 +1,4 @@
 {% extends "account/email/base_message.txt" %}
 {% load i18n %}
-
-{% block content %}{% autoescape off %}{% blocktranslate with from_email=from_email to_email=to_email %}
-Ваш email был изменён с {{ from_email }} на {{ to_email }}.
-{% endblocktranslate %}
-
-{% blocktranslate %}
-Если вы не совершали это действие, пожалуйста, свяжитесь с поддержкой.
-{% endblocktranslate %}{% endautoescape %}{% endblock content %}
+{% block content %}{% autoescape off %}{% blocktranslate with from_email=from_email to_email=to_email %}Здравствуйте! Ваш email изменён с {{ from_email }} на {{ to_email }}.{% endblocktranslate %}
+{% blocktranslate %}Если вы не совершали это действие, свяжитесь с поддержкой.{% endblocktranslate %}{% endautoescape %}{% endblock content %}
