@@ -1,0 +1,18 @@
+{% extends "account/email/base_message.html" %}
+{% load i18n %}
+
+{% block content %}{% autoescape off %}
+<h2 style="margin:0 0 16px; color:#1e293b; font-size:20px; font-weight:600;">
+    {% blocktranslate %}Email изменён{% endblocktranslate %}
+</h2>
+
+<p style="margin:0 0 20px; color:#475569; font-size:15px; line-height:1.6;">
+    {% blocktranslate with from_email=from_email to_email=to_email %}
+    Ваш email был изменён с {{ from_email }} на {{ to_email }}.
+    {% endblocktranslate %}
+</p>
+
+<p style="margin:0; color:#94a3b8; font-size:13px; line-height:1.5;">
+    {% blocktranslate %}Если вы не совершали это действие, пожалуйста, свяжитесь с поддержкой.{% endblocktranslate %}
+</p>
+{% endautoescape %}{% endblock content %}
