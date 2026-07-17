@@ -56,6 +56,7 @@ sudo docker compose -f docker-compose.dev.yaml exec \
 * [❓ Вопросы и ответы (Q&A)](docs/qna.md)
 * [☁️ Хранилище S3 Minio](docs/s3_minio.md)
 * [⚡ Кэширование](docs/caching.md)
+* [📄 Документы](docs/documents.md)
 
 
 ### Дополнительные ресурсы
