@@ -1,3 +1,4 @@
+import logging
 from typing import Any
 
 from django.core.files.uploadhandler import (
@@ -5,6 +6,8 @@ from django.core.files.uploadhandler import (
     TemporaryFileUploadHandler,
 )
 from rest_framework.parsers import MultiPartParser
+
+logger = logging.getLogger(__name__)
 
 
 class QuotaUploadHandler(TemporaryFileUploadHandler):
@@ -18,6 +21,13 @@ class QuotaUploadHandler(TemporaryFileUploadHandler):
     def receive_data_chunk(self, raw_data: bytes, start: int) -> bytes:
         """Проверяет размер чанка на лету."""
         if start + len(raw_data) > self.max_bytes:
+            logger.warning(
+                'Превышен лимит загрузки файла: max_bytes=%d, '
+                'uploaded_bytes=%d, content_type=%s',
+                self.max_bytes,
+                start + len(raw_data),
+                self.content_type,
+            )
             raise StopUpload(connection_reset=True)
         return raw_data
 

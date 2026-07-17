@@ -1,3 +1,4 @@
+import logging
 from typing import Any, Type
 
 from django.core.cache import cache
@@ -31,6 +32,8 @@ from projects.serializers import (
 )
 from users.models.skills import Skill
 from users.models.specializations import Specialization
+
+logger = logging.getLogger(__name__)
 
 
 @extend_schema_view(
@@ -139,7 +142,15 @@ class TagsListAPIView(ListAPIView):
         cache_key = f'{cache_key_prefix}:list'
 
         cached_response = cache.get(cache_key)
+        logger.info(
+            'Запрос списка тегов: cache_key=%s.',
+            cache_key,
+        )
         if cached_response is not None:
+            logger.info(
+                'Передача кешированного списка тегов: cache_key=%s.',
+                cache_key,
+            )
             return Response(cached_response)
 
         response = super().list(request, *args, **kwargs)
@@ -151,4 +162,8 @@ class TagsListAPIView(ListAPIView):
                 timeout=TAGS_CACHE_TIMEOUT,
             )
 
+        logger.info(
+            'Кеширование списка тегов, передача пользователю: cache_key=%s.',
+            cache_key,
+        )
         return response

@@ -1,3 +1,5 @@
+import logging
+
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework.decorators import action
 from rest_framework.mixins import DestroyModelMixin
@@ -12,6 +14,8 @@ from qna.selectors import get_answer_detail_queryset
 from qna.serializers.answer import AnswerDetailSerializer
 from qna.serializers.like import LikeSerializer
 from qna.services import toggle_like
+
+logger = logging.getLogger(__name__)
 
 
 @extend_schema_view(
@@ -54,5 +58,12 @@ class AnswerViewSet(DestroyModelMixin, GenericViewSet):
             target_obj=answer,
             user=request.user,
             target_field='answer',
+        )
+        logger.info(
+            'Статус лайка для ответа изменён: user_id=%s, answer_id=%s, '
+            'liked=%s.',
+            request.user.user_id,
+            answer.answer_id,
+            result['liked'],
         )
         return Response(result)

@@ -1,7 +1,11 @@
+import logging
+
 from django.db.models import Model
 
 from qna.selectors import count_likes, delete_like, get_or_create_like
 from users.services import update_user_rating
+
+logger = logging.getLogger(__name__)
 
 
 def toggle_like(
@@ -41,8 +45,22 @@ def toggle_like(
 
     # Обновляем рейтинг автора поста
     author = getattr(target_obj, 'user')
+
+    logger.info(
+        'Лайк %s: user_id=%s, target=%s, target_id=%s, author_id=%s',
+        'создан' if liked else 'удалён',
+        user.pk,
+        target_field,
+        target_obj.pk,
+        author.pk,
+    )
     if author.pk != user.pk:
         update_user_rating(user=author, delta=delta)
+        logger.info(
+            'Рейтинг автора обновлён: author_id=%s, delta=%d',
+            author.pk,
+            delta,
+        )
 
     # Используем агрегацию из БД вместо .count() на prefetch-кеше,
     # чтобы избежать проблем с устаревшим кешем prefetch_related

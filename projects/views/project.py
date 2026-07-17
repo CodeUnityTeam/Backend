@@ -161,16 +161,17 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
         )
         cached_response = cache.get(cache_key)
         logger.info(
-            'Запрос списка проектов: ',
+            'Запрос списка проектов: '
             'user_id=%s, role=%s, params=%s, cache_key=%s',
             user.pk if user.is_authenticated else 'anonymous',
             user.projects_relation if user.is_authenticated else 'anonymous',
             query_params,
+            cache_key,
         )
         if cached_response is not None:
             logger.info(
-                'Получен список проектов из кэша: user_id=%s',
-                user_part,
+                'Передача списка проектов из кэша: cache_key=%s',
+                cache_key,
             )
             return DRFResponse(cached_response)
         response = super().list(request, *args, **kwargs)
@@ -181,8 +182,9 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
                 timeout=PROJECT_LIST_CACHE_TIMEOUT,
             )
             logger.info(
-                'Получен список проектов из БД: user_id=%s.',
-                user_part,
+                'Кэширование списка проектов, передача пользователю: '
+                'cache_key=%s',
+                cache_key,
             )
         return response
 
@@ -254,6 +256,11 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         project = serializer.instance
+        logger.info(
+            'Проект успешно создан: user_id=%s, project_id=%s',
+            request.user.pk,
+            project.project_id,
+        )
         return DRFResponse(
             ProjectCreationResponseSerializer(
                 project,
@@ -275,15 +282,13 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
         """
         project = self.get_object()
         logger.info(
-            'Запрос на "мягкое удаление" проекта: '
-            'project=%s, user=%s.',
+            'Запрос на "мягкое удаление" проекта: project=%s, user=%s.',
             project.project_id,
             request.user,
         )
         archive_project(project, user=request.user)
         logger.info(
-            'Изменен статус проекта на "archive": '
-            'project=%s, user=%s.',
+            'Изменен статус проекта на "archive": project=%s, user=%s.',
             project.project_id,
             request.user,
         )
@@ -309,7 +314,8 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
         """Эндпоинт для постановки/снятия лайка проекту."""
         project = self.get_object()
         is_liked_before = ProjectLike.objects.filter(
-            project=project, user=request.user,
+            project=project,
+            user=request.user,
         ).exists()
         logger.info(
             'Запрос на изменение статуса лайка для проекта: '
@@ -320,7 +326,8 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
         )
         result = toggle_project_like(project, request.user)
         logger.info(
-            'Статус лайка изменён: project_id=%s, user_id=%s, liked=%s',
+            'Статус лайка для проекта изменён: project_id=%s, user_id=%s, '
+            'liked=%s',
             project.project_id,
             request.user.pk,
             result['liked'],
@@ -429,7 +436,8 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
         cached_response = cache.get(cache_key)
         if cached_response is not None:
             logger.debug(
-                'Рекомендации получены из кэша: user_id=%s', user.pk,
+                'Рекомендации получены из кэша: user_id=%s',
+                user.pk,
             )
             return DRFResponse(cached_response)
         logger.debug('Кэш пуст, вычисление рекомендаций: user_id=%s', user.pk)

@@ -1,3 +1,4 @@
+import logging
 from typing import Any
 
 from django.core.cache import cache
@@ -24,6 +25,8 @@ from qna.models import (
 from users.models import User
 from users.services import update_user_rating
 
+logger = logging.getLogger(__name__)
+
 
 @receiver(post_save, sender=Question)
 @receiver(post_delete, sender=Question)
@@ -37,6 +40,10 @@ def invalidate_question_cache(
         f'{CACHE_KEY_QNA_PREFIX}:detail:{instance.pk}:*',
     )
     cache.delete_pattern(f'{CACHE_KEY_QNA_PREFIX}:list:*')
+    logger.info(
+        'Инвалидация кэша вопроса: question_id=%s',
+        instance.pk,
+    )
 
 
 @receiver(post_save, sender=Answer)
@@ -49,6 +56,11 @@ def invalidate_answer_cache(
     """Инвалидирует кэш вопроса при добавлении/удалении ответа."""
     cache.delete_pattern(
         f'{CACHE_KEY_QNA_PREFIX}:detail:{instance.question_id}:*',
+    )
+    logger.info(
+        'Инвалидация кэша ответа: answer_id=%s, question_id=%s',
+        instance.pk,
+        instance.question_id,
     )
 
 
@@ -100,6 +112,13 @@ def change_author_rating_on_delete(
     likes_count = instance.likes.count()
     if likes_count:
         update_user_rating(user=instance.user, delta=-likes_count)
+        logger.info(
+            'Рейтинг автора уменьшен при удалении: '
+            'author_id=%s, delta=%d, type=%s',
+            instance.user.pk,
+            -likes_count,
+            'question' if isinstance(instance, Question) else 'answer',
+        )
 
 
 @receiver(pre_save, sender=Question)
@@ -121,6 +140,13 @@ def change_author_rating_on_save(
     likes_count = instance.likes.count()
     if likes_count:
         update_user_rating(user=instance.user, delta=-likes_count)
+        logger.info(
+            'Рейтинг автора уменьшен при деактивации: '
+            'author_id=%s, delta=%d, type=%s',
+            instance.user.pk,
+            -likes_count,
+            'question' if isinstance(instance, Question) else 'answer',
+        )
 
 
 @receiver(pre_delete, sender=Question)
@@ -143,6 +169,10 @@ def delete_question_images_from_minio(
         instance.images.values_list('image_url', flat=True),
     )
     if image_urls:
+        logger.info(
+            'Удаление изображений вопроса из MinIO: question_id=%s',
+            instance.pk,
+        )
         transaction.on_commit(
             lambda urls=image_urls: [
                 S3Service.delete(MediaType.QUESTION_IMAGE, url)
@@ -166,6 +196,10 @@ def delete_answer_images_from_minio(
         instance.images.values_list('image_url', flat=True),
     )
     if image_urls:
+        logger.info(
+            'Удаление изображений ответа из MinIO: answer_id=%s',
+            instance.pk,
+        )
         transaction.on_commit(
             lambda urls=image_urls: [
                 S3Service.delete(MediaType.ANSWER_IMAGE, url)
@@ -183,6 +217,11 @@ def delete_question_image_from_minio(
     """Удаляет файл из MinIO при удалении QuestionImage."""
     if instance.image_url:
         image_url: str = instance.image_url
+        logger.info(
+            'Удаление изображения вопроса из MinIO: image_id=%s, url=%s',
+            instance.pk,
+            image_url,
+        )
         transaction.on_commit(
             lambda url=image_url: S3Service.delete(
                 MediaType.QUESTION_IMAGE, url,
@@ -199,6 +238,13 @@ def delete_answer_image_from_minio(
     """Удаляет файл из MinIO при удалении AnswerImage."""
     if instance.image_url:
         image_url: str = instance.image_url
+        logger.info(
+            'Удаление изображения ответа из MinIO: image_id=%s, '
+            'answer_id=%s, url=%s',
+            instance.pk,
+            instance.answer_id,
+            image_url,
+        )
         transaction.on_commit(
             lambda url=image_url: S3Service.delete(
                 MediaType.ANSWER_IMAGE, url,
@@ -215,6 +261,13 @@ def delete_feedback_image_from_minio(
     """Удаляет файл из MinIO при удалении FeedbackImage."""
     if instance.image_url:
         image_url: str = instance.image_url
+        logger.info(
+            'Удаление изображения обратной связи из MinIO: image_id=%s, '
+            'feedback_id=%s, url=%s',
+            instance.pk,
+            instance.feedback_id,
+            image_url,
+        )
         transaction.on_commit(
             lambda url=image_url: S3Service.delete(
                 MediaType.FEEDBACK_IMAGE, url,
@@ -231,6 +284,11 @@ def delete_avatar_from_minio(
     """Удаляет файл из MinIO при удалении avatar_url."""
     if instance.avatar_url:
         avatar_url: str = instance.avatar_url
+        logger.info(
+            'Удаление аватара из MinIO: user_id=%s, url=%s',
+            instance.pk,
+            avatar_url,
+        )
         transaction.on_commit(
             lambda url=avatar_url: S3Service.delete(
                 MediaType.AVATAR, url,

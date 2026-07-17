@@ -1,4 +1,5 @@
 import hashlib
+import logging
 from typing import Any
 
 from django.core.cache import cache
@@ -27,6 +28,8 @@ from feedback.serializers import (
     ReviewListSerializer,
     ReviewUpdateSerializer,
 )
+
+logger = logging.getLogger(__name__)
 
 
 @extend_schema_view(
@@ -88,7 +91,10 @@ class ReviewViewSet(CacheRetrieveMixin, viewsets.ModelViewSet):
         return ReviewCreateSerializer
 
     def list(
-        self, request: Request, *args: Any, **kwargs: Any,
+        self,
+        request: Request,
+        *args: Any,
+        **kwargs: Any,
     ) -> Response:
         """Кэширует список отзывов.
 
@@ -101,20 +107,29 @@ class ReviewViewSet(CacheRetrieveMixin, viewsets.ModelViewSet):
             str(sorted_params).encode(),
         ).hexdigest()
         cache_key = f'{CACHE_KEY_REVIEWS_PREFIX}:list:{params_str}'
-
         cached_response = cache.get(cache_key)
+        logger.info(
+            'Запрос списка отзывов: cache_key=%s',
+            cache_key,
+        )
         if cached_response is not None:
+            logger.info(
+                'Передача списка отзывов из кеша: cache_key=%s',
+                cache_key,
+            )
             return Response(cached_response)
-
         response = super().list(request, *args, **kwargs)
-
         if response.status_code == 200:
             cache.set(
                 cache_key,
                 response.data,
                 timeout=REVIEW_LIST_CACHE_TIMEOUT,
             )
-
+            logger.info(
+                'Кэширование списка отзывов, передача пользователю: '
+                'cache_key=%s',
+                cache_key,
+            )
         return response
 
     @extend_schema(
@@ -123,12 +138,21 @@ class ReviewViewSet(CacheRetrieveMixin, viewsets.ModelViewSet):
     )
     def create(self, request: Request) -> Response:
         """Создаёт отзыв."""
+        logger.info(
+            'Запрос на создание отзыва: user_id=%s',
+            request.user.pk,
+        )
         serializer = ReviewCreateSerializer(
             data=request.data,
             context={'request': request},
         )
         serializer.is_valid(raise_exception=True)
         review = serializer.save()
+        logger.info(
+            'Отзыв успешно создан: user_id=%s, review_id=%s',
+            request.user.pk,
+            review.review_id,
+        )
         return Response(
             ReviewDetailSerializer(review).data,
             status=status.HTTP_201_CREATED,
@@ -146,6 +170,11 @@ class ReviewViewSet(CacheRetrieveMixin, viewsets.ModelViewSet):
     ) -> Response:
         """Обновляет отзыв частично."""
         review = self.get_object()
+        logger.info(
+            'Запрос на обновление отзыва: user_id=%s, review_id=%s',
+            request.user.pk,
+            review.pk,
+        )
         serializer = ReviewUpdateSerializer(
             review,
             data=request.data,
@@ -153,10 +182,36 @@ class ReviewViewSet(CacheRetrieveMixin, viewsets.ModelViewSet):
         )
         serializer.is_valid(raise_exception=True)
         review = serializer.save()
+        logger.info(
+            'Отзыв успешно обновлен: user_id=%s, review_id=%s',
+            request.user.pk,
+            review.pk,
+        )
         return Response(
             ReviewDetailSerializer(review).data,
             status=status.HTTP_200_OK,
         )
+
+    def destroy(
+        self,
+        request: Request,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Response:
+        """Удаляет отзыв."""
+        review = self.get_object()
+        logger.info(
+            'Запрос на удаление отзыва: user_id=%s, review_id=%s',
+            request.user.pk,
+            review.review_id,
+        )
+        response = super().destroy(request, *args, **kwargs)
+        logger.info(
+            'Отзыв успешно удален: user_id=%s, review_id=%s',
+            request.user.pk,
+            review.review_id,
+        )
+        return response
 
 
 @extend_schema_view(
@@ -174,6 +229,10 @@ class FeedbackViewSet(viewsets.ModelViewSet):
     )
     def create(self, request: Request) -> Response:
         """Создаёт обратную связь."""
+        logger.info(
+            'Запрос на создание обратной связи: user_id=%s',
+            request.user.pk,
+        )
         serializer = FeedbackCreateSerializer(
             data=request.data,
             context={'request': request},
