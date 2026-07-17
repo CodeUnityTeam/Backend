@@ -60,6 +60,7 @@ INSTALLED_APPS = (
     'qna.apps.QnaConfig',
     'feedback.apps.FeedbackConfig',
     'help.apps.HelpConfig',
+    'documents.apps.DocumentsConfig',
 )
 
 MIDDLEWARE = (
@@ -78,7 +79,7 @@ MIDDLEWARE = (
 TEMPLATES = (
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': (
@@ -379,6 +380,7 @@ SPECTACULAR_SETTINGS = {
         {'name': 'Files', 'description': 'Файлы'},
         {'name': 'Feedbacks', 'description': 'Обратная связь'},
         {'name': 'Reviews', 'description': 'Отзывы'},
+        {'name': 'Documents', 'description': 'Документы'},
     ),
 }
 

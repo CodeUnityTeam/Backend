@@ -1,0 +1,9 @@
+{% extends "account/email/base_message.txt" %}
+{% load account %}
+{% load i18n %}
+{% block content %}{% autoescape off %}
+{% user_display user as user_display %}{% blocktranslate with user_display=user_display %}Здравствуйте! Пользователь {{ user_display }} указал ваш email для регистрации на CodeUnity.{% endblocktranslate %}
+{% if code %}{% blocktranslate %}Ваш код подтверждения: {{ code }}{% endblocktranslate %}
+{% else %}{% blocktranslate %}Подтвердите email: {{ activate_url }}{% endblocktranslate %}{% endif %}
+{% blocktranslate %}Если вы не регистрировались, проигнорируйте это письмо.{% endblocktranslate %}
+{% endautoescape %}{% endblock content %}
