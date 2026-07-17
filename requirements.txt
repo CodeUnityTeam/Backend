@@ -25,7 +25,7 @@ cryptography==48.0.0
     # via pyjwt
 dj-rest-auth==7.2.0
     # via backend (pyproject.toml)
-django==4.2.30
+django==5.2.16
     # via
     #   backend (pyproject.toml)
     #   dj-rest-auth
@@ -43,7 +43,6 @@ django-allauth==65.16.1
     #   dj-rest-auth
 django-cors-headers==4.9.0
     # via backend (pyproject.toml)
-django-fieldsets-with-inlines>=0.6
 django-filter==25.1
     # via backend (pyproject.toml)
 django-redis==5.4.0
@@ -60,7 +59,7 @@ djangorestframework-simplejwt==5.5.1
     # via backend (pyproject.toml)
 drf-spectacular==0.29.0
     # via backend (pyproject.toml)
-gunicorn==21.2.0
+gunicorn==23.0.0
     # via backend (pyproject.toml)
 idna==3.18
     # via requests
@@ -80,8 +79,10 @@ packaging==26.2
     # via gunicorn
 pillow==12.2.0
     # via backend (pyproject.toml)
-psycopg2-binary==2.9.12
+psycopg==3.3.4
     # via backend (pyproject.toml)
+psycopg-binary==3.3.4
+    # via psycopg
 pycparser==3.0
     # via cffi
 pyjwt==2.13.0
@@ -113,7 +114,13 @@ six==1.17.0
 sqlparse==0.5.5
     # via django
 typing-extensions==4.15.0
-    # via referencing
+    # via
+    #   psycopg
+    #   referencing
+tzdata==2026.3
+    # via
+    #   django
+    #   psycopg
 uritemplate==4.2.0
     # via drf-spectacular
 urllib3==2.7.0

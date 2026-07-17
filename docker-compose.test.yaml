@@ -40,7 +40,7 @@ services:
       retries: 10
 
   redis:
-    image: redis:alpine
+    image: redis:7-alpine
     container_name: test_redis
     restart: unless-stopped
     env_file:
