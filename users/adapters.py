@@ -1,5 +1,5 @@
 import os
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 from allauth.account.adapter import DefaultAccountAdapter
 from allauth.account.models import EmailConfirmation
@@ -7,11 +7,14 @@ from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from allauth.socialaccount.models import SocialLogin
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
+from django.core.mail import EmailMessage
 from django.db.models import Model
 from django.http import HttpRequest
 from rest_framework import status
 from rest_framework.exceptions import APIException
 from rest_framework.response import Response
+
+from users.utils import email_service
 
 UserModel = get_user_model()
 
@@ -38,7 +41,7 @@ class ImmediateResponseException(APIException):
 
 
 class CustomAccountAdapter(DefaultAccountAdapter):
-    """Адаптер для процесса регистрации пользователя."""
+    """Адаптер для процесса регистрации и управления пользователем."""
 
     def clean_password(
         self,
@@ -55,8 +58,10 @@ class CustomAccountAdapter(DefaultAccountAdapter):
         request: HttpRequest,
         emailconfirmation: EmailConfirmation,
     ) -> str:
-        """Получить url для формирования ссылки на подтверждение email."""
+        """Получить url ссылки на подтверждение email."""
         host_url = os.getenv('HOST_URL', 'http://localhost:3000')
+        if not host_url.startswith(('http://', 'https://')):
+            host_url = f'https://{host_url}'
         return f'{host_url}/register/verify-email/{emailconfirmation.key}'
 
     def respond_email_verification_sent(
@@ -69,6 +74,54 @@ class CustomAccountAdapter(DefaultAccountAdapter):
             {'detail': MSG_SUCCESS},
             status=status.HTTP_201_CREATED,
         )
+
+    def render_mail(
+        self,
+        template_prefix: str,
+        email: str,
+        context: Dict[str, Any],
+        headers: Optional[Dict[str, Any]] = None,
+    ) -> EmailMessage:
+        """Перехватывает рендеринг писем для EmailService."""
+        site_name = context['current_site'].name
+
+        # 1. Подтверждение регистрации
+        if 'email_confirmation' in template_prefix:
+            context['code'] = None
+            email_service.send_template_email(
+                to_email=email,
+                subject=f'Подтверждение регистрации: {site_name}',
+                template_base_name=(
+                    'account/email/email_confirmation_message'
+                ),
+                context=context,
+            )
+            return self._create_dummy_message()
+
+        # 2. Восстановление пароля
+        if 'password_reset_key' in template_prefix:
+            email_service.send_template_email(
+                to_email=email,
+                subject=f'Восстановление пароля: {site_name}',
+                template_base_name=(
+                    'account/email/password_reset_key_message'
+                ),
+                context=context,
+            )
+            return self._create_dummy_message()
+
+        return super().render_mail(
+            template_prefix, email, context, headers,
+        )
+
+    def _create_dummy_message(self) -> EmailMessage:
+        """Создает заглушку для блокировки дефолтной отправки."""
+
+        class DummyMessage(EmailMessage):
+            def send(self, fail_silently: bool = False) -> int:
+                return 0
+
+        return DummyMessage()
 
 
 class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
