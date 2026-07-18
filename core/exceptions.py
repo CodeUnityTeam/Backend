@@ -5,6 +5,8 @@ from rest_framework.exceptions import APIException
 from rest_framework.response import Response
 from rest_framework.views import exception_handler
 
+from users.adapters import ImmediateResponseException
+
 logger = logging.getLogger(__name__)
 
 
@@ -24,6 +26,15 @@ def custom_exception_handler(exc: Exception, context: dict) -> Response:
     """Кастомный обработчик исключений для проекта."""
     request = context.get('request')
     view = context.get('view')
+
+    if isinstance(exc, ImmediateResponseException):
+        response = exception_handler(exc, context)
+        if response is not None:
+            return response
+        return Response(
+            data=exc.detail,
+            status=exc.status_code,
+        )
 
     logger.exception(
         '%s: %s',
