@@ -4,7 +4,10 @@ from typing import Callable
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework_simplejwt.exceptions import InvalidToken
+from rest_framework_simplejwt.exceptions import (
+    AuthenticationFailed,
+    InvalidToken,
+)
 
 from users.services import update_last_login
 
@@ -72,6 +75,12 @@ class UpdateLastActivityMiddleware:
         except InvalidToken:
             logger.warning(
                 'Невалидный JWT токен: path=%s',
+                request.path,
+            )
+            return None
+        except AuthenticationFailed:
+            logger.warning(
+                'Пользователь из JWT не найден в БД: path=%s',
                 request.path,
             )
             return None

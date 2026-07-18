@@ -36,6 +36,10 @@ v1_urlpatterns = [
         SpectacularRedocView.as_view(url_name='schema'),
         name='redoc',
     ),
+    path(
+        'documents/',
+        include(('documents.urls', 'documents'), namespace='documents'),
+    ),
 ]
 
 urlpatterns = [
