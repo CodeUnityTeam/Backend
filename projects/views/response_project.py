@@ -171,7 +171,10 @@ class ProjectResponseViewSet(GenericViewSet):
     @extend_schema(
         tags=['Отклики'],
         summary='Откликнуться на проект',
-        request=None,
+        request=ResponseUserProjectSerializer,
+        responses={
+            status.HTTP_200_OK: ResponseResponseCreateProjectSerializer,
+        },
     )
     @transaction.atomic
     def create(
@@ -208,7 +211,10 @@ class ProjectResponseViewSet(GenericViewSet):
         tags=['Отклики'],
         summary='Пригласить пользователя в проект.',
         parameters=INVITE_RESPONSES_PARAMETER,
-        request=None,
+        request=InviteUserProjectSerializer,
+        responses={
+            status.HTTP_200_OK: ResponseResponseCreateProjectSerializer,
+        },
     )
     @transaction.atomic
     def invite(
