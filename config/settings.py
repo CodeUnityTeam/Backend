@@ -108,6 +108,14 @@ DATABASES = {
         'NAME': os.getenv('POSTGRES_DB'),
         'USER': os.getenv('POSTGRES_USER'),
         'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+        'CONN_MAX_AGE': 30,  # время жизни соединения с БД (в секундах)
+        'OPTIONS': {
+            # Таймаут подключения к БД в секундах
+            'connect_timeout': 10,
+            # Запрещает выполнение любого SQL-запроса дольше 30 секунд
+            'options': '-c statement_timeout=30000',
+        },
+
         'HOST': DB_HOST,
         'PORT': os.getenv('DB_PORT'),
     },
@@ -231,8 +239,29 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'EXCEPTION_HANDLER': 'core.exceptions.custom_exception_handler',
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '50/min',               # Общий лимит для анонимов
+        'user': '500/min',              # Общий лимит для юзеров
+        'login': '5/min',               # login view
+        'register': '5/hour',           # register view
+        'password_reset': '5/hour',     # восстановление пароля
+        'password_change': '10/hour',   # смена пароля
+        'upload': '50/min',             # для upload-эндпоинтов
+        'feedback': '10/min',           # 3 запроса на обратную связь
+    },
 }
-
+# =============================================================================
+# SECURITY SETTINGS
+# =============================================================================
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True  # перенаправляем HTTP‑запросы на HTTPS
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE = True  # сессионные cookie только по HTTPS
+    CSRF_COOKIE_SECURE = True  # CSRF‑cookie только по HTTPS
 # =============================================================================
 # DJ-REST-AUTH & SIMPLE JWT CONFIGURATION
 # =============================================================================

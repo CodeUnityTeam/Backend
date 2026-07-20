@@ -35,7 +35,7 @@ from users.views.profile import (
     UserProfileListView,
     UserProfileView,
 )
-
+from core.throttling import LoginRateThrottle
 router = SimpleRouter()
 router.register(
     r'',
@@ -104,7 +104,9 @@ urlpatterns = (
                     tags=['auth'],
                     summary='Вход в систему (Авторизация)',
                     description=LOGIN_DESCRIPTION,
-                )(LoginView).as_view(),
+                )(LoginView).as_view(
+                    throttle_classes=[LoginRateThrottle],
+                ),
                 name='rest_login',
             ),
             path(
