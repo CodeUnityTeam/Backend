@@ -24,7 +24,12 @@ def incr_counter(prefix: str, object_id: str, delta: int = 1) -> int:
     key = _ck(prefix, object_id)
     try:
         new_value = cache.incr(key, delta)
-        logger.debug('Счётчик увеличен: key=%s, delta=%d, new_value=%d', key, delta, new_value)
+        logger.debug(
+            'Счётчик увеличен: key=%s, delta=%d, new_value=%d',
+            key,
+            delta,
+            new_value,
+        )
         return new_value
     except ValueError:
         cache.set(key, delta)
@@ -41,7 +46,12 @@ def decr_counter(prefix: str, object_id: str, delta: int = 1) -> int:
             cache.set(key, 0)
             logger.debug('Счётчик обнулён (попытка уйти в минус): key=%s', key)
             return 0
-        logger.debug('Счётчик уменьшен: key=%s, delta=%d, new_value=%d', key, delta, new_value)
+        logger.debug(
+            'Счётчик уменьшен: key=%s, delta=%d, new_value=%d',
+            key,
+            delta,
+            new_value,
+        )
         return new_value
     except ValueError:
         cache.set(key, 0)

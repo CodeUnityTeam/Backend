@@ -84,7 +84,6 @@ def _build_list_cache_key(
     return f'{prefix}:list:ids:{user_part}:{params_str}'
 
 
-
 @extend_schema_view(
     list=extend_schema(
         tags=['Проекты'],
