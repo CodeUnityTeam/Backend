@@ -3,6 +3,8 @@ import logging
 from django.contrib.auth import get_user_model
 from django.db import transaction
 
+from core.cache_mixins import get_counter
+from core.constants.cache import COUNTER_PROJECT_LIKES_PREFIX
 from core.constants.projects import APPLICANT, ARCHIVED, MEMBER, PENDING
 from projects.models import (
     Project,
@@ -53,6 +55,7 @@ def toggle_project_like(project: Project, user: User) -> dict:
     """Переключает состояние лайка для проекта указанным пользователем.
 
     Если лайк уже существует, он удаляется; если отсутствует — создаётся.
+    Количество лайков читается из Redis-счётчика (без COUNT-запроса к БД).
     """
     validate_project_like(project, user)
     with transaction.atomic():
@@ -62,7 +65,11 @@ def toggle_project_like(project: Project, user: User) -> dict:
         )
         if not created:
             like.delete()
-        likes_count = ProjectLike.objects.filter(project=project).count()
+        likes_count = get_counter(
+            COUNTER_PROJECT_LIKES_PREFIX,
+            str(project.project_id),
+            default=0,
+        )
     return {'liked': created, 'likes_count': likes_count}
 
 
