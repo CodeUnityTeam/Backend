@@ -53,6 +53,8 @@ from .work_format import WorkFormatSerializer
 
 User = get_user_model()
 
+logger = logging.getLogger(__name__)
+
 logger = logging.getLogger('app.' + __name__)
 
 
@@ -268,11 +270,16 @@ class ProjectShortSerializer(serializers.ModelSerializer):
 
     def get_participants_count(self, project: Project) -> int:
         """Количество участников из Redis-счётчика (с fallback на БД)."""
-        return get_or_seed_counter(
+        count = get_or_seed_counter(
             COUNTER_PROJECT_PARTICIPANTS_PREFIX,
             str(project.project_id),
             ProjectParticipant.objects.filter(project=project),
         )
+        logger.debug(
+            'participants_count для проекта %s: %d',
+            project.project_id, count,
+        )
+        return count
 
 
 class ProjectDetailSerializer(ProjectShortSerializer):
@@ -319,11 +326,16 @@ class ProjectDetailSerializer(ProjectShortSerializer):
 
     def get_likes_count(self, project: Project) -> int:
         """Количество лайков из Redis-счётчика (с fallback на БД)."""
-        return get_or_seed_counter(
+        count = get_or_seed_counter(
             COUNTER_PROJECT_LIKES_PREFIX,
             str(project.project_id),
             ProjectLike.objects.filter(project=project),
         )
+        logger.debug(
+            'likes_count для проекта %s: %d',
+            project.project_id, count,
+        )
+        return count
 
     @extend_schema_field(UserBaseSerializer(many=True))
     def get_participants(self, project: Project) -> list:

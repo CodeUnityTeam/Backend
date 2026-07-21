@@ -1,3 +1,4 @@
+import logging
 from typing import Any, Dict
 
 from rest_framework import serializers
@@ -19,6 +20,8 @@ from projects.validators.response_project import (
     validate_can_create_response,
     validate_can_invite,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class ResponseUserProjectSerializer(serializers.ModelSerializer):
@@ -229,11 +232,16 @@ class FeedbackAndInvitationFeedSerializer(serializers.Serializer):
 
     def get_participants_count(self, instance: Response) -> int:
         """Количество участников из Redis-счётчика (с fallback на БД)."""
-        return get_or_seed_counter(
+        count = get_or_seed_counter(
             COUNTER_PROJECT_PARTICIPANTS_PREFIX,
             str(instance.project_id),
             ProjectParticipant.objects.filter(project=instance.project),
         )
+        logger.debug(
+            'participants_count для отклика %s (проект %s): %d',
+            instance.response_id, instance.project_id, count,
+        )
+        return count
 
     def get_skills(self, instance: Response) -> list[dict]:
         """Навыки проекта из prefetch_related (без доп. запроса)."""

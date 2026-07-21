@@ -23,9 +23,12 @@ def incr_counter(prefix: str, object_id: str, delta: int = 1) -> int:
     """Увеличить счётчик. Если ключа нет — создать со значением delta."""
     key = _ck(prefix, object_id)
     try:
-        return cache.incr(key, delta)
+        new_value = cache.incr(key, delta)
+        logger.debug('Счётчик увеличен: key=%s, delta=%d, new_value=%d', key, delta, new_value)
+        return new_value
     except ValueError:
         cache.set(key, delta)
+        logger.debug('Счётчик создан: key=%s, initial_value=%d', key, delta)
         return delta
 
 
@@ -36,17 +39,23 @@ def decr_counter(prefix: str, object_id: str, delta: int = 1) -> int:
         new_value = cache.decr(key, delta)
         if new_value < 0:
             cache.set(key, 0)
+            logger.debug('Счётчик обнулён (попытка уйти в минус): key=%s', key)
             return 0
+        logger.debug('Счётчик уменьшен: key=%s, delta=%d, new_value=%d', key, delta, new_value)
         return new_value
     except ValueError:
         cache.set(key, 0)
+        logger.debug('Счётчик создан с 0: key=%s', key)
         return 0
 
 
 def get_counter(prefix: str, object_id: str, default: int = 0) -> int:
     """Прочитать счётчик. Если ключа нет — вернуть default."""
-    value = cache.get(_ck(prefix, object_id))
-    return int(value) if value is not None else default
+    key = _ck(prefix, object_id)
+    value = cache.get(key)
+    if value is not None:
+        return int(value)
+    return default
 
 
 def get_or_seed_counter(
@@ -61,6 +70,10 @@ def get_or_seed_counter(
         return int(value)
     count = qs.aggregate(c=Count('pk'))['c'] or 0
     cache.set(key, count)
+    logger.debug(
+        'Счётчик инициализирован из БД: key=%s, count=%d',
+        key, count,
+    )
     return count
 
 

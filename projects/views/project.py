@@ -188,8 +188,9 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
         cached_ids = cache.get(cache_key)
         if cached_ids is not None:
             logger.info(
-                'Передача списка проектов из кэша IDs: cache_key=%s',
+                'Cache HIT IDs: key=%s, total_ids=%d',
                 cache_key,
+                len(cached_ids),
             )
             # Восстанавливаем queryset по IDs (без фильтров — они уже учтены)
             qs = get_optimized_project_queryset(user=user).filter(
@@ -198,6 +199,10 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
             page = self.paginate_queryset(qs)
             if page is not None:
                 serializer = self.get_serializer(page, many=True)
+                logger.debug(
+                    'Cache HIT: страница %d, элементов на странице %d',
+                    page.number, len(page),
+                )
                 return self.get_paginated_response(serializer.data)
             serializer = self.get_serializer(qs, many=True)
             return DRFResponse(serializer.data)
@@ -212,7 +217,7 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
             timeout=PROJECT_LIST_CACHE_TIMEOUT,
         )
         logger.info(
-            'Кэширование IDs списка проектов: cache_key=%s, count=%d',
+            'Cache MISS: key=%s, total_ids=%d',
             cache_key,
             len(all_ids),
         )

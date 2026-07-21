@@ -60,12 +60,15 @@ def invalidate_project_like_cache(
     - Обновляет счётчик лайков через incr/decr (без COUNT-запроса к БД).
     - Очищает детали и список — только для пользователя, поставившего лайк.
     """
-    # post_save с created=True → лайк добавлен (incr)
-    # post_delete или post_save с created=False → лайк удалён (decr)
-    if kwargs.get('created', False):
-        incr_counter(COUNTER_PROJECT_LIKES_PREFIX, str(instance.project_id))
+    liked = kwargs.get('created', False)
+    if liked:
+        new_value = incr_counter(
+            COUNTER_PROJECT_LIKES_PREFIX, str(instance.project_id),
+        )
     else:
-        decr_counter(COUNTER_PROJECT_LIKES_PREFIX, str(instance.project_id))
+        new_value = decr_counter(
+            COUNTER_PROJECT_LIKES_PREFIX, str(instance.project_id),
+        )
 
     cache.delete_pattern(
         f'{CACHE_KEY_PROJECTS_PREFIX}:detail:'
@@ -75,9 +78,12 @@ def invalidate_project_like_cache(
         f'{CACHE_KEY_PROJECTS_PREFIX}:list:ids:{instance.user_id}:*',
     )
     logger.debug(
-        'Кэш проекта %s инвалидирован после изменения статуса лайка, '
-        'счётчик лайков обновлён',
+        'Лайк проекта %s: liked=%s, счётчик лайков=%d, '
+        'кэш пользователя %s инвалидирован',
         instance.project_id,
+        liked,
+        new_value,
+        instance.user_id,
     )
 
 
@@ -110,19 +116,26 @@ def invalidate_project_participant_cache(
     - Обновляет счётчик участников через incr/decr.
     - Очищает детали проекта для всех пользователей.
     """
-    if kwargs.get('created', False):
-        incr_counter(
+    created = kwargs.get('created', False)
+    if created:
+        new_value = incr_counter(
             COUNTER_PROJECT_PARTICIPANTS_PREFIX,
             str(instance.project_id),
         )
     else:
-        decr_counter(
+        new_value = decr_counter(
             COUNTER_PROJECT_PARTICIPANTS_PREFIX,
             str(instance.project_id),
         )
 
     cache.delete_pattern(
         f'{CACHE_KEY_PROJECTS_PREFIX}:detail:{instance.project_id}:*',
+    )
+    logger.debug(
+        'Участник проекта %s: added=%s, счётчик участников=%d',
+        instance.project_id,
+        created,
+        new_value,
     )
 
 

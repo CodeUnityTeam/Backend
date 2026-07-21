@@ -70,6 +70,10 @@ def toggle_project_like(project: Project, user: User) -> dict:
             str(project.project_id),
             default=0,
         )
+    logger.debug(
+        'Лайк проекта %s: liked=%s, likes_count=%d (из Redis)',
+        project.project_id, created, likes_count,
+    )
     return {'liked': created, 'likes_count': likes_count}
 
 
