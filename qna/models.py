@@ -9,10 +9,8 @@ from core.constants.qna import (
     MIN_DESC_QUESTION,
     MIN_TITLE_QUESTION,
 )
-from core.models.mixins import TimestampMixin
+from core.models.mixins import BaseImageMixin, TimestampMixin
 from users.models import Skill
-
-from .mixins import BaseImageMixin
 
 
 class Question(TimestampMixin, models.Model):

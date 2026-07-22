@@ -13,8 +13,7 @@ from core.constants.feedback import (
     MIN_REVIEW_TEXT,
     STATUS_FEEDBACK,
 )
-from core.models.mixins import TimestampMixin
-from qna.mixins import BaseImageMixin
+from core.models.mixins import BaseImageMixin, TimestampMixin
 
 User = get_user_model()
 
