@@ -130,8 +130,6 @@ def get_optimized_project_queryset(
     Аннотирует:
       - is_liked_by_me через Exists-подзапрос для переданного user.
       - is_participant через Exists-подзапрос членства в проекте.
-      - participants_count через Count.
-      - likes_count через Count.
     """
     qs = Project.objects.select_related(
         'author',
@@ -143,9 +141,6 @@ def get_optimized_project_queryset(
             'participants',
             queryset=ProjectParticipant.objects.select_related('user'),
         ),
-    ).annotate(
-        participants_count=Count('participants', distinct=True),
-        likes_count=Count('likes', distinct=True),
     )
     qs = _annotate_is_liked_by_me(qs, user)
     qs = _annotate_is_favorite_by_me(qs, user)
@@ -159,7 +154,6 @@ def get_response_feed_queryset(user: User) -> QuerySet:
     свои отклики и приглашения, где он является приглашённым.
 
     Аннотирует:
-      - participants_count — количество участников проекта
       - is_liked_by_me — лайкнул ли текущий пользователь проект
 
     Оптимизация запросов:
@@ -195,10 +189,7 @@ def get_response_feed_queryset(user: User) -> QuerySet:
         queryset = queryset.annotate(
             is_liked_by_me=Value(False, output_field=BooleanField()),
         )
-    # Аннотация participants_count
-    return queryset.annotate(
-        participants_count=Count('project__participants'),
-    )
+    return queryset
 
 
 def get_recommended_projects_queryset(user: User) -> QuerySet[Project]:
@@ -212,7 +203,6 @@ def get_recommended_projects_queryset(user: User) -> QuerySet[Project]:
 
     Аннотирует:
       - relevance — количество совпадающих навыков
-      - participants_count — количество участников
       - is_liked_by_me — лайкнул ли текущий пользователь проект
     """
     user_skill_ids = list(
@@ -234,7 +224,6 @@ def get_recommended_projects_queryset(user: User) -> QuerySet[Project]:
                 'skills',
                 filter=Q(skills__skill_id__in=user_skill_ids),
             ),
-            participants_count=Count('participants'),
         )
         .exclude(author=user)
         .exclude(participants__user=user)

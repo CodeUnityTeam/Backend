@@ -67,6 +67,23 @@ from .project_parameters import (
 logger = logging.getLogger(__name__)
 
 
+def _build_list_cache_key(
+    prefix: str,
+    user: Any,
+    query_params: dict,
+) -> str:
+    """Сформировать ключ кэша для списка IDs проектов.
+
+    Формат: {prefix}:list:ids:{user_id}:{md5(params)}
+    """
+    sorted_params = sorted(query_params.items())
+    params_str = hashlib.md5(
+        str(sorted_params).encode(),
+    ).hexdigest()
+    user_part = str(user.pk) if user.is_authenticated else 'anonymous'
+    return f'{prefix}:list:ids:{user_part}:{params_str}'
+
+
 @extend_schema_view(
     list=extend_schema(
         tags=['Проекты'],
@@ -144,50 +161,68 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
         *args: Any,
         **kwargs: Any,
     ) -> DRFResponse:
-        """Кэширует список проектов.
+        """Кэширует IDs проектов, данные собираются из свежего queryset'а.
 
-        Ключ: projects:list:{user_id}:{md5(params)}.
-        user_id в ключе позволяет точечно инвалидировать кэш при лайке.
+        Ключ: projects:list:ids:{user_id}:{md5(params)}.
+        В кэше хранятся только project_id (UUID), а сам queryset
+        с prefetch_related строится заново — это делает ответ
+        независимым от изменений сериализаторов.
         """
         user = request.user
         query_params = request.query_params.dict()
-        sorted_params = sorted(query_params.items())
-        params_str = hashlib.md5(
-            str(sorted_params).encode(),
-        ).hexdigest()
-        user_part = str(user.pk) if user.is_authenticated else 'anonymous'
-        cache_key = (
-            f'{CACHE_KEY_PROJECTS_PREFIX}:list:{user_part}:{params_str}'
+        cache_key = _build_list_cache_key(
+            CACHE_KEY_PROJECTS_PREFIX, user, query_params,
         )
-        cached_response = cache.get(cache_key)
+
         logger.info(
-            'Запрос списка проектов: user_id=%s, role=%s, '
-            'params=%s, cache_key=%s',
+            'Запрос списка проектов: user_id=%s, role=%s, params=%s, '
+            'cache_key=%s',
             user.pk if user.is_authenticated else 'anonymous',
-            user.projects_relation
-            if user.is_authenticated else 'anonymous',
+            user.projects_relation if user.is_authenticated else 'anonymous',
             query_params,
             cache_key,
         )
-        if cached_response is not None:
+
+        # Пробуем достать IDs из кэша
+        cached_ids = cache.get(cache_key)
+        if cached_ids is not None:
             logger.info(
-                'Передача списка проектов из кэша: cache_key=%s',
+                'Cache HIT IDs: key=%s, total_ids=%d',
                 cache_key,
+                len(cached_ids),
             )
-            return DRFResponse(cached_response)
-        response = super().list(request, *args, **kwargs)
-        if response.status_code == 200:
-            cache.set(
-                cache_key,
-                response.data,
-                timeout=PROJECT_LIST_CACHE_TIMEOUT,
+            # Восстанавливаем queryset по IDs (без фильтров — они уже учтены)
+            qs = get_optimized_project_queryset(user=user).filter(
+                project_id__in=cached_ids,
             )
-            logger.info(
-                'Кэширование списка проектов, передача пользователю: '
-                'cache_key=%s',
-                cache_key,
-            )
-        return response
+            page = self.paginate_queryset(qs)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                logger.debug(
+                    'Cache HIT: страница %d, элементов на странице %d',
+                    page.number, len(page),
+                )
+                return self.get_paginated_response(serializer.data)
+            serializer = self.get_serializer(qs, many=True)
+            return DRFResponse(serializer.data)
+
+        # Кэш пуст — получаем полный queryset, кэшируем IDs
+        qs = super().get_queryset()
+        # Извлекаем IDs до пагинации (весь набор)
+        all_ids = list(qs.values_list('project_id', flat=True))
+        cache.set(
+            cache_key,
+            [str(pid) for pid in all_ids],
+            timeout=PROJECT_LIST_CACHE_TIMEOUT,
+        )
+        logger.info(
+            'Cache MISS: key=%s, total_ids=%d',
+            cache_key,
+            len(all_ids),
+        )
+
+        self.queryset = qs
+        return super().list(request, *args, **kwargs)
 
     def get_queryset(self) -> QuerySet[Project]:
         """Оптимизированный queryset с предзагрузкой связанных данных.

@@ -5,9 +5,12 @@ from django.core.cache import cache
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
+from core.cache_mixins import decr_counter, incr_counter
 from core.constants.cache import (
     CACHE_KEY_PROJECTS_PREFIX,
     CACHE_KEY_RESPONSES_PREFIX,
+    COUNTER_PROJECT_LIKES_PREFIX,
+    COUNTER_PROJECT_PARTICIPANTS_PREFIX,
 )
 from projects.models import (
     Project,
@@ -39,7 +42,7 @@ def invalidate_project_cache(
         f'{CACHE_KEY_PROJECTS_PREFIX}:detail:{project_id}:*',
     )
     cache.delete_pattern(
-        f'{CACHE_KEY_PROJECTS_PREFIX}:list:{instance.author_id}:*',
+        f'{CACHE_KEY_PROJECTS_PREFIX}:list:ids:{instance.author_id}:*',
     )
     cache.delete_pattern(f'{CACHE_KEY_PROJECTS_PREFIX}:recommendations:*')
     logger.debug('Очищен кэш проекта %s', project_id)
@@ -54,19 +57,33 @@ def invalidate_project_like_cache(
 ) -> None:
     """Инвалидирует кэш при лайке/снятии лайка проекта.
 
-    Очищает детали и список — только для пользователя, поставившего лайк
-    (cache stampede prevention).
+    - Обновляет счётчик лайков через incr/decr (без COUNT-запроса к БД).
+    - Очищает детали и список — только для пользователя, поставившего лайк.
     """
+    liked = kwargs.get('created', False)
+    if liked:
+        new_value = incr_counter(
+            COUNTER_PROJECT_LIKES_PREFIX, str(instance.project_id),
+        )
+    else:
+        new_value = decr_counter(
+            COUNTER_PROJECT_LIKES_PREFIX, str(instance.project_id),
+        )
+
     cache.delete_pattern(
         f'{CACHE_KEY_PROJECTS_PREFIX}:detail:'
         f'{instance.project_id}:{instance.user_id}',
     )
     cache.delete_pattern(
-        f'{CACHE_KEY_PROJECTS_PREFIX}:list:{instance.user_id}:*',
+        f'{CACHE_KEY_PROJECTS_PREFIX}:list:ids:{instance.user_id}:*',
     )
     logger.debug(
-        'Кэш проекта %s инвалидирован после изменения статуса лайка',
+        'Лайк проекта %s: liked=%s, счётчик лайков=%d, '
+        'кэш пользователя %s инвалидирован',
         instance.project_id,
+        liked,
+        new_value,
+        instance.user_id,
     )
 
 
@@ -96,10 +113,29 @@ def invalidate_project_participant_cache(
 ) -> None:
     """Инвалидирует кэш деталей проекта при изменении состава участников.
 
-    Очищает детали проекта для всех пользователей.
+    - Обновляет счётчик участников через incr/decr.
+    - Очищает детали проекта для всех пользователей.
     """
+    created = kwargs.get('created', False)
+    if created:
+        new_value = incr_counter(
+            COUNTER_PROJECT_PARTICIPANTS_PREFIX,
+            str(instance.project_id),
+        )
+    else:
+        new_value = decr_counter(
+            COUNTER_PROJECT_PARTICIPANTS_PREFIX,
+            str(instance.project_id),
+        )
+
     cache.delete_pattern(
         f'{CACHE_KEY_PROJECTS_PREFIX}:detail:{instance.project_id}:*',
+    )
+    logger.debug(
+        'Участник проекта %s: added=%s, счётчик участников=%d',
+        instance.project_id,
+        created,
+        new_value,
     )
 
 
@@ -145,5 +181,5 @@ def invalidate_favorite_cache(
         f'{instance.project_id}:{instance.user_id}',
     )
     cache.delete_pattern(
-        f'{CACHE_KEY_PROJECTS_PREFIX}:list:{instance.user_id}:*',
+        f'{CACHE_KEY_PROJECTS_PREFIX}:list:ids:{instance.user_id}:*',
     )
