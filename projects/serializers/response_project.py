@@ -1,7 +1,6 @@
 import logging
 from typing import Any, Dict
 
-from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from core.cache_mixins import get_or_seed_counter
@@ -15,6 +14,7 @@ from core.constants.projects import (
     STATUS_RESPONSE_PROJECT,
 )
 from projects.models import Response
+from projects.models.project import ProjectParticipant
 from projects.serializers.skill import SkillSerializer
 from projects.services import add_user_to_project_participants
 from projects.validators.response_project import (
