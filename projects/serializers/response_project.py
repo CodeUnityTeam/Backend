@@ -12,8 +12,8 @@ from core.constants.projects import (
     STATUS_RESPONSE_PROJECT,
 )
 from projects.models import Response
-from projects.services import add_user_to_project_participants
 from projects.serializers.skill import SkillSerializer
+from projects.services import add_user_to_project_participants
 from projects.validators.response_project import (
     validate_can_change_status,
     validate_can_create_response,
