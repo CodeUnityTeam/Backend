@@ -9,6 +9,8 @@ from django.db import transaction
 from django.db.models import F, QuerySet
 from django.utils import timezone
 
+from core.constants.feedback import FEEDBACK_STATUS_CLOSED
+from core.constants.projects import ARCHIVED
 from core.constants.users import LAST_LOGIN_UPDATE_INTERVAL
 from core.s3_utils import MediaType, S3Service
 from projects.models import Response as ProjectResponse
@@ -95,7 +97,7 @@ def deactivate_user_account(user: User) -> None:
     )
     with transaction.atomic():
         # 1. Закрываем формы обратной связи
-        closed_count = user.feedback_forms.update(status='Closed')
+        closed_count = user.feedback_forms.update(status=FEEDBACK_STATUS_CLOSED)
         logger.debug(
             'Закрыто форм обратной связи: user_id=%s, count=%s',
             user.user_id,
@@ -103,7 +105,7 @@ def deactivate_user_account(user: User) -> None:
         )
 
         # 2. Архивируем проекты автора
-        archived_count = user.projects.update(status_project='ARCHIVED')
+        archived_count = user.projects.update(status_project=ARCHIVED)
         logger.debug(
             'Архивировано проектов: user_id=%s, count=%s',
             user.user_id,
