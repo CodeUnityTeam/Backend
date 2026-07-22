@@ -42,10 +42,10 @@ class CacheRetrieveMixin:
 
         cached_response = cache.get(cache_key)
         if cached_response is not None:
-            logger.debug(f'Cache HIT: {cache_key}')
+            logger.debug('Cache HIT: %s', cache_key)
             return Response(cached_response)
 
-        logger.debug(f'Cache MISS: {cache_key}')
+        logger.debug('Cache MISS: %s', cache_key)
         response = super().retrieve(request, *args, **kwargs)
 
         if response.status_code == 200:

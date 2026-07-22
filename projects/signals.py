@@ -65,8 +65,8 @@ def invalidate_project_like_cache(
         f'{CACHE_KEY_PROJECTS_PREFIX}:list:{instance.user_id}:*',
     )
     logger.debug(
-        f'Кэш проекта {instance.project_id} инвалидирован после изменения '
-        'статуса лайка ',
+        'Кэш проекта %s инвалидирован после изменения статуса лайка',
+        instance.project_id,
     )
 
 
