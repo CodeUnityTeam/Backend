@@ -7,7 +7,7 @@ from django.db.models import Model, QuerySet
 from django.http import HttpRequest
 
 from core.admin_forms import ImageAdminForm
-from qna.mixins import BaseImageMixin
+from core.models.mixins import BaseImageMixin
 
 User = apps.get_model('users', 'User')
 
