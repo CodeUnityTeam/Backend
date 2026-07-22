@@ -1,5 +1,6 @@
 from typing import Any, Dict
 
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from core.constants.projects import (
@@ -12,6 +13,7 @@ from core.constants.projects import (
 )
 from projects.models import Response
 from projects.services import add_user_to_project_participants
+from projects.serializers.skill import SkillSerializer
 from projects.validators.response_project import (
     validate_can_change_status,
     validate_can_create_response,
@@ -199,10 +201,7 @@ class FeedbackAndInvitationFeedSerializer(serializers.Serializer):
         source='project.short_desc',
         read_only=True,
     )
-    skills = serializers.ListField(
-        child=serializers.CharField(),
-        read_only=True,
-    )
+    skills = serializers.SerializerMethodField()
     location = serializers.CharField(
         source='project.location',
         read_only=True,
@@ -227,11 +226,15 @@ class FeedbackAndInvitationFeedSerializer(serializers.Serializer):
     author_email = serializers.SerializerMethodField()
     author_phone = serializers.SerializerMethodField()
 
+    @extend_schema_field(SkillSerializer(many=True))
     def get_skills(self, instance: Response) -> list[dict]:
         """Навыки проекта из prefetch_related (без доп. запроса)."""
         if not instance.project_id:
             return []
-        return [skill.name for skill in instance.project.skills.all()]
+        return SkillSerializer(
+            instance.project.skills.all(),
+            many=True,
+        ).data
 
     def get_author_email(self, instance: Response) -> str | None:
         """Email автора — только для approved откликов."""
