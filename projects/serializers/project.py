@@ -10,12 +10,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework_simplejwt.settings import api_settings
 
-from core.constants.projects import (
-    AUTHOR,
-    DRAFT,
-    PUBLISHED,
-    RECRUITING_CLOSED,
-)
+from core.constants.projects import AUTHOR, DRAFT, PUBLISHED, RECRUITING_CLOSED
 from projects.models import Project
 from projects.selectors import get_project_with_relations
 from projects.services import add_user_to_project_participants

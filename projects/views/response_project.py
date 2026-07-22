@@ -13,9 +13,7 @@ from drf_spectacular.utils import (
 )
 from rest_framework import status
 from rest_framework.mixins import ListModelMixin
-from rest_framework.permissions import (
-    IsAuthenticated,
-)
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response as DRFResponse
 from rest_framework.serializers import Serializer

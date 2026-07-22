@@ -1,7 +1,4 @@
-from drf_spectacular.utils import (
-    extend_schema,
-    extend_schema_view,
-)
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet
 
