@@ -32,7 +32,7 @@ def get_question_detail_queryset() -> QuerySet[Question]:
     """Возвращает оптимизированный queryset для детальной страницы вопроса.
 
     - select_related: user
-    - prefetch_related: answers, likes, images
+    - prefetch_related: answers (с лайками), likes, images
     - annotate: likes_count, answers_count, author_name
     """
     return Question.objects.select_related('user').prefetch_related(
@@ -40,7 +40,7 @@ def get_question_detail_queryset() -> QuerySet[Question]:
             'answers',
             queryset=Answer.objects.select_related(
                 'user',
-            ).prefetch_related('images').filter(is_active=True),
+            ).prefetch_related('images', 'likes').filter(is_active=True),
         ),
         'likes',
         'images',
