@@ -19,6 +19,7 @@ CRITICAL_LIST_FIELDS = {
     'first_name',
     'last_name',
     'city',
+    'country',
     'avatar_url',
     'rating',
     'is_active',

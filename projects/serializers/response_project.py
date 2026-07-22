@@ -1,8 +1,11 @@
+import logging
 from typing import Any, Dict
 
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
+from core.cache_mixins import get_or_seed_counter
+from core.constants.cache import COUNTER_PROJECT_PARTICIPANTS_PREFIX
 from core.constants.projects import (
     APPLICANT,
     APPROVED,
@@ -19,6 +22,8 @@ from projects.validators.response_project import (
     validate_can_create_response,
     validate_can_invite,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class ResponseUserProjectSerializer(serializers.ModelSerializer):
@@ -216,9 +221,7 @@ class FeedbackAndInvitationFeedSerializer(serializers.Serializer):
         read_only=True,
         allow_null=True,
     )
-    participants_count = serializers.IntegerField(
-        read_only=True,
-    )
+    participants_count = serializers.SerializerMethodField()
     is_liked_by_me = serializers.BooleanField(
         read_only=True,
     )
@@ -226,7 +229,19 @@ class FeedbackAndInvitationFeedSerializer(serializers.Serializer):
     author_email = serializers.SerializerMethodField()
     author_phone = serializers.SerializerMethodField()
 
-    @extend_schema_field(SkillSerializer(many=True))
+    def get_participants_count(self, instance: Response) -> int:
+        """Количество участников из Redis-счётчика (с fallback на БД)."""
+        count = get_or_seed_counter(
+            COUNTER_PROJECT_PARTICIPANTS_PREFIX,
+            str(instance.project_id),
+            ProjectParticipant.objects.filter(project=instance.project),
+        )
+        logger.debug(
+            'participants_count для отклика %s (проект %s): %d',
+            instance.response_id, instance.project_id, count,
+        )
+        return count
+
     def get_skills(self, instance: Response) -> list[dict]:
         """Навыки проекта из prefetch_related (без доп. запроса)."""
         if not instance.project_id:
