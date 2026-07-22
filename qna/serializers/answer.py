@@ -13,6 +13,7 @@ class AnswerDetailSerializer(serializers.ModelSerializer):
     images = serializers.SerializerMethodField()
     likes_count = serializers.IntegerField(read_only=True)
     is_owned_by_me = serializers.SerializerMethodField()
+    is_liked_by_me = serializers.SerializerMethodField()
 
     class Meta:
         model = Answer
@@ -26,6 +27,7 @@ class AnswerDetailSerializer(serializers.ModelSerializer):
             'likes_count',
             'images',
             'is_owned_by_me',
+            'is_liked_by_me',
         )
 
     def get_author_name(self, obj: Answer) -> str:
@@ -55,6 +57,20 @@ class AnswerDetailSerializer(serializers.ModelSerializer):
         if request.user.is_anonymous:
             return False
         return obj.user == request.user
+
+    def get_is_liked_by_me(self, obj: Answer) -> bool:
+        """Проверяет, поставил ли текущий пользователь лайк этому ответу.
+
+        Использует prefetch_related('likes') для избежания дополнительных
+        запросов к БД. Аналогично is_owned_by_me, но проверяет наличие лайка
+        через закешированное отношение likes.
+        """
+        request = self.context.get('request')
+        if request is None or not hasattr(request, 'user'):
+            return False
+        if request.user.is_anonymous:
+            return False
+        return any(like.user_id == request.user.pk for like in obj.likes.all())
 
 
 class AnswerImageMetaSerializer(serializers.Serializer):
