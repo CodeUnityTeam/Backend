@@ -142,7 +142,7 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
             if not user.is_active:
                 # 1. Реактивируем пользователя
                 user.is_active = True
-                user.save(update_fields=['is_active'])
+                user.save(update_fields=('is_active',))
 
                 # 2. Принудительно подтверждаем email
                 email_address = user.emailaddress_set.filter(
@@ -150,7 +150,7 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
                 ).first()
                 if email_address and not email_address.verified:
                     email_address.verified = True
-                    email_address.save(update_fields=['verified'])
+                    email_address.save(update_fields=('verified',))
 
                 # 3. Форматируем название провайдера
                 provider_id = sociallogin.account.provider

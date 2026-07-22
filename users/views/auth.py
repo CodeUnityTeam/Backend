@@ -75,7 +75,7 @@ SOCIAL_LOGIN_ERROR_SERIALIZER: serializers.Serializer = inline_serializer(
 class SocialAuthUrlView(APIView):
     """Базовый класс для генерации URL авторизации сторонних сервисов."""
 
-    permission_classes = [AllowAny]
+    permission_classes = (AllowAny,)
     provider_id: str | None = None
     adapter_class: any = None
 
@@ -182,7 +182,7 @@ class SocialLogin(SocialLoginView):
 class GoogleAuthUrlView(APIView):
     """Возвращает URL для редиректа на страницу авторизации Google."""
 
-    permission_classes = [AllowAny]
+    permission_classes = (AllowAny,)
 
     def get(
         self,
@@ -283,7 +283,7 @@ class GoogleLogin(SocialLogin):
 class YandexAuthUrlView(APIView):
     """Возвращает URL для редиректа на страницу авторизации Yandex."""
 
-    permission_classes = [AllowAny]
+    permission_classes = (AllowAny,)
 
     def get(
         self,
@@ -390,7 +390,7 @@ class YandexLogin(SocialLogin):
 class MailRuAuthUrlView(APIView):
     """Возвращает URL для редиректа на страницу авторизации Mail.ru."""
 
-    permission_classes = [AllowAny]
+    permission_classes = (AllowAny,)
 
     def get(
         self,
@@ -513,7 +513,7 @@ class MailRuLogin(SocialLogin):
 class EmailChangeView(APIView):
     """View для инициации смены email авторизованным пользователем."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
 
     def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Обработать POST-запрос на изменение email пользователя."""

@@ -93,5 +93,5 @@ def toggle_project_favorite(project: Project, user: User) -> dict:
 def archive_project(project: Project, user: User) -> Project:
     """Переводит проект в архив и логирует изменение состояния."""
     project.status_project = ARCHIVED
-    project.save(update_fields=['status_project'])
+    project.save(update_fields=('status_project',))
     return project

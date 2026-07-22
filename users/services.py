@@ -36,7 +36,7 @@ def avatar_upload_handler(
     # 2. Атомарно сохраняем изменения в БД
     with transaction.atomic():
         setattr(user, 'avatar_url', public_url)
-        user.save(update_fields=['avatar_url'])
+        user.save(update_fields=('avatar_url',))
         logger.debug(
             'Новый аватар загружен в S3: user_id=%s, avatar_url=%s, size=%s '
             'avatar_name=%s',
@@ -70,7 +70,7 @@ def avatar_delete_handler(user: User) -> None:
 
     with transaction.atomic():
         setattr(user, 'avatar_url', '')
-        user.save(update_fields=['avatar_url'])
+        user.save(update_fields=('avatar_url',))
 
         if old_avatar_url:
             transaction.on_commit(

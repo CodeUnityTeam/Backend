@@ -125,7 +125,7 @@ class CustomRegisterSerializer(RegisterSerializer):
 
             if not user.is_active:
                 user.is_active = True
-                user.save(update_fields=['is_active'])
+                user.save(update_fields=('is_active',))
                 if email_address:
                     email_address.send_confirmation(request, signup=True)
 
@@ -185,7 +185,7 @@ class EmailChangeSerializer(serializers.Serializer):
 
         # 1. Запоминаем новый email во временное поле модели
         user.new_email = new_email
-        user.save(update_fields=['new_email'])
+        user.save(update_fields=('new_email',))
 
         # 2. Очищаем старые неподтвержденные попытки смены email
         EmailAddress.objects.filter(user=user, verified=False).delete()
