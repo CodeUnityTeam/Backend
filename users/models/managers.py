@@ -2,6 +2,8 @@ from typing import Any
 
 from django.contrib.auth.base_user import BaseUserManager
 
+from users.models import User
+
 
 class UserManager(BaseUserManager):
     """Переопределение стандартного менеджера для создания пользователя.

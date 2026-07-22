@@ -97,7 +97,9 @@ def deactivate_user_account(user: User) -> None:
     )
     with transaction.atomic():
         # 1. Закрываем формы обратной связи
-        closed_count = user.feedback_forms.update(status=FEEDBACK_STATUS_CLOSED)
+        closed_count = user.feedback_forms.update(
+            status=FEEDBACK_STATUS_CLOSED,
+        )
         logger.debug(
             'Закрыто форм обратной связи: user_id=%s, count=%s',
             user.user_id,
