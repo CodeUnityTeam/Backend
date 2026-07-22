@@ -1,4 +1,4 @@
-from typing import Any, Callable, Union
+from typing import Any, Union
 
 from django.db.models import Count, Exists, OuterRef, Q, QuerySet, Subquery
 from django.db.models.functions import Coalesce

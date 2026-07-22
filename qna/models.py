@@ -168,7 +168,6 @@ class QuestionLike(models.Model):
         """Метаданные модели."""
 
         db_table = 'question_likes'
-        unique_together = ('user', 'question')
         verbose_name = 'Лайк вопроса'
         verbose_name_plural = 'Лайки вопросов'
         constraints = (
@@ -214,7 +213,6 @@ class AnswerLike(models.Model):
         """Метаданные модели."""
 
         db_table = 'answer_likes'
-        unique_together = ('user', 'answer')
         verbose_name = 'Лайк ответа'
         verbose_name_plural = 'Лайки ответов'
         constraints = (
