@@ -558,3 +558,5 @@ config = {
 }
 
 logging.config.dictConfig(config)
+
+FORMS_URLFIELD_ASSUME_HTTPS = True

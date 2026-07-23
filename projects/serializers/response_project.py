@@ -14,7 +14,7 @@ from core.constants.projects import (
     PENDING,
     STATUS_RESPONSE_PROJECT,
 )
-from projects.models import Response
+from projects.models import ProjectParticipant, Response
 from projects.serializers.skill import SkillSerializer
 from projects.services import add_user_to_project_participants
 from projects.validators.response_project import (
@@ -242,6 +242,7 @@ class FeedbackAndInvitationFeedSerializer(serializers.Serializer):
         )
         return count
 
+    @extend_schema_field(SkillSerializer(many=True))
     def get_skills(self, instance: Response) -> list[dict]:
         """Навыки проекта из prefetch_related (без доп. запроса)."""
         if not instance.project_id:

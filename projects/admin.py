@@ -39,7 +39,7 @@ class ProjectAdmin(LikeCountMixin, RolePermissionsMixin, admin.ModelAdmin):
     )
     filter_horizontal = ('skills', 'project_format', 'specializations')
     list_filter = ('author', 'location')
-    search_fields = ('title ', 'short_desc')
+    search_fields = ('title', 'short_desc')
     ordering = ('start_date',)
     inlines = (ProjectLikeInline,)
 
@@ -58,7 +58,7 @@ class ProjectParticipantAdmin(RolePermissionsMixin, admin.ModelAdmin):
 
 @admin.register(Response)
 class ResponseAdmin(RolePermissionsMixin, admin.ModelAdmin):
-    """Админ-панель для модели октликов."""
+    """Админ-панель для модели откликов."""
 
     list_display = (
         'response_id',
