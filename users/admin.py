@@ -10,6 +10,7 @@ from django.core.files.uploadedfile import UploadedFile
 from django.db.models import QuerySet
 from django.http import HttpRequest
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 
 from core.admin_mixins import RolePermissionsMixin
 from users.forms import UserAdminAddForm, UserImageAdminForm
@@ -258,7 +259,7 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
         return 'Не загружено'
 
     @admin.display(
-            description=format_html('Email<br>подтверждён'),
+            description=mark_safe('Email<br>подтверждён'),
             boolean=True,
         )
     def get_email_confirmed(self, obj: User) -> bool:
@@ -269,7 +270,7 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
         except EmailAddress.DoesNotExist:
             return False
 
-    @admin.display(description=format_html('Рейтинг<br>пользователя'))
+    @admin.display(description=mark_safe('Рейтинг<br>пользователя'))
     def get_rating(self, obj: User) -> int:
         """Возвращает рейтинг пользователя."""
         return obj.rating
