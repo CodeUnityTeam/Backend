@@ -200,14 +200,15 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
                 serializer = self.get_serializer(page, many=True)
                 logger.debug(
                     'Cache HIT: страница %d, элементов на странице %d',
-                    page.number, len(page),
+                    self.paginator.page.number,
+                    len(page),
                 )
                 return self.get_paginated_response(serializer.data)
             serializer = self.get_serializer(qs, many=True)
             return DRFResponse(serializer.data)
 
         # Кэш пуст — получаем полный queryset, кэшируем IDs
-        qs = super().get_queryset()
+        qs = self.get_queryset()
         # Извлекаем IDs до пагинации (весь набор)
         all_ids = list(qs.values_list('project_id', flat=True))
         cache.set(

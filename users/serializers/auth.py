@@ -18,8 +18,9 @@ from django.http import HttpRequest
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from core.constants.users import MSG_RESENT
 from core.tasks import send_async_template_email
-from users.adapters import MSG_RESENT, ImmediateResponseException
+from users.adapters import ImmediateResponseException
 
 logger = logging.getLogger(__name__)
 UserModel = get_user_model()
