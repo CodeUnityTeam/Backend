@@ -12,7 +12,6 @@ from pytest_mock import MockerFixture
 from rest_framework.test import APIClient
 
 from config.settings_test import postgres_container, redis_container
-from users.utils import email_service as real_email_service
 
 User: Type[Model] = get_user_model()
 
@@ -103,7 +102,6 @@ def mock_email_service(mocker: MockerFixture) -> Any:
     """Mock-фикстура для изоляции асинхронной отправки писем через Celery."""
     from core import tasks
     return mocker.patch.object(tasks.send_async_template_email, 'delay')
-
 
 
 @pytest.fixture
