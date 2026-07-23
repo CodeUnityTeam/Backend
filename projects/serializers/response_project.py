@@ -243,7 +243,7 @@ class FeedbackAndInvitationFeedSerializer(serializers.Serializer):
         return count
 
     @extend_schema_field(
-        SkillSerializer(many=True)
+        SkillSerializer(many=True),
     )
     def get_skills(self, instance: Response) -> list[dict]:
         """Навыки проекта из prefetch_related (без доп. запроса)."""
