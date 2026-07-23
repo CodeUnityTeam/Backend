@@ -28,6 +28,35 @@ def get_answer_or_404(answer_id: UUID) -> Answer:
     return get_object_or_404(Answer, pk=answer_id)
 
 
+def get_question_list_queryset() -> QuerySet[Question]:
+    """Возвращает оптимизированный queryset для списка вопросов.
+
+    - select_related: user
+    - prefetch_related: likes (для is_liked_by_me)
+    - annotate: likes_count, answers_count, author_name
+
+    В отличие от get_question_detail_queryset, не prefetch'ит answers и images,
+    т.к. они не нужны в списке.
+    """
+    return Question.objects.select_related('user').prefetch_related(
+        'likes',
+    ).annotate(
+        likes_count=Count('likes', distinct=True),
+        answers_count=Count('answers'),
+        author_name=Case(
+            When(
+                is_anonymous=True,
+                then=Value('Аноним'),
+            ),
+            default=Concat(
+                'user__first_name',
+                Value(' '),
+                'user__last_name',
+            ),
+        ),
+    )
+
+
 def get_question_detail_queryset() -> QuerySet[Question]:
     """Возвращает оптимизированный queryset для детальной страницы вопроса.
 
