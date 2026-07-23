@@ -100,8 +100,10 @@ def api_client() -> APIClient:
 
 @pytest.fixture
 def mock_email_service(mocker: MockerFixture) -> Any:
-    """Mock-фикстура для изоляции отправки писем через EmailService."""
-    return mocker.patch.object(real_email_service, 'send_template_email')
+    """Mock-фикстура для изоляции асинхронной отправки писем через Celery."""
+    from core import tasks
+    return mocker.patch.object(tasks.send_async_template_email, 'delay')
+
 
 
 @pytest.fixture
