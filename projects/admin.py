@@ -64,6 +64,7 @@ class ResponseAdmin(RolePermissionsMixin, admin.ModelAdmin):
         'response_id',
         'project',
         'user',
+        'initiator_type',
         'status_resp',
     )
 
