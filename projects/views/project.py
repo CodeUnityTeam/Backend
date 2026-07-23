@@ -200,7 +200,7 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
                 serializer = self.get_serializer(page, many=True)
                 logger.debug(
                     'Cache HIT: страница %d, элементов на странице %d',
-                    page.number, len(page),
+                    self.page.number, len(page),
                 )
                 return self.get_paginated_response(serializer.data)
             serializer = self.get_serializer(qs, many=True)
