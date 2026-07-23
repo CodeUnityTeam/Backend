@@ -255,7 +255,6 @@ class UserResponseCardSerializer(serializers.ModelSerializer):
             'response_id',
             'project_id',
             'project_title',
-            'initiator_type',
             'status_resp',
             'profile',
         )
