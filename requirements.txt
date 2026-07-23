@@ -70,7 +70,9 @@ django-filter==26.1
 django-redis==5.4.0
     # via backend
 django-storages==1.14.6
-    # via backend
+    # via backend (pyproject.toml)
+django-prometheus==2.5.0
+    # via backend (pyproject.toml)
 djangorestframework==3.17.1
     # via
     #   backend

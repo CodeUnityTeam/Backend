@@ -51,6 +51,7 @@ INSTALLED_APPS = (
     'allauth.socialaccount.providers.yandex',
     'dj_rest_auth',
     'dj_rest_auth.registration',
+    'django_prometheus',
     'rest_framework_simplejwt',
     'corsheaders',
     # Project apps
@@ -64,6 +65,7 @@ INSTALLED_APPS = (
 )
 
 MIDDLEWARE = (
+    'django_prometheus.middleware.PrometheusBeforeMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -74,6 +76,7 @@ MIDDLEWARE = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
     'users.middleware.UpdateLastActivityMiddleware',
+    'django_prometheus.middleware.PrometheusAfterMiddleware',
 )
 
 TEMPLATES = (
@@ -105,7 +108,7 @@ else:
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django_prometheus.db.backends.postgresql',
         'NAME': os.getenv('POSTGRES_DB'),
         'USER': os.getenv('POSTGRES_USER'),
         'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
@@ -398,7 +401,7 @@ _REDIS_AUTH = f':{REDIS_PASSWORD}@' if REDIS_PASSWORD else ''
 
 CACHES = {
     'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
+        'BACKEND': 'django_prometheus.cache.backends.redis.RedisCache',
         'LOCATION': f'redis://{_REDIS_AUTH}{REDIS_HOST}:{REDIS_PORT}/1',
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',

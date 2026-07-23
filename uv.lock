@@ -88,6 +88,7 @@ dependencies = [
     { name = "django-allauth" },
     { name = "django-cors-headers" },
     { name = "django-filter" },
+    { name = "django-prometheus" },
     { name = "django-redis" },
     { name = "django-storages", extra = ["s3"] },
     { name = "djangorestframework" },
@@ -118,6 +119,7 @@ requires-dist = [
     { name = "django-allauth", specifier = ">=65.16.1" },
     { name = "django-cors-headers", specifier = ">=4.4.0,<5.0" },
     { name = "django-filter", specifier = ">=25.1" },
+    { name = "django-prometheus", specifier = "==2.5.0" },
     { name = "django-redis", specifier = ">=5.4.0,<6.0.0" },
     { name = "django-storages", extras = ["s3"], specifier = ">=1.14.6" },
     { name = "djangorestframework", specifier = ">=3.17.1,<4.0" },
@@ -532,6 +534,19 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/cb/3e/563965173d4cbb5fc308087e7b3d11a115b7b67273d093622480b1e31f78/django_filter-26.1.tar.gz", hash = "sha256:66ea04031b068c77c86e1ac26ced7a3f8f13ce797f5795751707e3deefc58054", size = 144299, upload-time = "2026-07-11T09:27:02.767Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/1f/01/afffed1e3c4540fb75bf550a18b6176a9f6371b5f3e52b69a28995b6480c/django_filter-26.1-py3-none-any.whl", hash = "sha256:7d98ef2899218e6242619b532cb1b95af14e09dfcf74844aecb550ad27b59ff2", size = 94069, upload-time = "2026-07-11T09:27:01.012Z" },
+]
+
+[[package]]
+name = "django-prometheus"
+version = "2.5.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+    { name = "prometheus-client" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/7b/c7/dc39c4c19f7b35e827a486d08376de1fad31c50decb26c56e32668314f13/django_prometheus-2.5.0.tar.gz", hash = "sha256:4837b3c3734d8350880839ab8235aafd250b668c348e159d4aecc3cbefeee53e", size = 26465, upload-time = "2026-05-26T19:04:00.77Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/5d/5d/6ec3083ba69545696c962ae505a0e52e280e7592d4c278c2f3803cabb688/django_prometheus-2.5.0-py2.py3-none-any.whl", hash = "sha256:f15efb526cd53f9cf12da72dc55506322f5566b017a819ff27be1da302303134", size = 31801, upload-time = "2026-05-26T19:03:59.505Z" },
 ]
 
 [[package]]
@@ -959,15 +974,12 @@ wheels = [
 ]
 
 [[package]]
-name = "prompt-toolkit"
-version = "3.0.52"
+name = "prometheus-client"
+version = "0.25.0"
 source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "wcwidth" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/a1/96/06e01a7b38dce6fe1db213e061a4602dd6032a8a97ef6c1a862537732421/prompt_toolkit-3.0.52.tar.gz", hash = "sha256:28cde192929c8e7321de85de1ddbe736f1375148b02f2e17edd840042b1be855", size = 434198, upload-time = "2025-08-27T15:24:02.057Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/1b/fb/d9aa83ffe43ce1f19e557c0971d04b90561b0cfd50762aafb01968285553/prometheus_client-0.25.0.tar.gz", hash = "sha256:5e373b75c31afb3c86f1a52fa1ad470c9aace18082d39ec0d2f918d11cc9ba28", size = 86035, upload-time = "2026-04-09T19:53:42.359Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/84/03/0d3ce49e2505ae70cf43bc5bb3033955d2fc9f932163e84dc0779cc47f48/prompt_toolkit-3.0.52-py3-none-any.whl", hash = "sha256:9aac639a3bbd33284347de5ad8d68ecc044b91a762dc39b7c21095fcd6a19955", size = 391431, upload-time = "2025-08-27T15:23:59.498Z" },
+    { url = "https://files.pythonhosted.org/packages/8d/9b/d4b1e644385499c8346fa9b622a3f030dce14cd6ef8a1871c221a17a67e7/prometheus_client-0.25.0-py3-none-any.whl", hash = "sha256:d5aec89e349a6ec230805d0df882f3807f74fd6c1a2fa86864e3c2279059fed1", size = 64154, upload-time = "2026-04-09T19:53:41.324Z" },
 ]
 
 [[package]]
