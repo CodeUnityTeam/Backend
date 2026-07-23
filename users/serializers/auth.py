@@ -18,8 +18,8 @@ from django.http import HttpRequest
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
+from core.tasks import send_async_template_email
 from users.adapters import MSG_RESENT, ImmediateResponseException
-from users.utils import email_service
 
 logger = logging.getLogger(__name__)
 UserModel = get_user_model()
@@ -212,7 +212,7 @@ class EmailChangeSerializer(serializers.Serializer):
             'current_site': current_site,
         }
 
-        email_service.send_template_email(
+        send_async_template_email.delay(
             to_email=old_email,
             subject=f'Изменение email на сайте {current_site.name}',
             template_base_name='account/email/email_changed_message',

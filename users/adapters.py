@@ -1,5 +1,5 @@
 import os
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from allauth.account.adapter import DefaultAccountAdapter
 from allauth.account.models import EmailConfirmation
@@ -13,8 +13,6 @@ from django.http import HttpRequest
 from rest_framework import status
 from rest_framework.exceptions import APIException
 from rest_framework.response import Response
-
-from users.utils import email_service
 
 UserModel = get_user_model()
 
@@ -79,40 +77,37 @@ class CustomAccountAdapter(DefaultAccountAdapter):
         self,
         template_prefix: str,
         email: str,
-        context: Dict[str, Any],
-        headers: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any],
+        headers: dict[str, str] | None = None,
     ) -> EmailMessage:
         """Перехватывает рендеринг писем для EmailService."""
+        from core.tasks import send_async_template_email
+
         site_name = context['current_site'].name
+        safe_context = {k: v for k, v in context.items() if k != 'request'}
 
         # 1. Подтверждение регистрации
         if 'email_confirmation' in template_prefix:
             context['code'] = None
-            email_service.send_template_email(
+            send_async_template_email.delay(
                 to_email=email,
                 subject=f'Подтверждение регистрации: {site_name}',
-                template_base_name=(
-                    'account/email/email_confirmation_message'
-                ),
-                context=context,
+                template_base_name='account/email/email_confirmation_message',
+                context=safe_context,
             )
             return self._create_dummy_message()
 
         # 2. Восстановление пароля
         if 'password_reset_key' in template_prefix:
-            email_service.send_template_email(
+            send_async_template_email.delay(
                 to_email=email,
                 subject=f'Восстановление пароля: {site_name}',
-                template_base_name=(
-                    'account/email/password_reset_key_message'
-                ),
-                context=context,
+                template_base_name='account/email/password_reset_key_message',
+                context=safe_context,
             )
             return self._create_dummy_message()
 
-        return super().render_mail(
-            template_prefix, email, context, headers,
-        )
+        return super().render_mail(template_prefix, email, context, headers)
 
     def _create_dummy_message(self) -> EmailMessage:
         """Создает заглушку для блокировки дефолтной отправки."""

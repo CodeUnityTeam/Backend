@@ -388,6 +388,7 @@ SPECTACULAR_SETTINGS = {
 # CACHE CONFIGURATION (Redis via django-redis)
 # =============================================================================
 
+DOCKER_REDIS_HOST = os.getenv('DOCKER_REDIS_HOST')
 REDIS_HOST = os.getenv('REDIS_HOST')
 REDIS_PORT = os.getenv('REDIS_PORT')
 REDIS_PASSWORD = os.getenv('REDIS_PASSWORD')
