@@ -58,7 +58,7 @@ class ProjectParticipantAdmin(RolePermissionsMixin, admin.ModelAdmin):
 
 @admin.register(Response)
 class ResponseAdmin(RolePermissionsMixin, admin.ModelAdmin):
-    """Админ-панель для модели октликов."""
+    """Админ-панель для модели откликов."""
 
     list_display = (
         'response_id',
