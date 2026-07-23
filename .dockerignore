@@ -18,9 +18,24 @@ build/
 .ruff_cache/
 htmlcov/
 .coverage
+*.so
+*.db
+
+# Миграции — применяются через manage.py migrate при старте контейнера
+migrations/
+**/migrations/
+!**/migrations/__init__.py
+
+# Статика и медиа — собираются отдельно (S3 / volume)
+media/
+staticfiles/
+static/
+
+# Логи
+logs/
+*.log
 
 # Конфиги разработки — в контейнере не нужны
-pyproject.toml
 ruff.toml
 uv.lock
 
@@ -38,10 +53,13 @@ uv.lock
 # Docker
 .dockerignore
 .backend.yaml
+docker-compose*.yml
+docker-compose*.yaml
 
 # Документация
 readme.md
 README.md
+docs/
 
 # CI/CD
 .github/
@@ -52,3 +70,13 @@ Thumbs.db
 
 # Postgres volume
 postgres_data/
+
+# Тестовые данные — не нужны в production-образе
+# Теги (fixtures/tags/) оставляем — нужны для бизнес-логики
+fixtures/test_data/
+
+# Тесты — не нужны в production-образе
+tests/
+
+# Nginx — свой отдельный контейнер
+nginx/
