@@ -207,7 +207,7 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
             return DRFResponse(serializer.data)
 
         # Кэш пуст — получаем полный queryset, кэшируем IDs
-        qs = super().get_queryset()
+        qs = self.get_queryset()
         # Извлекаем IDs до пагинации (весь набор)
         all_ids = list(qs.values_list('project_id', flat=True))
         cache.set(
