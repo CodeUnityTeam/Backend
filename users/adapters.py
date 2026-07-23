@@ -18,11 +18,6 @@ from users.utils import email_service
 
 UserModel = get_user_model()
 
-MSG_SUCCESS = 'Письмо с подтверждением успешно отправлено на ваш email.'
-MSG_RESENT = (
-    'Письмо с подтверждением успешно отправлено на ваш email повторно.'
-)
-
 
 class ImmediateResponseException(APIException):
     """Кастомное исключение для мгновенного возврата HTTP-ответа."""
@@ -71,7 +66,7 @@ class CustomAccountAdapter(DefaultAccountAdapter):
     ) -> Response:
         """Сформировать ответ на запрос регистрации в сервисе."""
         return Response(
-            {'detail': MSG_SUCCESS},
+            {'detail': 'Письмо с подтверждением выслано.'},
             status=status.HTTP_201_CREATED,
         )
 

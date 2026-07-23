@@ -18,7 +18,8 @@ from django.http import HttpRequest
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from users.adapters import MSG_RESENT, ImmediateResponseException
+from core.constants.users import MSG_RESENT
+from users.adapters import ImmediateResponseException
 from users.utils import email_service
 
 logger = logging.getLogger(__name__)
