@@ -7,10 +7,36 @@
 - **Бэкенд:** `django_redis.cache.RedisCache`
 - **Fallback:** `django_redis.cache.backends.locmem.LocMemCache`
 - **Инвалидация по паттерну:** `cache.delete_pattern()` — Redis SCAN
+- **Счётчики:** `cache.incr()` / `cache.decr()` — атомарные операции Redis
 
 ## Паттерны кэширования
 
-### 1. `CacheRetrieveMixin` — для детальных страниц
+### 1. Счётчики в Redis (incr/decr)
+
+Файл: [`core/cache_mixins.py`](../core/cache_mixins.py)
+
+Агрегированные счётчики (лайки, участники) хранятся в Redis и обновляются атомарно через `incr`/`decr`. Это заменяет дорогие `Count`-аннотации в SQL-запросах.
+
+**Ключи:**
+- `counter:project:likes:{project_id}` — количество лайков проекта
+- `counter:project:participants:{project_id}` — количество участников проекта
+
+**Функции-хелперы:**
+- `incr_counter(prefix, object_id)` — увеличить счётчик
+- `decr_counter(prefix, object_id)` — уменьшить счётчик (не уходит в минус)
+- `get_counter(prefix, object_id, default=0)` — прочитать счётчик
+- `get_or_seed_counter(prefix, object_id, qs)` — прочитать счётчик, при отсутствии — подсчитать в БД и сохранить
+
+**Обновление:** В сигналах `ProjectLike.post_save`/`post_delete` и `ProjectParticipant.post_save`/`post_delete` — `incr_counter()`/`decr_counter()`.
+
+**Чтение:** В сериализаторах `ProjectShortSerializer`, `ProjectDetailSerializer`, `FeedbackAndInvitationFeedSerializer` — `get_or_seed_counter()` с fallback на БД.
+
+**Преимущества:**
+- Убирает `LEFT JOIN` + `GROUP BY` из каждого запроса списка/детальной страницы
+- Счётчики обновляются атомарно, без сброса всего кэша
+- При откате Redis — автоматический fallback на COUNT в БД
+
+### 2. `CacheRetrieveMixin` — для детальных страниц
 
 Файл: [`core/cache_mixins.py`](../core/cache_mixins.py)
 
@@ -25,34 +51,47 @@
 - `QuestionViewSet` — `qna:detail:{pk}:{user_id}`, TTL 5 мин
 - `UserProfileView` — `users:detail:{user_id}:{user_id}`, TTL 10 мин
 
-### 2. Ручное кэширование списков
+### 3. Кэширование IDs объектов (вместо полного JSON-ответа)
 
-Паттерн cache-aside: читаем из кэша, если нет — вычисляем и сохраняем.
+Паттерн cache-aside: в кэше хранятся только ID объектов (UUID), а сам queryset с prefetch_related строится заново. Это делает ответ независимым от изменений сериализаторов.
 
-**Ключ:** `{prefix}:list:{user_id?}:{md5(query_params)}`
+**Ключ:** `{prefix}:list:ids:{user_id?}:{md5(query_params)}`
 
 - `user_id` добавляется, если данные персонализированы (список проектов, профилей)
 - `user_id` **не** добавляется, если данные публичные (список вопросов)
 
 **Где используется:**
-- [`ProjectViewSet.list`](../projects/views/project.py:278) — `projects:list:{user_id}:{md5}`, TTL 5 мин
+- [`ProjectViewSet.list`](../projects/views/project.py:157) — `projects:list:ids:{user_id}:{md5}`, TTL 5 мин
+
+**Преимущества:**
+- Компактный кэш (только UUID, а не полный JSON)
+- Независимость от изменений сериализаторов
+- Данные всегда актуальны (кроме списка IDs)
+
+### 4. Ручное кэширование списков (полный JSON)
+
+Для списков, где частота изменений низкая или сериализаторы стабильны.
+
+**Ключ:** `{prefix}:list:{user_id?}:{md5(query_params)}`
+
+**Где используется:**
 - [`QuestionViewSet.list`](../qna/views/question.py:68) — `qna:list:{md5}`, TTL 3 мин
 - [`UserProfileListView.list`](../users/views/profile.py:475) — `users:list:{user_id}:{md5}`, TTL 5 мин
 - [`ResponseFeedViewSet.list`](../projects/views/response_project.py:118) — `responses:feed:{user_id}:{md5}`, TTL 3 мин
 
-### 3. Ручное кэширование рекомендаций
+### 5. Ручное кэширование рекомендаций
 
 **Ключ:** `projects:recommendations:{user_id}`, TTL 10 мин
 
 Где: [`ProjectViewSet.recommendations`](../projects/views/project.py:515)
 
-### 4. Ручное кэширование справочных данных
+### 6. Ручное кэширование справочных данных
 
 **Ключи:** `skills:list`, `specializations:list`, `work_formats:list`, TTL 1 час
 
 Где: [`TagsListAPIView.list`](../help/views.py:128)
 
-### 5. `@never_cache` — для приватных эндпоинтов
+### 7. `@never_cache` — для приватных эндпоинтов
 
 - `MeProfileView` — профиль текущего пользователя
 - `ProfileLikeAPIView` — переключение лайка пользователю
@@ -63,18 +102,19 @@
 
 ### Принципы
 
-1. **Точечная инвалидация (cache stampede prevention)** — при лайке/действии кэш сбрасывается **только для конкретного пользователя**, а не для всех. Например, `ProjectLike.post_save` удаляет `projects:list:{user_id}:*` — только для того, кто лайкнул. Остальные пользователи продолжают использовать свой кэш.
-2. **Инвалидация по паттерну для всех** — когда меняются сами данные (а не отношение пользователя к ним), кэш сбрасывается для всех через `delete_pattern('{prefix}:detail:{id}:*')`. Например, при изменении названия проекта — все видят новое название.
-3. **Минимизация избыточной инвалидации** — лайк вопроса не сбрасывает список вопросов (`qna:list:*`), т.к. не меняет состав списка. Инвалидация списка проектов при изменении проекта сужена до автора (`projects:list:{author_id}:*`).
+1. **Счётчики через incr/decr** — лайки и участники обновляются атомарно, без сброса кэша.
+2. **Точечная инвалидация (cache stampede prevention)** — при лайке/действии кэш сбрасывается **только для конкретного пользователя**, а не для всех. Например, `ProjectLike.post_save` удаляет `projects:list:ids:{user_id}:*` — только для того, кто лайкнул. Остальные пользователи продолжают использовать свой кэш.
+3. **Инвалидация по паттерну для всех** — когда меняются сами данные (а не отношение пользователя к ним), кэш сбрасывается для всех через `delete_pattern('{prefix}:detail:{id}:*')`. Например, при изменении названия проекта — все видят новое название.
+4. **Минимизация избыточной инвалидации** — лайк вопроса не сбрасывает список вопросов (`qna:list:*`), т.к. не меняет состав списка. Инвалидация списка проектов при изменении проекта сужена до автора (`projects:list:{author_id}:*`).
 
 ### Сигналы
 
 | Модель | Файл | Что инвалидирует |
 |--------|------|-------------------|
 | `Project` | [`projects/signals.py:16`](../projects/signals.py:16) | `projects:detail:{id}:*`, `projects:list:{author_id}:*`, `projects:recommendations:*` |
-| `ProjectLike` | [`projects/signals.py:40`](../projects/signals.py:40) | `projects:detail:{id}:{user_id}`, `projects:list:{user_id}:*` |
-| `Response` | [`projects/signals.py:59`](../projects/signals.py:59) | `responses:feed:{user_id}:*` (только автор отклика) |
-| `ProjectParticipant` | [`projects/signals.py:83`](../projects/signals.py:83) | `projects:detail:{project_id}:*` |
+| `ProjectLike` | [`projects/signals.py:48`](../projects/signals.py:48) | `counter:project:likes:{id}` (incr/decr), `projects:detail:{id}:{user_id}`, `projects:list:{user_id}:*` |
+| `Response` | [`projects/signals.py:93`](../projects/signals.py:93) | `responses:feed:{user_id}:*` (только автор отклика) |
+| `ProjectParticipant` | [`projects/signals.py:108`](../projects/signals.py:108) | `counter:project:participants:{id}` (incr/decr), `projects:detail:{project_id}:*` |
 | `Question` | [`qna/signals.py:28`](../qna/signals.py:28) | `qna:detail:{pk}:*`, `qna:list:*` |
 | `Answer` | [`qna/signals.py:42`](../qna/signals.py:42) | `qna:detail:{question_id}:*` |
 | `QuestionLike` | [`qna/signals.py:55`](../qna/signals.py:55) | `qna:detail:{question_id}:{user_id}` (список не инвалидируется) |
@@ -100,6 +140,8 @@
 | `USER_PROFILE_CACHE_TIMEOUT` | 600 (10 мин) | Профиль пользователя |
 | `USER_PROFILE_LIST_CACHE_TIMEOUT` | 300 (5 мин) | Список профилей |
 | `RESPONSE_FEED_CACHE_TIMEOUT` | 180 (3 мин) | Лента откликов |
+| `COUNTER_PROJECT_LIKES_PREFIX` | `counter:project:likes` | Префикс счётчика лайков проекта |
+| `COUNTER_PROJECT_PARTICIPANTS_PREFIX` | `counter:project:participants` | Префикс счётчика участников проекта |
 
 ## Кэширование изображений
 

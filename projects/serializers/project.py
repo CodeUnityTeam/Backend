@@ -10,13 +10,18 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework_simplejwt.settings import api_settings
 
+from core.cache_mixins import get_or_seed_counter
+from core.constants.cache import (
+    COUNTER_PROJECT_LIKES_PREFIX,
+    COUNTER_PROJECT_PARTICIPANTS_PREFIX,
+)
 from core.constants.projects import (
     AUTHOR,
     DRAFT,
     PUBLISHED,
     RECRUITING_CLOSED,
 )
-from projects.models import Project
+from projects.models import Project, ProjectLike, ProjectParticipant
 from projects.selectors import get_project_with_relations
 from projects.services import add_user_to_project_participants
 from projects.validators import (
@@ -47,6 +52,8 @@ from .user import (
 from .work_format import WorkFormatSerializer
 
 User = get_user_model()
+
+logger = logging.getLogger(__name__)
 
 logger = logging.getLogger('app.' + __name__)
 
@@ -237,9 +244,8 @@ class ProjectShortSerializer(serializers.ModelSerializer):
         default=False,
         help_text='Лайкнул ли проект текущий пользователь (аннотация БД).',
     )
-    participants_count = serializers.IntegerField(
-        read_only=True,
-        help_text='Количество участников проекта (аннотация БД).',
+    participants_count = serializers.SerializerMethodField(
+        help_text='Количество участников проекта (из Redis-счётчика).',
     )
     is_favorite_by_me = serializers.BooleanField(
         read_only=True,
@@ -262,6 +268,19 @@ class ProjectShortSerializer(serializers.ModelSerializer):
             'skills',
         )
 
+    def get_participants_count(self, project: Project) -> int:
+        """Количество участников из Redis-счётчика (с fallback на БД)."""
+        count = get_or_seed_counter(
+            COUNTER_PROJECT_PARTICIPANTS_PREFIX,
+            str(project.project_id),
+            ProjectParticipant.objects.filter(project=project),
+        )
+        logger.debug(
+            'participants_count для проекта %s: %d',
+            project.project_id, count,
+        )
+        return count
+
 
 class ProjectDetailSerializer(ProjectShortSerializer):
     """Сериализатор детальной карточки проекта.
@@ -271,9 +290,8 @@ class ProjectDetailSerializer(ProjectShortSerializer):
 
     specializations = SpecializationSerializer(many=True, read_only=True)
     project_format = WorkFormatSerializer(many=True, read_only=True)
-    likes_count = serializers.IntegerField(
-        read_only=True,
-        help_text='Количество лайков проекта (аннотация БД).',
+    likes_count = serializers.SerializerMethodField(
+        help_text='Количество лайков проекта (из Redis-счётчика).',
     )
     participants = serializers.SerializerMethodField()
     author = serializers.SerializerMethodField()
@@ -305,6 +323,19 @@ class ProjectDetailSerializer(ProjectShortSerializer):
             and requesting_user.projects_relation
             == User.ProjectsRelationChoices.EMPLOYER
         )
+
+    def get_likes_count(self, project: Project) -> int:
+        """Количество лайков из Redis-счётчика (с fallback на БД)."""
+        count = get_or_seed_counter(
+            COUNTER_PROJECT_LIKES_PREFIX,
+            str(project.project_id),
+            ProjectLike.objects.filter(project=project),
+        )
+        logger.debug(
+            'likes_count для проекта %s: %d',
+            project.project_id, count,
+        )
+        return count
 
     @extend_schema_field(UserBaseSerializer(many=True))
     def get_participants(self, project: Project) -> list:
