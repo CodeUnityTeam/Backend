@@ -240,18 +240,23 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'EXCEPTION_HANDLER': 'core.exceptions.custom_exception_handler',
     'DEFAULT_THROTTLE_CLASSES': [
-        'rest_framework.throttling.AnonRateThrottle',
-        'rest_framework.throttling.UserRateThrottle',
+        'core.throttling.UniversalRateThrottle',
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '50/min',               # Общий лимит для анонимов
-        'user': '500/min',              # Общий лимит для юзеров
-        'login': '5/min',               # login view
-        'register': '5/hour',           # register view
-        'password_reset': '5/hour',     # восстановление пароля
-        'password_change': '10/hour',   # смена пароля
-        'upload': '50/min',             # для upload-эндпоинтов
-        'feedback': '10/min',           # 3 запроса на обратную связь
+        'anon_default': '50/min',           # Общий лимит для анонимов
+        'user_default': '500/min',          # Общий лимит для юзеров
+        'anon_login': '5/min',              # login — анонимы
+        'user_login': '5/min',              # login — авторизованные
+        'anon_register': '5/hour',          # register — анонимы
+        'user_register': '5/hour',          # register — авторизованные
+        'anon_password_reset': '5/hour',    # восстановление пароля — анонимы
+        'user_password_reset': '5/hour',    # восстановление пароля — юзеры
+        'anon_password_change': '10/hour',  # смена пароля — анонимы
+        'user_password_change': '10/hour',  # смена пароля — юзеры
+        'anon_upload': '50/min',            # upload — анонимы
+        'user_upload': '50/min',            # upload — юзеры
+        'anon_feedback': '10/min',          # feedback — анонимы
+        'user_feedback': '10/min',          # feedback — юзеры
     },
 }
 # =============================================================================
