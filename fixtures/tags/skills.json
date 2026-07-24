@@ -1,419 +1,6 @@
 [
   {
     "model": "users.skill",
-    "pk": "021c238e-f416-4e33-be2d-00a6d5e4545a",
-    "fields": {
-      "name": "Pipedrive"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "040beef5-07e2-4f45-8292-5f46ef228568",
-    "fields": {
-      "name": "Adobe XD"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "04198d0b-0aff-4067-9e26-d558c85e7b0a",
-    "fields": {
-      "name": "D3.js"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "04c945c5-34bc-4c0a-942a-8340f12a89ff",
-    "fields": {
-      "name": "Rollup"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "055bb186-da44-4de2-8b2a-39ef9523f62c",
-    "fields": {
-      "name": "Windows Server"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "05f02681-cfc4-481d-8efa-0e2a48915663",
-    "fields": {
-      "name": "Docusaurus"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "07931edf-4f66-43e9-b6a4-e358f90bce26",
-    "fields": {
-      "name": "SaltStack"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "0820ac05-16b0-49f0-9f91-d169eb43a7bc",
-    "fields": {
-      "name": "Power BI"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "08c07133-ddae-451a-8ec7-3a0df0667b81",
-    "fields": {
-      "name": "Puppet"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "0adaba4a-e582-4e30-af84-5ecf7957f595",
-    "fields": {
-      "name": "Apache Airflow"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "0b96fe31-f8c2-4750-ad92-946ce0ea71f0",
-    "fields": {
-      "name": "PL/SQL"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "0bda391f-98a9-4c65-867c-87c176f835e4",
-    "fields": {
-      "name": "Elasticsearch"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "0e1252ce-97a9-4b38-84b7-ace5505d7a00",
-    "fields": {
-      "name": "Paligo"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "0e28df7b-ae43-4d9d-88d6-d6a3195638d3",
-    "fields": {
-      "name": "Laravel"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "11b4de29-090d-480b-96c1-d525592fed40",
-    "fields": {
-      "name": "LambdaTest"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "120fb41d-c2a6-486e-8f57-b95681a7ae7f",
-    "fields": {
-      "name": "Scala"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "12728498-7eda-4e92-88ca-6f03b1a947d7",
-    "fields": {
-      "name": "Kanban"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "12e26511-16d4-4f41-888e-c4f067f41e48",
-    "fields": {
-      "name": "Marvel"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "12ff31a8-d700-42fd-8b44-34e23a133bd1",
-    "fields": {
-      "name": "Maven"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "1436c3ae-4dd7-4781-8be3-1bfd77cdfaae",
-    "fields": {
-      "name": "Debian"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "170fe229-d52c-467d-b60e-e7cd13b29261",
-    "fields": {
-      "name": "GameMaker Studio"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "19889cbb-5799-4c60-a635-e23515026748",
-    "fields": {
-      "name": "IIS"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "1b322c95-2aba-4204-8001-68cbc027c5de",
-    "fields": {
-      "name": "SAS"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "1b5014d0-b007-49ce-8d23-4df5896c47c7",
-    "fields": {
-      "name": "Redis"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "1d31c4e5-98cb-44ba-8bb8-0fe3212a7e35",
-    "fields": {
-      "name": "Adobe Illustrator"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "1d4f9aed-0117-45b7-8598-4bc4d7d72309",
-    "fields": {
-      "name": "ServiceNow"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "1db271fa-c4c4-4f27-a840-2574d885b9e4",
-    "fields": {
-      "name": "Teamwork"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "1e13f5e6-3044-4ca3-8290-23f0da69f7a6",
-    "fields": {
-      "name": "Playwright"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "220623a6-a654-40a9-a7b7-a24f8511aca8",
-    "fields": {
-      "name": "MobX"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "24220f1e-5546-4d59-a10b-def49eedd008",
-    "fields": {
-      "name": "Ubuntu"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "2505b12e-d2ea-49cf-a8f3-10bd361df352",
-    "fields": {
-      "name": "Scrum"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "2527dc55-abc9-4c39-8c59-ad14e709d7a4",
-    "fields": {
-      "name": "Heroku"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "25c668ea-ae6c-4c76-8450-ebcb66f079e8",
-    "fields": {
-      "name": "Jira"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "263752e1-bb63-45e4-858d-0d5f97bb25ee",
-    "fields": {
-      "name": "R"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "29dbd3f7-5a24-4541-b693-829f57d57b11",
-    "fields": {
-      "name": "GitHub Actions"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "29eb91c1-7be6-4d31-b622-97593775341d",
-    "fields": {
-      "name": "React Native"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "2b06493d-7acc-457e-ad24-9d5eeb6f5f74",
-    "fields": {
-      "name": "Terraform"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "2bf596f2-1cd0-41c9-946e-2df8fb891fc3",
-    "fields": {
-      "name": "Firebase"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "2c23a013-90f1-45ad-864d-1334c16e3137",
-    "fields": {
-      "name": "Adobe InDesign"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "2ce329aa-bc42-41bd-a360-4f61f320f208",
-    "fields": {
-      "name": "NestJS"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "2d2941bb-22a9-443b-b6fe-73c5d9ec2595",
-    "fields": {
-      "name": "MATLAB"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "2d55e013-224b-465e-95d2-cc06fa3c83ba",
-    "fields": {
-      "name": "Bokeh"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "2de3c673-7dc1-4131-b366-7c5f6934294f",
-    "fields": {
-      "name": "Stata"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "2e66037d-5b40-4026-abf4-f21248757c0a",
-    "fields": {
-      "name": "Spring Framework"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "2e9b952c-4999-41dc-a82b-4afe25eb4cf3",
-    "fields": {
-      "name": "Jest"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "2eaae716-a06c-4f84-962e-078ae8a29d18",
-    "fields": {
-      "name": "Newman"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "2f340247-780c-4bd4-aa1b-bf8059101cd8",
-    "fields": {
-      "name": "Koa"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "2f92199c-d407-4711-8ee1-38b4ebe49b47",
-    "fields": {
-      "name": "Apache"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "313a51ad-2546-4e2b-af7a-90f2ec387cef",
-    "fields": {
-      "name": "Pig"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "31418958-9d57-4500-84d2-8745d4f1d243",
-    "fields": {
-      "name": "Cordova"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "32807308-0bde-4e3a-b1e9-a08e55a0367a",
-    "fields": {
-      "name": "Monday.com"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "33423ced-17cf-4a33-a808-096748470409",
-    "fields": {
-      "name": "Prometheus"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "33e41971-ba08-4328-bce2-73f5a14522a0",
-    "fields": {
-      "name": "Adobe After Effects"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "34775235-adcc-4317-8c4b-367b69a7fea8",
-    "fields": {
-      "name": "Entity Framework"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "34f7b126-2966-4ca2-8a5d-42984a0a3fdd",
-    "fields": {
-      "name": "Akka"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "35349b73-3a38-436b-ae1e-b589790f118e",
-    "fields": {
-      "name": "Substance Painter"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "355a4275-5d95-48a9-9c90-8fd2ae5a4723",
-    "fields": {
-      "name": "Framer"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "35b1aa95-f43f-48fb-9b1c-ce285da0e36b",
-    "fields": {
-      "name": "HubSpot"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "36df4968-4304-4992-9782-a090020a27e3",
-    "fields": {
-      "name": "InDesign"
-    }
-  },
-  {
-    "model": "users.skill",
     "pk": "3711fa3e-23ab-4f7a-94c6-1cedd7d4bbe7",
     "fields": {
       "name": ".NET Core"
@@ -421,1549 +8,37 @@
   },
   {
     "model": "users.skill",
-    "pk": "37e59b51-2cba-46b3-8dbf-fc38d3c87450",
+    "pk": "83478ad4-6872-4a15-9ecd-527c32692496",
     "fields": {
-      "name": "Premiere Pro"
+      "name": "1С Analyst"
     }
   },
   {
     "model": "users.skill",
-    "pk": "37eb3e4d-8d27-4077-989b-ab726f7e19e8",
+    "pk": "4c3c7e59-e60c-4288-b38c-6744528d5b37",
     "fields": {
-      "name": "Zendesk"
+      "name": "1С Programmer"
     }
   },
   {
     "model": "users.skill",
-    "pk": "381b9847-d708-41e2-ace1-f4589b42b7c6",
+    "pk": "182c1e55-8bc9-43fa-a4e8-9ad65deb5425",
     "fields": {
-      "name": "Cinema 4D"
+      "name": "1С:ERP"
     }
   },
   {
     "model": "users.skill",
-    "pk": "382bde57-c02b-401a-8866-4dca72361d1a",
+    "pk": "6812f016-6e22-4408-8b95-008af1452c46",
     "fields": {
-      "name": "Google Data Studio"
+      "name": "1С:Консоль запросов"
     }
   },
   {
     "model": "users.skill",
-    "pk": "396508ac-d452-4a2e-9702-c814aa2b352a",
+    "pk": "e54dd6fb-98e7-40de-a9e1-bc11b79115f4",
     "fields": {
-      "name": "Docker Compose"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "39a789e0-d36b-423a-a884-bb208c96bbc8",
-    "fields": {
-      "name": "HAProxy"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "39b9e37d-f5dc-4189-8a62-1a536b9fbdd2",
-    "fields": {
-      "name": "Jenkins"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "3ab75484-ad7a-4b9e-9669-b54a950268de",
-    "fields": {
-      "name": "Illustrator"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "3adc5219-05e4-4b93-994b-574e8fd0208c",
-    "fields": {
-      "name": "Pardot"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "3ccf63fe-99be-4994-9702-4061dccea90c",
-    "fields": {
-      "name": "ActiveCampaign"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "3cd43ce5-ed0d-4430-a494-857f11a9c70f",
-    "fields": {
-      "name": "Python"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "3ce35307-38a4-43a0-99cf-f7d107f7689c",
-    "fields": {
-      "name": "Tailwind CSS"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "3da795bd-1380-4628-bdc3-ff4d15f9a628",
-    "fields": {
-      "name": "Maya"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "3ecc3ace-02d5-4733-adfa-06ce4aa53226",
-    "fields": {
-      "name": "Zeplin"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "3fe67556-ffb6-419d-a187-e7d95f742fdd",
-    "fields": {
-      "name": "CentOS"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "402d8151-6e5f-4f46-a06d-3d8d43a13609",
-    "fields": {
-      "name": "Redux"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "40498756-2b57-442c-b277-ecf424a6b783",
-    "fields": {
-      "name": "Less"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "405b8bcb-9995-452b-b0d6-916586d8bf96",
-    "fields": {
-      "name": "Objective-C"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "407a4a36-8787-47d9-a02b-9fb81b3b61f1",
-    "fields": {
-      "name": "Ionic"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "4175039b-43cd-4e0e-bf75-abf5fd8a79a9",
-    "fields": {
-      "name": "HTML"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "42417aec-9fc4-45fa-99a2-b8fff14982b3",
-    "fields": {
-      "name": "Six Sigma"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "4309f558-78e8-46fe-b01c-b1efd115e41a",
-    "fields": {
-      "name": "CorelDRAW"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "43991eea-8baf-4d8f-a8de-0e9400aa7cea",
-    "fields": {
-      "name": "MariaDB"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "451353c0-62e5-44f0-be45-76a926b6d78e",
-    "fields": {
-      "name": "Oracle"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "453de101-2f53-4442-b519-765d98557703",
-    "fields": {
-      "name": "Excel"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "45d40533-66ea-4b1a-a8aa-4108bd3be999",
-    "fields": {
-      "name": "Godot"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "47b40fd3-958f-47ac-8e18-a8478579e0b6",
-    "fields": {
-      "name": "Ansible"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "48a40b4a-9e7f-4d64-8471-d8d6396a23dd",
-    "fields": {
-      "name": "REST API"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "49ae4d98-bd71-4369-964d-7cc43da98549",
-    "fields": {
-      "name": "Gin"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "4a13ff5d-9480-4895-be21-570a041120e0",
-    "fields": {
-      "name": "Sendinblue"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "4a4fe70a-71d7-458c-9793-2253f40779a2",
-    "fields": {
-      "name": "Construct"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "4aa47979-e702-4e66-94c4-4e68df253776",
-    "fields": {
-      "name": "TypeScript"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "4bd23ec9-47b7-45fe-8af4-cca5802cdfad",
-    "fields": {
-      "name": "Zoho Desk"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "4c24dea8-664d-4150-98a8-71ed57c1fb7a",
-    "fields": {
-      "name": "Play Framework"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "4ca3639c-c992-4456-9652-6c5be1828b43",
-    "fields": {
-      "name": "Vue.js"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "4cb48b68-6fbd-4897-b3b9-077d5026c264",
-    "fields": {
-      "name": "Zsh"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "4d39084b-10a8-4f67-9603-42351e6a4375",
-    "fields": {
-      "name": "Echo"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "4f121253-2932-4a2b-acb6-69559f736e05",
-    "fields": {
-      "name": "LoadRunner"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "4feb6bda-77ce-41f4-a2a7-ef86ef55f968",
-    "fields": {
-      "name": "MySQL"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "501d62d0-7ba9-44b5-a385-dd5ceca95abf",
-    "fields": {
-      "name": "ESLint"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "50cfc108-768d-4a6e-aef8-b8a943def8c4",
-    "fields": {
-      "name": "ASP.NET"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "50d8d1c2-4cd5-45f3-ad66-cc2dbb5cb744",
-    "fields": {
-      "name": "HubSpot Marketing"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "512ffb0e-5e0d-483c-882c-debd4d302be2",
-    "fields": {
-      "name": "Red Hat"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "524e6d1b-77cf-4a9c-b7a3-28a31b608b2a",
-    "fields": {
-      "name": "Postman"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "536ead3e-07f7-4376-bd20-6eb7df23c926",
-    "fields": {
-      "name": "ZBrush"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "55cbd9f3-37be-4867-a2a8-fc4e4bb945fb",
-    "fields": {
-      "name": "SQLite"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "5752e884-f20d-4ba4-8aed-ddecba7e5c42",
-    "fields": {
-      "name": "Nuxt.js"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "57b0c9e1-9db4-41e2-9d65-fc426fe26224",
-    "fields": {
-      "name": "Tableau"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "597d6f02-3194-4898-b514-c421268049e2",
-    "fields": {
-      "name": "Insightly"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "59f021e2-ad31-4959-bb79-86e94e6d97a3",
-    "fields": {
-      "name": "Trello"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "5ac1c695-9a4c-47e9-bdee-52ac2af2464d",
-    "fields": {
-      "name": "Final Cut Pro"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "5b04b65e-f5cd-4d88-83a1-b7f16fc60b2f",
-    "fields": {
-      "name": "GitLab CI"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "5b8c5918-c902-470e-9941-b98ec3cf5ced",
-    "fields": {
-      "name": "Appium"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "5bfa214e-da47-4cf1-8961-92740347b563",
-    "fields": {
-      "name": "Selenium"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "5d5ba53e-b21d-4464-98ca-a0793c955f50",
-    "fields": {
-      "name": "DaVinci Resolve"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "5dda5976-b8fb-4ba8-8fc4-c12b919718c3",
-    "fields": {
-      "name": "NLTK"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "5eb61373-2ad1-465f-bb32-0230571f8cf6",
-    "fields": {
-      "name": "CockroachDB"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "5fbd6afb-2271-415f-bc90-783a2af96e89",
-    "fields": {
-      "name": "Superset"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "5fdc803d-85e2-40d9-ac46-100a99dd74bb",
-    "fields": {
-      "name": "Adobe Premiere Pro"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "5ff2067b-8251-4c2d-bb50-563e177a9254",
-    "fields": {
-      "name": "Nifty"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "6037242d-1f2f-4627-9f1c-6e8bc19bf7bb",
-    "fields": {
-      "name": "Hibernate"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "60a5a436-a549-41c8-ae87-c6b9cc6dfd97",
-    "fields": {
-      "name": "GraphQL"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "61510b9a-6541-40be-9a18-fee5e67914b5",
-    "fields": {
-      "name": "OpenCV"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "6158b5d3-eca1-48dd-b9fe-8dccbc376819",
-    "fields": {
-      "name": "Principle"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "624cc9cb-c6b0-4175-8961-446135ce64b8",
-    "fields": {
-      "name": "Robot Framework"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "62cfd2bf-e42c-4b34-b479-f7c3727f81cf",
-    "fields": {
-      "name": "Bash"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "62ede36d-2d95-4138-b90b-37f6eefe36ab",
-    "fields": {
-      "name": "K6"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "63b4bbbd-0dcc-4e8b-9a69-8f737507819b",
-    "fields": {
-      "name": "Google Sheets"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "63d422c8-782e-4631-84d9-9cf6e51a3c62",
-    "fields": {
-      "name": "MadCap Flare"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "65290809-c697-4cfb-8083-926eaa59701e",
-    "fields": {
-      "name": "Keras"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "6799a899-6a62-4eaf-8821-18874069b261",
-    "fields": {
-      "name": "DynamoDB"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "684d46c1-0fa7-4238-ada6-b4b27454cc82",
-    "fields": {
-      "name": "SVN"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "686171e8-4a5c-44ed-8947-4c8c76499502",
-    "fields": {
-      "name": "Help+Manual"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "68cafae2-d3ee-44fb-95b5-10bac9b8011c",
-    "fields": {
-      "name": "iOS SDK"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "68e7cf8a-dfcd-42a1-9092-91bd4c6bc6d3",
-    "fields": {
-      "name": "Waterfall"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "68fb0205-c6ab-42a7-a419-730b969398e6",
-    "fields": {
-      "name": "Seaborn"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "69d4de76-aa30-44df-a3fe-3209d36e0e7a",
-    "fields": {
-      "name": "Streamlit"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "6a31fdfc-0055-48b0-9394-6f763be8e5e3",
-    "fields": {
-      "name": "SQL Server"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "6a946ec9-4843-4907-8a0e-9bf43ffcbcf9",
-    "fields": {
-      "name": "CakePHP"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "6bebee5a-fbee-4782-ac38-2f06606d92c0",
-    "fields": {
-      "name": "Symfony"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "6e5576a9-7e91-4862-a905-d93afb460797",
-    "fields": {
-      "name": "Sauce Labs"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "6e6c00b2-9694-4d7d-91ec-c11a31bb18f9",
-    "fields": {
-      "name": "Sketch"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "6ee3bfbb-fe4b-4f5b-8c5a-75f48934ac9a",
-    "fields": {
-      "name": "TestCafe"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "70b8d32c-0099-4a5f-8346-e575f98b01f4",
-    "fields": {
-      "name": "Zoho CRM"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "71780625-09e8-483c-852d-14d7674824ec",
-    "fields": {
-      "name": "Chart.js"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "72b7db64-11a8-4349-a586-c333bec6fcb2",
-    "fields": {
-      "name": "Travis CI"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "73c34091-a5d0-4191-af43-9a4475a51e07",
-    "fields": {
-      "name": "MongoDB"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "7404f33c-3174-452a-bf56-09fce5e70c1a",
-    "fields": {
-      "name": "macOS"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "741db4ad-504d-449c-ba27-80212ece21db",
-    "fields": {
-      "name": "DigitalOcean"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "746cce39-0c8b-466e-894c-8f31b9c2a7c7",
-    "fields": {
-      "name": "Vercel"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "74bb8705-c4a8-494c-98dd-a61e28c85254",
-    "fields": {
-      "name": "Storybook"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "76cb0f72-352d-48ca-9263-c877e0c6ed86",
-    "fields": {
-      "name": "Svelte"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "76db30a4-92f2-4b4f-ae88-a2a3a2bddb74",
-    "fields": {
-      "name": "FastAPI"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "774e920b-3d49-4307-a1d7-94192678ed4d",
-    "fields": {
-      "name": "Substance Designer"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "78d210e8-4b21-4a5f-b70a-2414e1469597",
-    "fields": {
-      "name": "Asana"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "799e0f2f-2f26-4113-b43c-4223d561f007",
-    "fields": {
-      "name": "Angular"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "7b080099-dbbb-4e27-b29d-25cda70617a2",
-    "fields": {
-      "name": "Salesforce"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "7b6ddf7e-b074-4e0e-b04d-657f597215c9",
-    "fields": {
-      "name": "Kafka"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "7c081591-0577-41cc-9ffb-3c530eef5022",
-    "fields": {
-      "name": "Wrike"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "7cad9b44-00c4-4e06-b7f3-89eaaf8a6a5e",
-    "fields": {
-      "name": "Yii"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "7f1004dc-6c44-48fd-8515-0791f37eae04",
-    "fields": {
-      "name": "Bitrix24"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "7f621346-9350-4fe6-8106-b2d82bbad2d2",
-    "fields": {
-      "name": "Git"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "8176d6d0-b548-494f-8e2f-855638473972",
-    "fields": {
-      "name": "Cassandra"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "81b5d566-287a-4cc1-9d80-287451005ab7",
-    "fields": {
-      "name": "Google Cloud"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "83086d78-c6ae-4574-8bb6-61bb0d14bbfe",
-    "fields": {
-      "name": "Dart"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "83dd6712-d3a9-4ce3-9873-4937172de9a6",
-    "fields": {
-      "name": "PRINCE2"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "856a4ee8-8248-4152-9245-ae653fd5904b",
-    "fields": {
-      "name": "Axure"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "86498eee-1938-476f-a945-3247438ae539",
-    "fields": {
-      "name": "AWS"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "86953b73-a739-4d25-acc6-aafb1a3e7a9f",
-    "fields": {
-      "name": "C#"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "881015b4-e2f0-480e-b3c5-6328680c3a6e",
-    "fields": {
-      "name": "Swift"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "88474569-1f2a-4be8-b6c0-4a9878cf2f0c",
-    "fields": {
-      "name": "Eloqua"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "88b6663c-1c66-4ab9-81ff-3357e21a3c20",
-    "fields": {
-      "name": "Unreal Engine"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "88e1bddc-1fc7-4bd5-8c01-5289fad5159e",
-    "fields": {
-      "name": "Celery"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "891f7193-9dca-47a5-9cf6-155bd3ed920c",
-    "fields": {
-      "name": "Fedora"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "89ee2b12-6dd2-44f4-959f-9d3120e88b9c",
-    "fields": {
-      "name": "GetResponse"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "89f9335c-81b6-4f82-a358-57658f344ca3",
-    "fields": {
-      "name": "Agile"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "8a70ade4-2397-4ea1-926b-ba6415f9124d",
-    "fields": {
-      "name": "Kotlin Multiplatform"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "8da685f5-3144-4015-869d-65b601a181ba",
-    "fields": {
-      "name": "Fastify"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "904b8194-eb4e-44ee-948b-56ba7454e095",
-    "fields": {
-      "name": "Hadoop"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "922206c6-7477-400f-b711-7465c37161b7",
-    "fields": {
-      "name": "Java"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "92429127-2b5a-428f-84f7-5c574e765e6c",
-    "fields": {
-      "name": "Infusionsoft"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "94fdf5b3-a2a0-4a8a-a52f-739d2555840e",
-    "fields": {
-      "name": "Netlify"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "957ee064-51b4-4490-840c-6bf357bf6680",
-    "fields": {
-      "name": "CodeIgniter"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "95e38d08-fa01-4325-b4dd-a87713b81e75",
-    "fields": {
-      "name": "SPSS"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "9684ab9d-204e-4fa9-af09-d5539725630e",
-    "fields": {
-      "name": "RabbitMQ"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "974319c7-2f11-4cdb-98fe-be188319e215",
-    "fields": {
-      "name": "Matplotlib"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "97560ab3-affc-4f61-8340-0d4593683e71",
-    "fields": {
-      "name": "Marketo"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "97f823d6-5874-42c3-9eaa-d616645ef2d3",
-    "fields": {
-      "name": "Sphinx"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "9970986c-0ff7-4397-8bca-9dda2218b72a",
-    "fields": {
-      "name": "Go"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "9995ff56-1cd6-434c-a8fc-493975df8a7c",
-    "fields": {
-      "name": "Sinatra"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "99d5191b-7a0f-4f2c-aefd-5c6e7d0b6d3e",
-    "fields": {
-      "name": "Adobe Photoshop"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "9c24e9fe-1282-4296-a6eb-fd3c43af17fe",
-    "fields": {
-      "name": "NumPy"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "9c655ca9-95f4-4dee-be8d-a491e1786ca6",
-    "fields": {
-      "name": "Jekyll"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "9c9b969d-a9d0-4e89-9a62-1113a97a98fd",
-    "fields": {
-      "name": "QlikView"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "9cc4e9f2-f30a-4d7b-8d0b-038754169230",
-    "fields": {
-      "name": "Affinity Designer"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "9d2f6343-98ca-4815-b7ac-4d5fa7e10a6f",
-    "fields": {
-      "name": "NoSQL"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "9d87897d-f38c-4656-9034-ea5e95bde032",
-    "fields": {
-      "name": "Snowflake"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "9d93e026-6acc-4b7e-92af-e5e9fe05b02a",
-    "fields": {
-      "name": "Marvelous Designer"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "9db7d09e-cc90-40bb-839a-eb0906f529ba",
-    "fields": {
-      "name": "ActiveMQ"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "9edeec3e-171a-4b13-9f0a-c10d02fbfbf6",
-    "fields": {
-      "name": "React"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "9fefaf7b-0a08-4068-8ef9-14576fd7df4a",
-    "fields": {
-      "name": "Notion"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "a285637c-5722-40b1-a5b9-e972edbc4007",
-    "fields": {
-      "name": "Metabase"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "a43c59cd-e6bb-413d-917a-8935580974b9",
-    "fields": {
-      "name": "jQuery"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "a4446fb6-bc78-43f0-b56a-99246de95db4",
-    "fields": {
-      "name": "Micro Focus UFT"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "a4870678-94d7-4947-b447-c927fbf7de0c",
-    "fields": {
-      "name": "Rails"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "a6666d1f-01e8-47c5-ab77-ae4ddb98b856",
-    "fields": {
-      "name": "Slack"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "aaf36b7e-dcd0-4eda-b6e8-4629f114296d",
-    "fields": {
-      "name": "Cypress"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "ab93f24f-ddf8-4892-9860-514fa7773898",
-    "fields": {
-      "name": "Azure"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "ac5c492c-4ccc-481c-8ec0-f22ff2035088",
-    "fields": {
-      "name": "Looker"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "b041e800-e664-4c47-9ee8-6861c3a97c6d",
-    "fields": {
-      "name": "Bootstrap"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "b1fd88b2-3e26-447e-aa61-b3d972034c9a",
-    "fields": {
-      "name": "Hive"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "b24bd770-cc35-445e-8406-203cab664f98",
-    "fields": {
-      "name": "Mailchimp"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "b25a36e6-b258-4797-a097-3aad42ea99bf",
-    "fields": {
-      "name": "SAP CRM"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "b280439d-774e-4f2c-a1f3-2b7a0f6e3c4d",
-    "fields": {
-      "name": "CrossBrowserTesting"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "b38aa7ce-66ee-434f-84d8-3da58a67ac9a",
-    "fields": {
-      "name": "Kotlin"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "b4cce2d0-a09b-43af-8454-4d9df13a2ddf",
-    "fields": {
-      "name": "Vite"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "b5f2b590-cd9e-4eaf-ab82-a51945177305",
-    "fields": {
-      "name": "Chef"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "b5fd1009-ec04-453b-a8a0-516806c3074d",
-    "fields": {
-      "name": "Spring Boot"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "b65eb0a3-9b18-4234-aaf9-395563b1b5b1",
-    "fields": {
-      "name": "Smartsheet"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "b8aff179-7e2c-4db1-b6db-4ac1d648b505",
-    "fields": {
-      "name": "Linux"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "ba451d76-cc2a-4cd4-b8b7-87c9d9a817dc",
-    "fields": {
-      "name": "Nginx"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "bb8b3e7a-08ec-4129-9b5b-8b47237bf088",
-    "fields": {
-      "name": "CryEngine"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "bcc6a966-4828-4a2e-8e51-9ba9e898b8a5",
-    "fields": {
-      "name": "After Effects"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "bcf2e93e-40c5-4345-87fe-1d093c13c298",
-    "fields": {
-      "name": "SoapUI"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "be0dc93d-3e7f-4cf7-9d4c-dae4ddab881c",
-    "fields": {
-      "name": "Sass"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "bf175314-0d2b-40ff-bef1-cfb520007bdf",
-    "fields": {
-      "name": "GitBook"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "c0a73500-6319-493a-be9d-abd41b448239",
-    "fields": {
-      "name": "Pandas"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "c0b5e5c3-76a2-4c29-afc5-804db9d4839a",
-    "fields": {
-      "name": "Flask"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "c0df329c-942c-46b1-bfb1-91fb94d916df",
-    "fields": {
-      "name": "Figma"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "c0f0c97b-1b55-4b6c-bc28-4a1e67ea44b7",
-    "fields": {
-      "name": "CSS"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "c1ebb717-0b61-4c33-8c82-31a2af1a83b9",
-    "fields": {
-      "name": "Microsoft Dynamics"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "c2c2a598-8c5a-42a5-a33d-0ee18d8929a1",
-    "fields": {
-      "name": "ProofHub"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "c2e8b104-11e2-4497-ba0c-f034f382662a",
-    "fields": {
-      "name": "MkDocs"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "c5e684af-61ad-4b22-b6cb-af8b7064dd9e",
-    "fields": {
-      "name": "Helm"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "c6223b16-6b21-4796-9cfb-7337a2dcefc1",
-    "fields": {
-      "name": "Mercurial"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "c80237ac-4833-4c1f-ab8c-ef832d732515",
-    "fields": {
-      "name": "Clo3D"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "c8f52721-6a8c-4d8b-b449-387e6950b5a3",
-    "fields": {
-      "name": "AWeber"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "c90d6a42-c8dc-4632-869c-7641ae2f96e5",
-    "fields": {
-      "name": "TensorFlow"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "c964f05d-9a1f-4dde-b841-6a829251a9fd",
-    "fields": {
-      "name": "Node.js"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "c9f583c4-1102-4ce0-be0f-3012717bc08e",
-    "fields": {
-      "name": "Dash"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "cbbebe4f-8d1b-4406-b256-ddcc41b919d4",
-    "fields": {
-      "name": "Blender"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "cc2c0d0d-59c7-44c4-a2d6-b3d51e85ff2d",
-    "fields": {
-      "name": "Freshdesk"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "ccf42a74-a717-467f-aa3a-95d0731bb2ff",
-    "fields": {
-      "name": "Ggplot2"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "cd179c07-ce36-4e2a-97f1-157f0ee4b7a7",
-    "fields": {
-      "name": "JMeter"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "cd6a855c-3389-478a-a840-fa74c839a81e",
-    "fields": {
-      "name": "BrowserStack"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "cdaf3d71-3a18-438a-86d4-1a95b6dc29e9",
-    "fields": {
-      "name": "PHP"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "cf39989a-43c1-4c4c-bbab-8d003318c1a8",
-    "fields": {
-      "name": "Scikit-learn"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "cfba1e06-05dd-49e5-b611-f51b1042cd42",
-    "fields": {
-      "name": "Android SDK"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "d1e3de71-b615-41e4-9d25-6cb36ff59248",
-    "fields": {
-      "name": "Express"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "d2cc7879-5b89-450a-b02f-4e2fc62397c7",
-    "fields": {
-      "name": "DRF"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "d4a8866d-c283-4bee-a550-1211e411d081",
-    "fields": {
-      "name": "Confluence"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "d4e81394-2817-4278-925c-05a09e7d594e",
-    "fields": {
-      "name": "Houdini"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "d4ef7acc-f3ba-4946-8e10-396403ae433d",
-    "fields": {
-      "name": "CircleCI"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "d533f8e1-3598-4876-bc19-3c4d987d4a35",
-    "fields": {
-      "name": "Gatling"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "d5e0b6f5-6da0-4b61-8853-df01ac7ba5b9",
-    "fields": {
-      "name": "PowerShell"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "d5f7ad6d-aa2a-4b9c-bcfa-c465108da9be",
-    "fields": {
-      "name": "Backlog"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "d6ae8501-d90d-47e5-ae0f-d0e035e01900",
-    "fields": {
-      "name": "Prettier"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "d737fe70-6013-4715-b8e2-04e918f1d467",
-    "fields": {
-      "name": "Oracle CRM"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "d85b039f-a019-4836-9c3e-9f123722f2ba",
-    "fields": {
-      "name": "Cucumber"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "d86f39bc-14de-448c-9148-2865572ec30c",
-    "fields": {
-      "name": "TestComplete"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "d8dd09cd-7cf8-439d-98d6-73d3ccfe3683",
-    "fields": {
-      "name": "ReadyAPI"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "da119050-ae93-4aa4-a684-5b2d9a30f422",
-    "fields": {
-      "name": "T-SQL"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "dada5c13-39d8-4973-a58e-3c50f260964c",
-    "fields": {
-      "name": "amoCRM"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "dbbbca4a-9c42-499f-8e3f-b4a811fd3cfd",
-    "fields": {
-      "name": "F#"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "dc474032-432a-4486-8775-b7867e377c14",
-    "fields": {
-      "name": "Next.js"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "dc869170-036c-44f2-be1b-101e9f136a12",
-    "fields": {
-      "name": "Hugo"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "dcfec93f-2f51-41af-bd9b-f5541f3683af",
-    "fields": {
-      "name": "Teams"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "dd001e2d-01ec-42a3-8352-2f75261ccde3",
-    "fields": {
-      "name": "Spacy"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "dd1ea677-45a4-4465-b370-a5b8ab8156eb",
-    "fields": {
-      "name": "Gradle"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "ddece29b-051d-4ec6-b8dd-6dd0f7353dcc",
-    "fields": {
-      "name": "ConvertKit"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "dfa6d262-aea2-479c-86de-e3aa4622fd8b",
-    "fields": {
-      "name": "Django"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "dfc9e9ab-f6f4-41a8-b6ea-adc9ce2d9ff0",
-    "fields": {
-      "name": "PMP"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "e05accef-e347-4feb-8299-9cb0c1757f68",
-    "fields": {
-      "name": "DBT"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "e0f46d5e-03f0-4aa9-a0d6-84f5c18ee816",
-    "fields": {
-      "name": "Basecamp"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "e23a0699-5bce-41c7-9a61-5a87f08656cd",
-    "fields": {
-      "name": "Grafana"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "e2504e26-5a3c-4f8a-8f0d-030e6d3a8bde",
-    "fields": {
-      "name": "PostgreSQL"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "e352467f-2b6b-461f-a585-b6df3d80783d",
-    "fields": {
-      "name": "Shiny"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "e45450fa-54b0-4bab-833b-0b8a95fd9254",
-    "fields": {
-      "name": "Lean"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "e4e40bb1-1229-43c8-b194-365830c10d6e",
-    "fields": {
-      "name": "Autodesk Maya"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "e53dfe87-50de-45de-9551-cc9aca8d6174",
-    "fields": {
-      "name": "Julia"
-    }
-  },
-  {
-    "model": "users.skill",
-    "pk": "e5862cbe-092b-4739-b246-709532b1cf56",
-    "fields": {
-      "name": "Ruby"
+      "name": "1С:Предприятие 8"
     }
   },
   {
@@ -1975,114 +50,268 @@
   },
   {
     "model": "users.skill",
-    "pk": "e6792ec4-a94c-45c6-993f-ab863010e523",
+    "pk": "f9f8378d-ad7e-4aaf-b6ee-740ed7310de6",
     "fields": {
-      "name": "Bitrix25"
+      "name": "A/B Testing"
     }
   },
   {
     "model": "users.skill",
-    "pk": "e6ef7434-5581-4b15-990d-e17227b22159",
+    "pk": "9d7413ac-5e7b-43e7-8b78-bf140e43a3cd",
     "fields": {
-      "name": "Xamarin"
+      "name": "ABAP"
     }
   },
   {
     "model": "users.skill",
-    "pk": "e8be973d-4687-4d8a-907a-a6886311f163",
+    "pk": "56abdfa8-f6dc-4e6d-8480-5ac36188d774",
     "fields": {
-      "name": "ClickUp"
+      "name": "Active Directory"
     }
   },
   {
     "model": "users.skill",
-    "pk": "e9cc9a82-46ce-4d72-9a74-d6dfcf06d794",
+    "pk": "1d31c4e5-98cb-44ba-8bb8-0fe3212a7e35",
     "fields": {
-      "name": "SQL"
+      "name": "Adobe Illustrator"
     }
   },
   {
     "model": "users.skill",
-    "pk": "ea719288-2bc4-4ddf-bf56-1f9b79b5485e",
+    "pk": "2c23a013-90f1-45ad-864d-1334c16e3137",
     "fields": {
-      "name": "Spark"
+      "name": "Adobe InDesign"
     }
   },
   {
     "model": "users.skill",
-    "pk": "eb0ef8c5-235f-4c0b-9f2d-baf3826177e8",
+    "pk": "99d5191b-7a0f-4f2c-aefd-5c6e7d0b6d3e",
     "fields": {
-      "name": "PyTorch"
+      "name": "Adobe Photoshop"
     }
   },
   {
     "model": "users.skill",
-    "pk": "eb266de9-8f1a-4685-89ff-5194e095f6f5",
+    "pk": "040beef5-07e2-4f45-8292-5f46ef228568",
     "fields": {
-      "name": "Unity"
+      "name": "Adobe XD"
     }
   },
   {
     "model": "users.skill",
-    "pk": "eb3a12bd-7471-44b1-b6ce-3ff85a2d6777",
+    "pk": "9cc4e9f2-f30a-4d7b-8d0b-038754169230",
     "fields": {
-      "name": "Constant Contact"
+      "name": "Affinity Designer"
     }
   },
   {
     "model": "users.skill",
-    "pk": "eea5af96-c836-4840-a5f9-698d954bddff",
+    "pk": "89f9335c-81b6-4f82-a358-57658f344ca3",
     "fields": {
-      "name": "InVision"
+      "name": "Agile"
     }
   },
   {
     "model": "users.skill",
-    "pk": "f0388ea9-9b03-4d67-88e2-8e69bdbf78ec",
+    "pk": "34f7b126-2966-4ca2-8a5d-42984a0a3fdd",
     "fields": {
-      "name": "SpecFlow"
+      "name": "Akka"
     }
   },
   {
     "model": "users.skill",
-    "pk": "f03b2e34-e8ae-4142-b168-17e088035994",
+    "pk": "24e3c135-0804-47a2-9c70-600a8774cd49",
     "fields": {
-      "name": "Photoshop"
+      "name": "Alertmanager"
     }
   },
   {
     "model": "users.skill",
-    "pk": "f150271c-a4ec-40ed-b888-a19d3beefa3d",
+    "pk": "789a45a8-fe0b-4771-8124-af7c4377ce11",
     "fields": {
-      "name": "Flutter"
+      "name": "Algorithms"
     }
   },
   {
     "model": "users.skill",
-    "pk": "f2505698-c331-49db-bfdd-d17548e2e45f",
+    "pk": "4dd12ead-f429-4861-a27e-41d34204b9d7",
     "fields": {
-      "name": "Adobe FrameMaker"
+      "name": "Amass"
     }
   },
   {
     "model": "users.skill",
-    "pk": "f2b21754-e69b-4e87-98ca-dd4bb066aba5",
+    "pk": "dada5c13-39d8-4973-a58e-3c50f260964c",
     "fields": {
-      "name": "Kubernetes"
+      "name": "amoCRM"
     }
   },
   {
     "model": "users.skill",
-    "pk": "f301c3b0-91c3-4f4f-97e7-5a466efcaab0",
+    "pk": "5f400650-f13a-4f4d-96c4-1538b08c5792",
     "fields": {
-      "name": "Docker"
+      "name": "Android"
     }
   },
   {
     "model": "users.skill",
-    "pk": "f9905974-bcc9-4fba-91cf-ac9db1deeed4",
+    "pk": "614802d1-1bd2-404a-a9c9-8c02e1ad7f8c",
     "fields": {
-      "name": "Webpack"
+      "name": "Android Jetpack"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "cfba1e06-05dd-49e5-b611-f51b1042cd42",
+    "fields": {
+      "name": "Android SDK"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "db40b079-d646-4c04-ba4d-dda75e03d162",
+    "fields": {
+      "name": "Android Studio"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "799e0f2f-2f26-4113-b43c-4223d561f007",
+    "fields": {
+      "name": "Angular"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "47b40fd3-958f-47ac-8e18-a8478579e0b6",
+    "fields": {
+      "name": "Ansible"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "d43e14b5-70a5-4121-b574-ba4af289e39c",
+    "fields": {
+      "name": "Antivirus Software"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "2f92199c-d407-4711-8ee1-38b4ebe49b47",
+    "fields": {
+      "name": "Apache"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "0adaba4a-e582-4e30-af84-5ecf7957f595",
+    "fields": {
+      "name": "Apache Airflow"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "ba0cd7b9-3dbc-4a49-b464-569b07c38b50",
+    "fields": {
+      "name": "Apache Kafka"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "b0edc999-0db4-408d-87e3-7d7199415a6a",
+    "fields": {
+      "name": "Apache Spark"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "5b8c5918-c902-470e-9941-b98ec3cf5ced",
+    "fields": {
+      "name": "Appium"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "78d210e8-4b21-4a5f-b70a-2414e1469597",
+    "fields": {
+      "name": "Asana"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "50cfc108-768d-4a6e-aef8-b8a943def8c4",
+    "fields": {
+      "name": "ASP.NET"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "6b11cce3-6904-4805-933f-1e10ab2d86c0",
+    "fields": {
+      "name": "AsyncIO"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "fb452ffa-86da-4ca8-bdc8-6f0e1bf756a5",
+    "fields": {
+      "name": "Authentication"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "6f1bd2ef-b0c0-4c81-bc48-28787bba14c5",
+    "fields": {
+      "name": "Authorization"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "e4e40bb1-1229-43c8-b194-365830c10d6e",
+    "fields": {
+      "name": "Autodesk Maya"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "37f12791-f4be-4ea2-9f84-49c5d47b96f1",
+    "fields": {
+      "name": "Avro"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "32698100-ff7e-49dc-a482-08e8d3bc8393",
+    "fields": {
+      "name": "AWK"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "86498eee-1938-476f-a945-3247438ae539",
+    "fields": {
+      "name": "AWS"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "856a4ee8-8248-4152-9245-ae653fd5904b",
+    "fields": {
+      "name": "Axure"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "ab93f24f-ddf8-4892-9860-514fa7773898",
+    "fields": {
+      "name": "Azure"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "8e90ddeb-9d05-4b28-ae73-53f1142b513f",
+    "fields": {
+      "name": "Babel"
     }
   },
   {
@@ -2094,6 +323,244 @@
   },
   {
     "model": "users.skill",
+    "pk": "e0f46d5e-03f0-4aa9-a0d6-84f5c18ee816",
+    "fields": {
+      "name": "Basecamp"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "62cfd2bf-e42c-4b34-b479-f7c3727f81cf",
+    "fields": {
+      "name": "Bash"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "45b16a6e-022c-41e4-8dd5-80f0de2dd2e8",
+    "fields": {
+      "name": "BigQuery"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "7f1004dc-6c44-48fd-8515-0791f37eae04",
+    "fields": {
+      "name": "Bitrix24"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "cbbebe4f-8d1b-4406-b256-ddcc41b919d4",
+    "fields": {
+      "name": "Blender"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "2d5af7ac-b2df-4406-b59c-744a1d5d0535",
+    "fields": {
+      "name": "Bluetooth LE"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "2d55e013-224b-465e-95d2-cc06fa3c83ba",
+    "fields": {
+      "name": "Bokeh"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "b041e800-e664-4c47-9ee8-6861c3a97c6d",
+    "fields": {
+      "name": "Bootstrap"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "e04d9aba-ca72-4a39-91aa-589e64829c62",
+    "fields": {
+      "name": "BPMN"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "cd6a855c-3389-478a-a840-fa74c839a81e",
+    "fields": {
+      "name": "BrowserStack"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "eb21172d-a376-4fe4-878d-b111abe02e26",
+    "fields": {
+      "name": "BSIMM"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "6f59cbc3-d45c-4ee1-b856-2bde58996c0b",
+    "fields": {
+      "name": "Bug Tracking"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "4436edbb-9c32-4c31-a04f-52f76401dc86",
+    "fields": {
+      "name": "Burp Suite"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "bc95b035-444c-496d-9cb0-000cf28e3d48",
+    "fields": {
+      "name": "C"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "86953b73-a739-4d25-acc6-aafb1a3e7a9f",
+    "fields": {
+      "name": "C#"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "b5864ac7-b3d5-4aff-8d89-93fc40924dc1",
+    "fields": {
+      "name": "C++"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "3ea7875c-0e24-469a-aa3b-f80493bf0a22",
+    "fields": {
+      "name": "C4 Model"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "09511dbe-bbda-4104-be69-8be638462841",
+    "fields": {
+      "name": "Canvas API"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "8176d6d0-b548-494f-8e2f-855638473972",
+    "fields": {
+      "name": "Cassandra"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "88e1bddc-1fc7-4bd5-8c01-5289fad5159e",
+    "fields": {
+      "name": "Celery"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "2f76d842-6512-4278-a01d-6c4e03549bf3",
+    "fields": {
+      "name": "Censys"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "3fe67556-ffb6-419d-a187-e7d95f742fdd",
+    "fields": {
+      "name": "CentOS"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "c741351d-11f1-489e-afdf-0eee5730f700",
+    "fields": {
+      "name": "Chakra UI"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "71780625-09e8-483c-852d-14d7674824ec",
+    "fields": {
+      "name": "Chart.js"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "6762d2c4-d479-4e28-9471-7593b15a9505",
+    "fields": {
+      "name": "Chroma"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "90d6cd26-ff12-4b05-b31d-46882d13740c",
+    "fields": {
+      "name": "CI/CD"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "381b9847-d708-41e2-ace1-f4589b42b7c6",
+    "fields": {
+      "name": "Cinema 4D"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "d4ef7acc-f3ba-4946-8e10-396403ae433d",
+    "fields": {
+      "name": "CircleCI"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "8001ca66-216d-4c24-866a-d0b2f82059dc",
+    "fields": {
+      "name": "CIS Benchmarks"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "6357da35-4cf3-4949-9971-0c61abcedf0a",
+    "fields": {
+      "name": "CJM"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "64a25409-5424-47dd-b7c7-66fd02e760c7",
+    "fields": {
+      "name": "Clean Architecture"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "9014e647-dd1d-4285-aaba-aec6d05789ae",
+    "fields": {
+      "name": "ClearML"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "967d8d13-6f5b-4c95-b696-9cd2a57a90c0",
+    "fields": {
+      "name": "ClickHouse"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "e8be973d-4687-4d8a-907a-a6886311f163",
+    "fields": {
+      "name": "ClickUp"
+    }
+  },
+  {
+    "model": "users.skill",
     "pk": "fc2a5bdd-e9b4-4758-a6f2-cad32a732975",
     "fields": {
       "name": "Cloudflare"
@@ -2101,23 +568,947 @@
   },
   {
     "model": "users.skill",
-    "pk": "fcf51165-0f8b-4d5e-935c-d914a19dafba",
+    "pk": "f977657a-4704-4442-928b-46231290be00",
     "fields": {
-      "name": "Plotly"
+      "name": "CMake"
     }
   },
   {
     "model": "users.skill",
-    "pk": "fe04cce5-bbf8-4cb8-bac0-2fe07126c7f4",
+    "pk": "5eb61373-2ad1-465f-bb32-0230571f8cf6",
     "fields": {
-      "name": "SQLAlchemy"
+      "name": "CockroachDB"
     }
   },
   {
     "model": "users.skill",
-    "pk": "fe3ce063-ceb7-4546-8d26-1d4f875638fd",
+    "pk": "376a615b-45ba-4a8e-9083-215d3ea289f2",
     "fields": {
-      "name": "ClickHelp"
+      "name": "Collections"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "3138feb2-647e-4e27-9ecd-f39c80ee258e",
+    "fields": {
+      "name": "Combine"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "ae528110-e0ea-4254-b974-dd4d93c8f756",
+    "fields": {
+      "name": "Computer Vision"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "d4a8866d-c283-4bee-a550-1211e411d081",
+    "fields": {
+      "name": "Confluence"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "622ec31d-031d-445b-8c95-eed1a98ccf8d",
+    "fields": {
+      "name": "ConstraintLayout"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "4a4fe70a-71d7-458c-9793-2253f40779a2",
+    "fields": {
+      "name": "Construct"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "5df27d86-c5a4-4a9b-9dd1-15225d24dc28",
+    "fields": {
+      "name": "Consul"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "f99da4f0-06bf-4f5a-ab00-16083f50510c",
+    "fields": {
+      "name": "Contentful"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "08111190-d8dd-4766-b8fe-9f8d6d4479f2",
+    "fields": {
+      "name": "Core Animation"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "8ede4848-b12f-4e1a-8ea6-9226feb7bac0",
+    "fields": {
+      "name": "Core Data"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "4309f558-78e8-46fe-b01c-b1efd115e41a",
+    "fields": {
+      "name": "CorelDRAW"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "6ebd5cbd-ba71-488b-8058-caee48cbf329",
+    "fields": {
+      "name": "Coroutines"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "b280439d-774e-4f2c-a1f3-2b7a0f6e3c4d",
+    "fields": {
+      "name": "CrossBrowserTesting"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "bb8b3e7a-08ec-4129-9b5b-8b47237bf088",
+    "fields": {
+      "name": "CryEngine"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "d97a0b7f-9590-4314-a4d7-de3abfd832af",
+    "fields": {
+      "name": "Crystal"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "c0f0c97b-1b55-4b6c-bc28-4a1e67ea44b7",
+    "fields": {
+      "name": "CSS"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "d85b039f-a019-4836-9c3e-9f123722f2ba",
+    "fields": {
+      "name": "Cucumber"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "e0a2ccca-48de-4f1b-aa3d-b187d878fd6d",
+    "fields": {
+      "name": "cURL"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "aaf36b7e-dcd0-4eda-b6e8-4629f114296d",
+    "fields": {
+      "name": "Cypress"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "04198d0b-0aff-4067-9e26-d558c85e7b0a",
+    "fields": {
+      "name": "D3.js"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "2534c837-dede-42c8-b8d7-46c16116f4b7",
+    "fields": {
+      "name": "Dagger 2"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "83086d78-c6ae-4574-8bb6-61bb0d14bbfe",
+    "fields": {
+      "name": "Dart"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "c9f583c4-1102-4ce0-be0f-3012717bc08e",
+    "fields": {
+      "name": "Dash"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "9ce3c3ea-cc6c-41f1-a84b-c65ed9d9cadf",
+    "fields": {
+      "name": "Data Flow Diagram"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "f0a3973d-5549-492c-b945-c6d987650128",
+    "fields": {
+      "name": "Data Science"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "9b30bde0-d51a-4110-837a-7e8dc059bd6e",
+    "fields": {
+      "name": "Data Structures"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "c0fb1089-48e1-4c03-99e0-b384c8e27d2a",
+    "fields": {
+      "name": "DataLens"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "ab412661-eaa1-4659-9e75-4f3e8cdb76d5",
+    "fields": {
+      "name": "DataStore"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "e05accef-e347-4feb-8299-9cb0c1757f68",
+    "fields": {
+      "name": "DBT"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "f0cc9272-e95f-4f3d-bba4-049d5b917de3",
+    "fields": {
+      "name": "DDD"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "1436c3ae-4dd7-4781-8be3-1bfd77cdfaae",
+    "fields": {
+      "name": "Debian"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "e550acee-f86e-4eeb-aad9-755ec8ff05dd",
+    "fields": {
+      "name": "Deep Learning"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "db6b1988-8f1c-4553-a8f5-146120af3165",
+    "fields": {
+      "name": "DefectDojo"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "72de4a75-e873-43e7-8557-4830f17cfe91",
+    "fields": {
+      "name": "DFD"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "62499494-7ebc-4765-a66a-0ddf78a8666b",
+    "fields": {
+      "name": "DHCP"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "741db4ad-504d-449c-ba27-80212ece21db",
+    "fields": {
+      "name": "DigitalOcean"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "6bd3d049-ddf6-4dbd-9bbe-7e0f91bc60c4",
+    "fields": {
+      "name": "Dirsearch"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "dfa6d262-aea2-479c-86de-e3aa4622fd8b",
+    "fields": {
+      "name": "Django"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "4f952055-3b70-4d7b-a65e-9086cb9251bc",
+    "fields": {
+      "name": "DNS"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "f301c3b0-91c3-4f4f-97e7-5a466efcaab0",
+    "fields": {
+      "name": "Docker"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "396508ac-d452-4a2e-9702-c814aa2b352a",
+    "fields": {
+      "name": "Docker Compose"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "01625007-0af5-47ac-9b7c-08bc3021b615",
+    "fields": {
+      "name": "Docker Hub"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "05f02681-cfc4-481d-8efa-0e2a48915663",
+    "fields": {
+      "name": "Docusaurus"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "d8b6a8c3-aa13-4d1a-8602-69e64ad22c63",
+    "fields": {
+      "name": "DOM"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "55eeff34-f540-4a6b-93c0-42060f9c4f1a",
+    "fields": {
+      "name": "Draw.io"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "d2cc7879-5b89-450a-b02f-4e2fc62397c7",
+    "fields": {
+      "name": "DRF"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "ddb02920-0b50-412d-ad4f-c1e33659cff9",
+    "fields": {
+      "name": "DVC"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "6799a899-6a62-4eaf-8821-18874069b261",
+    "fields": {
+      "name": "DynamoDB"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "e9755330-cd59-484c-b0c3-dc05f6a9c286",
+    "fields": {
+      "name": "E2E Testing"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "4d39084b-10a8-4f67-9603-42351e6a4375",
+    "fields": {
+      "name": "Echo"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "8529d09e-158d-4b10-9f6c-2348278599d5",
+    "fields": {
+      "name": "EDR"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "0bda391f-98a9-4c65-867c-87c176f835e4",
+    "fields": {
+      "name": "Elasticsearch"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "d2d88648-1aff-4710-82ef-824ec5c5a173",
+    "fields": {
+      "name": "Elixir"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "7ac0bc69-8ad8-4656-93b6-ca2968aa5bed",
+    "fields": {
+      "name": "ELK Stack"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "b6d67759-a6e3-441b-b77b-cece0b4197c8",
+    "fields": {
+      "name": "Encryption"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "34775235-adcc-4317-8c4b-367b69a7fea8",
+    "fields": {
+      "name": "Entity Framework"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "8acd9f8f-7a62-4990-bf62-cb079860bf10",
+    "fields": {
+      "name": "ERD"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "8717a855-881a-4631-adc7-a9c0d965111d",
+    "fields": {
+      "name": "Erlang"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "501d62d0-7ba9-44b5-a385-dd5ceca95abf",
+    "fields": {
+      "name": "ESLint"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "501ef6aa-cf4b-4c0d-b9e1-9d132be20d64",
+    "fields": {
+      "name": "ETL"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "1c18d23e-ae72-43bc-88f9-258058738b4e",
+    "fields": {
+      "name": "Event-Driven Architecture"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "79ead91d-1b53-4486-b287-4988d66aa5fa",
+    "fields": {
+      "name": "Evidently"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "453de101-2f53-4442-b519-765d98557703",
+    "fields": {
+      "name": "Excel"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "bcf306a7-ca63-43c8-acd2-eb0742e991e2",
+    "fields": {
+      "name": "ExoPlayer"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "d1e3de71-b615-41e4-9d25-6cb36ff59248",
+    "fields": {
+      "name": "Express"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "dbbbca4a-9c42-499f-8e3f-b4a811fd3cfd",
+    "fields": {
+      "name": "F#"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "307fceb9-6fc1-4d3f-a02f-6cdc7c6ac7f1",
+    "fields": {
+      "name": "FAISS"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "76db30a4-92f2-4b4f-ae88-a2a3a2bddb74",
+    "fields": {
+      "name": "FastAPI"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "8da685f5-3144-4015-869d-65b601a181ba",
+    "fields": {
+      "name": "Fastify"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "891f7193-9dca-47a5-9cf6-155bd3ed920c",
+    "fields": {
+      "name": "Fedora"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "8575e28d-1277-4b74-93e9-65a285a7778b",
+    "fields": {
+      "name": "Ffuf"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "df35348a-d7f5-40f4-94c7-32c707c74891",
+    "fields": {
+      "name": "Fiddler"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "194f3375-9cde-4bd4-90f1-d02d63743cdc",
+    "fields": {
+      "name": "FigJam"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "c0df329c-942c-46b1-bfb1-91fb94d916df",
+    "fields": {
+      "name": "Figma"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "2bf596f2-1cd0-41c9-946e-2df8fb891fc3",
+    "fields": {
+      "name": "Firebase"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "c5761b6e-cf92-4760-9be3-14b43240ba5d",
+    "fields": {
+      "name": "Firewall"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "c0b5e5c3-76a2-4c29-afc5-804db9d4839a",
+    "fields": {
+      "name": "Flask"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "9cf0c537-e5db-4056-ad2b-4d04bba8886b",
+    "fields": {
+      "name": "Flexbox"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "f150271c-a4ec-40ed-b888-a19d3beefa3d",
+    "fields": {
+      "name": "Flutter"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "c9bdf300-4d01-459e-b72f-419ec0420c94",
+    "fields": {
+      "name": "Fragments"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "355a4275-5d95-48a9-9c90-8fd2ae5a4723",
+    "fields": {
+      "name": "Framer"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "cc2c0d0d-59c7-44c4-a2d6-b3d51e85ff2d",
+    "fields": {
+      "name": "Freshdesk"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "170fe229-d52c-467d-b60e-e7cd13b29261",
+    "fields": {
+      "name": "GameMaker Studio"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "d533f8e1-3598-4876-bc19-3c4d987d4a35",
+    "fields": {
+      "name": "Gatling"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "ccf42a74-a717-467f-aa3a-95d0731bb2ff",
+    "fields": {
+      "name": "Ggplot2"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "49ae4d98-bd71-4369-964d-7cc43da98549",
+    "fields": {
+      "name": "Gin"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "7f621346-9350-4fe6-8106-b2d82bbad2d2",
+    "fields": {
+      "name": "Git"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "bf175314-0d2b-40ff-bef1-cfb520007bdf",
+    "fields": {
+      "name": "GitBook"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "f4ddd59c-68f7-44a2-ba45-4e16b3699880",
+    "fields": {
+      "name": "GitHub"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "29dbd3f7-5a24-4541-b693-829f57d57b11",
+    "fields": {
+      "name": "GitHub Actions"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "5b04b65e-f5cd-4d88-83a1-b7f16fc60b2f",
+    "fields": {
+      "name": "GitLab CI"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "9970986c-0ff7-4397-8bca-9dda2218b72a",
+    "fields": {
+      "name": "Go"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "5ac6dbbc-f82a-447d-be52-197a3c7fd3c6",
+    "fields": {
+      "name": "GoAlert"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "45d40533-66ea-4b1a-a8aa-4108bd3be999",
+    "fields": {
+      "name": "Godot"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "81b5d566-287a-4cc1-9d80-287451005ab7",
+    "fields": {
+      "name": "Google Cloud"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "382bde57-c02b-401a-8866-4dca72361d1a",
+    "fields": {
+      "name": "Google Data Studio"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "63b4bbbd-0dcc-4e8b-9a69-8f737507819b",
+    "fields": {
+      "name": "Google Sheets"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "dd1ea677-45a4-4465-b370-a5b8ab8156eb",
+    "fields": {
+      "name": "Gradle"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "e23a0699-5bce-41c7-9a61-5a87f08656cd",
+    "fields": {
+      "name": "Grafana"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "60a5a436-a549-41c8-ae87-c6b9cc6dfd97",
+    "fields": {
+      "name": "GraphQL"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "7a779258-94a3-466f-a25a-885c0ffac38b",
+    "fields": {
+      "name": "Great Expectations"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "21a2fd26-73fa-4221-bc07-d96943cf995d",
+    "fields": {
+      "name": "Grid Layout"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "2a87c008-644f-404a-af8d-07467f8b72f4",
+    "fields": {
+      "name": "Groovy"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "fb4a3385-0cdf-4aa0-98a1-46356b6b502c",
+    "fields": {
+      "name": "gRPC"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "c273c851-3a60-495c-a576-ed4d961bfb9a",
+    "fields": {
+      "name": "Gunicorn"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "904b8194-eb4e-44ee-948b-56ba7454e095",
+    "fields": {
+      "name": "Hadoop"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "62506c00-a7e2-495f-a742-22eef88ce39f",
+    "fields": {
+      "name": "Handlebars"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "39a789e0-d36b-423a-a884-bb208c96bbc8",
+    "fields": {
+      "name": "HAProxy"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "17548612-347e-47aa-91b4-fe38d6a3b131",
+    "fields": {
+      "name": "Harbor"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "ed675187-6f1e-4c94-a761-bc7a0edc0030",
+    "fields": {
+      "name": "Haskell"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "352e98e7-bc96-4c0e-8221-48c903ec2ea3",
+    "fields": {
+      "name": "HBase"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "c5e684af-61ad-4b22-b6cb-af8b7064dd9e",
+    "fields": {
+      "name": "Helm"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "6037242d-1f2f-4627-9f1c-6e8bc19bf7bb",
+    "fields": {
+      "name": "Hibernate"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "bbdda557-93fa-43ef-b767-a9865f469a86",
+    "fields": {
+      "name": "Hilt"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "b1fd88b2-3e26-447e-aa61-b3d972034c9a",
+    "fields": {
+      "name": "Hive"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "d4e81394-2817-4278-925c-05a09e7d594e",
+    "fields": {
+      "name": "Houdini"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "4175039b-43cd-4e0e-bf75-abf5fd8a79a9",
+    "fields": {
+      "name": "HTML"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "f2c2d9a4-cc7b-42f3-9caf-1a2c10aa435e",
+    "fields": {
+      "name": "HTTP"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "811728c4-b4b4-4593-aecd-af9b87595c1a",
+    "fields": {
+      "name": "HTTPX"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "35b1aa95-f43f-48fb-9b1c-ce285da0e36b",
+    "fields": {
+      "name": "HubSpot"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "968c1150-5a53-4481-803a-d9a20c25b933",
+    "fields": {
+      "name": "Hugging Face"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "dc869170-036c-44f2-be1b-101e9f136a12",
+    "fields": {
+      "name": "Hugo"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "19889cbb-5799-4c60-a635-e23515026748",
+    "fields": {
+      "name": "IIS"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "3ab75484-ad7a-4b9e-9669-b54a950268de",
+    "fields": {
+      "name": "Illustrator"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "ac80c809-37c8-43ad-927a-e9352b69ed25",
+    "fields": {
+      "name": "Incident Investigation"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "36df4968-4304-4992-9782-a090020a27e3",
+    "fields": {
+      "name": "InDesign"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "a7c3c7bd-0077-47bd-b7d5-f5bd145102ec",
+    "fields": {
+      "name": "Integration Testing"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "adbd0054-0651-40cb-b5b8-5b286ef3c883",
+    "fields": {
+      "name": "IntelliJ IDEA"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "68cafae2-d3ee-44fb-95b5-10bac9b8011c",
+    "fields": {
+      "name": "iOS SDK"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "7c4506f7-3099-4fe3-aa8e-046294723522",
+    "fields": {
+      "name": "iOS/Android Guidelines"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "2ac41c26-d605-4746-ae12-fa260c77b43e",
+    "fields": {
+      "name": "IPS/IDS"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "68a487ec-3ffc-4094-809e-c3e679aca91e",
+    "fields": {
+      "name": "iptables"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "922206c6-7477-400f-b711-7465c37161b7",
+    "fields": {
+      "name": "Java"
     }
   },
   {
@@ -2129,9 +1520,2004 @@
   },
   {
     "model": "users.skill",
-    "pk": "ff33f2da-0233-4588-b68a-4da66093985a",
+    "pk": "9c655ca9-95f4-4dee-be8d-a491e1786ca6",
     "fields": {
-      "name": "Big Data"
+      "name": "Jekyll"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "2e9b952c-4999-41dc-a82b-4afe25eb4cf3",
+    "fields": {
+      "name": "Jest"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "1a3d7bd1-d705-42a1-b2f8-932e00fbea42",
+    "fields": {
+      "name": "Jetpack Compose"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "25c668ea-ae6c-4c76-8450-ebcb66f079e8",
+    "fields": {
+      "name": "Jira"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "cd179c07-ce36-4e2a-97f1-157f0ee4b7a7",
+    "fields": {
+      "name": "JMeter"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "a3ee338a-7fea-41c6-af7e-4b4c9f691a3c",
+    "fields": {
+      "name": "Journey Map"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "71c9b65e-d31e-4045-a725-158a640a3145",
+    "fields": {
+      "name": "JSON"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "7f4730c0-cbe3-4dcf-938c-abb837262f4c",
+    "fields": {
+      "name": "JTBD"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "e53dfe87-50de-45de-9551-cc9aca8d6174",
+    "fields": {
+      "name": "Julia"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "4b07958c-e53a-4e91-9e54-e2b732db6d46",
+    "fields": {
+      "name": "JUnit"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "0359f53d-69f9-436d-93c3-e9ac6b68d925",
+    "fields": {
+      "name": "Jupyter Notebook"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "678a59e1-dc78-4764-b977-930f2f3ae334",
+    "fields": {
+      "name": "JWT"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "6900f8da-6034-482f-b69f-49ebb26f38c8",
+    "fields": {
+      "name": "k-means"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "62ede36d-2d95-4138-b90b-37f6eefe36ab",
+    "fields": {
+      "name": "K6"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "12728498-7eda-4e92-88ca-6f03b1a947d7",
+    "fields": {
+      "name": "Kanban"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "65290809-c697-4cfb-8083-926eaa59701e",
+    "fields": {
+      "name": "Keras"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "ea298d3c-b6e5-4a7f-b96b-fdd125ab5ff0",
+    "fields": {
+      "name": "Keycloak"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "cae8e12e-1635-49f5-94cf-16c1753153f3",
+    "fields": {
+      "name": "Kibana"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "a2119091-b834-464c-93a5-035e83cf87ac",
+    "fields": {
+      "name": "Kill Chain"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "2f340247-780c-4bd4-aa1b-bf8059101cd8",
+    "fields": {
+      "name": "Koa"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "27a9e823-143d-40ed-8dce-8ab6a1c220c8",
+    "fields": {
+      "name": "Koin"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "b38aa7ce-66ee-434f-84d8-3da58a67ac9a",
+    "fields": {
+      "name": "Kotlin"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "e276b2f4-51ce-4f83-99d4-d06bf27a171e",
+    "fields": {
+      "name": "Kotlin Coroutines"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "8a70ade4-2397-4ea1-926b-ba6415f9124d",
+    "fields": {
+      "name": "Kotlin Multiplatform"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "9c9a25cd-4ea5-44c8-acb0-2208c8c1d293",
+    "fields": {
+      "name": "Kserve"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "f2b21754-e69b-4e87-98ca-dd4bb066aba5",
+    "fields": {
+      "name": "Kubernetes"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "11b4de29-090d-480b-96c1-d525592fed40",
+    "fields": {
+      "name": "LambdaTest"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "f4293eac-630a-4f23-a67c-e6c2cd40c5cb",
+    "fields": {
+      "name": "LangChain"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "2b2bd1ee-71d6-4c11-bc6f-aff0a4617d20",
+    "fields": {
+      "name": "LangGraph"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "8bdb3778-d211-4cb7-8a36-88bb6c5595fa",
+    "fields": {
+      "name": "LangSmith"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "0e28df7b-ae43-4d9d-88d6-d6a3195638d3",
+    "fields": {
+      "name": "Laravel"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "40498756-2b57-442c-b277-ecf424a6b783",
+    "fields": {
+      "name": "Less"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "badd2451-73ed-4c67-897c-4a6fd8ba3a91",
+    "fields": {
+      "name": "LightGBM/XGBoost"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "b8aff179-7e2c-4db1-b6db-4ac1d648b505",
+    "fields": {
+      "name": "Linux"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "256a546b-6c1e-4218-9e2d-f7f6269e5661",
+    "fields": {
+      "name": "LLM"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "f5b0f46e-b4fb-47e2-be81-19c05cd9eb3b",
+    "fields": {
+      "name": "Log Analysis"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "2912e3ce-acf2-4ba0-9d2e-5e4f89563fd0",
+    "fields": {
+      "name": "Logstash"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "02b42155-3423-45b1-bf86-ea6f3c82f485",
+    "fields": {
+      "name": "Loki"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "ac5c492c-4ccc-481c-8ec0-f22ff2035088",
+    "fields": {
+      "name": "Looker"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "c7dfe259-4848-432d-9b9d-c3ce8652a763",
+    "fields": {
+      "name": "Lua"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "59c8a928-99f8-43a9-85be-6f57ef95a344",
+    "fields": {
+      "name": "Machine Learning"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "7404f33c-3174-452a-bf56-09fce5e70c1a",
+    "fields": {
+      "name": "macOS"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "43991eea-8baf-4d8f-a8de-0e9400aa7cea",
+    "fields": {
+      "name": "MariaDB"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "d65862a3-f0be-4bbf-9680-cd39182e8a61",
+    "fields": {
+      "name": "Material UI"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "2d2941bb-22a9-443b-b6fe-73c5d9ec2595",
+    "fields": {
+      "name": "MATLAB"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "974319c7-2f11-4cdb-98fe-be188319e215",
+    "fields": {
+      "name": "Matplotlib"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "12ff31a8-d700-42fd-8b44-34e23a133bd1",
+    "fields": {
+      "name": "Maven"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "3da795bd-1380-4628-bdc3-ff4d15f9a628",
+    "fields": {
+      "name": "Maya"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "a285637c-5722-40b1-a5b9-e972edbc4007",
+    "fields": {
+      "name": "Metabase"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "8e6522a8-9d7c-4bca-9db1-849536fbdaf1",
+    "fields": {
+      "name": "Metasploit"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "6c5968bd-511a-493e-bbc7-40ee0629caa7",
+    "fields": {
+      "name": "Metrics Tree"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "b8943e98-684f-445e-a2bf-0f006e35ad6f",
+    "fields": {
+      "name": "Microservices"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "c1ebb717-0b61-4c33-8c82-31a2af1a83b9",
+    "fields": {
+      "name": "Microsoft Dynamics"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "7694c52a-f4c2-4aea-8789-582975c7de03",
+    "fields": {
+      "name": "Mimir"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "de2dfeb8-ee2b-49f0-8470-7105b96f76eb",
+    "fields": {
+      "name": "Miro"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "245ba131-0c43-4f31-8ea8-64fad34ad6f1",
+    "fields": {
+      "name": "MITRE ATT&CK"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "c2e8b104-11e2-4497-ba0c-f034f382662a",
+    "fields": {
+      "name": "MkDocs"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "80423f49-2c70-4415-8c9d-779e118e7e60",
+    "fields": {
+      "name": "MLflow"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "220623a6-a654-40a9-a7b7-a24f8511aca8",
+    "fields": {
+      "name": "MobX"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "3b8917fd-19ad-407b-91a6-5472ecee2524",
+    "fields": {
+      "name": "Mockito"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "32807308-0bde-4e3a-b1e9-a08e55a0367a",
+    "fields": {
+      "name": "Monday.com"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "73c34091-a5d0-4191-af43-9a4475a51e07",
+    "fields": {
+      "name": "MongoDB"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "94d689a4-940b-4dd4-b817-294194f14c82",
+    "fields": {
+      "name": "Monolith Architecture"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "870a8553-f0f1-4545-aeda-53af2be0b4c3",
+    "fields": {
+      "name": "Motoko"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "c290b4c6-5019-4ee0-ba3a-32e496b6c300",
+    "fields": {
+      "name": "Move"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "ac4cc194-f5cd-4411-b8cf-f2e5d19580a3",
+    "fields": {
+      "name": "Move Semantics"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "4feb6bda-77ce-41f4-a2a7-ef86ef55f968",
+    "fields": {
+      "name": "MySQL"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "0951cb9a-3a38-4d0c-a0c8-5bdda709b079",
+    "fields": {
+      "name": "Naabu"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "2ce329aa-bc42-41bd-a360-4f61f320f208",
+    "fields": {
+      "name": "NestJS"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "94fdf5b3-a2a0-4a8a-a52f-739d2555840e",
+    "fields": {
+      "name": "Netlify"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "2eaae716-a06c-4f84-962e-078ae8a29d18",
+    "fields": {
+      "name": "Newman"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "dc474032-432a-4486-8775-b7867e377c14",
+    "fields": {
+      "name": "Next.js"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "6629529f-7935-40ee-8493-0e92cbee0e66",
+    "fields": {
+      "name": "NFS"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "ce4d120f-5f51-4bb7-911c-24164db0bbb5",
+    "fields": {
+      "name": "nftables"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "ba451d76-cc2a-4cd4-b8b7-87c9d9a817dc",
+    "fields": {
+      "name": "Nginx"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "a795b1f6-9c3a-4146-89d0-5fe2b4b07649",
+    "fields": {
+      "name": "Nim"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "b2bab73b-8c19-4065-9aff-bd43285bd41d",
+    "fields": {
+      "name": "NLP"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "5dda5976-b8fb-4ba8-8fc4-c12b919718c3",
+    "fields": {
+      "name": "NLTK"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "948e357a-5753-453f-8c23-90a4fa9def88",
+    "fields": {
+      "name": "Nmap"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "c964f05d-9a1f-4dde-b841-6a829251a9fd",
+    "fields": {
+      "name": "Node.js"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "9d2f6343-98ca-4815-b7ac-4d5fa7e10a6f",
+    "fields": {
+      "name": "NoSQL"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "9fefaf7b-0a08-4068-8ef9-14576fd7df4a",
+    "fields": {
+      "name": "Notion"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "a84f8ce7-647d-4b84-9640-99a56addeae5",
+    "fields": {
+      "name": "npm"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "e11a2b16-9f2b-47bc-ab0f-fa586e1d5793",
+    "fields": {
+      "name": "Nuclei"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "9c24e9fe-1282-4296-a6eb-fd3c43af17fe",
+    "fields": {
+      "name": "NumPy"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "5752e884-f20d-4ba4-8aed-ddecba7e5c42",
+    "fields": {
+      "name": "Nuxt.js"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "aa15ab86-3034-442e-bbcc-fd330bf5c436",
+    "fields": {
+      "name": "OAuth 2.0"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "405b8bcb-9995-452b-b0d6-916586d8bf96",
+    "fields": {
+      "name": "Objective-C"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "4175a233-8644-410f-92ea-baae1e8f697b",
+    "fields": {
+      "name": "OCaml"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "5e73cede-de0a-4ca8-92ad-6a747c6927e9",
+    "fields": {
+      "name": "OkHttp"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "c4f40864-7663-4a1e-bd97-0b161aa5a79e",
+    "fields": {
+      "name": "OOP"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "3643a1f3-e44c-44d1-b0be-cb2677680cd3",
+    "fields": {
+      "name": "OpenAPI"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "61510b9a-6541-40be-9a18-fee5e67914b5",
+    "fields": {
+      "name": "OpenCV"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "01d96faf-b955-4dac-8c17-a2df62d89a3d",
+    "fields": {
+      "name": "OpenID Connect"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "0e5c1112-bd92-446d-84f2-f1f69e253e76",
+    "fields": {
+      "name": "OpenRouter"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "e08e83fb-795b-42b4-94e0-02951096de1d",
+    "fields": {
+      "name": "OpenTelemetry"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "f7413ce1-c4d6-4658-9d37-8d5f43f9c901",
+    "fields": {
+      "name": "Optuna"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "451353c0-62e5-44f0-be45-76a926b6d78e",
+    "fields": {
+      "name": "Oracle"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "593bcae5-54de-4c29-8e65-5c584a822104",
+    "fields": {
+      "name": "Oracle PL/SQL"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "d4e120b9-217d-4294-82d8-c4198a3be773",
+    "fields": {
+      "name": "ORM"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "7eb18342-9c00-4ea7-8cf3-6df149e97ad0",
+    "fields": {
+      "name": "OWASP"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "f884687d-542e-4009-a88c-9260f1155665",
+    "fields": {
+      "name": "OWASP Top 10"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "e321253d-41ec-4f06-bef2-3f4f08286127",
+    "fields": {
+      "name": "OWASP ZAP"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "c0a73500-6319-493a-be9d-abd41b448239",
+    "fields": {
+      "name": "Pandas"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "ca11479e-1daf-4704-94f4-7200e67ea809",
+    "fields": {
+      "name": "Pattern Matching"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "f03b2e34-e8ae-4142-b168-17e088035994",
+    "fields": {
+      "name": "Photoshop"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "cdaf3d71-3a18-438a-86d4-1a95b6dc29e9",
+    "fields": {
+      "name": "PHP"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "021c238e-f416-4e33-be2d-00a6d5e4545a",
+    "fields": {
+      "name": "Pipedrive"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "4c24dea8-664d-4150-98a8-71ed57c1fb7a",
+    "fields": {
+      "name": "Play Framework"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "1e13f5e6-3044-4ca3-8290-23f0da69f7a6",
+    "fields": {
+      "name": "Playwright"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "fcf51165-0f8b-4d5e-935c-d914a19dafba",
+    "fields": {
+      "name": "Plotly"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "57f53284-d015-4c69-bfb3-c3337d9daaf1",
+    "fields": {
+      "name": "PostCSS"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "e2504e26-5a3c-4f8a-8f0d-030e6d3a8bde",
+    "fields": {
+      "name": "PostgreSQL"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "524e6d1b-77cf-4a9c-b7a3-28a31b608b2a",
+    "fields": {
+      "name": "Postman"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "0820ac05-16b0-49f0-9f91-d169eb43a7bc",
+    "fields": {
+      "name": "Power BI"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "c0e69512-73aa-4b3d-b1ec-b7ab07cc8c27",
+    "fields": {
+      "name": "PowerPoint"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "d5e0b6f5-6da0-4b61-8853-df01ac7ba5b9",
+    "fields": {
+      "name": "PowerShell"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "d6ae8501-d90d-47e5-ae0f-d0e035e01900",
+    "fields": {
+      "name": "Prettier"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "6158b5d3-eca1-48dd-b9fe-8dccbc376819",
+    "fields": {
+      "name": "Principle"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "6fcebdad-f3e8-41c1-ab37-36ad90c4e382",
+    "fields": {
+      "name": "Prisma"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "f4eafb2c-579f-4fa6-a8d9-11d366eeb9ce",
+    "fields": {
+      "name": "Project Reactor"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "33423ced-17cf-4a33-a808-096748470409",
+    "fields": {
+      "name": "Prometheus"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "c2c2a598-8c5a-42a5-a33d-0ee18d8929a1",
+    "fields": {
+      "name": "ProofHub"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "a575e533-2096-4696-bfa0-c4c053bb2d75",
+    "fields": {
+      "name": "Protocol Buffers"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "41432470-cbd8-41e2-ad34-42fc252ede45",
+    "fields": {
+      "name": "Pydantic"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "de35652a-49db-4dba-83e6-6b4e6474f805",
+    "fields": {
+      "name": "PySpark"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "11d9e49d-3b05-42d8-be2a-d7da48bda069",
+    "fields": {
+      "name": "Pytest"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "3cd43ce5-ed0d-4430-a494-857f11a9c70f",
+    "fields": {
+      "name": "Python"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "eb0ef8c5-235f-4c0b-9f2d-baf3826177e8",
+    "fields": {
+      "name": "PyTorch"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "625737e5-92d5-4bce-98a9-1fe342734e70",
+    "fields": {
+      "name": "Qdrant"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "2a29683b-b08c-4a08-8e47-fcce479c77cf",
+    "fields": {
+      "name": "Qt"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "263752e1-bb63-45e4-858d-0d5f97bb25ee",
+    "fields": {
+      "name": "R"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "7f722e31-c06e-488a-8ca7-301690791742",
+    "fields": {
+      "name": "RAG"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "a4870678-94d7-4947-b447-c927fbf7de0c",
+    "fields": {
+      "name": "Rails"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "9edeec3e-171a-4b13-9f0a-c10d02fbfbf6",
+    "fields": {
+      "name": "React"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "29eb91c1-7be6-4d31-b622-97593775341d",
+    "fields": {
+      "name": "React Native"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "8162ca30-aeca-4f85-98dd-ca9c6e8dd51f",
+    "fields": {
+      "name": "React Router"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "3b5bb133-e374-45dc-a83c-1a21825111e9",
+    "fields": {
+      "name": "Records"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "244571e6-d5b8-4485-bceb-fc86599ea62e",
+    "fields": {
+      "name": "RecyclerView"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "512ffb0e-5e0d-483c-882c-debd4d302be2",
+    "fields": {
+      "name": "Red Hat"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "1b5014d0-b007-49ce-8d23-4df5896c47c7",
+    "fields": {
+      "name": "Redis"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "402d8151-6e5f-4f46-a06d-3d8d43a13609",
+    "fields": {
+      "name": "Redux"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "48a40b4a-9e7f-4d64-8471-d8d6396a23dd",
+    "fields": {
+      "name": "REST API"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "420307c5-c0f8-410a-9f6a-61433c1af1aa",
+    "fields": {
+      "name": "Retrofit"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "624cc9cb-c6b0-4175-8961-446135ce64b8",
+    "fields": {
+      "name": "Robot Framework"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "04c945c5-34bc-4c0a-942a-8340f12a89ff",
+    "fields": {
+      "name": "Rollup"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "1683421b-fcd9-4b08-b820-7d11e2161563",
+    "fields": {
+      "name": "Room"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "e5862cbe-092b-4739-b246-709532b1cf56",
+    "fields": {
+      "name": "Ruby"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "c22d95ad-37d7-454c-a858-f44e8430156e",
+    "fields": {
+      "name": "Rust"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "def54795-8539-4d63-ace6-d402f2109a8e",
+    "fields": {
+      "name": "RxJava"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "cffd00fb-a6ce-4dab-8093-ab5879285160",
+    "fields": {
+      "name": "S3"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "7b080099-dbbb-4e27-b29d-25cda70617a2",
+    "fields": {
+      "name": "Salesforce"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "7202469e-0532-4936-a5ac-2e5f15d3bf34",
+    "fields": {
+      "name": "Sanity"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "1b322c95-2aba-4204-8001-68cbc027c5de",
+    "fields": {
+      "name": "SAS"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "be0dc93d-3e7f-4cf7-9d4c-dae4ddab881c",
+    "fields": {
+      "name": "Sass"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "6e5576a9-7e91-4862-a905-d93afb460797",
+    "fields": {
+      "name": "Sauce Labs"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "120fb41d-c2a6-486e-8f57-b95681a7ae7f",
+    "fields": {
+      "name": "Scala"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "cf39989a-43c1-4c4c-bbab-8d003318c1a8",
+    "fields": {
+      "name": "Scikit-learn"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "a0a33c3a-f893-404b-a660-3af1e0afefec",
+    "fields": {
+      "name": "SciPy"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "2505b12e-d2ea-49cf-a8f3-10bd361df352",
+    "fields": {
+      "name": "Scrum"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "68fb0205-c6ab-42a7-a419-730b969398e6",
+    "fields": {
+      "name": "Seaborn"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "86c66f15-b98f-4fce-8592-bb104625eaff",
+    "fields": {
+      "name": "Sealed Types"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "5bfa214e-da47-4cf1-8961-92740347b563",
+    "fields": {
+      "name": "Selenium"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "9bb6bbbb-04f8-41f2-89bb-edc2a6069f23",
+    "fields": {
+      "name": "Server Side Rendering"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "2cad23e0-7a92-4461-829c-23d848c8f117",
+    "fields": {
+      "name": "Serverless"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "1d4f9aed-0117-45b7-8598-4bc4d7d72309",
+    "fields": {
+      "name": "ServiceNow"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "345e7a29-b7e3-4d04-92fa-8b5b75fe56ed",
+    "fields": {
+      "name": "Shap"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "dc5c29fd-77b0-4543-a432-a3dd7c90ee00",
+    "fields": {
+      "name": "SharedPreferences"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "a25c938a-110a-4bec-a7fb-4cab5d83cd20",
+    "fields": {
+      "name": "Shell"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "e352467f-2b6b-461f-a585-b6df3d80783d",
+    "fields": {
+      "name": "Shiny"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "5d3a26fb-a3e2-490a-998b-c58214dae361",
+    "fields": {
+      "name": "Shodan"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "9cff0953-5bdf-4181-a4b1-81b75bec84b4",
+    "fields": {
+      "name": "SIEM"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "6f74e138-057c-4e21-8225-94258c47f706",
+    "fields": {
+      "name": "Single Activity"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "a6666d1f-01e8-47c5-ab77-ae4ddb98b856",
+    "fields": {
+      "name": "Slack"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "b65eb0a3-9b18-4234-aaf9-395563b1b5b1",
+    "fields": {
+      "name": "Smartsheet"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "9d87897d-f38c-4656-9034-ea5e95bde032",
+    "fields": {
+      "name": "Snowflake"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "23f650b1-cf80-4a34-94c5-091dd8782213",
+    "fields": {
+      "name": "Snyk"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "62294d15-14a2-4f5b-b6be-975aa066af9c",
+    "fields": {
+      "name": "SOAP"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "7174b0c9-5401-42ec-be58-4a9ca3d9c33c",
+    "fields": {
+      "name": "SOAR"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "6515575c-2546-4775-aaad-bc76a7948a9f",
+    "fields": {
+      "name": "Socket.IO"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "544525bf-649d-4fcc-afac-a50dd8b1d77a",
+    "fields": {
+      "name": "Solidity"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "75ec7f4f-2e06-4e8e-a6c2-3fe039f19eed",
+    "fields": {
+      "name": "SonarQube"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "dd001e2d-01ec-42a3-8352-2f75261ccde3",
+    "fields": {
+      "name": "Spacy"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "71c17b42-2f43-4e4d-a2d7-ffe1d4f63389",
+    "fields": {
+      "name": "Spark Streaming"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "f0388ea9-9b03-4d67-88e2-8e69bdbf78ec",
+    "fields": {
+      "name": "SpecFlow"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "97f823d6-5874-42c3-9eaa-d616645ef2d3",
+    "fields": {
+      "name": "Sphinx"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "6b06fcbb-b21d-4e1a-929b-7593dbcac7f7",
+    "fields": {
+      "name": "Spring"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "b5fd1009-ec04-453b-a8a0-516806c3074d",
+    "fields": {
+      "name": "Spring Boot"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "d9bef33f-cb65-454b-8c39-7de4e7d2be86",
+    "fields": {
+      "name": "Spring Cloud"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "9bef7bf9-bdd8-4266-ad80-2cbde5bd6397",
+    "fields": {
+      "name": "Spring Core"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "b85fb3b0-5beb-43d6-9e63-0b88fa66096e",
+    "fields": {
+      "name": "Spring Data JPA"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "540b41ea-aa00-4803-8134-3ea2367ab407",
+    "fields": {
+      "name": "Spring Data R2DBC"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "d3f1571f-b794-4399-9d32-6470f90dfd8f",
+    "fields": {
+      "name": "Spring Modulith"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "4a72ee05-879c-4dab-be6b-eb353a1134f2",
+    "fields": {
+      "name": "Spring Security"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "6ab26b21-1185-424c-bfd6-2def67910047",
+    "fields": {
+      "name": "Spring Web MVC"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "0671af58-2bc1-42cc-ad8b-2278b08cc7a1",
+    "fields": {
+      "name": "Spring WebFlux"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "e9cc9a82-46ce-4d72-9a74-d6dfcf06d794",
+    "fields": {
+      "name": "SQL"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "6a31fdfc-0055-48b0-9394-6f763be8e5e3",
+    "fields": {
+      "name": "SQL Server"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "fe04cce5-bbf8-4cb8-bac0-2fe07126c7f4",
+    "fields": {
+      "name": "SQLAlchemy"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "55cbd9f3-37be-4867-a2a8-fc4e4bb945fb",
+    "fields": {
+      "name": "SQLite"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "1e7c0859-eddb-4a77-b84a-49706a84dec9",
+    "fields": {
+      "name": "SQLMap"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "8b9b80c8-689e-4441-9e62-d882f9fce257",
+    "fields": {
+      "name": "Stakeholder → Viewpoint → View"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "10a17359-7819-417f-92d1-24fdbdfe4a4f",
+    "fields": {
+      "name": "STL"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "d79432a7-753e-4a83-a6ac-659413f08be3",
+    "fields": {
+      "name": "Storyboard"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "74bb8705-c4a8-494c-98dd-a61e28c85254",
+    "fields": {
+      "name": "Storybook"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "dea16024-90f4-4b2d-aafd-6f3ed23f02ae",
+    "fields": {
+      "name": "Strapi"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "69d4de76-aa30-44df-a3fe-3209d36e0e7a",
+    "fields": {
+      "name": "Streamlit"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "774e920b-3d49-4307-a1d7-94192678ed4d",
+    "fields": {
+      "name": "Substance Designer"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "35349b73-3a38-436b-ae1e-b589790f118e",
+    "fields": {
+      "name": "Substance Painter"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "b5a1a8be-c0b2-48ee-8f40-6e553090c79e",
+    "fields": {
+      "name": "Supabase"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "5fbd6afb-2271-415f-bc90-783a2af96e89",
+    "fields": {
+      "name": "Superset"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "76cb0f72-352d-48ca-9263-c877e0c6ed86",
+    "fields": {
+      "name": "Svelte"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "df4d43a9-26e4-47ec-a1b9-f3575570c9b3",
+    "fields": {
+      "name": "Swagger"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "881015b4-e2f0-480e-b3c5-6328680c3a6e",
+    "fields": {
+      "name": "Swift"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "62579565-7cec-4c65-b205-428a4f4537d4",
+    "fields": {
+      "name": "SwiftUI"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "6bebee5a-fbee-4782-ac38-2f06606d92c0",
+    "fields": {
+      "name": "Symfony"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "ffb982a6-8525-4374-9ab4-b95a3533a21b",
+    "fields": {
+      "name": "System Administration"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "da119050-ae93-4aa4-a684-5b2d9a30f422",
+    "fields": {
+      "name": "T-SQL"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "57b0c9e1-9db4-41e2-9d65-fc426fe26224",
+    "fields": {
+      "name": "Tableau"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "3ce35307-38a4-43a0-99cf-f7d107f7689c",
+    "fields": {
+      "name": "Tailwind CSS"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "3b780e34-4c19-4f93-846e-20557da6be2c",
+    "fields": {
+      "name": "Tcl"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "11600390-d0cf-4964-8a01-35936a058283",
+    "fields": {
+      "name": "TCP/IP"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "dcfec93f-2f51-41af-bd9b-f5541f3683af",
+    "fields": {
+      "name": "Teams"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "e9f7269a-2fff-47ba-85d8-f68c54dc5f42",
+    "fields": {
+      "name": "Tempo"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "c90d6a42-c8dc-4632-869c-7641ae2f96e5",
+    "fields": {
+      "name": "TensorFlow"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "2b06493d-7acc-457e-ad24-9d5eeb6f5f74",
+    "fields": {
+      "name": "Terraform"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "6ee3bfbb-fe4b-4f5b-8c5a-75f48934ac9a",
+    "fields": {
+      "name": "TestCafe"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "941798ce-3704-46d8-b251-d7824b95431a",
+    "fields": {
+      "name": "Testcontainers"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "c59c18df-e0d2-425b-9899-22d2431fa10c",
+    "fields": {
+      "name": "Testify"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "671de31f-b9a2-4ac9-af1b-77d04d215651",
+    "fields": {
+      "name": "Threat Modeling"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "5e47bcb6-9f88-41c4-8711-bafe5975c648",
+    "fields": {
+      "name": "Three.js"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "8bdf9c0f-744b-428e-ba8f-6393956d3055",
+    "fields": {
+      "name": "Tilda"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "3c7bd19e-5c2c-42f5-a173-c412c59c8fee",
+    "fields": {
+      "name": "Transformers"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "59f021e2-ad31-4959-bb79-86e94e6d97a3",
+    "fields": {
+      "name": "Trello"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "9e3fa978-254f-4147-a0bd-908078ff78c6",
+    "fields": {
+      "name": "Trivy"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "4aa47979-e702-4e66-94c4-4e68df253776",
+    "fields": {
+      "name": "TypeScript"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "24220f1e-5546-4d59-a10b-def49eedd008",
+    "fields": {
+      "name": "Ubuntu"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "6ff128e2-c839-4424-8a59-c9c4f1b0eb07",
+    "fields": {
+      "name": "UI Design"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "f0c3dce7-48b7-4916-801f-ffe9ca29f0f9",
+    "fields": {
+      "name": "UI Profiling"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "54edfc0f-6436-4946-9ad4-e65c7dd0ffd4",
+    "fields": {
+      "name": "UI Testing"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "794600ef-eec8-4c3c-aeba-78ec02e21a53",
+    "fields": {
+      "name": "UIKit"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "ab85c17f-a411-4c2f-bf46-fa3e96a4412b",
+    "fields": {
+      "name": "UML"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "163165ab-7897-46ee-b9a8-e9121f1480a7",
+    "fields": {
+      "name": "Unit Testing"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "eb266de9-8f1a-4685-89ff-5194e095f6f5",
+    "fields": {
+      "name": "Unity"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "88b6663c-1c66-4ab9-81ff-3357e21a3c20",
+    "fields": {
+      "name": "Unreal Engine"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "71e77738-5c20-4bfc-9f02-d6eb6a9d2545",
+    "fields": {
+      "name": "Usability Testing"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "76ce18a2-cd89-4e00-a6a3-184b80a35951",
+    "fields": {
+      "name": "User Story"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "90e19552-93ff-4038-9f6e-ecfef1342100",
+    "fields": {
+      "name": "UX Design"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "2c666cf9-8d98-4edc-9446-8114f9f90a61",
+    "fields": {
+      "name": "UX Research"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "dc818536-c547-456c-90d0-653a90c44b5b",
+    "fields": {
+      "name": "V"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "eb26c443-2fbe-4e36-9eac-a909700ddb37",
+    "fields": {
+      "name": "Vault"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "746cce39-0c8b-466e-894c-8f31b9c2a7c7",
+    "fields": {
+      "name": "Vercel"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "fa9ec407-42cf-4651-880a-157fe49432e4",
+    "fields": {
+      "name": "Virtual Threads"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "f302ad50-a226-4a29-837a-82ae08452bf8",
+    "fields": {
+      "name": "VirtualBox"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "2f08d832-78cf-45eb-9a35-d4d291528164",
+    "fields": {
+      "name": "Virtualization"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "b4cce2d0-a09b-43af-8454-4d9df13a2ddf",
+    "fields": {
+      "name": "Vite"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "627b70a2-d390-4188-91d6-a17d1b096009",
+    "fields": {
+      "name": "Vitest"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "6df5cff7-1056-4e07-9721-1e3dba28c519",
+    "fields": {
+      "name": "vLLM"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "5a6f57f5-513b-4206-8dc7-d6ea75362002",
+    "fields": {
+      "name": "VS Code"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "bf35a3c1-9b75-4813-be1f-cd636818603a",
+    "fields": {
+      "name": "Vue"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "cfe2b363-f810-4c95-80b3-b240f78493ff",
+    "fields": {
+      "name": "Vyper"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "fb88c955-90e6-4d0c-9eb3-78dc71fba62c",
+    "fields": {
+      "name": "WAF"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "2ee38194-3810-4fb5-93db-3cbe83009904",
+    "fields": {
+      "name": "WebAssembly"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "f9905974-bcc9-4fba-91cf-ac9db1deeed4",
+    "fields": {
+      "name": "Webpack"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "b313948e-21d4-4b58-bf88-07bee2c1be7d",
+    "fields": {
+      "name": "WebSocket"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "3b1be855-264c-4531-b73d-92ed6b016b39",
+    "fields": {
+      "name": "WebSockets"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "0a017def-b69b-4e02-92ca-9e51521635f4",
+    "fields": {
+      "name": "Weights & Biases"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "9263ce4c-ca55-4087-bb77-66b940610a7c",
+    "fields": {
+      "name": "Windows"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "055bb186-da44-4de2-8b2a-39ef9523f62c",
+    "fields": {
+      "name": "Windows Server"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "7c081591-0577-41cc-9ffb-3c530eef5022",
+    "fields": {
+      "name": "Wrike"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "e9033d8a-3ccd-4ad4-be30-79518285be33",
+    "fields": {
+      "name": "Xcode"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "c4cdf3d9-8b2b-4b7f-908c-c3fde78c6f62",
+    "fields": {
+      "name": "XGBoost"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "9b609d9b-ecf4-4211-bdfd-d89ef272c1af",
+    "fields": {
+      "name": "XML"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "38495d59-9ed4-47fe-bce1-74d4ada57362",
+    "fields": {
+      "name": "Yandex Cloud"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "f02361c1-d358-4c9f-b738-fe5cb3ef1019",
+    "fields": {
+      "name": "Yarn"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "d755bf7c-3050-4325-b575-813ed0988d1a",
+    "fields": {
+      "name": "Ysoserial"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "f2a45f1d-37bb-4773-b9b9-aef75a4366e0",
+    "fields": {
+      "name": "Zabbix"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "536ead3e-07f7-4376-bd20-6eb7df23c926",
+    "fields": {
+      "name": "ZBrush"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "37eb3e4d-8d27-4077-989b-ab726f7e19e8",
+    "fields": {
+      "name": "Zendesk"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "091bc068-53b1-412f-8919-ace6075702c0",
+    "fields": {
+      "name": "Zig"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "70b8d32c-0099-4a5f-8346-e575f98b01f4",
+    "fields": {
+      "name": "Zoho CRM"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "449c971d-0083-4717-a780-fe9e05d5cb1e",
+    "fields": {
+      "name": "ZooKeeper"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "4cb48b68-6fbd-4897-b3b9-077d5026c264",
+    "fields": {
+      "name": "Zsh"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "676cd390-7f74-4a05-9c76-e1e0aacb14ee",
+    "fields": {
+      "name": "ИТС"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "01d07d5a-b69c-4f82-8074-03d03e93dfea",
+    "fields": {
+      "name": "Платформа 1С"
+    }
+  },
+  {
+    "model": "users.skill",
+    "pk": "e9bcbf22-9fa4-49a1-919d-179fcde3a574",
+    "fields": {
+      "name": "СКД"
     }
   }
 ]
