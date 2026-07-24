@@ -184,6 +184,7 @@ class QuestionListSerializer(serializers.ModelSerializer):
     )
     author_name = serializers.SerializerMethodField()
     author_rating = serializers.SerializerMethodField()
+    author_avatar = serializers.SerializerMethodField()
     likes_count = serializers.IntegerField(read_only=True)
     answers_count = serializers.IntegerField(read_only=True)
     is_liked_by_me = serializers.SerializerMethodField()
@@ -197,6 +198,7 @@ class QuestionListSerializer(serializers.ModelSerializer):
             'tags',
             'author_name',
             'author_rating',
+            'author_avatar',
             'created_at',
             'likes_count',
             'answers_count',
@@ -217,6 +219,12 @@ class QuestionListSerializer(serializers.ModelSerializer):
         if obj.is_anonymous:
             return 0
         return obj.user.rating
+
+    def get_author_avatar(self, obj: Question) -> str:
+        """Возвращает URL аватара автора или пустую строку."""
+        if obj.is_anonymous:
+            return ''
+        return obj.user.avatar_url
 
     def get_is_liked_by_me(self, obj: Question) -> bool:
         """Проверяет, поставил ли текущий пользователь лайк этому вопросу.
@@ -243,6 +251,7 @@ class QuestionDetailSerializer(serializers.ModelSerializer):
     )
     author_name = serializers.SerializerMethodField()
     author_rating = serializers.SerializerMethodField()
+    author_avatar = serializers.SerializerMethodField()
     likes_count = serializers.IntegerField(read_only=True)
     images = serializers.SerializerMethodField()
     is_liked_by_me = serializers.SerializerMethodField()
@@ -256,6 +265,7 @@ class QuestionDetailSerializer(serializers.ModelSerializer):
             'tags',
             'author_name',
             'author_rating',
+            'author_avatar',
             'created_at',
             'likes_count',
             'images',
@@ -276,6 +286,12 @@ class QuestionDetailSerializer(serializers.ModelSerializer):
         if obj.is_anonymous:
             return 0
         return obj.user.rating
+
+    def get_author_avatar(self, obj: Question) -> str:
+        """Возвращает URL аватара автора или пустую строку."""
+        if obj.is_anonymous:
+            return ''
+        return obj.user.avatar_url
 
     def get_images(self, obj: Question) -> list[str]:
         """Возвращает список URL изображений."""
