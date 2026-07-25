@@ -60,6 +60,7 @@ INSTALLED_APPS = (
     'qna.apps.QnaConfig',
     'feedback.apps.FeedbackConfig',
     'help.apps.HelpConfig',
+    'documents.apps.DocumentsConfig',
 )
 
 MIDDLEWARE = (
@@ -413,6 +414,7 @@ SPECTACULAR_SETTINGS = {
         {'name': 'Files', 'description': 'Файлы'},
         {'name': 'Feedbacks', 'description': 'Обратная связь'},
         {'name': 'Reviews', 'description': 'Отзывы'},
+        {'name': 'Documents', 'description': 'Документы'},
     ),
 }
 
@@ -590,3 +592,5 @@ config = {
 }
 
 logging.config.dictConfig(config)
+
+FORMS_URLFIELD_ASSUME_HTTPS = True

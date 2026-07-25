@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import Any
 
@@ -12,13 +13,16 @@ from dj_rest_auth.serializers import (
     PasswordResetSerializer,
 )
 from django.contrib.auth import get_user_model
+from django.contrib.sites.models import Site
 from django.http import HttpRequest
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from users.adapters import MSG_RESENT, ImmediateResponseException
-from users.models.users import User
+from core.constants.users import MSG_RESENT
+from users.adapters import ImmediateResponseException
+from users.utils import email_service
 
+logger = logging.getLogger(__name__)
 UserModel = get_user_model()
 
 
@@ -119,19 +123,32 @@ class CustomRegisterSerializer(RegisterSerializer):
                 user=user,
                 email__iexact=email,
             ).first()
+
             if not user.is_active:
                 user.is_active = True
                 user.save(update_fields=['is_active'])
                 if email_address:
                     email_address.send_confirmation(request, signup=True)
+
+                logger.info(
+                    'Аккаунт %s реактивирован. Письмо отправлено.',
+                    email,
+                )
                 raise ImmediateResponseException(
                     detail={'detail': MSG_RESENT},
                 )
+
             if email_address and not email_address.verified:
                 email_address.send_confirmation(request, signup=True)
+
+                logger.info(
+                    'Повторный запрос подтверждения для %s.',
+                    email,
+                )
                 raise ImmediateResponseException(
                     detail={'detail': MSG_RESENT},
                 )
+
         return super().save(request)
 
 
@@ -160,17 +177,21 @@ class EmailChangeSerializer(serializers.Serializer):
 
         return value
 
-    def save(self) -> User:
-        """Сохранить new_emailи отправить письмо для подтверждения."""
+    def save(self) -> Any:
+        """Сохранить new_email и отправить письма на старый и новый адреса."""
         user = self.context['request'].user
         request = self.context.get('request')
         new_email = self.validated_data['new_email']
+        old_email = user.email
 
+        # 1. Запоминаем новый email во временное поле модели
         user.new_email = new_email
         user.save(update_fields=['new_email'])
 
+        # 2. Очищаем старые неподтвержденные попытки смены email
         EmailAddress.objects.filter(user=user, verified=False).delete()
 
+        # 3. Создаем новую запись для подтверждения
         email_address = EmailAddress.objects.create(
             user=user,
             email=new_email,
@@ -178,7 +199,26 @@ class EmailChangeSerializer(serializers.Serializer):
             verified=False,
         )
 
+        # 4. Отправляем ссылку-подтверждение на НОВЫЙ email
+        # (Использует шаблон email_confirmation_message)
         email_address.send_confirmation(request, signup=False)
+
+        # 5. Отправляем уведомление на СТАРЫЙ email пользователя
+        # (Использует ваши шаблоны email_changed_message.html/.txt)
+        current_site = Site.objects.get_current()
+        context = {
+            'user': user,
+            'from_email': old_email,
+            'to_email': new_email,
+            'current_site': current_site,
+        }
+
+        email_service.send_template_email(
+            to_email=old_email,
+            subject=f'Изменение email на сайте {current_site.name}',
+            template_base_name='account/email/email_changed_message',
+            context=context,
+        )
 
         return user
 
@@ -187,22 +227,21 @@ class CustomPasswordResetSerializer(PasswordResetSerializer):
     """Кастомный сериализатор для сброса пароля."""
 
     def get_email_options(self) -> dict[str, Any]:
-        """Переопределяет генератор ссылок внутри опций формы."""
+        """Переопределить генератор ссылок для исключения NoReverseMatch."""
         options = super().get_email_options()
 
         def custom_url_generator(
-            request: Any,
-            user: Any,
-            temp_key: str,
+            request: Any, user: Any, temp_key: str,
         ) -> str:
             """Формирует прямую ссылку на фронтенд с uid и token."""
-            frontend_url = os.getenv('HOST_URL', 'http://localhost:3000')
-
-            # Генерируем uid точно так же, как это делает форма allauth
+            host_url = os.getenv(
+                'HOST_URL', 'http://localhost:3000',
+            ).rstrip('/')
+            if not host_url.startswith(('http://', 'https://')):
+                host_url = f'http://{host_url}'
             uid = user_pk_to_url_str(user)
 
-            # temp_key — это чистый валидный токен от AllAuthPasswordResetForm
-            return f'{frontend_url}/password-reset/confirm/{uid}/{temp_key}'
+            return f'{host_url}/password-reset/confirm/{uid}/{temp_key}'
 
         options['url_generator'] = custom_url_generator
         return options

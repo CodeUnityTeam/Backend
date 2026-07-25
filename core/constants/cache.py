@@ -37,3 +37,10 @@ CACHE_KEY_SPECIALIZATIONS_PREFIX = 'specializations'
 CACHE_KEY_WORK_FORMATS_PREFIX = 'work_formats'
 CACHE_KEY_RESPONSES_PREFIX = 'responses'
 CACHE_KEY_REVIEWS_PREFIX = 'reviews'
+
+# =============================================================================
+# Counter prefixes (incr/decr в Redis)
+# =============================================================================
+
+COUNTER_PROJECT_LIKES_PREFIX = 'counter:project:likes'
+COUNTER_PROJECT_PARTICIPANTS_PREFIX = 'counter:project:participants'
