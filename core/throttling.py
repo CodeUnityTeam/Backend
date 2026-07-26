@@ -24,13 +24,10 @@ class UniversalRateThrottle(SimpleRateThrottle):
             'user_login': '5/min',
         }
     """
-
     scope = 'default'
 
     def __init__(self):
-        # SimpleRateThrottle.__init__ вызывает get_rate() и parse_rate().
-        # Нам это не нужно, т.к. rate будет определён в allow_request.
-        # Просто инициализируем родительский SimpleRateThrottle,
+        # инициализируем родительский SimpleRateThrottle,
         # который в __init__ ничего не делает кроме установки атрибутов.
         super(SimpleRateThrottle, self).__init__()
 
@@ -73,7 +70,6 @@ class UniversalRateThrottle(SimpleRateThrottle):
                 scope_key,
             )
             return True
-
         self.num_requests, self.duration = self.parse_rate(rate)
 
         # Определяем идентификатор для ключа кэша
@@ -81,7 +77,6 @@ class UniversalRateThrottle(SimpleRateThrottle):
             ident = request.user.pk
         else:
             ident = self.get_ident(request)
-
         cache_key = self.cache_format % {
             'scope': scope_key,
             'ident': ident,
@@ -94,10 +89,8 @@ class UniversalRateThrottle(SimpleRateThrottle):
         # Отфильтровываем устаревшие записи
         while history and history[-1] <= now - self.duration:
             history.pop()
-
         if len(history) >= self.num_requests:
             return self.throttle_failure()
-
         return self.throttle_success(cache_key)
 
 
@@ -115,3 +108,8 @@ class PasswordResetRateThrottle(UniversalRateThrottle):
 
 class PasswordChangeRateThrottle(UniversalRateThrottle):
     scope = 'password_change'
+
+
+class UploadFileRateThrotle(UniversalRateThrottle):
+    scope = 'upload'
+
