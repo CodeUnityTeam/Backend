@@ -185,7 +185,7 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
             cache_key,
         )
         if cache_key is None:
-            logger.info('Анонимный пользователь — кэширование отключено')
+            logger.info('кэширование отключено')
             return super().list(request, *args, **kwargs)
         qs = self.filter_queryset(self.get_queryset())
         all_ids = list(qs.values_list('project_id', flat=True))
