@@ -30,10 +30,12 @@ DEFAULT_THROTTLE_RATES = {
 ```
 
 ## Настройки безопасности
-`SECURE_SSL_REDIRECT` # перенаправляем HTTP‑запросы на HTTPS
+`SECURE_SSL_REDIRECT`  - перенаправляем HTTP‑запросы на HTTPS
 
-`SECURE_PROXY_SSL_HEADER`
+`SECURE_PROXY_SSL_HEADER`  - определяем, что запрос пришёл по защищённому HTTPS‑соединению
 
-`SESSION_COOKIE_SECURE`  # сессионные cookie только по HTTPS
+`SESSION_COOKIE_SECURE`  - сессионные cookie только по HTTPS
 
-`CSRF_COOKIE_SECURE`  # CSRF‑cookie только по HTTPS
+`CSRF_COOKIE_SECURE`  - CSRF‑cookie только по HTTPS
+
+`SECURE_HSTS_SECONDS`  - ходим на домен только по HTTPS указанное кол-во секунд.

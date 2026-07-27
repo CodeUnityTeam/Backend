@@ -190,6 +190,14 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # =============================================================================
 # SECURITY, CORS & AUTH MODEL
 # =============================================================================
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True  # перенаправляем HTTP‑запросы на HTTPS
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE = True  # сессионные cookie только по HTTPS
+    CSRF_COOKIE_SECURE = True  # CSRF‑cookie только по HTTPS
+    # Ходим на домен только по HTTPS 1 год (только на проде):
+    # SECURE_HSTS_SECONDS = 31536000
+
 
 AUTH_USER_MODEL = 'users.User'
 SITE_ID = 1
@@ -256,14 +264,7 @@ REST_FRAMEWORK = {
         'user_feedback': '10/min',          # feedback — юзеры
     },
 }
-# =============================================================================
-# SECURITY SETTINGS
-# =============================================================================
-if not DEBUG:
-    SECURE_SSL_REDIRECT = True  # перенаправляем HTTP‑запросы на HTTPS
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    SESSION_COOKIE_SECURE = True  # сессионные cookie только по HTTPS
-    CSRF_COOKIE_SECURE = True  # CSRF‑cookie только по HTTPS
+
 # =============================================================================
 # DJ-REST-AUTH & SIMPLE JWT CONFIGURATION
 # =============================================================================
@@ -274,8 +275,8 @@ REST_AUTH = {
     'USER_ID_FIELD': 'user_id',
     'JWT_AUTH_COOKIE': 'access-token',
     'JWT_AUTH_REFRESH_COOKIE': 'refresh-token',
-    'JWT_AUTH_HTTPONLY': False,
-    'JWT_AUTH_SECURE': False,
+    'JWT_AUTH_HTTPONLY': True if not DEBUG else False,
+    'JWT_AUTH_SECURE': True if not DEBUG else False,
     'JWT_AUTH_SAMESITE': 'Lax',
     'JWT_AUTH_RETURN_EXPIRATION': True,
     'OLD_PASSWORD_FIELD_ENABLED': True,
