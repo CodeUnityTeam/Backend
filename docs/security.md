@@ -18,7 +18,7 @@
   "detail": "Запрос был проигнорирован. Expected available in 32 seconds."
 }
 ```
-В settings.py scope задаётся через префиксы anon_ / user_.
+В settings.py scope задаётся через префиксы anon_ / user_. По умолчанию используется `scope = 'default'`.
 Пример:
 ```
 DEFAULT_THROTTLE_RATES = {
