@@ -12,7 +12,7 @@ from rest_framework.permissions import (
 )
 from rest_framework.request import Request
 from rest_framework.response import Response
-
+from core.throttling import FeedbackRateThrottle
 from core.cache_mixins import CacheRetrieveMixin
 from core.constants.cache import (
     CACHE_KEY_REVIEWS_PREFIX,
@@ -222,6 +222,7 @@ class FeedbackViewSet(viewsets.ModelViewSet):
 
     permission_classes = (IsAuthenticated,)
     http_method_names = ('post',)
+    throttle_classes = [FeedbackRateThrottle]
 
     @extend_schema(
         request=FeedbackCreateSerializer,

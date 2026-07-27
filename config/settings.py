@@ -245,18 +245,14 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_THROTTLE_RATES': {
         'anon_default': '50/min',           # Общий лимит для анонимов
-        'user_default': '500/min',          # Общий лимит для юзеров
+        'user_default': '300/min',          # Общий лимит для юзеров
         'anon_login': '5/min',              # login — анонимы
         'user_login': '5/min',              # login — авторизованные
         'anon_register': '5/hour',          # register — анонимы
         'user_register': '5/hour',          # register — авторизованные
-        'anon_password_reset': '5/hour',    # восстановление пароля — анонимы
-        'user_password_reset': '5/hour',    # восстановление пароля — юзеры
-        'anon_password_change': '10/hour',  # смена пароля — анонимы
+        'user_password_reset': '10/hour',   # восстановление пароля — юзеры
         'user_password_change': '10/hour',  # смена пароля — юзеры
-        'anon_upload': '50/min',            # upload — анонимы
         'user_upload': '50/min',            # upload — юзеры
-        'anon_feedback': '10/min',          # feedback — анонимы
         'user_feedback': '10/min',          # feedback — юзеры
     },
 }

@@ -18,6 +18,12 @@ from rest_framework_simplejwt.views import (
     TokenVerifyView,
 )
 
+from core.throttling import (
+    LoginRateThrottle,
+    PasswordChangeRateThrottle,
+    PasswordResetRateThrottle,
+    RegisterRateThrottle,
+)
 from users.views.auth import (
     EmailChangeView,
     GoogleAuthUrlView,
@@ -35,7 +41,7 @@ from users.views.profile import (
     UserProfileListView,
     UserProfileView,
 )
-from core.throttling import LoginRateThrottle
+
 router = SimpleRouter()
 router.register(
     r'',
@@ -142,7 +148,9 @@ urlpatterns = (
                     tags=['auth'],
                     summary='Смена пароля',
                     description=CHANGE_DESCRIPTION,
-                )(PasswordChangeView).as_view(),
+                )(PasswordChangeView).as_view(
+                    throttle_classes=[PasswordChangeRateThrottle],
+                ),
                 name='rest_password_change',
             ),
             path(
@@ -151,7 +159,9 @@ urlpatterns = (
                     tags=['auth'],
                     summary='Запрос на сброс пароля',
                     description=RESET_DESCRIPTION,
-                )(PasswordResetView).as_view(),
+                )(PasswordResetView).as_view(
+                    throttle_classes=[PasswordResetRateThrottle],
+                ),
                 name='rest_password_reset',
             ),
             path(
@@ -172,7 +182,9 @@ urlpatterns = (
                             tags=['auth'],
                             summary='Регистрация нового пользователя',
                             description=REGISTER_DESCRIPTION,
-                        )(RegisterView).as_view(),
+                        )(RegisterView).as_view(
+                            throttle_classes=[RegisterRateThrottle],
+                        ),
                         name='rest_register',
                     ),
                     path(

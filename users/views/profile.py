@@ -43,6 +43,7 @@ from core.constants.cache import (
     USER_PROFILE_CACHE_TIMEOUT,
     USER_PROFILE_LIST_CACHE_TIMEOUT,
 )
+from core.throttling import UploadFileRateThrottle
 from users.filters import UserFilter
 from users.models.users import User, UserExperience, UserLike
 from users.pagination import ProfileListPagination
@@ -253,6 +254,7 @@ class UserAvatarAPIView(APIView):
     permission_classes: list[type[IsAuthenticated]] = [IsAuthenticated]
     parser_classes: list[type[MultiPartParser]] = [MultiPartParser]
     allow_upload_size: int = settings.S3_MAX_FILE_SIZE_MB * 1024 * 1024
+    throttle_classes = [UploadFileRateThrottle]
 
     def post(
         self,
