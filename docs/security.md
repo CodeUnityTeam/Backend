@@ -11,4 +11,29 @@
 
 ## 🚍 Троттлинг
 
-Для ограничения количества запросов к серверу задан класс UniversalRateThrottle, который в зависимости от юзера (аутентифицированного или неаутентифицированного) задаёт кол-во запросов (scope) из settings.py. При превышении лимита сработает исключение 429 []
+Для ограничения количества запросов к серверу задан класс UniversalRateThrottle, который в зависимости от юзера (аутентифицированного или неаутентифицированного) задаёт кол-во запросов (scope) из settings.py. При превышении лимита сработает исключение 429.
+Ошибка пример:
+```
+{
+  "detail": "Запрос был проигнорирован. Expected available in 32 seconds."
+}
+```
+В settings.py scope задаётся через префиксы anon_ / user_.
+Пример:
+```
+DEFAULT_THROTTLE_RATES = {
+            'anon_default': '50/min',
+            'user_default': '500/min',
+            'anon_login': '5/min',
+            'user_login': '5/min',
+}
+```
+
+## Настройки безопасности
+`SECURE_SSL_REDIRECT` # перенаправляем HTTP‑запросы на HTTPS
+
+`SECURE_PROXY_SSL_HEADER`
+
+`SESSION_COOKIE_SECURE`  # сессионные cookie только по HTTPS
+
+`CSRF_COOKIE_SECURE`  # CSRF‑cookie только по HTTPS
