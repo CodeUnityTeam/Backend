@@ -12,13 +12,14 @@ from rest_framework.permissions import (
 )
 from rest_framework.request import Request
 from rest_framework.response import Response
-from core.throttling import FeedbackRateThrottle
+
 from core.cache_mixins import CacheRetrieveMixin
 from core.constants.cache import (
     CACHE_KEY_REVIEWS_PREFIX,
     REVIEW_DETAIL_CACHE_TIMEOUT,
     REVIEW_LIST_CACHE_TIMEOUT,
 )
+from core.throttling import FeedbackRateThrottle
 from feedback.permissions import CanEditDeleteReview
 from feedback.selectors import get_reviews_queryset
 from feedback.serializers import (
