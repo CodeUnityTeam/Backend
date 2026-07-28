@@ -12,5 +12,4 @@ __all__ = (
     'UserSkill',
     'UserSpecialization',
     'UserWorkFormat',
-    'WorkFormat',
 )
