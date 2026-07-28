@@ -190,6 +190,9 @@ class FeedbackAndInvitationFeedSerializer(serializers.Serializer):
         source='status_resp',
         read_only=True,
     )
+    initiator_type = serializers.CharField(
+        read_only=True,
+    )
     response_created_at = serializers.DateTimeField(
         source='created_at',
         read_only=True,
