@@ -178,7 +178,6 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
             end_date = data.get('end_date')
             if start_date and end_date:
                 validate_project_dates(start_date, end_date)
-            user = self.context['request'].user
             return validate_project_data(data, user)
         except DjangoValidationError as err:
             logger.warning(

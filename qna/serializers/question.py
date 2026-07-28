@@ -20,6 +20,7 @@ from qna.selectors import (
     update_question_image,
 )
 from qna.serializers.answer import AnswerDetailSerializer
+from qna.serializers.mixins import AuthorInfoMixin
 from users.models import Skill
 
 
@@ -176,7 +177,7 @@ class QuestionCreateResponseSerializer(serializers.ModelSerializer):
         fields = ('question_id',)
 
 
-class QuestionListSerializer(serializers.ModelSerializer):
+class QuestionListSerializer(AuthorInfoMixin, serializers.ModelSerializer):
     """Сериализатор вопроса для списка."""
 
     tags = serializers.SlugRelatedField(
@@ -187,6 +188,7 @@ class QuestionListSerializer(serializers.ModelSerializer):
     )
     author_name = serializers.SerializerMethodField()
     author_rating = serializers.SerializerMethodField()
+    author_avatar = serializers.SerializerMethodField()
     likes_count = serializers.IntegerField(read_only=True)
     answers_count = serializers.IntegerField(read_only=True)
     is_liked_by_me = serializers.SerializerMethodField()
@@ -200,6 +202,7 @@ class QuestionListSerializer(serializers.ModelSerializer):
             'tags',
             'author_name',
             'author_rating',
+            'author_avatar',
             'created_at',
             'likes_count',
             'answers_count',
@@ -221,21 +224,16 @@ class QuestionListSerializer(serializers.ModelSerializer):
             return 0
         return obj.user.rating
 
+    def get_author_avatar(self, obj: Question) -> str:
+        """Возвращает URL аватара автора или пустую строку."""
+        if obj.is_anonymous:
+            return ''
+        return obj.user.avatar_url
+
     def get_is_liked_by_me(self, obj: Question) -> bool:
         """Проверяет, поставил ли текущий пользователь лайк этому вопросу.
 
-        Использует prefetch_related('likes') для избежания дополнительных
-        запросов к БД.
-        """
-        request = self.context.get('request')
-        if request is None or not hasattr(request, 'user'):
-            return False
-        if request.user.is_anonymous:
-            return False
-        return any(like.user_id == request.user.pk for like in obj.likes.all())
-
-
-class QuestionDetailSerializer(serializers.ModelSerializer):
+class QuestionDetailSerializer(AuthorInfoMixin, serializers.ModelSerializer):
     """Сериализатор детальной страницы вопроса."""
 
     tags = serializers.SlugRelatedField(
@@ -246,6 +244,7 @@ class QuestionDetailSerializer(serializers.ModelSerializer):
     )
     author_name = serializers.SerializerMethodField()
     author_rating = serializers.SerializerMethodField()
+    author_avatar = serializers.SerializerMethodField()
     likes_count = serializers.IntegerField(read_only=True)
     images = serializers.SerializerMethodField()
     is_liked_by_me = serializers.SerializerMethodField()
@@ -259,6 +258,7 @@ class QuestionDetailSerializer(serializers.ModelSerializer):
             'tags',
             'author_name',
             'author_rating',
+            'author_avatar',
             'created_at',
             'likes_count',
             'images',
@@ -279,6 +279,12 @@ class QuestionDetailSerializer(serializers.ModelSerializer):
         if obj.is_anonymous:
             return 0
         return obj.user.rating
+
+    def get_author_avatar(self, obj: Question) -> str:
+        """Возвращает URL аватара автора или пустую строку."""
+        if obj.is_anonymous:
+            return ''
+        return obj.user.avatar_url
 
     def get_images(self, obj: Question) -> list[str]:
         """Возвращает список URL изображений."""

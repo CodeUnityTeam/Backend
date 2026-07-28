@@ -3,17 +3,10 @@ from typing import Any, Optional
 
 import django_filters
 from django.contrib.auth import get_user_model
-from django.db.models import (
-    QuerySet,
-)
+from django.db.models import QuerySet
 from rest_framework.request import Request
 
-from core.constants.projects import (
-    APPROVED,
-    PENDING,
-    REJECTED,
-    WITHDRAWN,
-)
+from core.constants.projects import APPROVED, PENDING, REJECTED, WITHDRAWN
 from projects.models import Response
 
 User = get_user_model()
