@@ -11,6 +11,7 @@ class AnswerDetailSerializer(AuthorInfoMixin, serializers.ModelSerializer):
 
     author_name = serializers.SerializerMethodField()
     author_rating = serializers.SerializerMethodField()
+    author_avatar = serializers.SerializerMethodField()
     images = serializers.SerializerMethodField()
     likes_count = serializers.IntegerField(read_only=True)
     is_owned_by_me = serializers.SerializerMethodField()
@@ -24,12 +25,28 @@ class AnswerDetailSerializer(AuthorInfoMixin, serializers.ModelSerializer):
             'content',
             'author_name',
             'author_rating',
+            'author_avatar',
             'created_at',
             'likes_count',
             'images',
             'is_owned_by_me',
             'is_liked_by_me',
         )
+
+    def get_author_name(self, obj: Answer) -> str:
+        """Возвращает имя автора ответа."""
+        return (
+            f'{obj.user.first_name} {obj.user.last_name}'.strip()
+            or obj.user.email
+        )
+
+    def get_author_rating(self, obj: Answer) -> int:
+        """Возвращает рейтинг автора."""
+        return obj.user.rating
+
+    def get_author_avatar(self, obj: Answer) -> str:
+        """Возвращает URL аватара автора."""
+        return obj.user.avatar_url
 
     def get_images(self, obj: Answer) -> list[str]:
         """Возвращает список URL изображений."""

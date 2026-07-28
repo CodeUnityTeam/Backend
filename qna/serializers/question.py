@@ -185,6 +185,7 @@ class QuestionListSerializer(AuthorInfoMixin, serializers.ModelSerializer):
     )
     author_name = serializers.SerializerMethodField()
     author_rating = serializers.SerializerMethodField()
+    author_avatar = serializers.SerializerMethodField()
     likes_count = serializers.IntegerField(read_only=True)
     answers_count = serializers.IntegerField(read_only=True)
     is_liked_by_me = serializers.SerializerMethodField()
@@ -198,12 +199,36 @@ class QuestionListSerializer(AuthorInfoMixin, serializers.ModelSerializer):
             'tags',
             'author_name',
             'author_rating',
+            'author_avatar',
             'created_at',
             'likes_count',
             'answers_count',
             'is_liked_by_me',
         )
 
+    def get_author_name(self, obj: Question) -> str:
+        """Возвращает имя автора или 'Аноним'."""
+        if obj.is_anonymous:
+            return 'Аноним'
+        return (
+            f'{obj.user.first_name} {obj.user.last_name}'.strip()
+            or obj.user.email
+        )
+
+    def get_author_rating(self, obj: Question) -> int:
+        """Возвращает рейтинг автора."""
+        if obj.is_anonymous:
+            return 0
+        return obj.user.rating
+
+    def get_author_avatar(self, obj: Question) -> str:
+        """Возвращает URL аватара автора или пустую строку."""
+        if obj.is_anonymous:
+            return ''
+        return obj.user.avatar_url
+
+    def get_is_liked_by_me(self, obj: Question) -> bool:
+        """Проверяет, поставил ли текущий пользователь лайк этому вопросу.
 
 class QuestionDetailSerializer(AuthorInfoMixin, serializers.ModelSerializer):
     """Сериализатор детальной страницы вопроса."""
@@ -216,6 +241,7 @@ class QuestionDetailSerializer(AuthorInfoMixin, serializers.ModelSerializer):
     )
     author_name = serializers.SerializerMethodField()
     author_rating = serializers.SerializerMethodField()
+    author_avatar = serializers.SerializerMethodField()
     likes_count = serializers.IntegerField(read_only=True)
     images = serializers.SerializerMethodField()
     is_liked_by_me = serializers.SerializerMethodField()
@@ -229,11 +255,33 @@ class QuestionDetailSerializer(AuthorInfoMixin, serializers.ModelSerializer):
             'tags',
             'author_name',
             'author_rating',
+            'author_avatar',
             'created_at',
             'likes_count',
             'images',
             'is_liked_by_me',
         )
+
+    def get_author_name(self, obj: Question) -> str:
+        """Возвращает имя автора или 'Аноним'."""
+        if obj.is_anonymous:
+            return 'Аноним'
+        return (
+            f'{obj.user.first_name} {obj.user.last_name}'.strip()
+            or obj.user.email
+        )
+
+    def get_author_rating(self, obj: Question) -> int:
+        """Возвращает рейтинг автора."""
+        if obj.is_anonymous:
+            return 0
+        return obj.user.rating
+
+    def get_author_avatar(self, obj: Question) -> str:
+        """Возвращает URL аватара автора или пустую строку."""
+        if obj.is_anonymous:
+            return ''
+        return obj.user.avatar_url
 
     def get_images(self, obj: Question) -> list[str]:
         """Возвращает список URL изображений."""
