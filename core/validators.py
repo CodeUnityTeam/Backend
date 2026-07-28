@@ -87,7 +87,7 @@ def is_excepted(
     curse_end: int,
     exception_ranges: list[tuple[int, int]],
 ) -> bool:
-    """True, если стоп-слово перекрывается с исключением. O(k)."""
+    """Возвращает True, если стоп-слово перекрывается с исключением."""
     for exc_start, exc_end in exception_ranges:
         # Если диапазоны пересекаются — это исключение
         if not (curse_end < exc_start or curse_start > exc_end):
