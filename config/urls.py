@@ -45,4 +45,5 @@ v1_urlpatterns = [
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/', include(v1_urlpatterns)),
+    path('', include('django_prometheus.urls')),
 ]

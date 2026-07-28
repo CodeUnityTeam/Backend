@@ -72,6 +72,7 @@ class MeProfileUpdateSerializer(UserDetailsSerializer):
     """Сериализатор для изменения данных профиля (PATCH)."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Инициализация с добавлением поля workformats."""
         from projects.models import WorkFormat
         super().__init__(*args, **kwargs)
         self.fields['workformats'] = serializers.PrimaryKeyRelatedField(
@@ -134,6 +135,7 @@ class MeProfileRetrieveSerializer(MeProfileUpdateSerializer):
     """Сериализатор для просмотра данных профиля (GET)."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Инициализация с заменой полей на read-only сериализаторы."""
         from projects.serializers import (
             SkillSerializer,
             SpecializationSerializer,
@@ -181,6 +183,7 @@ class PublicUserProfileSerializer(serializers.ModelSerializer):
     """Сериализатор для списочного отображения профилей."""
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Инициализация с read-only сериализаторами связанных полей."""
         from projects.serializers import (
             SkillSerializer,
             SpecializationSerializer,
@@ -271,6 +274,7 @@ class UserResponseCardSerializer(serializers.ModelSerializer):
     )
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Инициализация с динамическим указанием модели ProjectResponse."""
         from projects.models import Response as ProjectResponse
         super().__init__(*args, **kwargs)
         self.Meta.model = ProjectResponse
