@@ -19,6 +19,7 @@ from qna.selectors import (
     update_question_image,
 )
 from qna.serializers.answer import AnswerDetailSerializer
+from qna.serializers.mixins import AuthorInfoMixin
 from users.models import Skill
 
 
@@ -173,7 +174,7 @@ class QuestionCreateResponseSerializer(serializers.ModelSerializer):
         fields = ('question_id',)
 
 
-class QuestionListSerializer(serializers.ModelSerializer):
+class QuestionListSerializer(AuthorInfoMixin, serializers.ModelSerializer):
     """Сериализатор вопроса для списка."""
 
     tags = serializers.SlugRelatedField(
@@ -203,36 +204,8 @@ class QuestionListSerializer(serializers.ModelSerializer):
             'is_liked_by_me',
         )
 
-    def get_author_name(self, obj: Question) -> str:
-        """Возвращает имя автора или 'Аноним'."""
-        if obj.is_anonymous:
-            return 'Аноним'
-        return (
-            f'{obj.user.first_name} {obj.user.last_name}'.strip()
-            or obj.user.email
-        )
 
-    def get_author_rating(self, obj: Question) -> int:
-        """Возвращает рейтинг автора."""
-        if obj.is_anonymous:
-            return 0
-        return obj.user.rating
-
-    def get_is_liked_by_me(self, obj: Question) -> bool:
-        """Проверяет, поставил ли текущий пользователь лайк этому вопросу.
-
-        Использует prefetch_related('likes') для избежания дополнительных
-        запросов к БД.
-        """
-        request = self.context.get('request')
-        if request is None or not hasattr(request, 'user'):
-            return False
-        if request.user.is_anonymous:
-            return False
-        return any(like.user_id == request.user.pk for like in obj.likes.all())
-
-
-class QuestionDetailSerializer(serializers.ModelSerializer):
+class QuestionDetailSerializer(AuthorInfoMixin, serializers.ModelSerializer):
     """Сериализатор детальной страницы вопроса."""
 
     tags = serializers.SlugRelatedField(
@@ -261,21 +234,6 @@ class QuestionDetailSerializer(serializers.ModelSerializer):
             'images',
             'is_liked_by_me',
         )
-
-    def get_author_name(self, obj: Question) -> str:
-        """Возвращает имя автора или 'Аноним'."""
-        if obj.is_anonymous:
-            return 'Аноним'
-        return (
-            f'{obj.user.first_name} {obj.user.last_name}'.strip()
-            or obj.user.email
-        )
-
-    def get_author_rating(self, obj: Question) -> int:
-        """Возвращает рейтинг автора."""
-        if obj.is_anonymous:
-            return 0
-        return obj.user.rating
 
     def get_images(self, obj: Question) -> list[str]:
         """Возвращает список URL изображений."""

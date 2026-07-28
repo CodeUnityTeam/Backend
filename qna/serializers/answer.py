@@ -3,9 +3,10 @@ from rest_framework import serializers
 
 from qna.models import Answer
 from qna.selectors import create_answer, create_answer_image
+from qna.serializers.mixins import AuthorInfoMixin
 
 
-class AnswerDetailSerializer(serializers.ModelSerializer):
+class AnswerDetailSerializer(AuthorInfoMixin, serializers.ModelSerializer):
     """Сериализатор ответа для детальной страницы вопроса."""
 
     author_name = serializers.SerializerMethodField()
@@ -29,17 +30,6 @@ class AnswerDetailSerializer(serializers.ModelSerializer):
             'is_owned_by_me',
             'is_liked_by_me',
         )
-
-    def get_author_name(self, obj: Answer) -> str:
-        """Возвращает имя автора ответа."""
-        return (
-            f'{obj.user.first_name} {obj.user.last_name}'.strip()
-            or obj.user.email
-        )
-
-    def get_author_rating(self, obj: Answer) -> int:
-        """Возвращает рейтинг автора."""
-        return obj.user.rating
 
     def get_images(self, obj: Answer) -> list[str]:
         """Возвращает список URL изображений."""
