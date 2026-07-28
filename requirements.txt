@@ -83,6 +83,8 @@ psycopg==3.3.4
     # via backend (pyproject.toml)
 psycopg-binary==3.3.4
     # via psycopg
+pyahocorasick==2.3.1
+    # via backend (pyproject.toml)
 pycparser==3.0
     # via cffi
 pyjwt==2.13.0

@@ -21,6 +21,7 @@ from core.constants.projects import (
     PUBLISHED,
     RECRUITING_CLOSED,
 )
+from core.validators import validate_no_bad_words
 from projects.models import Project, ProjectLike, ProjectParticipant
 from projects.selectors import get_project_with_relations
 from projects.services import add_user_to_project_participants
@@ -99,6 +100,7 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
             'title': {
                 'required': True,
                 'allow_blank': False,
+                'validators': [validate_no_bad_words],
                 'error_messages': {
                     'required': 'Название обязательно для заполнения.',
                     'blank': 'Название не может быть пустым.',
@@ -107,6 +109,7 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
             'short_desc': {
                 'required': True,
                 'allow_blank': False,
+                'validators': [validate_no_bad_words],
                 'error_messages': {
                     'required': 'Кратное описание обязательно для заполнения.',
                     'blank': 'Краткое описание не может быть пустым.',
@@ -116,10 +119,12 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
                 'required': False,
                 'allow_blank': True,
                 'default': None,
+                'validators': [validate_no_bad_words],
             },
             'location': {
                 'required': True,
                 'allow_blank': False,
+                'validators': [validate_no_bad_words],
                 'error_messages': {
                     'required': 'Местоположение обязательно для заполнения.',
                     'blank': 'Местоположение не может быть пустым.',
@@ -446,10 +451,22 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
             'telegram_contact',
         )
         extra_kwargs = {
-            'title': {'required': False},
-            'short_desc': {'required': False},
-            'full_desc': {'required': False},
-            'location': {'required': False},
+            'title': {
+                'required': False,
+                'validators': [validate_no_bad_words],
+            },
+            'short_desc': {
+                'required': False,
+                'validators': [validate_no_bad_words],
+            },
+            'full_desc': {
+                'required': False,
+                'validators': [validate_no_bad_words],
+            },
+            'location': {
+                'required': False,
+                'validators': [validate_no_bad_words],
+            },
             'end_date': {
                 'required': False,
                 'input_formats': ['%Y.%m.%d', '%Y-%m-%d'],

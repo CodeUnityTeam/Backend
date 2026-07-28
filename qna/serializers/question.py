@@ -7,6 +7,7 @@ from core.constants.qna import (
     MIN_DESC_QUESTION,
     MIN_TITLE_QUESTION,
 )
+from core.validators import validate_no_bad_words
 from qna.models import Question
 from qna.selectors import (
     create_question,
@@ -60,9 +61,11 @@ class QuestionCreateSerializer(serializers.ModelSerializer):
     title = serializers.CharField(
         min_length=MIN_TITLE_QUESTION,
         max_length=MAX_TITLE_QUESTION,
+        validators=[validate_no_bad_words],
     )
     description = serializers.CharField(
         min_length=MIN_DESC_QUESTION,
+        validators=[validate_no_bad_words],
     )
 
     class Meta:

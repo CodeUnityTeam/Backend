@@ -1,6 +1,7 @@
 from django.db import transaction
 from rest_framework import serializers
 
+from core.validators import validate_no_bad_words
 from qna.models import Answer
 from qna.selectors import create_answer, create_answer_image
 
@@ -96,6 +97,11 @@ class AnswerCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Answer
         fields = ('content', 'parent_answer', 'images')
+        extra_kwargs = {
+            'content': {
+                'validators': [validate_no_bad_words],
+            },
+        }
 
     def validate_parent_answer(self, value: Answer | None) -> Answer | None:
         """Проверяет, что parent_answer относится к тому же вопросу."""
