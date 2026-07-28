@@ -42,7 +42,7 @@ GRAFANA_PORT=3000
 GRAFANA_USER=admin
 GRAFANA_PASSWORD=password
 GRAFANA_ROOT_URL=http://localhost:8080/grafana/
-# http://localhost:3000/ — при прямом доступе (без nginx)
+# http://localhost:3001/ — при прямом доступе (без nginx)
 ```
 
 ## Запуск
@@ -71,7 +71,7 @@ docker compose -f docker-compose.dev.yaml up -d
 
 | Сервис | Через nginx | Напрямую |
 |--------|-------------|----------|
-| **Grafana** | http://localhost:8080/grafana/ | http://localhost:3000 |
+| **Grafana** | http://localhost:8080/grafana/ | http://localhost:3001 |
 | **Prometheus** | — | http://localhost:9090 |
 
 **Логин/пароль Grafana:** `admin` / `password` (из переменной `GRAFANA_PASSWORD`)
@@ -138,7 +138,7 @@ docker compose -f docker-compose.dev.yaml up -d
 | Значение | Когда использовать |
 |----------|-------------------|
 | `http://localhost:8080/grafana/` | Доступ через nginx (по умолчанию) |
-| `http://localhost:3000/` | Прямой доступ (без nginx) |
+| `http://localhost:3001/` | Прямой доступ (без nginx) |
 
 Переключение через переменную `GRAFANA_ROOT_URL` в `.env`.
 

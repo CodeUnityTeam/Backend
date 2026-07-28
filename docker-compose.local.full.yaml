@@ -96,11 +96,8 @@ services:
     image: grafana/grafana:12.4.2
     container_name: grafana
     ports:
-      - "3000:3000"
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
-      - GF_SERVER_ROOT_URL=${GRAFANA_ROOT_URL:-http://localhost:8080/grafana/}
-      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+      - "3001:3000"
+    env_file: .env
     volumes:
       - grafana_data:/var/lib/grafana
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
