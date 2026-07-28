@@ -29,3 +29,8 @@ USER_NAME_HELP = 'Допускаются только буквы кирилли�
 
 # --- UpdateLastActivityMiddleware ---
 LAST_LOGIN_UPDATE_INTERVAL = 5
+
+MSG_SUCCESS = 'Письмо с подтверждением успешно отправлено на ваш email.'
+MSG_RESENT = (
+    'Письмо с подтверждением успешно отправлено на ваш email повторно.'
+)

@@ -33,6 +33,7 @@ from qna.permissions import CanUpdateDeleteQNA
 from qna.selectors import (
     get_light_question_queryset,
     get_question_detail_queryset,
+    get_question_list_queryset,
     get_question_or_404,
 )
 from qna.serializers.answer import (
@@ -178,6 +179,8 @@ class QuestionViewSet(CacheRetrieveMixin, viewsets.ModelViewSet):
 
     def get_queryset(self) -> QuerySet:
         """Возвращает оптимизированный queryset в зависимости от action."""
+        if self.action == 'list':
+            return get_question_list_queryset()
         qs = super().get_queryset()
         if self.action in ('add_answer', 'like'):
             qs = self._light_queryset

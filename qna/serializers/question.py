@@ -187,6 +187,7 @@ class QuestionListSerializer(AuthorInfoMixin, serializers.ModelSerializer):
     author_rating = serializers.SerializerMethodField()
     likes_count = serializers.IntegerField(read_only=True)
     answers_count = serializers.IntegerField(read_only=True)
+    is_liked_by_me = serializers.SerializerMethodField()
 
     class Meta:
         model = Question
@@ -200,6 +201,7 @@ class QuestionListSerializer(AuthorInfoMixin, serializers.ModelSerializer):
             'created_at',
             'likes_count',
             'answers_count',
+            'is_liked_by_me',
         )
 
 
@@ -216,6 +218,7 @@ class QuestionDetailSerializer(AuthorInfoMixin, serializers.ModelSerializer):
     author_rating = serializers.SerializerMethodField()
     likes_count = serializers.IntegerField(read_only=True)
     images = serializers.SerializerMethodField()
+    is_liked_by_me = serializers.SerializerMethodField()
 
     class Meta:
         model = Question
@@ -229,11 +232,25 @@ class QuestionDetailSerializer(AuthorInfoMixin, serializers.ModelSerializer):
             'created_at',
             'likes_count',
             'images',
+            'is_liked_by_me',
         )
 
     def get_images(self, obj: Question) -> list[str]:
         """Возвращает список URL изображений."""
         return [img.image_url for img in obj.images.all()]
+
+    def get_is_liked_by_me(self, obj: Question) -> bool:
+        """Проверяет, поставил ли текущий пользователь лайк этому вопросу.
+
+        Использует prefetch_related('likes') для избежания дополнительных
+        запросов к БД.
+        """
+        request = self.context.get('request')
+        if request is None or not hasattr(request, 'user'):
+            return False
+        if request.user.is_anonymous:
+            return False
+        return any(like.user_id == request.user.pk for like in obj.likes.all())
 
 
 class QuestionWithAnswersSerializer(QuestionDetailSerializer):

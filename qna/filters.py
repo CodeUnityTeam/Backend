@@ -1,7 +1,7 @@
 from typing import Optional
 
 import django_filters
-from django.db.models import Count, Q, QuerySet
+from django.db.models import Q, QuerySet
 from rest_framework.exceptions import PermissionDenied
 
 from core.filters import UUIDInFilter
@@ -47,14 +47,12 @@ class QuestionFilter(django_filters.FilterSet):
         """
         if value == 'popular':
             # Сортировка по количеству лайков (по убыванию)
-            return queryset.annotate(
-                likes_count=Count('likes'),
-            ).order_by('-likes_count')
+            # likes_count уже аннотирован в get_question_list_queryset
+            return queryset.order_by('-likes_count')
         if value == 'no_answers':
             # Вопросы без ответов
-            return queryset.annotate(
-                answers_count=Count('answers'),
-            ).filter(answers_count=0)
+            # answers_count уже аннотирован в get_question_list_queryset
+            return queryset.filter(answers_count=0)
         if value == 'my':
             user = self.request.user
             if not user.is_authenticated:
