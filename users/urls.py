@@ -25,6 +25,7 @@ from users.views.auth import (
     MailRuAuthUrlView,
     MailRuLogin,
     YandexAuthUrlView,
+    YandexCallbackView,
     YandexLogin,
 )
 from users.views.profile import (
@@ -202,6 +203,11 @@ urlpatterns = (
                 'yandex/url/',
                 YandexAuthUrlView.as_view(),
                 name='yandex_auth_url',
+            ),
+            path(
+                'yandex/callback/',
+                YandexCallbackView.as_view(),
+                name='yandex_callback',
             ),
             path(
                 'mailru/url/',

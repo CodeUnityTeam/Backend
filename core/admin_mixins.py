@@ -7,7 +7,7 @@ from django.db.models import Model, QuerySet
 from django.http import HttpRequest
 
 from core.admin_forms import ImageAdminForm
-from qna.mixins import BaseImageMixin
+from core.models.mixins import BaseImageMixin
 
 User = apps.get_model('users', 'User')
 
@@ -34,7 +34,7 @@ class RolePermissionsMixin:
             self,
             request: HttpRequest,
             obj: Optional[Model]=None,
-        ) -> bool:
+    ) -> bool:
         """Проверка прав на добавление объектов."""
         return self._check_permission(request, 'add')
 
@@ -42,7 +42,7 @@ class RolePermissionsMixin:
             self,
             request: HttpRequest,
             obj: Optional[Model]=None,
-        ) -> bool:
+    ) -> bool:
         """Проверка прав на изменение объектов."""
         return self._check_permission(request, 'change')
 
@@ -50,7 +50,7 @@ class RolePermissionsMixin:
             self,
             request: HttpRequest,
             obj: Optional[Model]=None,
-        ) -> bool:
+    ) -> bool:
         """Проверка прав на удаление объектов."""
         if obj and hasattr(obj, 'pk') and obj.pk == request.user.pk:
             return False
@@ -60,11 +60,11 @@ class RolePermissionsMixin:
             self,
             request: HttpRequest,
             obj: Optional[Model]=None,
-        ) -> bool:
+    ) -> bool:
         """Проверка прав на просмотр объектов."""
         return self._check_permission(request, 'view')
 
-    def has_module_permission(self, request: HttpRequest)-> bool:
+    def has_module_permission(self, request: HttpRequest) -> bool:
         """Проверка прав на вход в админку."""
         if request.user.is_staff and request.user.is_active:
             return True
@@ -164,8 +164,10 @@ class SaveImageFormsetMixin:
         """
         instances = formset.save(commit=False)
         for i, instance in enumerate(instances):
-            if (isinstance(instance, BaseImageMixin)
-                and not instance.uploaded_by_id):
+            if (
+                isinstance(instance, BaseImageMixin)
+                and not instance.uploaded_by_id
+            ):
                 instance.uploaded_by = form.instance.user
             instance.save()
 
