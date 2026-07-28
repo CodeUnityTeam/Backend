@@ -1,15 +1,7 @@
 from typing import Any
 from uuid import UUID
 
-from django.db.models import (
-    Case,
-    Count,
-    Prefetch,
-    Q,
-    QuerySet,
-    Value,
-    When,
-)
+from django.db.models import Case, Count, Prefetch, Q, QuerySet, Value, When
 from django.db.models.base import Model
 from django.db.models.functions import Concat
 from django.shortcuts import get_object_or_404

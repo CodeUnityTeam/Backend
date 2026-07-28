@@ -15,12 +15,7 @@ from core.constants.cache import (
     COUNTER_PROJECT_LIKES_PREFIX,
     COUNTER_PROJECT_PARTICIPANTS_PREFIX,
 )
-from core.constants.projects import (
-    AUTHOR,
-    DRAFT,
-    PUBLISHED,
-    RECRUITING_CLOSED,
-)
+from core.constants.projects import AUTHOR, DRAFT, PUBLISHED, RECRUITING_CLOSED
 from projects.models import Project, ProjectLike, ProjectParticipant
 from projects.selectors import get_project_with_relations
 from projects.services import add_user_to_project_participants
@@ -173,7 +168,6 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
             end_date = data.get('end_date')
             if start_date and end_date:
                 validate_project_dates(start_date, end_date)
-            user = self.context['request'].user
             return validate_project_data(data, user)
         except DjangoValidationError as err:
             logger.warning(

@@ -3,9 +3,10 @@ from rest_framework import serializers
 
 from qna.models import Answer
 from qna.selectors import create_answer, create_answer_image
+from qna.serializers.mixins import AuthorInfoMixin
 
 
-class AnswerDetailSerializer(serializers.ModelSerializer):
+class AnswerDetailSerializer(AuthorInfoMixin, serializers.ModelSerializer):
     """Сериализатор ответа для детальной страницы вопроса."""
 
     author_name = serializers.SerializerMethodField()
