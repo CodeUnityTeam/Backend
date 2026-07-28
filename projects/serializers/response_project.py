@@ -1,6 +1,7 @@
 import logging
 from typing import Any, Dict
 
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from core.cache_mixins import get_or_seed_counter

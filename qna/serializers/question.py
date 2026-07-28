@@ -228,7 +228,8 @@ class QuestionListSerializer(AuthorInfoMixin, serializers.ModelSerializer):
         return obj.user.avatar_url
 
     def get_is_liked_by_me(self, obj: Question) -> bool:
-        """Проверяет, поставил ли текущий пользователь лайк этому вопросу.
+        """Проверяет, поставил ли текущий пользователь лайк этому вопросу."""
+
 
 class QuestionDetailSerializer(AuthorInfoMixin, serializers.ModelSerializer):
     """Сериализатор детальной страницы вопроса."""
