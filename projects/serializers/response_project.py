@@ -14,7 +14,8 @@ from core.constants.projects import (
     PENDING,
     STATUS_RESPONSE_PROJECT,
 )
-from projects.models import ProjectParticipant, Response
+from projects.models import Response
+from projects.models.project import ProjectParticipant
 from projects.serializers.skill import SkillSerializer
 from projects.services import add_user_to_project_participants
 from projects.validators.response_project import (
@@ -140,7 +141,7 @@ class UpdateResponseStatusSerializer(serializers.ModelSerializer):
         """Обновление статуса и сопутствующие действия."""
         new_status = validated_data['status']
         user_response.status_resp = new_status
-        user_response.save(update_fields=['status_resp'])
+        user_response.save(update_fields=('status_resp',))
         if new_status == APPROVED:
             add_user_to_project_participants(
                 project=user_response.project,

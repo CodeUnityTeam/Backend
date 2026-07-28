@@ -123,8 +123,8 @@ logger = logging.getLogger(__name__)
 class MeProfileView(RetrieveUpdateDestroyAPIView):
     """View для работы с профилем авторизованного пользователя."""
 
-    http_method_names = ['get', 'patch', 'delete', 'head', 'options']
-    permission_classes = [IsAuthenticated]
+    http_method_names = ('get', 'patch', 'delete', 'head', 'options')
+    permission_classes = (IsAuthenticated,)
 
     def get_object(self) -> User:
         """Вернуть объект текущего авторизованного пользователя."""
@@ -349,8 +349,8 @@ class MeExperienceViewSet(ModelViewSet):
     """
 
     serializer_class = UserExperienceSerializer
-    permission_classes = [IsAuthenticated]
-    http_method_names = ['post', 'put', 'delete']
+    permission_classes = (IsAuthenticated,)
+    http_method_names = ('post', 'put', 'delete')
 
     def get_queryset(self) -> QuerySet[UserExperience]:
         """Возвращает опыт работы только текущего пользователя."""
@@ -377,7 +377,7 @@ class UserProfileView(CacheRetrieveMixin, RetrieveAPIView):
 
     queryset = UserModel.objects.filter(is_active=True)
     serializer_class = DetailUserProfileSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
     retrieve_cache_timeout = USER_PROFILE_CACHE_TIMEOUT
     retrieve_cache_key_prefix = 'users'
 

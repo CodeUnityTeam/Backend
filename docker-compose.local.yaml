@@ -41,3 +41,16 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+
+  celeryworker:
+    container_name: celeryworker
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env
+    environment:
+      - DB_MODE=network
+    depends_on:
+      - redis
+      - db
+    command: celery -A config.celery_app worker -l INFO
