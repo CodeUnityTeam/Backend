@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from rest_framework import exceptions
 
 from core.constants.projects import ALLOWED_STATUSED_FOR_LIKE
 from projects.models import Project
@@ -17,8 +18,8 @@ def validate_project_like(
     - Можно лайкать только PUBLISHED или RECRUITING_CLOSED.
     """
     if project.author == user:
-        raise ValueError('Нельзя лайкнуть свой проект.')
+        raise exceptions.PermissionDenied('Нельзя лайкнуть свой проект.')
     if project.status_project not in ALLOWED_STATUSED_FOR_LIKE:
-        raise ValueError(
+        raise exceptions.PermissionDenied(
             'Нельзя лайкать проект с текущим статусом.',
         )
