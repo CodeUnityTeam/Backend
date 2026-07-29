@@ -54,6 +54,20 @@ services:
       - static:/backend_static/static/
       - logs:/app/logs/
 
+  celeryworker:
+    image: maxwell884/code-unity-backend:dev
+    container_name: celeryworker
+    restart: unless-stopped
+    depends_on:
+      - db
+      - minio
+      - redis
+    env_file: .env
+    environment:
+      - DB_MODE=network
+    volumes:
+      - logs:/app/logs/
+    command: celery -A config.celery_app worker -l INFO
   nginx:
     build: ./nginx
     image: hihix/backend-nginx:latest

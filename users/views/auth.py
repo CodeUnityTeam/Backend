@@ -658,3 +658,55 @@ class EmailChangeView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+
+
+class YandexCallbackView(APIView):
+    """Обрабатывает callback от Яндекса после авторизации пользователя.
+
+    Яндекс редиректит сюда с code и state после успешной авторизации.
+    View перенаправляет пользователя на фронтенд, который отправляет
+    POST запрос с code на /api/v1/user/auth/yandex/ для получения JWT.
+    """
+
+    permission_classes = (AllowAny,)
+
+    def get(
+        self,
+        request: HttpRequest,
+        *args: Any,
+        **kwargs: Any,
+    ) -> HttpResponseRedirect:
+        """Обрабатывает GET-редирект от Яндекса с authorization code."""
+        code: str = request.GET.get('code', '')
+        state: str = request.GET.get('state', 'AAA')
+
+        logger.info(
+            'Yandex callback получен. code (первые 20 символов): %s, '
+            'state: %s',
+            code[:20] if code else None,
+            state,
+        )
+
+        if not code:
+            logger.error('Yandex callback: code не получен от Яндекса.')
+            host_url = os.getenv('HOST_URL', 'http://localhost:3000')
+            error_url = f'{host_url}/auth/yandex/callback?error=no_code'
+            return HttpResponseRedirect(error_url)
+
+        # Декодируем code из URL-encoding
+        code = unquote(code)
+
+        # Редиректим пользователя на фронтенд, который сам отправит
+        # POST запрос с code на /api/v1/user/auth/yandex/
+        host_url = os.getenv('HOST_URL', 'http://localhost:3000')
+        redirect_url = (
+            f'{host_url}/auth/yandex/callback'
+            f'?code={code}&state={state}'
+        )
+
+        logger.info(
+            'Yandex callback: редирект на фронтенд. redirect_url: %s',
+            redirect_url,
+        )
+
+        return HttpResponseRedirect(redirect_url)
