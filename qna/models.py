@@ -9,10 +9,8 @@ from core.constants.qna import (
     MIN_DESC_QUESTION,
     MIN_TITLE_QUESTION,
 )
-from core.models.mixins import TimestampMixin
+from core.models.mixins import BaseImageMixin, TimestampMixin
 from users.models import Skill
-
-from .mixins import BaseImageMixin
 
 
 class Question(TimestampMixin, models.Model):
@@ -168,7 +166,6 @@ class QuestionLike(models.Model):
         """Метаданные модели."""
 
         db_table = 'question_likes'
-        unique_together = ('user', 'question')
         verbose_name = 'Лайк вопроса'
         verbose_name_plural = 'Лайки вопросов'
         constraints = (
@@ -214,7 +211,6 @@ class AnswerLike(models.Model):
         """Метаданные модели."""
 
         db_table = 'answer_likes'
-        unique_together = ('user', 'answer')
         verbose_name = 'Лайк ответа'
         verbose_name_plural = 'Лайки ответов'
         constraints = (

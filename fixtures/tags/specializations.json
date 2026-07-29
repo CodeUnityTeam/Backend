@@ -1,338 +1,16 @@
 [
   {
     "model": "users.specialization",
-    "pk": "0000c7ee-647a-4467-a1c6-b07342c8ba57",
+    "pk": "a0bdae48-2990-403d-8f58-e38ed3adeba6",
     "fields": {
-      "name": "Ethical Hacker"
+      "name": "1C Analyst"
     }
   },
   {
     "model": "users.specialization",
-    "pk": "0451d0fe-42ac-4ca9-98b4-66cc3a52a417",
+    "pk": "b7ff095d-b61d-43cb-9bc8-a9339f631fcc",
     "fields": {
-      "name": "Solutions Architect"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "0a6a0c8e-6cfd-4f4c-9225-a2081a90de24",
-    "fields": {
-      "name": "Cryptographer"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "0ba44169-978a-45a7-8dd5-244a59822a95",
-    "fields": {
-      "name": "Risk Manager"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "0bf36e2c-a5a3-4011-9e45-e2856b750fb7",
-    "fields": {
-      "name": "PPC Specialist"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "10cd7655-b751-4077-96f0-18a63250d5f3",
-    "fields": {
-      "name": "Security Architect"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "110b4515-812d-4927-b70b-b9b4c2df4ad5",
-    "fields": {
-      "name": "Customer Success Manager"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "111b86ff-5e30-4cf4-ba98-087b3ca77d4a",
-    "fields": {
-      "name": "Graphic Designer"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "147d5cab-d565-44dc-855b-c93ee5c98778",
-    "fields": {
-      "name": "SEO Specialist"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "18449907-f05d-482e-b33e-fa432e41b2af",
-    "fields": {
-      "name": "Release Manager"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "191c6b8b-9582-456b-9bbf-03b140ddcab0",
-    "fields": {
-      "name": "Database Administrator"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "1b34b5f6-ad09-4d4b-990a-5fbf3a902662",
-    "fields": {
-      "name": "Project Manager"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "214ebc12-eb2c-488c-bcce-0c4776168417",
-    "fields": {
-      "name": "IT Director"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "24657d85-dde1-459c-98a8-404068645fe0",
-    "fields": {
-      "name": "COO"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "269ebc58-29e4-49b8-9ef4-074e2fd547d8",
-    "fields": {
-      "name": "Game Designer"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "28fd13c8-5b29-40d6-b0b1-68f054e44aa0",
-    "fields": {
-      "name": "Site Reliability Engineer"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "29c6bd05-dc2e-4a95-b7f0-c1f5ea7b8145",
-    "fields": {
-      "name": "Threat Hunter"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "2a02ba7d-e960-4f44-a348-db4859d9fc25",
-    "fields": {
-      "name": "IoT Developer"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "2b4a9c82-b6f8-4441-9268-ef5883595833",
-    "fields": {
-      "name": "Backend Developer"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "2c7b11a5-e6d8-4f32-896d-900789fbccef",
-    "fields": {
-      "name": "Sales Manager"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "2d4244ed-b9dd-435c-a50e-c799b9a14288",
-    "fields": {
-      "name": "Product Manager"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "2dced6e4-c9ed-450f-9456-95f200fbd35c",
-    "fields": {
-      "name": "Scrum Master"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "2dd5fc79-4cc2-49ab-8978-34b80893dc19",
-    "fields": {
-      "name": "Logistics Manager"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "33a9cfb6-bf9c-48fb-a635-b79e9b07779b",
-    "fields": {
-      "name": "NLP Engineer"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "3877b5fe-83f1-47d8-b97a-ef8bf00d7bd8",
-    "fields": {
-      "name": "Operations Manager"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "3c650e86-4b78-41bf-8f8f-4d6e10e0e49b",
-    "fields": {
-      "name": "Network Engineer"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "3da66a79-82ad-4e9d-97ad-873546efd594",
-    "fields": {
-      "name": "System Administrator"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "3e994cb6-75f4-4e9c-a8cb-02cddc0785fc",
-    "fields": {
-      "name": "CHRO"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "3f6715b0-2eee-4499-a41f-ff45693582bf",
-    "fields": {
-      "name": "IT Consultant"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "43f449e6-c978-4248-86f7-dac3d7b9cece",
-    "fields": {
-      "name": "Frontend Developer"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "4e11fe0a-ab2b-4a11-8201-ff21b67a170f",
-    "fields": {
-      "name": "Legal Director"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "4e12a66f-488c-4dfa-b5e8-6b6708d39aca",
-    "fields": {
-      "name": "Business Development Manager"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "4fccf88f-8ae6-46a9-bfb3-7a0e07863840",
-    "fields": {
-      "name": "Email Marketing Specialist"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "4fe3b7ae-f40f-4da5-8102-918c94fbb418",
-    "fields": {
-      "name": "CMO"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "55b0d417-8d64-4ce1-b7d2-f9fe7025d469",
-    "fields": {
-      "name": "Software Architect"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "58468414-6924-44ba-bc4b-54605beebc48",
-    "fields": {
-      "name": "Mobile Developer"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1",
-    "fields": {
-      "name": "Fullstack Developer"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "5c4edf21-68eb-4bcc-a7e7-9b8fe989f60b",
-    "fields": {
-      "name": "Incident Responder"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "5c50c0e2-132d-47e6-b413-fee5aa3e81e8",
-    "fields": {
-      "name": "Technical Support Specialist"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "5d3c650c-9d1b-404d-ac7a-95b0c410c9e8",
-    "fields": {
-      "name": "Marketing Manager"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "62c4fa5c-8616-4982-a684-cfb50b992a15",
-    "fields": {
-      "name": "IT Auditor"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "63d6eeaf-7291-4baa-92df-22f42fd188f3",
-    "fields": {
-      "name": "UI/UX Designer"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "64abfae0-8541-48a9-b461-8c842e3043b1",
-    "fields": {
-      "name": "AI Specialist"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "64c590ee-bb49-4bb1-8f22-eb828a475f43",
-    "fields": {
-      "name": "Game Developer"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "67b19ba2-6b6f-4ca0-9b96-848009a3d7db",
-    "fields": {
-      "name": "Hardware Engineer"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "6d544b47-51a0-4c71-9f4f-8a04638042e2",
-    "fields": {
-      "name": "Supply Chain Manager"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "7085020e-d4e9-4a49-a4f4-fad2c71c409d",
-    "fields": {
-      "name": "Enterprise Architect"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "7625f836-8c35-49ec-90e6-56e3336b0f0c",
-    "fields": {
-      "name": "AR/VR Developer"
+      "name": "1C Programmer"
     }
   },
   {
@@ -344,16 +22,149 @@
   },
   {
     "model": "users.specialization",
-    "pk": "7fb7586e-23a8-4d68-8efc-6a58cb72d988",
+    "pk": "3851e457-23c5-45a0-98b8-b0eba62ed9d7",
     "fields": {
-      "name": "Procurement Manager"
+      "name": "AI Engineer"
     }
   },
   {
     "model": "users.specialization",
-    "pk": "8819f835-293e-4c6f-9d3a-939fa77995b7",
+    "pk": "7625f836-8c35-49ec-90e6-56e3336b0f0c",
     "fields": {
-      "name": "Forensic Analyst"
+      "name": "AR/VR Developer"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "ebf19476-218f-491b-bd3b-b8cc8877321d",
+    "fields": {
+      "name": "Account Manager"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "fa9e0a07-f63b-4226-8972-2aad3db1862b",
+    "fields": {
+      "name": "Android Developer"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "0ed5d9d6-8c3b-48e9-8c3e-726c00c96f5e",
+    "fields": {
+      "name": "Art Director"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "2b4a9c82-b6f8-4441-9268-ef5883595833",
+    "fields": {
+      "name": "Backend Developer"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "7fd446b3-0f47-48df-8447-d79490e5ff0c",
+    "fields": {
+      "name": "BI Analyst"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "dfd1c374-6d4f-479f-a321-da4f4ee3aef1",
+    "fields": {
+      "name": "Blockchain Developer"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "a7386fc2-51a4-4392-a810-19d48d11778d",
+    "fields": {
+      "name": "Business Analyst"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "4e12a66f-488c-4dfa-b5e8-6b6708d39aca",
+    "fields": {
+      "name": "Business Development Manager"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "d3cd98b4-054b-4966-aa06-f85814162214",
+    "fields": {
+      "name": "C# Developer"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "0b9c5952-4e9e-475a-94b1-b0da5674e5ff",
+    "fields": {
+      "name": "C++ Developer"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "f833788d-5218-419a-98c4-676300eecbe1",
+    "fields": {
+      "name": "CEO"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "e24bdd9e-0110-40b2-bfc4-865123a16e55",
+    "fields": {
+      "name": "CFO"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "3e994cb6-75f4-4e9c-a8cb-02cddc0785fc",
+    "fields": {
+      "name": "CHRO"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "4fe3b7ae-f40f-4da5-8102-918c94fbb418",
+    "fields": {
+      "name": "CMO"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "24657d85-dde1-459c-98a8-404068645fe0",
+    "fields": {
+      "name": "COO"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "f93f2875-d7b3-41d4-adf0-ad63af73f5f6",
+    "fields": {
+      "name": "CTO"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "a02ba914-75c8-4813-b8d2-791a067b0e11",
+    "fields": {
+      "name": "Cloud Architect"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "ce9c1bbc-22a8-4bec-86b8-de8295c22492",
+    "fields": {
+      "name": "Compliance Officer"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "aafc1f3a-e2fa-4b67-b248-4cd9b7523bce",
+    "fields": {
+      "name": "Computer Vision Engineer"
     }
   },
   {
@@ -372,86 +183,16 @@
   },
   {
     "model": "users.specialization",
-    "pk": "94fbe2de-1754-4381-b29e-2b1b57b8efda",
+    "pk": "0a6a0c8e-6cfd-4f4c-9225-a2081a90de24",
     "fields": {
-      "name": "Machine Learning Engineer"
+      "name": "Cryptographer"
     }
   },
   {
     "model": "users.specialization",
-    "pk": "a02ba914-75c8-4813-b8d2-791a067b0e11",
+    "pk": "110b4515-812d-4927-b70b-b9b4c2df4ad5",
     "fields": {
-      "name": "Cloud Architect"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "a38c4213-9fde-4e85-ace8-78936c9fdf3c",
-    "fields": {
-      "name": "Automation QA Engineer"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "a7386fc2-51a4-4392-a810-19d48d11778d",
-    "fields": {
-      "name": "Business Analyst"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "a98283c2-0dd4-4b00-b9c2-73167585903c",
-    "fields": {
-      "name": "Digital Marketing Specialist"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "aafc1f3a-e2fa-4b67-b248-4cd9b7523bce",
-    "fields": {
-      "name": "Computer Vision Engineer"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "bc5859c5-0f6e-4ed9-a51c-e5130ef91541",
-    "fields": {
-      "name": "Translator"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "bef42e55-4a8e-43aa-897a-9513a6e69a59",
-    "fields": {
-      "name": "Technical Writer"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "c157b4c3-a880-4f15-bfcb-6edbb8fcbce3",
-    "fields": {
-      "name": "Sales Engineer"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "c2724a32-d768-4e94-adfb-6a3b28422908",
-    "fields": {
-      "name": "Financial Analyst"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "c523c354-b81b-423e-a4dc-bd06eb0af77e",
-    "fields": {
-      "name": "HR Manager"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "c65be44f-83d0-4446-a975-4d2532031ecb",
-    "fields": {
-      "name": "Data Analyst"
+      "name": "Customer Success Manager"
     }
   },
   {
@@ -463,100 +204,16 @@
   },
   {
     "model": "users.specialization",
-    "pk": "ce9c1bbc-22a8-4bec-86b8-de8295c22492",
+    "pk": "c65be44f-83d0-4446-a975-4d2532031ecb",
     "fields": {
-      "name": "Compliance Officer"
+      "name": "Data Analyst"
     }
   },
   {
     "model": "users.specialization",
-    "pk": "d1618b1e-bbf3-4fa2-9b4b-89fd343e6456",
+    "pk": "fab038d1-08db-405f-842e-abfe3bd39d29",
     "fields": {
-      "name": "DevOps Engineer"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "d89c834a-f725-4e0a-8f76-adef97e90179",
-    "fields": {
-      "name": "System Analyst"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "d95f482a-9aa6-43c4-8546-d8c66bf13987",
-    "fields": {
-      "name": "Social Media Manager"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "d9bd2291-5f36-4538-a422-c7ee4a8d8759",
-    "fields": {
-      "name": "Robotics Engineer"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "dfd1c374-6d4f-479f-a321-da4f4ee3aef1",
-    "fields": {
-      "name": "Blockchain Developer"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "e24bdd9e-0110-40b2-bfc4-865123a16e55",
-    "fields": {
-      "name": "CFO"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "e26bb5c1-5681-4361-bc21-8c8a88f4b10a",
-    "fields": {
-      "name": "Security Specialist"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "e6af36f6-6234-4e05-b48c-8b987b57a9eb",
-    "fields": {
-      "name": "QA Engineer"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "e72a79a9-04d8-4bec-ad2e-787196af93b3",
-    "fields": {
-      "name": "Penetration Tester"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "eb943c2d-0859-4363-8884-c51d42b4a587",
-    "fields": {
-      "name": "Firmware Developer"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "ebf19476-218f-491b-bd3b-b8cc8877321d",
-    "fields": {
-      "name": "Account Manager"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "f2a4022c-eb6c-4a03-8c72-511715165494",
-    "fields": {
-      "name": "Embedded Systems Engineer"
-    }
-  },
-  {
-    "model": "users.specialization",
-    "pk": "f305426b-616f-4134-8a85-c91e569375f3",
-    "fields": {
-      "name": "Manual QA Engineer"
+      "name": "Data Engineer"
     }
   },
   {
@@ -568,16 +225,170 @@
   },
   {
     "model": "users.specialization",
-    "pk": "f833788d-5218-419a-98c4-676300eecbe1",
+    "pk": "191c6b8b-9582-456b-9bbf-03b140ddcab0",
     "fields": {
-      "name": "CEO"
+      "name": "Database Administrator"
     }
   },
   {
     "model": "users.specialization",
-    "pk": "f93f2875-d7b3-41d4-adf0-ad63af73f5f6",
+    "pk": "59da3da8-178c-4d68-a7c5-347a40f77ce6",
     "fields": {
-      "name": "CTO"
+      "name": "Deep Learning Engineer (NLP & Audio)"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "d1618b1e-bbf3-4fa2-9b4b-89fd343e6456",
+    "fields": {
+      "name": "DevOps Engineer"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "27e4f3e3-adad-48a3-a51b-6cb971382570",
+    "fields": {
+      "name": "DevSecOps"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "a98283c2-0dd4-4b00-b9c2-73167585903c",
+    "fields": {
+      "name": "Digital Marketing Specialist"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "4fccf88f-8ae6-46a9-bfb3-7a0e07863840",
+    "fields": {
+      "name": "Email Marketing Specialist"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "f2a4022c-eb6c-4a03-8c72-511715165494",
+    "fields": {
+      "name": "Embedded Systems Engineer"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "7085020e-d4e9-4a49-a4f4-fad2c71c409d",
+    "fields": {
+      "name": "Enterprise Architect"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "0000c7ee-647a-4467-a1c6-b07342c8ba57",
+    "fields": {
+      "name": "Ethical Hacker"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "eb943c2d-0859-4363-8884-c51d42b4a587",
+    "fields": {
+      "name": "Firmware Developer"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "8819f835-293e-4c6f-9d3a-939fa77995b7",
+    "fields": {
+      "name": "Forensic Analyst"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "43f449e6-c978-4248-86f7-dac3d7b9cece",
+    "fields": {
+      "name": "Frontend Developer"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "5b23db71-4a9f-4ae3-9f91-2e5745263ec1",
+    "fields": {
+      "name": "Fullstack Developer"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "269ebc58-29e4-49b8-9ef4-074e2fd547d8",
+    "fields": {
+      "name": "Game Designer"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "64c590ee-bb49-4bb1-8f22-eb828a475f43",
+    "fields": {
+      "name": "Game Developer"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "41679328-d22f-4f6d-bce4-b881c9eb4fab",
+    "fields": {
+      "name": "Go Developer"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "111b86ff-5e30-4cf4-ba98-087b3ca77d4a",
+    "fields": {
+      "name": "Graphic Designer"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "67b19ba2-6b6f-4ca0-9b96-848009a3d7db",
+    "fields": {
+      "name": "Hardware Engineer"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "62c4fa5c-8616-4982-a684-cfb50b992a15",
+    "fields": {
+      "name": "IT Auditor"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "3f6715b0-2eee-4499-a41f-ff45693582bf",
+    "fields": {
+      "name": "IT Consultant"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "214ebc12-eb2c-488c-bcce-0c4776168417",
+    "fields": {
+      "name": "IT Director"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "5c4edf21-68eb-4bcc-a7e7-9b8fe989f60b",
+    "fields": {
+      "name": "Incident Responder"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "2a02ba7d-e960-4f44-a348-db4859d9fc25",
+    "fields": {
+      "name": "IoT Developer"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "fe78acaa-8db9-4f70-94bd-f8f61150420c",
+    "fields": {
+      "name": "Java Developer"
     }
   },
   {
@@ -589,9 +400,240 @@
   },
   {
     "model": "users.specialization",
-    "pk": "fab038d1-08db-405f-842e-abfe3bd39d29",
+    "pk": "3198cd46-27f5-49dd-a1cb-fbcf4b78e591",
     "fields": {
-      "name": "Data Engineer"
+      "name": "MLOps"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "94fbe2de-1754-4381-b29e-2b1b57b8efda",
+    "fields": {
+      "name": "Machine Learning Engineer"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "f305426b-616f-4134-8a85-c91e569375f3",
+    "fields": {
+      "name": "Manual QA Engineer"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "58468414-6924-44ba-bc4b-54605beebc48",
+    "fields": {
+      "name": "Mobile Developer"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "33a9cfb6-bf9c-48fb-a635-b79e9b07779b",
+    "fields": {
+      "name": "NLP Engineer"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "3c650e86-4b78-41bf-8f8f-4d6e10e0e49b",
+    "fields": {
+      "name": "Network Engineer"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "0bf36e2c-a5a3-4011-9e45-e2856b750fb7",
+    "fields": {
+      "name": "PPC Specialist"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "e72a79a9-04d8-4bec-ad2e-787196af93b3",
+    "fields": {
+      "name": "Penetration Tester"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "727aaf17-ab8d-48fd-bb5b-a7d435e6e05b",
+    "fields": {
+      "name": "Product Analyst"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "2d4244ed-b9dd-435c-a50e-c799b9a14288",
+    "fields": {
+      "name": "Product Manager"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "1b34b5f6-ad09-4d4b-990a-5fbf3a902662",
+    "fields": {
+      "name": "Project Manager"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "56f56b83-25c2-4ed9-98d0-00e1138b7835",
+    "fields": {
+      "name": "Python Developer"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "050ef466-0959-4229-aba1-8f9b0875a8cf",
+    "fields": {
+      "name": "QA Automation Engineer (Java)"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "77be1d3d-64ce-4914-94d9-ed1246d91d29",
+    "fields": {
+      "name": "QA Automation Engineer (Python)"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "e6af36f6-6234-4e05-b48c-8b987b57a9eb",
+    "fields": {
+      "name": "QA Engineer"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "18449907-f05d-482e-b33e-fa432e41b2af",
+    "fields": {
+      "name": "Release Manager"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "0ba44169-978a-45a7-8dd5-244a59822a95",
+    "fields": {
+      "name": "Risk Manager"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "d9bd2291-5f36-4538-a422-c7ee4a8d8759",
+    "fields": {
+      "name": "Robotics Engineer"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "147d5cab-d565-44dc-855b-c93ee5c98778",
+    "fields": {
+      "name": "SEO Specialist"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "319c57d1-7978-4ae1-b45b-88d6f84f2368",
+    "fields": {
+      "name": "SOC Analyst"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "c157b4c3-a880-4f15-bfcb-6edbb8fcbce3",
+    "fields": {
+      "name": "Sales Engineer"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "2dced6e4-c9ed-450f-9456-95f200fbd35c",
+    "fields": {
+      "name": "Scrum Master"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "10cd7655-b751-4077-96f0-18a63250d5f3",
+    "fields": {
+      "name": "Security Architect"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "28fd13c8-5b29-40d6-b0b1-68f054e44aa0",
+    "fields": {
+      "name": "Site Reliability Engineer"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "d95f482a-9aa6-43c4-8546-d8c66bf13987",
+    "fields": {
+      "name": "Social Media Manager"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "55b0d417-8d64-4ce1-b7d2-f9fe7025d469",
+    "fields": {
+      "name": "Software Architect"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "0451d0fe-42ac-4ca9-98b4-66cc3a52a417",
+    "fields": {
+      "name": "Solutions Architect"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "3da66a79-82ad-4e9d-97ad-873546efd594",
+    "fields": {
+      "name": "System Administrator"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "d89c834a-f725-4e0a-8f76-adef97e90179",
+    "fields": {
+      "name": "System Analyst"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "5c50c0e2-132d-47e6-b413-fee5aa3e81e8",
+    "fields": {
+      "name": "Technical Support Specialist"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "bef42e55-4a8e-43aa-897a-9513a6e69a59",
+    "fields": {
+      "name": "Technical Writer"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "29c6bd05-dc2e-4a95-b7f0-c1f5ea7b8145",
+    "fields": {
+      "name": "Threat Hunter"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "63d6eeaf-7291-4baa-92df-22f42fd188f3",
+    "fields": {
+      "name": "UI/UX Designer"
+    }
+  },
+  {
+    "model": "users.specialization",
+    "pk": "35fe30b4-05f3-4c6a-8fc6-ac94283b8035",
+    "fields": {
+      "name": "iOS Developer"
     }
   }
 ]

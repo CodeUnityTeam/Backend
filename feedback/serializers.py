@@ -110,11 +110,11 @@ class FeedbackCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FeedbackForm
-        fields = [
+        fields = (
             'subject',
             'content',
             'attachments',
-        ]
+        )
 
     def create(self, validated_data: dict) -> FeedbackForm:
         """Создание обратной связи."""

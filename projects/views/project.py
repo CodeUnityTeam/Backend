@@ -76,11 +76,13 @@ def _build_list_cache_key(
 
     Формат: {prefix}:list:ids:{user_id}:{md5(params)}
     """
+    if not user.is_authenticated:
+        return None  # ← НЕ кэшируем для анонимов
     sorted_params = sorted(query_params.items())
     params_str = hashlib.md5(
         str(sorted_params).encode(),
     ).hexdigest()
-    user_part = str(user.pk) if user.is_authenticated else 'anonymous'
+    user_part = str(user.pk)
     return f'{prefix}:list:ids:{user_part}:{params_str}'
 
 
@@ -182,7 +184,11 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
             query_params,
             cache_key,
         )
-
+        if cache_key is None:
+            logger.info('кэширование отключено')
+            return super().list(request, *args, **kwargs)
+        qs = self.filter_queryset(self.get_queryset())
+        all_ids = list(qs.values_list('project_id', flat=True))
         # Пробуем достать IDs из кэша
         cached_ids = cache.get(cache_key)
         if cached_ids is not None:
@@ -206,11 +212,6 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
                 return self.get_paginated_response(serializer.data)
             serializer = self.get_serializer(qs, many=True)
             return DRFResponse(serializer.data)
-
-        # Кэш пуст — получаем полный queryset, кэшируем IDs
-        qs = self.get_queryset()
-        # Извлекаем IDs до пагинации (весь набор)
-        all_ids = list(qs.values_list('project_id', flat=True))
         cache.set(
             cache_key,
             [str(pid) for pid in all_ids],
@@ -221,7 +222,6 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
             cache_key,
             len(all_ids),
         )
-
         self.queryset = qs
         return super().list(request, *args, **kwargs)
 

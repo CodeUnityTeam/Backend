@@ -19,8 +19,8 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from core.constants.users import MSG_RESENT
+from core.tasks import send_async_template_email
 from users.adapters import ImmediateResponseException
-from users.utils import email_service
 
 logger = logging.getLogger(__name__)
 UserModel = get_user_model()
@@ -126,7 +126,7 @@ class CustomRegisterSerializer(RegisterSerializer):
 
             if not user.is_active:
                 user.is_active = True
-                user.save(update_fields=['is_active'])
+                user.save(update_fields=('is_active',))
                 if email_address:
                     email_address.send_confirmation(request, signup=True)
 
@@ -186,7 +186,7 @@ class EmailChangeSerializer(serializers.Serializer):
 
         # 1. Запоминаем новый email во временное поле модели
         user.new_email = new_email
-        user.save(update_fields=['new_email'])
+        user.save(update_fields=('new_email',))
 
         # 2. Очищаем старые неподтвержденные попытки смены email
         EmailAddress.objects.filter(user=user, verified=False).delete()
@@ -213,7 +213,7 @@ class EmailChangeSerializer(serializers.Serializer):
             'current_site': current_site,
         }
 
-        email_service.send_template_email(
+        send_async_template_email.delay(
             to_email=old_email,
             subject=f'Изменение email на сайте {current_site.name}',
             template_base_name='account/email/email_changed_message',

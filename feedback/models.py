@@ -5,6 +5,7 @@ from django.core.validators import MinLengthValidator
 from django.db import models
 
 from core.constants.feedback import (
+    FEEDBACK_STATUS_SENT,
     MAX_CONTENT_FEEDBACK,
     MAX_LEN_STATUS_FEEDBACK,
     MAX_REVIEW_TEXT,
@@ -12,8 +13,7 @@ from core.constants.feedback import (
     MIN_REVIEW_TEXT,
     STATUS_FEEDBACK,
 )
-from core.models.mixins import TimestampMixin
-from qna.mixins import BaseImageMixin
+from core.models.mixins import BaseImageMixin, TimestampMixin
 
 User = get_user_model()
 
@@ -92,7 +92,7 @@ class FeedbackForm(TimestampMixin, models.Model):
     )
     status = models.CharField(
         max_length=MAX_LEN_STATUS_FEEDBACK,
-        default='Sent',
+        default=FEEDBACK_STATUS_SENT,
         choices=STATUS_FEEDBACK,
         verbose_name='Статус',
     )

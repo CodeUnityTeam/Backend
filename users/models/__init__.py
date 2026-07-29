@@ -1,5 +1,3 @@
-from projects.models import WorkFormat
-
 from .skills import Skill, UserSkill
 from .specializations import Specialization, UserSpecialization
 from .users import User, UserExperience, UserLike
@@ -14,5 +12,4 @@ __all__ = (
     'UserSkill',
     'UserSpecialization',
     'UserWorkFormat',
-    'WorkFormat',
 )

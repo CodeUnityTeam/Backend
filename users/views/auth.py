@@ -1,4 +1,5 @@
 import logging
+import os
 from typing import Any
 from urllib.parse import unquote, urlencode
 
@@ -14,6 +15,7 @@ from allauth.socialaccount.providers.yandex.views import YandexOAuth2Adapter
 from dj_rest_auth.registration.views import SocialLoginView
 from django.contrib.auth import get_user_model
 from django.http import HttpRequest
+from django.shortcuts import redirect
 from drf_spectacular.utils import (
     OpenApiExample,
     extend_schema,
@@ -75,7 +77,7 @@ SOCIAL_LOGIN_ERROR_SERIALIZER: serializers.Serializer = inline_serializer(
 class SocialAuthUrlView(APIView):
     """Базовый класс для генерации URL авторизации сторонних сервисов."""
 
-    permission_classes = [AllowAny]
+    permission_classes = (AllowAny,)
     provider_id: str | None = None
     adapter_class: any = None
 
@@ -182,7 +184,7 @@ class SocialLogin(SocialLoginView):
 class GoogleAuthUrlView(APIView):
     """Возвращает URL для редиректа на страницу авторизации Google."""
 
-    permission_classes = [AllowAny]
+    permission_classes = (AllowAny,)
 
     def get(
         self,
@@ -283,7 +285,7 @@ class GoogleLogin(SocialLogin):
 class YandexAuthUrlView(APIView):
     """Возвращает URL для редиректа на страницу авторизации Yandex."""
 
-    permission_classes = [AllowAny]
+    permission_classes = (AllowAny,)
 
     def get(
         self,
@@ -380,6 +382,8 @@ class YandexLogin(SocialLogin):
         return response
 
 
+
+
 @extend_schema_view(
     get=extend_schema(
         tags=['social_auth'],
@@ -390,7 +394,7 @@ class YandexLogin(SocialLogin):
 class MailRuAuthUrlView(APIView):
     """Возвращает URL для редиректа на страницу авторизации Mail.ru."""
 
-    permission_classes = [AllowAny]
+    permission_classes = (AllowAny,)
 
     def get(
         self,
@@ -478,6 +482,115 @@ class MailRuLogin(SocialLogin):
         return response
 
 
+class SocialCallbackView(APIView):
+    """Базовый GET-эндпоинт для OAuth callback от провайдера.
+
+    Провайдер редиректит браузер пользователя на этот URL после авторизации.
+    View обменивает code на токены и редиректит на фронтенд с JWT.
+    """
+
+    permission_classes = (AllowAny,)
+    provider_name: str = ''
+    login_view_class: type[SocialLogin] | None = None
+    api_path: str = ''
+
+    def get(self, request: HttpRequest, *args: any, **kwargs: any) -> Response:
+        """Принять code от провайдера, авторизовать и редиректить."""
+        code: str = request.GET.get('code', '')
+        if not code:
+            logger.warning('%s callback: code не передан', self.provider_name)
+            return Response(
+                {'error': 'code is required'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        logger.info(
+            '%s callback: получен code (первые 20 символов): %s',
+            self.provider_name,
+            code[:20],
+        )
+
+        # Создаём POST-запрос программно и передаём в SocialLogin
+        from django.test.client import RequestFactory
+
+        factory = RequestFactory()
+        post_request = factory.post(
+            self.api_path,
+            {'code': code},
+            format='json',
+        )
+        post_request.user = request.user
+        post_request.session = request.session
+
+        # Копируем атрибуты из оригинального запроса
+        post_request.META = request.META.copy()
+        post_request.META['CONTENT_TYPE'] = 'application/json'
+
+        # Вызываем LoginView
+        login_view = self.login_view_class.as_view()
+        response = login_view(post_request)
+
+        if response.status_code != 200:
+            logger.error(
+                '%s callback: ошибка авторизации. status=%s, data=%s',
+                self.provider_name,
+                response.status_code,
+                response.data,
+            )
+            host_url = os.getenv('HOST_URL', 'http://localhost:3000')
+            redirect_url = (
+                f'{host_url}/auth/callback?error='
+                f'Не+удалось+авторизоваться+через+{self.provider_name}'
+            )
+            return redirect(redirect_url)
+
+        # Извлекаем токены из ответа
+        data = response.data
+        access_token = data.get('access', '')
+        refresh_token = data.get('refresh', '')
+        user_id = data.get('user', {}).get('user_id', '')
+
+        host_url = os.getenv('HOST_URL', 'http://localhost:3000')
+        redirect_url = (
+            f'{host_url}/auth/callback'
+            f'?access={access_token}'
+            f'&refresh={refresh_token}'
+            f'&user_id={user_id}'
+        )
+
+        logger.info(
+            '%s callback: успех, редирект на фронтенд. user_id=%s',
+            self.provider_name,
+            user_id,
+        )
+
+        return redirect(redirect_url)
+
+
+class YandexCallbackView(SocialCallbackView):
+    """GET-эндпоинт для OAuth callback от Yandex."""
+
+    provider_name = 'Yandex'
+    login_view_class = YandexLogin
+    api_path = '/api/v1/user/auth/yandex/'
+
+
+class GoogleCallbackView(SocialCallbackView):
+    """GET-эндпоинт для OAuth callback от Google."""
+
+    provider_name = 'Google'
+    login_view_class = GoogleLogin
+    api_path = '/api/v1/user/auth/google/'
+
+
+class MailRuCallbackView(SocialCallbackView):
+    """GET-эндпоинт для OAuth callback от Mail.ru."""
+
+    provider_name = 'Mail.ru'
+    login_view_class = MailRuLogin
+    api_path = '/api/v1/user/auth/mailru/'
+
+
 @extend_schema_view(
     post=extend_schema(
         tags=['profile'],
@@ -513,7 +626,7 @@ class MailRuLogin(SocialLogin):
 class EmailChangeView(APIView):
     """View для инициации смены email авторизованным пользователем."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
 
     def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Обработать POST-запрос на изменение email пользователя."""
