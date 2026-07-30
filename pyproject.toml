@@ -18,7 +18,7 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3.12",
     "Framework :: Django",
-    "Framework :: Django :: 4.2",
+    "Framework :: Django :: 5.2",
 ]
 
 dependencies = [
@@ -36,22 +36,13 @@ dependencies = [
     "django-storages[s3]>=1.14.6",
     "pillow>=12.2.0",
     "django-redis>=5.4.0,<6.0.0",
-    "django-fieldsets-with-inlines>=0.6",
-]
-
-[project.optional-dependencies]
-dev = [
-    "pytest>=7.0",
-    "pytest-django>=4.5",
-    "flake8>=7.0",
-    "mypy>=1.8",
+    "celery>=5.6.3",
 ]
 
 [project.scripts]
 manage = "manage:main"
 
 [tool.uv]
-# Конфигурация uv
 index-url = "https://pypi.org/simple"
 
 [tool.hatch.build.targets.wheel]
@@ -63,15 +54,32 @@ warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
 
+[tool.ruff]
+line-length = 79
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "A", "C4", "T20", "PT", "ARG", "RET"]
+
+[tool.ruff.lint.flake8-quotes]
+inline-quotes = "single"
+
 [tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE = "config.settings"
+DJANGO_SETTINGS_MODULE = "config.settings_test"
 python_files = ["tests.py", "test_*.py", "*_test.py"]
-addopts = "-v --tb=short"
-testpaths = ["."]
+addopts = "-v --tb=short --ds=config.settings_test"
+testpaths = ["tests"]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
 
 [dependency-groups]
 dev = [
-    "flake8>=7.3.0",
+    "factory-boy>=3.3.3",
     "pytest>=9.0.3",
+    "pytest-django>=4.12.0",
+    "pytest-mock>=3.15.1",
     "ruff>=0.15.13",
+    "mypy>=1.10.0",
+    "testcontainers>=4.14.2",
 ]

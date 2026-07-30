@@ -112,6 +112,10 @@ class Command(BaseCommand):
         self.stdout.write('Собираю URL, зарегистрированные в БД...')
         registered_urls = self._get_registered_urls()
         self.stdout.write(f'  Найдено {len(registered_urls)} URL в БД.')
+        logger.info(
+            'Собрано зарегистрированных URL: count=%d',
+            len(registered_urls),
+        )
 
         total_orphans = 0
         for media_type in MediaType:
@@ -121,6 +125,11 @@ class Command(BaseCommand):
             self.stdout.write(
                 f'Сканирую бакет "{bucket_name}" (префикс "{prefix}")...',
             )
+            logger.info(
+                'Сканирование бакета: bucket=%s, prefix=%s',
+                bucket_name,
+                prefix,
+            )
 
             try:
                 s3_objects = self._list_s3_objects(media_type)
@@ -129,6 +138,11 @@ class Command(BaseCommand):
                     self.style.WARNING(
                         f'  Ошибка доступа к бакету "{bucket_name}": {e}',
                     ),
+                )
+                logger.exception(
+                    'Ошибка доступа к бакету: bucket=%s, prefix=%s',
+                    bucket_name,
+                    prefix,
                 )
                 continue
 
@@ -149,6 +163,13 @@ class Command(BaseCommand):
                         f'  Сирота: {object_key} '
                         f'({size_mb:.2f} MB)',
                     )
+                    logger.info(
+                        'Найден сиротский файл: key=%s, size=%.2fMB, '
+                        'media_type=%s',
+                        object_key,
+                        size_mb,
+                        media_type.value,
+                    )
 
                     if not dry_run and force:
                         try:
@@ -158,11 +179,23 @@ class Command(BaseCommand):
                                     '    ✓ Удалён',
                                 ),
                             )
+                            logger.info(
+                                'Сиротский файл удалён: key=%s, '
+                                'media_type=%s',
+                                object_key,
+                                media_type.value,
+                            )
                         except Exception as e:
                             self.stdout.write(
                                 self.style.ERROR(
                                     f'    ✗ Ошибка удаления: {e}',
                                 ),
+                            )
+                            logger.exception(
+                                'Ошибка удаления сиротского файла: '
+                                'key=%s, media_type=%s',
+                                object_key,
+                                media_type.value,
                             )
 
         if dry_run:
@@ -172,6 +205,10 @@ class Command(BaseCommand):
                     'Запустите с --force для удаления.',
                 ),
             )
+            logger.info(
+                'Режим DRY-RUN. Найдено сирот: count=%d',
+                total_orphans,
+            )
         elif not force:
             self.stdout.write(
                 self.style.WARNING(
@@ -179,11 +216,19 @@ class Command(BaseCommand):
                     'Используйте --force для фактического удаления.',
                 ),
             )
+            logger.info(
+                'Найдено сирот (без --force): count=%d',
+                total_orphans,
+            )
         else:
             self.stdout.write(
                 self.style.SUCCESS(
                     f'\nГотово. Удалено {total_orphans} сиротских файлов.',
                 ),
+            )
+            logger.info(
+                'Очистка завершена. Удалено сиротских файлов: count=%d',
+                total_orphans,
             )
 
         return None

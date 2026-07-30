@@ -10,7 +10,7 @@ from django.core.files.uploadedfile import UploadedFile
 from django.db.models import QuerySet
 from django.http import HttpRequest
 from django.utils.html import format_html
-from fieldsets_with_inlines import FieldsetsInlineMixin
+from django.utils.safestring import mark_safe
 
 from core.admin_mixins import RolePermissionsMixin
 from users.forms import UserAdminAddForm, UserImageAdminForm
@@ -135,7 +135,7 @@ class UserLikeAdmin(RolePermissionsMixin, admin.ModelAdmin):
 
 
 @admin.register(User)
-class UserAdmin(RolePermissionsMixin, FieldsetsInlineMixin, DjangoUserAdmin):
+class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
     """Админ-панель для модели пользователя с расширенными полями."""
 
     form = UserImageAdminForm
@@ -168,9 +168,8 @@ class UserAdmin(RolePermissionsMixin, FieldsetsInlineMixin, DjangoUserAdmin):
         )
     ordering = ('-created_at',)
     list_editable = ('role', 'projects_relation')
-    fieldsets_with_inlines = (
+    fieldsets = (
         (None, {'fields': ('email', 'password', 'new_email')}),
-        EmailAddressInline,
         (
             'Персональные данные',
             {
@@ -209,12 +208,8 @@ class UserAdmin(RolePermissionsMixin, FieldsetsInlineMixin, DjangoUserAdmin):
                 ),
             },
         ),
-        ('Профессиональные данные', {'fields': ('projects_relation',)}),
-        UserSpecializationInline,
-        UserSkillInline,
-        UserExperienceInline,
-        UserWorkFormatInline,
         ('Важные даты', {'fields': ('last_login', 'date_joined')}),
+        ('Профессиональные данные', {'fields': ('projects_relation',)}),
     )
     add_fieldsets = (
         (
@@ -236,8 +231,8 @@ class UserAdmin(RolePermissionsMixin, FieldsetsInlineMixin, DjangoUserAdmin):
         UserSpecializationInline,
         UserSkillInline,
         UserWorkFormatInline,
-        EmailAddressInline,
         UserExperienceInline,
+        EmailAddressInline,
     )
 
     def get_form(
@@ -264,7 +259,7 @@ class UserAdmin(RolePermissionsMixin, FieldsetsInlineMixin, DjangoUserAdmin):
         return 'Не загружено'
 
     @admin.display(
-            description=format_html('Email<br>подтверждён'),
+            description=mark_safe('Email<br>подтверждён'),
             boolean=True,
         )
     def get_email_confirmed(self, obj: User) -> bool:
@@ -275,7 +270,7 @@ class UserAdmin(RolePermissionsMixin, FieldsetsInlineMixin, DjangoUserAdmin):
         except EmailAddress.DoesNotExist:
             return False
 
-    @admin.display(description=format_html('Рейтинг<br>пользователя'))
+    @admin.display(description=mark_safe('Рейтинг<br>пользователя'))
     def get_rating(self, obj: User) -> int:
         """Возвращает рейтинг пользователя."""
         return obj.rating

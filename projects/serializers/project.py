@@ -10,13 +10,13 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework_simplejwt.settings import api_settings
 
-from core.constants.projects import (
-    AUTHOR,
-    DRAFT,
-    PUBLISHED,
-    RECRUITING_CLOSED,
+from core.cache_mixins import get_or_seed_counter
+from core.constants.cache import (
+    COUNTER_PROJECT_LIKES_PREFIX,
+    COUNTER_PROJECT_PARTICIPANTS_PREFIX,
 )
-from projects.models import Project
+from core.constants.projects import AUTHOR, DRAFT, PUBLISHED, RECRUITING_CLOSED
+from projects.models import Project, ProjectLike, ProjectParticipant
 from projects.selectors import get_project_with_relations
 from projects.services import add_user_to_project_participants
 from projects.validators import (
@@ -28,6 +28,7 @@ from projects.validators import (
     validate_project_data,
     validate_project_dates,
     validate_published_project_dates,
+    validate_telegram_contact,
     validate_update_project_status,
 )
 from users.models.skills import Skill
@@ -46,6 +47,8 @@ from .user import (
 from .work_format import WorkFormatSerializer
 
 User = get_user_model()
+
+logger = logging.getLogger(__name__)
 
 logger = logging.getLogger('app.' + __name__)
 
@@ -85,6 +88,7 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
             'skills',
             'specializations',
             'project_format',
+            'telegram_contact',
         )
         extra_kwargs = {
             'title': {
@@ -136,6 +140,11 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
                     ),
                 },
             },
+            'telegram_contact': {
+                'required': False,
+                'allow_blank': True,
+                'default': '',
+            },
         }
 
     def validate(self, data: dict) -> dict:
@@ -159,7 +168,6 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
             end_date = data.get('end_date')
             if start_date and end_date:
                 validate_project_dates(start_date, end_date)
-            user = self.context['request'].user
             return validate_project_data(data, user)
         except DjangoValidationError as err:
             logger.warning(
@@ -230,9 +238,8 @@ class ProjectShortSerializer(serializers.ModelSerializer):
         default=False,
         help_text='Лайкнул ли проект текущий пользователь (аннотация БД).',
     )
-    participants_count = serializers.IntegerField(
-        read_only=True,
-        help_text='Количество участников проекта (аннотация БД).',
+    participants_count = serializers.SerializerMethodField(
+        help_text='Количество участников проекта (из Redis-счётчика).',
     )
     is_favorite_by_me = serializers.BooleanField(
         read_only=True,
@@ -255,6 +262,19 @@ class ProjectShortSerializer(serializers.ModelSerializer):
             'skills',
         )
 
+    def get_participants_count(self, project: Project) -> int:
+        """Количество участников из Redis-счётчика (с fallback на БД)."""
+        count = get_or_seed_counter(
+            COUNTER_PROJECT_PARTICIPANTS_PREFIX,
+            str(project.project_id),
+            ProjectParticipant.objects.filter(project=project),
+        )
+        logger.debug(
+            'participants_count для проекта %s: %d',
+            project.project_id, count,
+        )
+        return count
+
 
 class ProjectDetailSerializer(ProjectShortSerializer):
     """Сериализатор детальной карточки проекта.
@@ -264,9 +284,8 @@ class ProjectDetailSerializer(ProjectShortSerializer):
 
     specializations = SpecializationSerializer(many=True, read_only=True)
     project_format = WorkFormatSerializer(many=True, read_only=True)
-    likes_count = serializers.IntegerField(
-        read_only=True,
-        help_text='Количество лайков проекта (аннотация БД).',
+    likes_count = serializers.SerializerMethodField(
+        help_text='Количество лайков проекта (из Redis-счётчика).',
     )
     participants = serializers.SerializerMethodField()
     author = serializers.SerializerMethodField()
@@ -282,6 +301,7 @@ class ProjectDetailSerializer(ProjectShortSerializer):
             'likes_count',
             'participants',
             'author',
+            'telegram_contact',
         )
 
     def _is_author_employer(self, project: Project) -> bool:
@@ -297,6 +317,19 @@ class ProjectDetailSerializer(ProjectShortSerializer):
             and requesting_user.projects_relation
             == User.ProjectsRelationChoices.EMPLOYER
         )
+
+    def get_likes_count(self, project: Project) -> int:
+        """Количество лайков из Redis-счётчика (с fallback на БД)."""
+        count = get_or_seed_counter(
+            COUNTER_PROJECT_LIKES_PREFIX,
+            str(project.project_id),
+            ProjectLike.objects.filter(project=project),
+        )
+        logger.debug(
+            'likes_count для проекта %s: %d',
+            project.project_id, count,
+        )
+        return count
 
     @extend_schema_field(UserBaseSerializer(many=True))
     def get_participants(self, project: Project) -> list:
@@ -404,6 +437,7 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
             'skills',
             'specializations',
             'project_format',
+            'telegram_contact',
         )
         extra_kwargs = {
             'title': {'required': False},
@@ -421,6 +455,10 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
                 },
             },
             'status_project': {'required': False},
+            'telegram_contact': {
+                'required': False,
+                'allow_blank': True,
+            },
         }
 
     def validate(self, data: dict) -> dict:
@@ -511,6 +549,9 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
             'skills': data.get('skills'),
             'specializations': data.get('specializations'),
             'project_format': data.get('project_format'),
+            'telegram_contact': data.get(
+                'telegram_contact', project.telegram_contact or '',
+            ),
         }
         # Если навыки/специализации/форматы не переданы — берём из БД
         if full_data['skills'] is None:
@@ -547,6 +588,11 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
                         'Нельзя изменить дату начала проекта после публикации.'
                     ),
                 },
+            )
+        # Валидация telegram_contact для всех сценариев обновления
+        if 'telegram_contact' in data:
+            data['telegram_contact'] = validate_telegram_contact(
+                data['telegram_contact'],
             )
         new_status = data.get('status_project')
         is_publishing = (
@@ -699,4 +745,5 @@ class ProjectUpdateResponseSerializer(serializers.ModelSerializer):
             'skills',
             'specializations',
             'project_format',
+            'telegram_contact',
         )

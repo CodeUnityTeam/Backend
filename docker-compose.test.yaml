@@ -40,7 +40,7 @@ services:
       retries: 10
 
   redis:
-    image: redis:alpine
+    image: redis:7-alpine
     container_name: test_redis
     restart: unless-stopped
     env_file:
@@ -76,8 +76,24 @@ services:
       - static:/backend_static/static/
       - ./fixtures:/opt/user123/fixtures
 
+  celeryworker:
+    image: maxwell884/code-unity-backend:test
+    container_name: test_celeryworker
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DB_MODE: network
+    command: celery -A config.celery_app worker -l INFO
   frontend:
-    image: maxwell884/code-unity-frontend:latest
+    image: maxwell884/code-unity-frontend:test
     container_name: test_frontend
     restart: unless-stopped
     depends_on:

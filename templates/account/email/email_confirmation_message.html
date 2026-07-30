@@ -1,0 +1,18 @@
+{% extends "account/email/base_message.html" %}
+{% load account %}
+{% load i18n %}
+{% block content %}{% autoescape off %}
+{% user_display user as user_display %}
+<h2 style="margin:0 0 16px;color:#1e293b;font-size:20px;font-weight:600;">{% blocktranslate %}Подтверждение email{% endblocktranslate %}</h2>
+<p style="margin:0 0 20px;color:#475569;font-size:15px;line-height:1.6;">{% blocktranslate with user_display=user_display %}Здравствуйте! Пользователь {{ user_display }} указал ваш email для регистрации на CodeUnity.{% endblocktranslate %}</p>
+{% if code %}
+<p style="margin:0 0 12px;color:#475569;font-size:15px;line-height:1.6;">{% blocktranslate %}Ваш код подтверждения:{% endblocktranslate %}</p>
+<div style="background-color:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:16px;margin:0 0 24px;text-align:center;"><span style="font-size:28px;font-weight:700;color:#0369a1;letter-spacing:4px;">{{ code }}</span></div>
+<p style="margin:0 0 24px;color:#64748b;font-size:14px;line-height:1.5;">{% blocktranslate %}Введите код в открытом окне браузера.{% endblocktranslate %}</p>
+{% else %}
+<p style="margin:0 0 12px;color:#475569;font-size:15px;line-height:1.6;">{% blocktranslate %}Нажмите кнопку, чтобы подтвердить email:{% endblocktranslate %}</p>
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:24px 0;"><tr><td style="background:linear-gradient(135deg,#6366f1 0%,#8b5cf6 100%);border-radius:8px;text-align:center;"><a href="{{ activate_url }}" target="_blank" style="display:inline-block;padding:14px 36px;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;letter-spacing:0.3px;">{% blocktranslate %}Подтвердить email{% endblocktranslate %}</a></td></tr></table>
+<p style="margin:0 0 24px;color:#64748b;font-size:13px;line-height:1.5;">{% blocktranslate %}Если кнопка не работает, скопируйте ссылку:{% endblocktranslate %}<br><a href="{{ activate_url }}" style="color:#6366f1;word-break:break-all;">{{ activate_url }}</a></p>
+{% endif %}
+<p style="margin:0;color:#94a3b8;font-size:13px;line-height:1.5;">{% blocktranslate %}Если вы не регистрировались, проигнорируйте это письмо.{% endblocktranslate %}</p>
+{% endautoescape %}{% endblock content %}

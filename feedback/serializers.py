@@ -1,10 +1,11 @@
+import logging
 import uuid
 from typing import Any, List
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
-from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
+from rest_framework import serializers, status
+from rest_framework.exceptions import APIException
 
 from core.constants.feedback import (
     MAX_IMAGE_COUNT_FEEDBACK,
@@ -15,7 +16,22 @@ from feedback.selectors import create_review
 from feedback.services import feedback_image_upload_handler
 from projects.serializers.specialization import SpecializationSerializer
 
+logger = logging.getLogger(__name__)
+
 User = get_user_model()
+
+
+class DynamicHTTPValidationError(APIException):
+    """Динамический преобразователь исключений."""
+
+    def __init__(
+            self, detail: dict,
+            status_code: int,
+            code: str | None = None,
+    ) -> None:
+        """Для разных кодов ошибок при валидации."""
+        self.status_code = status_code
+        super().__init__(detail, code)
 
 
 class ReviewCreateSerializer(serializers.ModelSerializer):
@@ -94,16 +110,22 @@ class FeedbackCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FeedbackForm
-        fields = [
+        fields = (
             'subject',
             'content',
             'attachments',
-        ]
+        )
 
     def create(self, validated_data: dict) -> FeedbackForm:
         """Создание обратной связи."""
         attachments = validated_data.pop('attachments', [])
         user = self.context['request'].user
+        logger.info(
+            'Создание обратной связи: user_id=%s, subject=%s, files=%d',
+            user.user_id,
+            validated_data.get('subject'),
+            len(attachments),
+        )
         with transaction.atomic():
             feedback = FeedbackForm.objects.create(user=user, **validated_data)
             for image in attachments:
@@ -116,6 +138,13 @@ class FeedbackCreateSerializer(serializers.ModelSerializer):
                     file_size=image.size,
                     mime_type=image.content_type.split('/')[1],
                 )
+        logger.info(
+            'Обратная связь успешно создана: user_id=%s, feedback_id=%s, '
+            'files=%d',
+            user.user_id,
+            feedback.feedback_id,
+            len(attachments),
+        )
         return feedback
 
     def validate_attachments(self, value: List) -> List[Any]:
@@ -127,14 +156,24 @@ class FeedbackCreateSerializer(serializers.ModelSerializer):
         - Формат изображений - только JPEG/PNG.
         """
         if len(value) > MAX_IMAGE_COUNT_FEEDBACK:
-            raise ValidationError(
-                'Количество изображений не должно превышать 5 шт.')
+            raise DynamicHTTPValidationError(
+                detail={'error': 'Количество изображений не должно '
+                        'превышать 5 шт.'},
+                status_code=status.HTTP_400_BAD_REQUEST,
+                code='max_limit_exceeded',
+            )
         for image in value:
             if image.content_type.split('/')[1] not in ('jpeg', 'png'):
-                raise ValidationError(
-                    'Неподдерживаемый тип файла. Пожалуйста, загрузите файл '
-                    'в формате png либо jpeg.')
+                raise DynamicHTTPValidationError(
+                    detail={'error': 'Неподдерживаемый тип файла. Пожалуйста, '
+                            'загрузите файл в формате png либо jpeg.'},
+                    status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+                )
             if image.size > MAX_IMAGE_SIZE_FEEDBACK:
-                raise ValidationError(
-                    'Размер изображения не должен превышать 5 МБ.')
+                raise DynamicHTTPValidationError(
+                    detail={'error': 'Файл слишком большой. Максимально '
+                            'допустимый размер - 5 Мб. Пожалуйста, уменьшите '
+                            'размер файла и попробуйте снова.'},
+                    status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                )
         return value

@@ -3,16 +3,19 @@ from rest_framework import serializers
 
 from qna.models import Answer
 from qna.selectors import create_answer, create_answer_image
+from qna.serializers.mixins import AuthorInfoMixin
 
 
-class AnswerDetailSerializer(serializers.ModelSerializer):
+class AnswerDetailSerializer(AuthorInfoMixin, serializers.ModelSerializer):
     """Сериализатор ответа для детальной страницы вопроса."""
 
     author_name = serializers.SerializerMethodField()
     author_rating = serializers.SerializerMethodField()
+    author_avatar = serializers.SerializerMethodField()
     images = serializers.SerializerMethodField()
     likes_count = serializers.IntegerField(read_only=True)
     is_owned_by_me = serializers.SerializerMethodField()
+    is_liked_by_me = serializers.SerializerMethodField()
 
     class Meta:
         model = Answer
@@ -22,10 +25,12 @@ class AnswerDetailSerializer(serializers.ModelSerializer):
             'content',
             'author_name',
             'author_rating',
+            'author_avatar',
             'created_at',
             'likes_count',
             'images',
             'is_owned_by_me',
+            'is_liked_by_me',
         )
 
     def get_author_name(self, obj: Answer) -> str:
@@ -38,6 +43,10 @@ class AnswerDetailSerializer(serializers.ModelSerializer):
     def get_author_rating(self, obj: Answer) -> int:
         """Возвращает рейтинг автора."""
         return obj.user.rating
+
+    def get_author_avatar(self, obj: Answer) -> str:
+        """Возвращает URL аватара автора."""
+        return obj.user.avatar_url
 
     def get_images(self, obj: Answer) -> list[str]:
         """Возвращает список URL изображений."""
@@ -55,6 +64,20 @@ class AnswerDetailSerializer(serializers.ModelSerializer):
         if request.user.is_anonymous:
             return False
         return obj.user == request.user
+
+    def get_is_liked_by_me(self, obj: Answer) -> bool:
+        """Проверяет, поставил ли текущий пользователь лайк этому ответу.
+
+        Использует prefetch_related('likes') для избежания дополнительных
+        запросов к БД. Аналогично is_owned_by_me, но проверяет наличие лайка
+        через закешированное отношение likes.
+        """
+        request = self.context.get('request')
+        if request is None or not hasattr(request, 'user'):
+            return False
+        if request.user.is_anonymous:
+            return False
+        return any(like.user_id == request.user.pk for like in obj.likes.all())
 
 
 class AnswerImageMetaSerializer(serializers.Serializer):

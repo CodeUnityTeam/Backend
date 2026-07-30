@@ -34,11 +34,12 @@ class ProjectAdmin(LikeCountMixin, RolePermissionsMixin, admin.ModelAdmin):
         'short_desc',
         'status_project',
         'location',
+        'telegram_contact',
         'like_count',
     )
     filter_horizontal = ('skills', 'project_format', 'specializations')
     list_filter = ('author', 'location')
-    search_fields = ('title ', 'short_desc')
+    search_fields = ('title', 'short_desc')
     ordering = ('start_date',)
     inlines = (ProjectLikeInline,)
 
@@ -57,7 +58,7 @@ class ProjectParticipantAdmin(RolePermissionsMixin, admin.ModelAdmin):
 
 @admin.register(Response)
 class ResponseAdmin(RolePermissionsMixin, admin.ModelAdmin):
-    """Админ-панель для модели октликов."""
+    """Админ-панель для модели откликов."""
 
     list_display = (
         'response_id',
@@ -74,17 +75,3 @@ class WorkFormatAdmin(RolePermissionsMixin, admin.ModelAdmin):
 
     list_display = ('format_id', 'name')
     search_fields = ('name',)
-
-
-@admin.register(ProjectLike)
-class ProjectLikeAdmin(admin.ModelAdmin):
-    """Админ‑панель для модели лайков."""
-
-    list_display = (
-        'project',
-        'user',
-    )
-    search_fields =(
-        'project__title',
-        '^user__email',
-    )

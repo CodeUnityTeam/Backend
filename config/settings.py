@@ -53,7 +53,6 @@ INSTALLED_APPS = (
     'dj_rest_auth.registration',
     'rest_framework_simplejwt',
     'corsheaders',
-    'fieldsets_with_inlines',
     # Project apps
     'core.apps.CoreConfig',
     'users.apps.UsersConfig',
@@ -61,6 +60,7 @@ INSTALLED_APPS = (
     'qna.apps.QnaConfig',
     'feedback.apps.FeedbackConfig',
     'help.apps.HelpConfig',
+    'documents.apps.DocumentsConfig',
 )
 
 MIDDLEWARE = (
@@ -79,7 +79,7 @@ MIDDLEWARE = (
 TEMPLATES = (
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': (
@@ -295,8 +295,8 @@ if os.getenv('PRODUCTION_EMAIL_BACKEND', 'False').lower() == 'true':
     EMAIL_PORT = int(os.getenv('EMAIL_PORT', 465))
     EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
     EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
-    EMAIL_USE_SSL = True
-    EMAIL_USE_TLS = False
+    EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', 'False').lower() == 'true'
+    EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'False').lower() == 'true'
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
@@ -380,6 +380,7 @@ SPECTACULAR_SETTINGS = {
         {'name': 'Files', 'description': 'Файлы'},
         {'name': 'Feedbacks', 'description': 'Обратная связь'},
         {'name': 'Reviews', 'description': 'Отзывы'},
+        {'name': 'Documents', 'description': 'Документы'},
     ),
 }
 
@@ -387,6 +388,7 @@ SPECTACULAR_SETTINGS = {
 # CACHE CONFIGURATION (Redis via django-redis)
 # =============================================================================
 
+DOCKER_REDIS_HOST = os.getenv('DOCKER_REDIS_HOST')
 REDIS_HOST = os.getenv('REDIS_HOST')
 REDIS_PORT = os.getenv('REDIS_PORT')
 REDIS_PASSWORD = os.getenv('REDIS_PASSWORD')
@@ -501,14 +503,7 @@ config = {
         },
     },
     'loggers': {
-        # логгер для приложений:
-        # core, users, projects, qna, feedback, help
-        'app': {
-            'level': 'DEBUG',
-            'handlers': ['console', 'file'],
-            'propagate': False,
-        },
-        # Логгеры приложений наследуются от 'app'
+        # логгеры приложений
         'core': {
             'level': 'DEBUG',
             'handlers': ['console', 'file'],
@@ -539,7 +534,7 @@ config = {
             'handlers': ['console', 'file'],
             'propagate': False,
         },
-        # Стандартные django-логеры
+        # стандартные django-логгеры
         'django.request': {
             'level': 'ERROR',
             'handlers': ['file'],
@@ -564,3 +559,5 @@ config = {
 }
 
 logging.config.dictConfig(config)
+
+FORMS_URLFIELD_ASSUME_HTTPS = True

@@ -10,13 +10,6 @@ from rest_framework.exceptions import ValidationError
 
 from config import settings
 from core.validators import file_size_validator
-from projects.models import Response as ProjectResponse
-from projects.models import WorkFormat
-from projects.serializers import (
-    SkillSerializer,
-    SpecializationSerializer,
-    WorkFormatSerializer,
-)
 from users.models.skills import Skill
 from users.models.specializations import Specialization
 from users.models.users import User, UserExperience, UserLike
@@ -78,6 +71,16 @@ class UserExperienceSerializer(
 class MeProfileUpdateSerializer(UserDetailsSerializer):
     """Сериализатор для изменения данных профиля (PATCH)."""
 
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Инициализирует сериализатор и добавляет поле workformats."""
+        from projects.models import WorkFormat
+        super().__init__(*args, **kwargs)
+        self.fields['workformats'] = serializers.PrimaryKeyRelatedField(
+            queryset=WorkFormat.objects.all(),
+            many=True,
+            required=False,
+        )
+
     skills = serializers.PrimaryKeyRelatedField(
         queryset=Skill.objects.all(),
         many=True,
@@ -85,11 +88,6 @@ class MeProfileUpdateSerializer(UserDetailsSerializer):
     )
     specializations = serializers.PrimaryKeyRelatedField(
         queryset=Specialization.objects.all(),
-        many=True,
-        required=False,
-    )
-    workformats = serializers.PrimaryKeyRelatedField(
-        queryset=WorkFormat.objects.all(),
         many=True,
         required=False,
     )
@@ -137,10 +135,23 @@ class MeProfileUpdateSerializer(UserDetailsSerializer):
 class MeProfileRetrieveSerializer(MeProfileUpdateSerializer):
     """Сериализатор для просмотра данных профиля (GET)."""
 
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Инициализирует сериализатор и динамически добавляет поля."""
+        from projects.serializers import (
+            SkillSerializer,
+            SpecializationSerializer,
+            WorkFormatSerializer,
+        )
+        super().__init__(*args, **kwargs)
+        self.fields['skills'] = SkillSerializer(many=True, read_only=True)
+        self.fields['specializations'] = SpecializationSerializer(
+            many=True, read_only=True,
+        )
+        self.fields['workformats'] = WorkFormatSerializer(
+            many=True, read_only=True,
+        )
+
     experiences = UserExperienceSerializer(many=True, read_only=True)
-    skills = SkillSerializer(many=True, read_only=True)
-    specializations = SpecializationSerializer(many=True, read_only=True)
-    workformats = WorkFormatSerializer(many=True, read_only=True)
     rating = serializers.IntegerField(read_only=True)
 
     class Meta(MeProfileUpdateSerializer.Meta):
@@ -153,6 +164,7 @@ class MeProfileRetrieveSerializer(MeProfileUpdateSerializer):
             'role',
             'experiences',
             'rating',
+            'last_login',
         ) + MeProfileUpdateSerializer.Meta.fields
         read_only_fields = fields
 
@@ -171,10 +183,23 @@ class AvatarUploadSerializer(serializers.Serializer[dict[str, Any]]):
 class PublicUserProfileSerializer(serializers.ModelSerializer):
     """Сериализатор для списочного отображения профилей."""
 
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Инициализирует сериализатор и динамически добавляет поля."""
+        from projects.serializers import (
+            SkillSerializer,
+            SpecializationSerializer,
+            WorkFormatSerializer,
+        )
+        super().__init__(*args, **kwargs)
+        self.fields['skills'] = SkillSerializer(many=True, read_only=True)
+        self.fields['specializations'] = SpecializationSerializer(
+            many=True, read_only=True,
+        )
+        self.fields['workformats'] = WorkFormatSerializer(
+            many=True, read_only=True,
+        )
+
     is_liked = serializers.SerializerMethodField()
-    skills = SkillSerializer(many=True, read_only=True)
-    specializations = SpecializationSerializer(many=True, read_only=True)
-    workformats = WorkFormatSerializer(many=True, read_only=True)
     rating = serializers.IntegerField(read_only=True)
 
     class Meta:
@@ -249,15 +274,20 @@ class UserResponseCardSerializer(serializers.ModelSerializer):
         PublicUserProfileSerializer(source='user', read_only=True)
     )
 
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Инициализирует сериализатор."""
+        from projects.models import Response as ProjectResponse
+        super().__init__(*args, **kwargs)
+        self.Meta.model = ProjectResponse
+
     class Meta:
-        model = ProjectResponse
         fields = (
             'response_id',
             'project_id',
             'project_title',
-            'initiator_type',
             'status_resp',
             'profile',
+            'initiator_type',
         )
         read_only_fields = fields
 
