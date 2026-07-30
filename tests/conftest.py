@@ -1,24 +1,27 @@
+import datetime
 import uuid
 from typing import Any, Generator, Type
 
 import factory
 import pytest
 from allauth.account.models import EmailAddress
-from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
+from django.core.cache import cache
 from django.db.models import Model
+from django.utils import timezone
 from factory.django import DjangoModelFactory
 from pytest_mock import MockerFixture
 from rest_framework.test import APIClient
 
 from config.settings_test import postgres_container, redis_container
-
-User: Type[Model] = get_user_model()
-
+from projects.models import Project, WorkFormat
+from projects.models import Response as ProjectResponse
+from users.models import Skill, Specialization, User, UserLike
 
 # =============================================================================
 # ОСТАНОВКА ТЕСТОВОГО КОНТЕЙНЕРА
 # =============================================================================
+
 
 def pytest_unconfigure(config: Any) -> None:
     """Гарантированно удаляет Docker-контейнеры после завершения тестов."""
@@ -67,6 +70,75 @@ class EmailAddressFactory(DjangoModelFactory):
     email: factory.SelfAttribute = factory.SelfAttribute('user.email')
     verified: bool = False
     primary: bool = True
+
+
+class SkillFactory(factory.django.DjangoModelFactory):
+    """Фабрика для генерации навыков."""
+
+    class Meta:
+        model = Skill
+
+    name = factory.Sequence(lambda n: f'Skill_{n}')
+
+
+class SpecializationFactory(factory.django.DjangoModelFactory):
+    """Фабрика для генерации специализаций."""
+
+    class Meta:
+        model = Specialization
+
+    name = factory.Sequence(lambda n: f'Specialization_{n}')
+
+
+class WorkFormatFactory(factory.django.DjangoModelFactory):
+    """Фабрика для генерации форматов работы."""
+
+    class Meta:
+        model = WorkFormat
+
+    name = factory.Sequence(lambda n: f'Format_{n}')
+
+
+class EmployerFactory(UserFactory):
+    """Фабрика для генерации пользователей с ролью Наниматель."""
+
+    projects_relation = User.ProjectsRelationChoices.EMPLOYER
+
+
+class UserLikeFactory(factory.django.DjangoModelFactory):
+    """Фабрика для генерации лайков между нанимателем и соискателем."""
+
+    class Meta:
+        model = UserLike
+
+    employer = factory.SubFactory(EmployerFactory)
+    worker = factory.SubFactory(UserFactory)
+
+
+class ProjectFactory(factory.django.DjangoModelFactory):
+    """Фабрика для генерации проектов."""
+
+    class Meta:
+        model = Project
+
+    title = factory.Sequence(lambda n: f'Project_{n}')
+    author = factory.SubFactory(EmployerFactory)
+    start_date = factory.LazyAttribute(lambda _: timezone.now().date())
+    end_date = factory.LazyAttribute(
+        lambda o: o.start_date + datetime.timedelta(days=30),
+    )
+
+
+class ProjectResponseFactory(factory.django.DjangoModelFactory):
+    """Фабрика для генерации откликов соискателей на проекты."""
+
+    class Meta:
+        model = ProjectResponse
+
+    project = factory.SubFactory(ProjectFactory)
+    user = factory.SubFactory(UserFactory)
+    initiator_type = 'applicant'
+    status_resp = 'pending'
 
 
 # =============================================================================
@@ -118,3 +190,19 @@ def unverified_user() -> Model:
     user: Model = UserFactory(email='unverified@example.com')
     EmailAddressFactory(user=user, verified=False)
     return user
+
+
+@pytest.fixture
+def employer_user() -> Model:
+    """Фикстура авторизованного нанимателя."""
+    return EmployerFactory()
+
+
+# =============================================================================
+# ГЛОБАЛЬНЫЕ АВТО-ФИКСТУРЫ ОЧИСТКИ
+# =============================================================================
+
+@pytest.fixture(autouse=True)
+def _clear_cache_before_each_test() -> None:
+    """Гарантированно очищает кэш Redis перед запуском каждого теста."""
+    cache.clear()
