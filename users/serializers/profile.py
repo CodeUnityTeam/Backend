@@ -110,6 +110,7 @@ class MeProfileUpdateSerializer(UserDetailsSerializer):
             'skills',
             'specializations',
             'workformats',
+            'last_login',
         )
 
     def update(self, instance: Any, validated_data: dict) -> Any:
@@ -117,6 +118,8 @@ class MeProfileUpdateSerializer(UserDetailsSerializer):
         skills = validated_data.pop('skills', None)
         specializations = validated_data.pop('specializations', None)
         workformats = validated_data.pop('workformats', None)
+
+        validated_data['onboarding_completed'] = True
 
         with transaction.atomic():
             instance = super().update(instance, validated_data)
@@ -164,6 +167,7 @@ class MeProfileRetrieveSerializer(MeProfileUpdateSerializer):
             'experiences',
             'rating',
             'last_login',
+            'onboarding_completed',
         ) + MeProfileUpdateSerializer.Meta.fields
         read_only_fields = fields
 
