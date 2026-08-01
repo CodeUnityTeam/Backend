@@ -299,7 +299,7 @@ class QuestionDetailSerializer(AuthorInfoMixin, serializers.ModelSerializer):
             return False
         if request.user.is_anonymous:
             return False
-        return any(like.user_id == request.user.pk for like in obj.likes.all())
+        return any(like.user_id == request.user.pk for like in obj.likes.all()) 
 
 
 class QuestionWithAnswersSerializer(QuestionDetailSerializer):
