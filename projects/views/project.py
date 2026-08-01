@@ -4,7 +4,7 @@ from typing import Any
 
 from django.core.cache import cache
 from django.db import transaction
-from django.db.models import QuerySet
+from django.db.models import Case, IntegerField, QuerySet, When
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import (
     OpenApiResponse,
@@ -30,7 +30,6 @@ from core.constants.cache import (
     PROJECT_LIST_CACHE_TIMEOUT,
     PROJECT_RECOMMENDATIONS_CACHE_TIMEOUT,
 )
-from core.constants.projects import PAGE_SIZE
 from projects.filters import ProjectFilter
 from projects.models import Project, ProjectLike
 from projects.paginations import CustomProjectPagination
@@ -70,20 +69,41 @@ logger = logging.getLogger(__name__)
 def _build_list_cache_key(
     prefix: str,
     user: Any,
-    query_params: dict,
-) -> str:
-    """Сформировать ключ кэша для списка IDs проектов.
-
-    Формат: {prefix}:list:ids:{user_id}:{md5(params)}
-    """
+    query_params: Any,
+) -> str | None:
+    """Ключ полного упорядоченного списка ID для комбинации фильтров."""
     if not user.is_authenticated:
-        return None  # ← НЕ кэшируем для анонимов
-    sorted_params = sorted(query_params.items())
-    params_str = hashlib.md5(
-        str(sorted_params).encode(),
+        return None
+    pagination_params = {'page', 'limit'}
+    normalized_params = sorted(
+        (
+            key,
+            tuple(values),
+        )
+        for key, values in query_params.lists()
+        if key not in pagination_params
+    )
+    params_hash = hashlib.sha256(
+        repr(normalized_params).encode('utf-8'),
     ).hexdigest()
-    user_part = str(user.pk)
-    return f'{prefix}:list:ids:{user_part}:{params_str}'
+    return f'{prefix}:list:ids:{user.pk}:{params_hash}'
+
+
+def _build_recommendations_cache_key(request: Request) -> str:
+    """Сформировать ключ полного списка ID рекомендаций пользователя."""
+    pagination_params = {'page', 'limit'}
+    normalized_params = sorted(
+        (key, tuple(values))
+        for key, values in request.query_params.lists()
+        if key not in pagination_params
+    )
+    params_hash = hashlib.sha256(
+        repr(normalized_params).encode('utf-8'),
+    ).hexdigest()
+    return (
+        f'{CACHE_KEY_PROJECTS_PREFIX}:recommendations:'
+        f'{request.user.pk}:ids:{params_hash}'
+    )
 
 
 @extend_schema_view(
@@ -163,67 +183,106 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
         *args: Any,
         **kwargs: Any,
     ) -> DRFResponse:
-        """Кэширует IDs проектов, данные собираются из свежего queryset'а.
-
-        Ключ: projects:list:ids:{user_id}:{md5(params)}.
-        В кэше хранятся только project_id (UUID), а сам queryset
-        с prefetch_related строится заново — это делает ответ
-        независимым от изменений сериализаторов.
-        """
+        """Возвращает список проектов с кэшированием полного списка ID."""
         user = request.user
-        query_params = request.query_params.dict()
+        query_params = request.query_params
+
         cache_key = _build_list_cache_key(
-            CACHE_KEY_PROJECTS_PREFIX, user, query_params,
+            prefix=CACHE_KEY_PROJECTS_PREFIX,
+            user=user,
+            query_params=query_params,
         )
 
         logger.info(
             'Запрос списка проектов: user_id=%s, role=%s, params=%s, '
             'cache_key=%s',
             user.pk if user.is_authenticated else 'anonymous',
-            user.projects_relation if user.is_authenticated else 'anonymous',
+            (
+                user.projects_relation
+                if user.is_authenticated
+                else 'anonymous'
+            ),
             query_params,
             cache_key,
         )
+
         if cache_key is None:
-            logger.info('кэширование отключено')
+            logger.info(
+                'Кэширование списка проектов отключено: user=anonymous',
+            )
             return super().list(request, *args, **kwargs)
-        qs = self.filter_queryset(self.get_queryset())
-        all_ids = list(qs.values_list('project_id', flat=True))
-        # Пробуем достать IDs из кэша
+
         cached_ids = cache.get(cache_key)
-        if cached_ids is not None:
+
+        if cached_ids is None:
+            filtered_queryset = self.filter_queryset(self.get_queryset())
+
+            ordered_ids = [
+                str(project_id)
+                for project_id in filtered_queryset.values_list(
+                    'project_id',
+                    flat=True,
+                )
+            ]
+
+            cache.set(
+                cache_key,
+                ordered_ids,
+                timeout=PROJECT_LIST_CACHE_TIMEOUT,
+            )
+
+            logger.info(
+                'Cache MISS: key=%s, total_ids=%d',
+                cache_key,
+                len(ordered_ids),
+            )
+        else:
+            ordered_ids = cached_ids
+
             logger.info(
                 'Cache HIT IDs: key=%s, total_ids=%d',
                 cache_key,
-                len(cached_ids),
+                len(ordered_ids),
             )
-            # Восстанавливаем queryset по IDs (без фильтров — они уже учтены)
-            qs = get_optimized_project_queryset(user=user).filter(
-                project_id__in=cached_ids,
+
+        page_ids = self.paginate_queryset(ordered_ids)
+
+        if not page_ids:
+            logger.debug(
+                'Страница списка проектов пуста: page=%d',
+                self.paginator.page.number,
             )
-            page = self.paginate_queryset(qs)
-            if page is not None:
-                serializer = self.get_serializer(page, many=True)
-                logger.debug(
-                    'Cache HIT: страница %d, элементов на странице %d',
-                    self.paginator.page.number,
-                    len(page),
-                )
-                return self.get_paginated_response(serializer.data)
-            serializer = self.get_serializer(qs, many=True)
-            return DRFResponse(serializer.data)
-        cache.set(
-            cache_key,
-            [str(pid) for pid in all_ids],
-            timeout=PROJECT_LIST_CACHE_TIMEOUT,
+            return self.get_paginated_response([])
+
+        preserved_order = Case(
+            *[
+                When(project_id=project_id, then=position)
+                for position, project_id in enumerate(page_ids)
+            ],
+            output_field=IntegerField(),
         )
-        logger.info(
-            'Cache MISS: key=%s, total_ids=%d',
-            cache_key,
-            len(all_ids),
+
+        page_queryset = (
+            self.get_queryset()
+            .filter(project_id__in=page_ids)
+            .order_by(preserved_order)
         )
-        self.queryset = qs
-        return super().list(request, *args, **kwargs)
+
+        serializer = self.get_serializer(
+            page_queryset,
+            many=True,
+        )
+
+        logger.debug(
+            'Список проектов сформирован: cache_status=%s, '
+            'page=%d, page_size=%d, total_ids=%d',
+            'HIT' if cached_ids is not None else 'MISS',
+            self.paginator.page.number,
+            len(page_ids),
+            len(ordered_ids),
+        )
+
+        return self.get_paginated_response(serializer.data)
 
     def get_queryset(self) -> QuerySet[Project]:
         """Оптимизированный queryset с предзагрузкой связанных данных.
@@ -451,55 +510,73 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
         self,
         request: Request,
     ) -> DRFResponse:
-        """Персональные рекомендации проектов на основе навыков пользователя.
-
-        Ключ: projects:recommendations:{user_id}:page:{page_number},TTL 10 мин.
-        Инвалидируется при изменении профиля или создании проекта.
-        """
+        """Вернуть страницу рекомендаций из кэшированного списка ID."""
         user = request.user
-        page_number = request.query_params.get('page', 1)
-        limit = request.query_params.get('limit', PAGE_SIZE)
+        cache_key = _build_recommendations_cache_key(request)
         logger.debug(
-            'Запрос персональных рекомендаций (получен): user_id=%s, page=%s, '
-            'limit=%s',
+            'Запрос персональных рекомендаций: user_id=%s, cache_key=%s',
             user.pk,
-            page_number,
-            limit,
+            cache_key,
         )
-        cache_key = (
-            f'{CACHE_KEY_PROJECTS_PREFIX}:recommendations:'
-            f'{user.pk}:page:{page_number}:limit:{limit}'
-        )
-        cached_response = cache.get(cache_key)
-        if cached_response is not None:
-            logger.debug(
-                'Рекомендации получены из кэша: user_id=%s',
-                user.pk,
-            )
-            return DRFResponse(cached_response)
-        logger.debug('Кэш пуст, вычисление рекомендаций: user_id=%s', user.pk)
-        try:
+        cached_ids = cache.get(cache_key)
+
+        if cached_ids is None:
             recommended_projects = get_recommended_projects_queryset(user)
-            page = self.paginate_queryset(recommended_projects)
-            serializer = ProjectShortSerializer(
-                page,
-                many=True,
-                context={'request': request},
-            )
-            response = self.get_paginated_response(serializer.data)
+            ordered_ids = [
+                str(project_id)
+                for project_id in recommended_projects.values_list(
+                    'project_id',
+                    flat=True,
+                )
+            ]
             cache.set(
                 cache_key,
-                response.data,
+                ordered_ids,
                 timeout=PROJECT_RECOMMENDATIONS_CACHE_TIMEOUT,
             )
-            return response
-        except Exception:
-            logger.exception(
-                'Критическая ошибка при вычислении или пагинации рекомендаций:'
-                ' user_id=%s.',
+            logger.debug(
+                'Cache MISS рекомендаций: user_id=%s, total_ids=%d',
                 user.pk,
+                len(ordered_ids),
             )
-            raise
+        else:
+            ordered_ids = cached_ids
+            logger.debug(
+                'Cache HIT рекомендаций: user_id=%s, total_ids=%d',
+                user.pk,
+                len(ordered_ids),
+            )
+
+        page_ids = self.paginate_queryset(ordered_ids)
+        if not page_ids:
+            return self.get_paginated_response([])
+
+        preserved_order = Case(
+            *[
+                When(project_id=project_id, then=position)
+                for position, project_id in enumerate(page_ids)
+            ],
+            output_field=IntegerField(),
+        )
+        page_queryset = (
+            get_optimized_project_queryset(user)
+            .filter(project_id__in=page_ids)
+            .order_by(preserved_order)
+        )
+        serializer = ProjectShortSerializer(
+            page_queryset,
+            many=True,
+            context={'request': request},
+        )
+        logger.debug(
+            'Рекомендации сформированы: cache_status=%s, page=%d, '
+            'page_size=%d, total_ids=%d',
+            'HIT' if cached_ids is not None else 'MISS',
+            self.paginator.page.number,
+            len(page_ids),
+            len(ordered_ids),
+        )
+        return self.get_paginated_response(serializer.data)
 
     @extend_schema(
         tags=['Проекты'],

@@ -6,7 +6,7 @@ from typing import Any, Type
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.core.files.uploadedfile import UploadedFile
-from django.db.models import QuerySet
+from django.db.models import Case, IntegerField, QuerySet, When
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
@@ -40,6 +40,7 @@ from rest_framework.viewsets import ModelViewSet
 from config import settings
 from core.cache_mixins import CacheRetrieveMixin
 from core.constants.cache import (
+    CACHE_KEY_USERS_PREFIX,
     USER_PROFILE_CACHE_TIMEOUT,
     USER_PROFILE_LIST_CACHE_TIMEOUT,
 )
@@ -68,6 +69,23 @@ from users.services import (
 UserModel = get_user_model()
 
 logger = logging.getLogger(__name__)
+
+
+def _build_profile_list_cache_key(request: Request) -> str:
+    """Сформировать ключ полного упорядоченного списка ID профилей."""
+    pagination_params = {'page', 'limit'}
+    normalized_params = sorted(
+        (key, tuple(values))
+        for key, values in request.query_params.lists()
+        if key not in pagination_params
+    )
+    params_hash = hashlib.sha256(
+        repr(normalized_params).encode('utf-8'),
+    ).hexdigest()
+    return (
+        f'{CACHE_KEY_USERS_PREFIX}:list:ids:'
+        f'{request.user.pk}:{params_hash}'
+    )
 
 # ============================== MeProfile ===================================
 
@@ -651,20 +669,9 @@ class UserProfileListView(ListAPIView):
         *args: Any,
         **kwargs: Any,
     ) -> Response:
-        """Кэширует список профилей.
-
-        Ключ: users:list:{user_id}:{md5(params)}.
-        user_id в ключе позволяет точечно инвалидировать кэш при лайке.
-        """
-        user = request.user
-        query_params = request.query_params.dict()
-        sorted_params = sorted(query_params.items())
-        params_str = hashlib.md5(
-            str(sorted_params).encode(),
-        ).hexdigest()
-        cache_key = f'users:list:{user.pk}:{params_str}'
-
-        cached_response = cache.get(cache_key)
+        """Вернуть страницу профилей из кэшированного списка ID."""
+        cache_key = _build_profile_list_cache_key(request)
+        cached_ids = cache.get(cache_key)
 
         logger.info(
             'Запрос списка профилей: user_id=%s, cache_key=%s',
@@ -672,24 +679,56 @@ class UserProfileListView(ListAPIView):
             cache_key,
         )
 
-        if cached_response is not None:
-            logger.info(
-                'Передача списка профилей из кеша: cache_key=%s',
-                cache_key,
-            )
-            return Response(cached_response)
-
-        response = super().list(request, *args, **kwargs)
-
-        if response.status_code == 200:
+        if cached_ids is None:
+            filtered_queryset = self.filter_queryset(self.get_queryset())
+            ordered_ids = [
+                str(object_id)
+                for object_id in filtered_queryset.values_list(
+                    'pk',
+                    flat=True,
+                )
+            ]
             cache.set(
                 cache_key,
-                response.data,
+                ordered_ids,
                 timeout=USER_PROFILE_LIST_CACHE_TIMEOUT,
             )
             logger.info(
-                'Кэширование списка профилей, передача пользователю: '
-                'cache_key=%s',
+                'Cache MISS списка профилей: cache_key=%s, total_ids=%d',
                 cache_key,
+                len(ordered_ids),
             )
-        return response
+        else:
+            ordered_ids = cached_ids
+            logger.info(
+                'Cache HIT списка профилей: cache_key=%s, total_ids=%d',
+                cache_key,
+                len(ordered_ids),
+            )
+
+        page_ids = self.paginate_queryset(ordered_ids)
+        if not page_ids:
+            return self.get_paginated_response([])
+
+        preserved_order = Case(
+            *[
+                When(pk=object_id, then=position)
+                for position, object_id in enumerate(page_ids)
+            ],
+            output_field=IntegerField(),
+        )
+        page_queryset = (
+            self.get_queryset()
+            .filter(pk__in=page_ids)
+            .order_by(preserved_order)
+        )
+        serializer = self.get_serializer(page_queryset, many=True)
+        logger.debug(
+            'Список профилей сформирован: cache_status=%s, page=%d, '
+            'page_size=%d, total_ids=%d',
+            'HIT' if cached_ids is not None else 'MISS',
+            self.paginator.page.number,
+            len(page_ids),
+            len(ordered_ids),
+        )
+        return self.get_paginated_response(serializer.data)
