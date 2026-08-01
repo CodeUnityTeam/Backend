@@ -14,7 +14,7 @@ from allauth.socialaccount.providers.oauth2.views import OAuth2View
 from allauth.socialaccount.providers.yandex.views import YandexOAuth2Adapter
 from dj_rest_auth.registration.views import SocialLoginView
 from django.contrib.auth import get_user_model
-from django.http import HttpRequest, HttpResponseRedirect
+from django.http import HttpRequest
 from django.shortcuts import redirect
 from drf_spectacular.utils import (
     OpenApiExample,
