@@ -215,17 +215,17 @@ urlpatterns = (
                 name='mailru_auth_url',
             ),
             path(
-                'google/',
+                'google/callback',
                 GoogleLogin.as_view(),
                 name='google_login',
             ),
             path(
-                'yandex/',
+                'yandex/callback',
                 YandexLogin.as_view(),
                 name='yandex_login',
             ),
             path(
-                'mailru/',
+                'mailru/callback',
                 MailRuLogin.as_view(),
                 name='mailru_login',
             ),
