@@ -6,8 +6,8 @@ from drf_spectacular.utils import (
 )
 from rest_framework import serializers
 
-
 # --- Сериализаторы для Swagger-документации ---
+
 
 class SocialAuthQueryParamsSerializer(serializers.Serializer):
     """Сериализатор для входящих параметров от OAuth-провайдера.
