@@ -19,7 +19,7 @@ from qna.selectors import (
     update_question_image,
 )
 from qna.serializers.answer import AnswerDetailSerializer
-from qna.serializers.mixins import AuthorInfoMixin
+from qna.serializers.mixins import AuthorInfoMixin, IsLikedByMeMixin
 from users.models import Skill
 
 
@@ -174,7 +174,11 @@ class QuestionCreateResponseSerializer(serializers.ModelSerializer):
         fields = ('question_id',)
 
 
-class QuestionListSerializer(AuthorInfoMixin, serializers.ModelSerializer):
+class QuestionListSerializer(
+    AuthorInfoMixin,
+    IsLikedByMeMixin,
+    serializers.ModelSerializer,
+):
     """Сериализатор вопроса для списка."""
 
     tags = serializers.SlugRelatedField(
@@ -227,11 +231,12 @@ class QuestionListSerializer(AuthorInfoMixin, serializers.ModelSerializer):
             return ''
         return obj.user.avatar_url
 
-    def get_is_liked_by_me(self, obj: Question) -> bool:
-        """Проверяет, поставил ли текущий пользователь лайк этому вопросу."""
 
-
-class QuestionDetailSerializer(AuthorInfoMixin, serializers.ModelSerializer):
+class QuestionDetailSerializer(
+    AuthorInfoMixin,
+    IsLikedByMeMixin,
+    serializers.ModelSerializer,
+):
     """Сериализатор детальной страницы вопроса."""
 
     tags = serializers.SlugRelatedField(
@@ -287,19 +292,6 @@ class QuestionDetailSerializer(AuthorInfoMixin, serializers.ModelSerializer):
     def get_images(self, obj: Question) -> list[str]:
         """Возвращает список URL изображений."""
         return [img.image_url for img in obj.images.all()]
-
-    def get_is_liked_by_me(self, obj: Question) -> bool:
-        """Проверяет, поставил ли текущий пользователь лайк этому вопросу.
-
-        Использует prefetch_related('likes') для избежания дополнительных
-        запросов к БД.
-        """
-        request = self.context.get('request')
-        if request is None or not hasattr(request, 'user'):
-            return False
-        if request.user.is_anonymous:
-            return False
-        return any(like.user_id == request.user.pk for like in obj.likes.all())
 
 
 class QuestionWithAnswersSerializer(QuestionDetailSerializer):

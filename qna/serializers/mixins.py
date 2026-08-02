@@ -1,5 +1,7 @@
 from typing import Any
 
+from qna.models import Question
+
 
 class AuthorInfoMixin:
     """Миксин для сериализаторов QnA с полями author_name и author_rating."""
@@ -19,3 +21,23 @@ class AuthorInfoMixin:
         if getattr(obj, 'is_anonymous', False):
             return 0
         return obj.user.rating
+
+
+class IsLikedByMeMixin:
+    """Миксин для получения поля - лайкнул ли текущий юзер вопрос."""
+
+    def get_is_liked_by_me(self, obj: Question) -> bool:
+        """Проверяем лайк юзера на вопрос.
+
+        Для анонимов всегда False.
+        """
+        request = self.context.get('request')
+        if not request or not hasattr(request, 'user'):
+            return False
+        user = request.user
+        if user.is_anonymous:
+            return False
+        likes_qs = getattr(obj, 'likes', None)
+        if not likes_qs:
+            return False
+        return any(like.user_id == user.pk for like in likes_qs.all())
