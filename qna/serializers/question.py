@@ -228,7 +228,17 @@ class QuestionListSerializer(AuthorInfoMixin, serializers.ModelSerializer):
         return obj.user.avatar_url
 
     def get_is_liked_by_me(self, obj: Question) -> bool:
-        """Проверяет, поставил ли текущий пользователь лайк этому вопросу."""
+        """Проверяет, поставил ли текущий пользователь лайк этому вопросу.
+
+        Использует prefetch_related('likes') для избежания дополнительных
+        запросов к БД.
+        """
+        request = self.context.get('request')
+        if request is None or not hasattr(request, 'user'):
+            return False
+        if request.user.is_anonymous:
+            return False
+        return any(like.user_id == request.user.pk for like in obj.likes.all())
 
 
 class QuestionDetailSerializer(AuthorInfoMixin, serializers.ModelSerializer):

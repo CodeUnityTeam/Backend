@@ -53,10 +53,15 @@ def invalidate_answer_cache(
     instance: Answer,
     **kwargs: Any,
 ) -> None:
-    """Инвалидирует кэш вопроса при добавлении/удалении ответа."""
+    """Инвалидирует кэш вопроса при добавлении/удалении ответа.
+
+    Очищает детали вопроса и список вопросов, т.к. answers_count
+    отображается в QuestionListSerializer.
+    """
     cache.delete_pattern(
         f'{CACHE_KEY_QNA_PREFIX}:detail:{instance.question_id}:*',
     )
+    cache.delete_pattern(f'{CACHE_KEY_QNA_PREFIX}:list:*')
     logger.info(
         'Инвалидация кэша ответа: answer_id=%s, question_id=%s',
         instance.pk,
@@ -74,13 +79,14 @@ def invalidate_question_like_cache(
     """Инвалидирует кэш при лайке/снятии лайка вопроса.
 
     Очищает детали только для пользователя, поставившего лайк.
-    Список вопросов не очищается — лайк не меняет состав списка,
-    только likes_count, который не отображается в QuestionListSerializer.
+    Также очищает список вопросов, т.к. likes_count отображается
+    в QuestionListSerializer и должен быть актуальным.
     """
     cache.delete_pattern(
         f'{CACHE_KEY_QNA_PREFIX}:detail:'
         f'{instance.question_id}:{instance.user_id}',
     )
+    cache.delete_pattern(f'{CACHE_KEY_QNA_PREFIX}:list:*')
 
 
 @receiver(post_save, sender=AnswerLike)
