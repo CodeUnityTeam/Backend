@@ -111,7 +111,7 @@ class AnswerCreateSerializer(serializers.ModelSerializer):
             },
         }
 
-    def to_internal_value(self, data):
+    def to_internal_value(self, data: dict) -> dict:
         """Проверяет количество изображений до валидации каждого элемента."""
         images = data.get('images')
         if images is not None and len(images) > MAX_IMAGES_COUNT:
