@@ -254,23 +254,26 @@ def get_visible_projects_for_retrieve(
 ) -> QuerySet[Project]:
     """Возвращает проекты, доступные пользователю для просмотра.
 
-    - Employer видит свои проекты + опубликованные/с закрытым набором.
+    - Employer видит свои проекты (кроме archived/blocked)
+      + опубликованные/с закрытым набором.
     - Остальные пользователи — только опубликованные/с закрытым набором.
+    - Проекты со статусом archived или blocked не отдаются никому
+      через API (возвращается 404). Доступны только через админку.
 
     Используется в ProjectViewSet.get_queryset для action 'retrieve'.
     """
+    base_filter = Q(status_project__in=(PUBLISHED, RECRUITING_CLOSED))
+
     if (
         user.is_authenticated
         and user.projects_relation
         == User.ProjectsRelationChoices.EMPLOYER
     ):
         return qs.filter(
-            Q(author=user)
-            | Q(status_project__in=(PUBLISHED, RECRUITING_CLOSED)),
+            (Q(author=user) & ~Q(status_project__in=(ARCHIVED, BLOCKED)))
+            | base_filter,
         )
-    return qs.filter(
-        status_project__in=(PUBLISHED, RECRUITING_CLOSED),
-    )
+    return qs.filter(base_filter)
 
 
 def get_project_for_response_queryset() -> QuerySet[Project]:
