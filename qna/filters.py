@@ -48,7 +48,7 @@ class QuestionFilter(django_filters.FilterSet):
         if value == 'popular':
             # Сортировка по количеству лайков (по убыванию)
             # likes_count уже аннотирован в get_question_list_queryset
-            return queryset.order_by('-likes_count')
+            return queryset.order_by('-likes_count', '-created_at')
         if value == 'no_answers':
             # Вопросы без ответов
             # answers_count уже аннотирован в get_question_list_queryset
