@@ -78,7 +78,7 @@ def invalidate_answer_cache(
     logger.info(
         'Инвалидация ответа запланирована: answer_id=%s, question_id=%s',
         instance.pk,
-        question_id,
+        instance.question_id,
     )
 
 
