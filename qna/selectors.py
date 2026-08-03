@@ -98,10 +98,13 @@ def get_answer_detail_queryset() -> QuerySet[Answer]:
 
     - select_related: user, question
     - prefetch_related: likes, images
+    - annotate: likes_count
     """
     return Answer.objects.select_related(
         'user', 'question',
-    ).prefetch_related('likes', 'images')
+    ).prefetch_related('likes', 'images').annotate(
+        likes_count=Count('likes', distinct=True),
+    )
 
 
 def get_all_skills() -> QuerySet[Skill]:
