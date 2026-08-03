@@ -61,7 +61,11 @@ def get_question_detail_queryset() -> QuerySet[Question]:
             'answers',
             queryset=Answer.objects.select_related(
                 'user',
-            ).prefetch_related('images', 'likes').filter(is_active=True),
+            ).prefetch_related('images', 'likes').filter(
+                is_active=True,
+            ).annotate(
+                likes_count=Count('likes', distinct=True),
+            ),
         ),
         'likes',
         'images',
