@@ -3,7 +3,7 @@ import logging
 from typing import Any
 
 from django.core.cache import cache
-from django.db.models import QuerySet
+from django.db.models import Case, IntegerField, QuerySet, When
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import (
     OpenApiParameter,
@@ -12,6 +12,7 @@ from drf_spectacular.utils import (
 )
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import (
     AllowAny,
     BasePermission,
@@ -51,6 +52,37 @@ from qna.serializers.question import (
 from qna.services import toggle_like
 
 logger = logging.getLogger(__name__)
+
+
+def _build_question_list_cache_key(request: Request) -> str | None:
+    """Сформировать ключ полного упорядоченного списка ID вопросов.
+
+    Параметры пагинации не входят в ключ: limit/offset применяются к уже
+    закэшированному списку. Публичные фильтры используют общий ключ, а
+    filter=my получает отдельный ключ текущего пользователя.
+    """
+    pagination_params = {'limit', 'offset'}
+    normalized_params = sorted(
+        (key, tuple(values))
+        for key, values in request.query_params.lists()
+        if key not in pagination_params
+    )
+    params_hash = hashlib.sha256(
+        repr(normalized_params).encode('utf-8'),
+    ).hexdigest()
+
+    is_my_filter = request.query_params.get('filter') == 'my'
+    if is_my_filter and not request.user.is_authenticated:
+        return None
+
+    cache_scope = 'public'
+    if is_my_filter:
+        cache_scope = str(request.user.pk)
+
+    return (
+        f'{CACHE_KEY_QNA_PREFIX}:list:ids:'
+        f'{cache_scope}:{params_hash}'
+    )
 
 
 @extend_schema_view(
@@ -130,44 +162,87 @@ class QuestionViewSet(CacheRetrieveMixin, viewsets.ModelViewSet):
         *args: Any,
         **kwargs: Any,
     ) -> Response:
-        """Кэширует список вопросов.
+        """Вернуть вопросы, кэшируя полный упорядоченный список их ID."""
+        if (
+            request.query_params.get('filter') == 'my'
+            and not request.user.is_authenticated
+        ):
+            raise PermissionDenied('Authentication is required for filter=my.')
 
-        Ключ: qna:list:{md5(params)} — без user_id, т.к. данные публичные
-        (QuestionListSerializer не содержит персонализированных полей).
-        """
-        query_params = request.query_params.dict()
-        sorted_params = sorted(query_params.items())
-        params_str = hashlib.md5(
-            str(sorted_params).encode(),
-        ).hexdigest()
-        cache_key = f'{CACHE_KEY_QNA_PREFIX}:list:{params_str}'
+        cache_key = _build_question_list_cache_key(request)
+        assert cache_key is not None
+        cached_ids = cache.get(cache_key)
 
-        cached_response = cache.get(cache_key)
         logger.info(
-            'Запрос списка вопросов: cache_key=%s.',
+            'Запрос списка вопросов: user_id=%s, params=%s, cache_key=%s.',
+            (
+                request.user.pk
+                if request.user.is_authenticated
+                else 'anonymous'
+            ),
+            request.query_params,
             cache_key,
         )
-        if cached_response is not None:
-            logger.info(
-                'Передача кешированного списка вопросов: cache_key=%s.',
-                cache_key,
-            )
-            return Response(cached_response)
 
-        response = super().list(request, *args, **kwargs)
-
-        if response.status_code == 200:
+        if cached_ids is None:
+            filtered_queryset = self.filter_queryset(self.get_queryset())
+            ordered_ids = [
+                str(question_id)
+                for question_id in filtered_queryset.values_list(
+                    'question_id',
+                    flat=True,
+                )
+            ]
             cache.set(
                 cache_key,
-                response.data,
+                ordered_ids,
                 timeout=QUESTION_LIST_CACHE_TIMEOUT,
             )
             logger.info(
-                'Кеширование списка вопросов, передача пользователю: '
-                'cache_key=%s.',
+                'Cache MISS списка вопросов: cache_key=%s, total_ids=%d.',
                 cache_key,
+                len(ordered_ids),
             )
-        return response
+        else:
+            ordered_ids = cached_ids
+            logger.info(
+                'Cache HIT списка вопросов: cache_key=%s, total_ids=%d.',
+                cache_key,
+                len(ordered_ids),
+            )
+
+        page_ids = self.paginate_queryset(ordered_ids)
+        if not page_ids:
+            logger.debug(
+                'Страница списка вопросов пуста: offset=%s, limit=%s.',
+                request.query_params.get('offset', 0),
+                request.query_params.get('limit'),
+            )
+            return self.get_paginated_response([])
+
+        preserved_order = Case(
+            *[
+                When(question_id=question_id, then=position)
+                for position, question_id in enumerate(page_ids)
+            ],
+            output_field=IntegerField(),
+        )
+        page_queryset = (
+            self.get_queryset()
+            .filter(question_id__in=page_ids)
+            .order_by(preserved_order)
+        )
+        serializer = self.get_serializer(page_queryset, many=True)
+
+        logger.debug(
+            'Список вопросов сформирован: cache_status=%s, '
+            'offset=%s, page_size=%d, total_ids=%d.',
+            'HIT' if cached_ids is not None else 'MISS',
+            request.query_params.get('offset', 0),
+            len(page_ids),
+            len(ordered_ids),
+        )
+        return self.get_paginated_response(serializer.data)
 
     def get_serializer_class(self) -> type[serializers.BaseSerializer]:
         """Получает класс сериализатора."""

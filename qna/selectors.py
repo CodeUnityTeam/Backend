@@ -34,7 +34,7 @@ def get_question_list_queryset() -> QuerySet[Question]:
         'likes',
     ).annotate(
         likes_count=Count('likes', distinct=True),
-        answers_count=Count('answers'),
+        answers_count=Count('answers', distinct=True),
         author_name=Case(
             When(
                 is_anonymous=True,
