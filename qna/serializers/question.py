@@ -3,6 +3,7 @@ from django.db.models import QuerySet
 from rest_framework import serializers
 
 from core.constants.qna import (
+    MAX_IMAGES_COUNT,
     MAX_TITLE_QUESTION,
     MIN_DESC_QUESTION,
     MIN_TITLE_QUESTION,
@@ -78,6 +79,20 @@ class QuestionCreateSerializer(serializers.ModelSerializer):
             'is_anonymous',
             'images',
         )
+
+    def to_internal_value(self, data):
+        """Проверяет количество изображений до валидации каждого элемента."""
+        images = data.get('images')
+        if images is not None and len(images) > MAX_IMAGES_COUNT:
+            raise serializers.ValidationError(
+                {
+                    'images': (
+                        f'Можно прикрепить не более '
+                        f'{MAX_IMAGES_COUNT} изображений.'
+                    ),
+                },
+            )
+        return super().to_internal_value(data)
 
     def create(self, validated_data: dict) -> Question:
         """Создание вопроса."""

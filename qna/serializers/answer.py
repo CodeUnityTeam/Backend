@@ -1,6 +1,7 @@
 from django.db import transaction
 from rest_framework import serializers
 
+from core.constants.qna import MAX_IMAGES_COUNT
 from core.validators import validate_no_bad_words
 from qna.models import Answer
 from qna.selectors import create_answer, create_answer_image
@@ -109,6 +110,20 @@ class AnswerCreateSerializer(serializers.ModelSerializer):
                 'validators': [validate_no_bad_words],
             },
         }
+
+    def to_internal_value(self, data):
+        """Проверяет количество изображений до валидации каждого элемента."""
+        images = data.get('images')
+        if images is not None and len(images) > MAX_IMAGES_COUNT:
+            raise serializers.ValidationError(
+                {
+                    'images': (
+                        f'Можно прикрепить не более '
+                        f'{MAX_IMAGES_COUNT} изображений.'
+                    ),
+                },
+            )
+        return super().to_internal_value(data)
 
     def validate_parent_answer(self, value: Answer | None) -> Answer | None:
         """Проверяет, что parent_answer относится к тому же вопросу."""
