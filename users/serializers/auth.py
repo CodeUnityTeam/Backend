@@ -5,7 +5,10 @@ from typing import Any
 from allauth.account.adapter import get_adapter
 from allauth.account.models import EmailAddress
 from allauth.account.utils import user_pk_to_url_str
-from dj_rest_auth.registration.serializers import RegisterSerializer
+from dj_rest_auth.registration.serializers import (
+    RegisterSerializer,
+    SocialLoginSerializer,
+)
 from dj_rest_auth.serializers import (
     LoginSerializer,
     PasswordChangeSerializer,
@@ -34,16 +37,45 @@ class SocialAuthUrlResponseSerializer(serializers.Serializer):
     )
 
 
-class SocialAuthCodeRequestSerializer(serializers.Serializer):
-    """Сериализатор для авторизации через OAuth2."""
+class SafeSocialLoginSerializer(SocialLoginSerializer):
+    """Сериализатор для безопасного входа через соцсети.
 
-    code = serializers.CharField(
-        required=True,
-        help_text=(
-            'Код авторизации (Authorization Code), полученный от '
-            'OAuth-провайдера на фронтенде.'
-        ),
-    )
+    Устраняет RelatedObjectDoesNotExist при автоматическом
+    связывании аккаунтов по Email и обрабатывает сетевые сбои.
+    """
+
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
+        """Проверяет данные кода и связывает пользователя."""
+        from requests.exceptions import RequestException
+
+        try:
+            # Запускаем оригинальную валидацию dj-rest-auth
+            attrs = super().validate(attrs)
+        except AttributeError as exc:
+            # Ловим ошибку связи базы данных
+            if type(exc).__name__ == 'RelatedObjectDoesNotExist':
+                request = self._get_request()
+                user = getattr(request, 'user', None)
+
+                if user and not user.is_anonymous:
+                    attrs['user'] = user
+                    return attrs
+            raise exc
+        except RequestException as exc:
+            # Перехватываем любые сетевые таймауты сторонних соцсетей
+            # и превращаем их в чистую ошибку 400 DRF
+            raise ValidationError(
+                {
+                    'non_field_errors': [
+                        'Внешний сервис авторизации временно недоступен. '
+                        'Пожалуйста, попробуйте позже.',
+                    ],
+                },
+            ) from exc
+        except Exception as exc:
+            raise exc
+
+        return attrs
 
 
 class CustomLoginSerializer(LoginSerializer):
