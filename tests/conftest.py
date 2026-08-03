@@ -1,12 +1,15 @@
 import datetime
+import io
 import uuid
 from typing import Any, Generator, Type
 
 import factory
 import pytest
+from PIL import Image
 from allauth.account.models import EmailAddress
 from django.contrib.sites.models import Site
 from django.core.cache import cache
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db.models import Model
 from django.utils import timezone
 from factory.django import DjangoModelFactory
@@ -14,7 +17,8 @@ from pytest_mock import MockerFixture
 from rest_framework.test import APIClient
 
 from config.settings_test import postgres_container, redis_container
-from projects.models import Project, WorkFormat
+from feedback.models import FeedbackForm
+from projects.models import Project, ProjectParticipant, WorkFormat
 from projects.models import Response as ProjectResponse
 from users.models import Skill, Specialization, User, UserLike
 
@@ -141,6 +145,27 @@ class ProjectResponseFactory(factory.django.DjangoModelFactory):
     status_resp = 'pending'
 
 
+class FeedbackFormFactory(factory.django.DjangoModelFactory):
+    """Фабрика для генерации форм обратной связи."""
+
+    class Meta:
+        model = FeedbackForm
+
+    user = factory.SubFactory(UserFactory)
+    status = 'open'  # Стартовый статус до закрытия
+    subject = factory.Sequence(lambda n: f'Subject_{n}')
+
+
+class ProjectParticipantFactory(factory.django.DjangoModelFactory):
+    """Фабрика для генерации записей участников проекта."""
+
+    class Meta:
+        model = ProjectParticipant
+
+    project = factory.SubFactory(ProjectFactory)
+    user = factory.SubFactory(UserFactory)
+
+
 # =============================================================================
 # ГЛОБАЛЬНЫЕ ФИКСТУРЫ PYTEST
 # =============================================================================
@@ -206,3 +231,21 @@ def employer_user() -> Model:
 def _clear_cache_before_each_test() -> None:
     """Гарантированно очищает кэш Redis перед запуском каждого теста."""
     cache.clear()
+
+
+# =============================================================================
+# ФИКСТУРЫ ДЛЯ ДАННЫХ И ФАЙЛОВ
+# =============================================================================
+
+@pytest.fixture
+def test_image_file() -> SimpleUploadedFile:
+    """Генерирует валидный графический файл PNG в оперативной памяти."""
+    file = io.BytesIO()
+    image = Image.new('RGB', (10, 10), color='white')
+    image.save(file, 'png')
+    file.seek(0)
+    return SimpleUploadedFile(
+        name='avatar.png',
+        content=file.read(),
+        content_type='image/png',
+    )
