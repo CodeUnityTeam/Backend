@@ -4,7 +4,7 @@ from typing import Any, Type
 
 from django.core.cache import cache
 from django.db import transaction
-from django.db.models import QuerySet
+from django.db.models import Case, IntegerField, QuerySet, When
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import (
     OpenApiExample,
@@ -49,6 +49,23 @@ from .resp_project_parametres import (
 logger = logging.getLogger(__name__)
 
 
+def _build_response_feed_cache_key(request: Request) -> str:
+    """Сформировать ключ полного упорядоченного списка ID откликов."""
+    pagination_params = {'page', 'limit'}
+    normalized_params = sorted(
+        (key, tuple(values))
+        for key, values in request.query_params.lists()
+        if key not in pagination_params
+    )
+    params_hash = hashlib.sha256(
+        repr(normalized_params).encode('utf-8'),
+    ).hexdigest()
+    return (
+        f'{CACHE_KEY_RESPONSES_PREFIX}:feed:'
+        f'{request.user.pk}:ids:{params_hash}'
+    )
+
+
 @extend_schema_view(
     list=extend_schema(
         tags=['Отклики'],
@@ -88,39 +105,67 @@ class ResponseFeedViewSet(ListModelMixin, GenericViewSet):
         *args: Any,
         **kwargs: Any,
     ) -> DRFResponse:
-        """Лента откликов/приглашений с фильтрацией и пагинацией.
+        """Вернуть страницу ленты из кэшированного списка ID откликов."""
+        cache_key = _build_response_feed_cache_key(request)
+        cached_ids = cache.get(cache_key)
 
-        Ключ: responses:feed:{user_id}:{md5(params)}, TTL 3 мин.
-        """
-        query_params = request.query_params.dict()
-        sorted_params = sorted(query_params.items())
-        params_str = hashlib.md5(str(sorted_params).encode()).hexdigest()
-        cache_key = (
-            f'{CACHE_KEY_RESPONSES_PREFIX}:feed:'
-            f'{request.user.pk}:{params_str}'
-        )
-        cached_response = cache.get(cache_key)
-        if cached_response is not None:
-            logger.debug(
-                'Кэшированный ответ для ленты откликов/приглашений: '
-                'user_id=%s, cache_key=%s.',
-                request.user.pk,
-                cache_key,
-            )
-            return DRFResponse(cached_response)
-        response = super().list(request, *args, **kwargs)
-        if response.status_code == status.HTTP_200_OK:
+        if cached_ids is None:
+            filtered_queryset = self.filter_queryset(self.get_queryset())
+            ordered_ids = [
+                str(response_id)
+                for response_id in filtered_queryset.values_list(
+                    'response_id',
+                    flat=True,
+                )
+            ]
             cache.set(
                 cache_key,
-                response.data,
+                ordered_ids,
                 timeout=RESPONSE_FEED_CACHE_TIMEOUT,
             )
             logger.debug(
-                'Кэширование ленты откликов/приглашений, передача '
-                'пользователю: user_id=%s.',
-                request.user.user_id,
+                'Cache MISS ленты откликов: user_id=%s, cache_key=%s, '
+                'total_ids=%d.',
+                request.user.pk,
+                cache_key,
+                len(ordered_ids),
             )
-        return response
+        else:
+            ordered_ids = cached_ids
+            logger.debug(
+                'Cache HIT ленты откликов: user_id=%s, cache_key=%s, '
+                'total_ids=%d.',
+                request.user.pk,
+                cache_key,
+                len(ordered_ids),
+            )
+
+        page_ids = self.paginate_queryset(ordered_ids)
+        if not page_ids:
+            return self.get_paginated_response([])
+
+        preserved_order = Case(
+            *[
+                When(response_id=response_id, then=position)
+                for position, response_id in enumerate(page_ids)
+            ],
+            output_field=IntegerField(),
+        )
+        page_queryset = (
+            self.get_queryset()
+            .filter(response_id__in=page_ids)
+            .order_by(preserved_order)
+        )
+        serializer = self.get_serializer(page_queryset, many=True)
+        logger.debug(
+            'Лента откликов сформирована: cache_status=%s, page=%d, '
+            'page_size=%d, total_ids=%d.',
+            'HIT' if cached_ids is not None else 'MISS',
+            self.paginator.page.number,
+            len(page_ids),
+            len(ordered_ids),
+        )
+        return self.get_paginated_response(serializer.data)
 
 
 class ProjectResponseViewSet(GenericViewSet):

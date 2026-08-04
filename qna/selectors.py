@@ -34,7 +34,7 @@ def get_question_list_queryset() -> QuerySet[Question]:
         'likes',
     ).annotate(
         likes_count=Count('likes', distinct=True),
-        answers_count=Count('answers'),
+        answers_count=Count('answers', distinct=True),
         author_name=Case(
             When(
                 is_anonymous=True,
@@ -61,7 +61,11 @@ def get_question_detail_queryset() -> QuerySet[Question]:
             'answers',
             queryset=Answer.objects.select_related(
                 'user',
-            ).prefetch_related('images', 'likes').filter(is_active=True),
+            ).prefetch_related('images', 'likes').filter(
+                is_active=True,
+            ).annotate(
+                likes_count=Count('likes', distinct=True),
+            ),
         ),
         'likes',
         'images',
@@ -98,10 +102,13 @@ def get_answer_detail_queryset() -> QuerySet[Answer]:
 
     - select_related: user, question
     - prefetch_related: likes, images
+    - annotate: likes_count
     """
     return Answer.objects.select_related(
         'user', 'question',
-    ).prefetch_related('likes', 'images')
+    ).prefetch_related('likes', 'images').annotate(
+        likes_count=Count('likes', distinct=True),
+    )
 
 
 def get_all_skills() -> QuerySet[Skill]:

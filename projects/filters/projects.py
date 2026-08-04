@@ -129,7 +129,7 @@ class ProjectFilter(django_filters.FilterSet):
     # Фильтр по статусу
     status = django_filters.BaseInFilter(field_name='status_project')
     # Показывает мои проекты, но с условием!
-    my_project = django_filters.BooleanFilter(method='filter_my_project')
+    my_project = django_filters.CharFilter(method='filter_my_project')
     # Показать избранные проекты
     favourites = django_filters.BooleanFilter(method='filter_favourites')
     # Сортировка
@@ -239,8 +239,21 @@ class ProjectFilter(django_filters.FilterSet):
         - Работник (worker): возвращаются проекты, где он участник,
           со статусом published или recruiting_closed.
         - Админам и суперюзеру видно всё.
+
+        Параметр my_project:
+        - Не передан → все проекты
+        - 'false' → все проекты
+        - 'true' → фильтрация по пользователю
+        - Любое другое значение → 400 Bad Request
         """
-        if not value or value == 'false':
+        if not value:
+            return queryset
+        if value.lower() not in ('true', 'false'):
+            raise serializers.ValidationError(
+                f"Недопустимое значение для параметра 'my_project': "
+                f"'{value}'. Допустимые значения: True, False.",
+            )
+        if value.lower() == 'false':
             return queryset
         user = self.request.user
         if not user.is_authenticated:
