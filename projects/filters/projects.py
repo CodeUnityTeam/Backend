@@ -234,13 +234,13 @@ class ProjectFilter(django_filters.FilterSet):
         """Валидирует булевый query-параметр и возвращает его значение.
 
         Возвращает:
-            None — параметр не передан или равен 'false'
-                   (фильтрация не требуется);
+            None — параметр не передан;
             True — параметр равен 'true';
-            False — параметр равен 'false'.
+            False — параметр равен 'false' (фильтрация не требуется).
 
-        Для любого другого значения бросает ValidationError (400),
-        для неаутентифицированного пользователя — NotAuthenticated (401).
+        Для любого другого значения бросает ValidationError (400).
+        NotAuthenticated (401) бросается только для значения 'true'
+        у неаутентифицированного пользователя.
         """
         if not value:
             return None
@@ -250,9 +250,11 @@ class ProjectFilter(django_filters.FilterSet):
                 f'Недопустимое значение для параметра "{param_name}": '
                 f'"{value}". Допустимые значения: True, False.',
             )
+        if normalized == 'false':
+            return False
         if not self.request.user.is_authenticated:
             raise NotAuthenticated()
-        return normalized == 'true'
+        return True
 
     def filter_my_project(
         self,
