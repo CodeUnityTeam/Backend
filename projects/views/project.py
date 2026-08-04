@@ -30,11 +30,13 @@ from core.constants.cache import (
     PROJECT_LIST_CACHE_TIMEOUT,
     PROJECT_RECOMMENDATIONS_CACHE_TIMEOUT,
 )
+from core.constants.projects import BLOCKED
 from projects.filters import ProjectFilter
 from projects.models import Project, ProjectLike
 from projects.paginations import CustomProjectPagination
 from projects.permissions import IsEmployer, IsWorker
 from projects.selectors import (
+    exclude_archived_blocked,
     get_optimized_project_queryset,
     get_recommended_projects_queryset,
     get_visible_projects_for_list,
@@ -303,6 +305,10 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
             return qs
         if self.action == 'retrieve':
             return get_visible_projects_for_retrieve(qs, user)
+        if self.action == 'partial_update':
+            return exclude_archived_blocked(qs)
+        if self.action == 'destroy':
+            return qs.exclude(status_project=BLOCKED)
         return qs
 
     def get_permissions(self) -> BasePermission:
