@@ -15,7 +15,7 @@ from django.db.models import (
 )
 from django.db.models.expressions import ExpressionWrapper
 from rest_framework import serializers
-
+from rest_framework.exceptions import NotAuthenticated
 from core.constants.projects import (
     ARCHIVED,
     BLOCKED,
@@ -131,7 +131,7 @@ class ProjectFilter(django_filters.FilterSet):
     # Показывает мои проекты, но с условием!
     my_project = django_filters.CharFilter(method='filter_my_project')
     # Показать избранные проекты
-    favourites = django_filters.BooleanFilter(method='filter_favourites')
+    favourites = django_filters.CharFilter(method='filter_favourites')
     # Сортировка
     sort_by = ProjectOrderingFilter(
         fields=(
@@ -226,6 +226,34 @@ class ProjectFilter(django_filters.FilterSet):
             duration__lte=max_delta,
         )
 
+    def _parse_boolean_param(
+        self,
+        param_name: str,
+        value: str | None,
+    ) -> bool | None:
+        """Валидирует булевый query-параметр и возвращает его значение.
+
+        Возвращает:
+            None — параметр не передан или равен 'false'
+                   (фильтрация не требуется);
+            True — параметр равен 'true';
+            False — параметр равен 'false'.
+
+        Для любого другого значения бросает ValidationError (400),
+        для неаутентифицированного пользователя — NotAuthenticated (401).
+        """
+        if not value:
+            return None
+        normalized = value.lower()
+        if normalized not in ('true', 'false'):
+            raise serializers.ValidationError(
+                f'Недопустимое значение для параметра "{param_name}": '
+                f'"{value}". Допустимые значения: True, False.',
+            )
+        if not self.request.user.is_authenticated:
+            raise NotAuthenticated()
+        return normalized == 'true'
+
     def filter_my_project(
         self,
         queryset: QuerySet[Project],
@@ -246,21 +274,13 @@ class ProjectFilter(django_filters.FilterSet):
         - 'true' → фильтрация по пользователю
         - Любое другое значение → 400 Bad Request
         """
-        if not value:
-            return queryset
-        if value.lower() not in ('true', 'false'):
-            raise serializers.ValidationError(
-                f"Недопустимое значение для параметра 'my_project': "
-                f"'{value}'. Допустимые значения: True, False.",
-            )
-        if value.lower() == 'false':
+        if not self._parse_boolean_param('my_project', value):
             return queryset
         user = self.request.user
-        if not user.is_authenticated:
-            return queryset.none()
-        if (user.is_superuser or
-            user.is_staff or
-            user.role == User.RoleChoices.ADMIN
+        if (
+            user.is_superuser
+            or user.is_staff
+            or user.role == User.RoleChoices.ADMIN
         ):
             return queryset
         if user.projects_relation == User.ProjectsRelationChoices.EMPLOYER:
@@ -286,12 +306,16 @@ class ProjectFilter(django_filters.FilterSet):
 
         Доступ только для worker.
         Анониму вернутся пустой queryset.
+
+        Параметр favourites:
+        - Не передан → все проекты
+        - 'false' → все проекты
+        - 'true' → фильтрация по избранному
+        - Любое другое значение → 400 Bad Request
         """
-        if not value or value == 'false':
+        if not self._parse_boolean_param('favourites', value):
             return queryset
         user = self.request.user
-        if not user.is_authenticated:
-            return queryset.none()
         return queryset.filter(
             Exists(
                 ProjectFavorite.objects.filter(
