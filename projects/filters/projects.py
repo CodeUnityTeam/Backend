@@ -16,6 +16,7 @@ from django.db.models import (
 from django.db.models.expressions import ExpressionWrapper
 from rest_framework import serializers
 from rest_framework.exceptions import NotAuthenticated
+
 from core.constants.projects import (
     ARCHIVED,
     BLOCKED,
