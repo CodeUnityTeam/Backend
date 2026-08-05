@@ -18,6 +18,12 @@ from rest_framework_simplejwt.views import (
     TokenVerifyView,
 )
 
+from core.throttling import (
+    LoginRateThrottle,
+    PasswordChangeRateThrottle,
+    PasswordResetRateThrottle,
+    RegisterRateThrottle,
+)
 from users.views.auth import (
     EmailChangeView,
     GoogleAuthUrlView,
@@ -105,7 +111,9 @@ urlpatterns = (
                     tags=['auth'],
                     summary='Вход в систему (Авторизация)',
                     description=LOGIN_DESCRIPTION,
-                )(LoginView).as_view(),
+                )(LoginView).as_view(
+                    throttle_classes=[LoginRateThrottle],
+                ),
                 name='rest_login',
             ),
             path(
@@ -141,7 +149,9 @@ urlpatterns = (
                     tags=['auth'],
                     summary='Смена пароля',
                     description=CHANGE_DESCRIPTION,
-                )(PasswordChangeView).as_view(),
+                )(PasswordChangeView).as_view(
+                    throttle_classes=[PasswordChangeRateThrottle],
+                ),
                 name='rest_password_change',
             ),
             path(
@@ -150,7 +160,9 @@ urlpatterns = (
                     tags=['auth'],
                     summary='Запрос на сброс пароля',
                     description=RESET_DESCRIPTION,
-                )(PasswordResetView).as_view(),
+                )(PasswordResetView).as_view(
+                    throttle_classes=[PasswordResetRateThrottle],
+                ),
                 name='rest_password_reset',
             ),
             path(
@@ -171,7 +183,9 @@ urlpatterns = (
                             tags=['auth'],
                             summary='Регистрация нового пользователя',
                             description=REGISTER_DESCRIPTION,
-                        )(RegisterView).as_view(),
+                        )(RegisterView).as_view(
+                            throttle_classes=[RegisterRateThrottle],
+                        ),
                         name='rest_register',
                     ),
                     path(

@@ -50,6 +50,8 @@ sudo docker compose -f docker-compose.dev.yaml exec \
 * [Наполнение БД](docs/add_tags.md)
 * [Docker](docs/docker.md)
 * [Admin-панель](docs/admin.md)
+* [Безопасность/Троттлинг](docs/security.md)
+
 ### Разделы
 * [👤 Пользователи и профили](docs/users.md)
 * [📁 Проекты](docs/projects.md)

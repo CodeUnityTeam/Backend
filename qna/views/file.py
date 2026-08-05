@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from core.s3_utils import MediaType, S3Service
+from core.throttling import UploadFileRateThrottle
 from qna.serializers.file import (
     FileUploadResponseSerializer,
     FileUploadSerializer,
@@ -38,6 +39,7 @@ class FileUploadView(APIView):
     """API view для загрузки изображений в MinIO."""
 
     parser_classes: list[type[MultiPartParser]] = [MultiPartParser]
+    throttle_classes = [UploadFileRateThrottle]
 
     def post(
         self,

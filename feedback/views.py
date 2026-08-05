@@ -11,6 +11,7 @@ from rest_framework.permissions import (
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from core.throttling import FeedbackRateThrottle
 from feedback.permissions import CanEditDeleteReview
 from feedback.selectors import get_reviews_queryset
 from feedback.serializers import (
@@ -170,6 +171,7 @@ class FeedbackViewSet(viewsets.ModelViewSet):
 
     permission_classes = (IsAuthenticated,)
     http_method_names = ('post',)
+    throttle_classes = [FeedbackRateThrottle]
 
     @extend_schema(
         request=FeedbackCreateSerializer,

@@ -110,6 +110,14 @@ DATABASES = {
         'NAME': os.getenv('POSTGRES_DB'),
         'USER': os.getenv('POSTGRES_USER'),
         'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+        'CONN_MAX_AGE': 30,  # время жизни соединения с БД (в секундах)
+        'OPTIONS': {
+            # Таймаут подключения к БД в секундах
+            'connect_timeout': 10,
+            # Запрещает выполнение любого SQL-запроса дольше 30 секунд
+            'options': '-c statement_timeout=30000',
+        },
+
         'HOST': DB_HOST,
         'PORT': os.getenv('DB_PORT'),
     },
@@ -183,6 +191,14 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # =============================================================================
 # SECURITY, CORS & AUTH MODEL
 # =============================================================================
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True  # перенаправляем HTTP‑запросы на HTTPS
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE = True  # сессионные cookie только по HTTPS
+    CSRF_COOKIE_SECURE = True  # CSRF‑cookie только по HTTPS
+    # Ходим на домен только по HTTPS 1 год (только на проде):
+    # SECURE_HSTS_SECONDS = 31536000
+
 
 AUTH_USER_MODEL = 'users.User'
 SITE_ID = 1
@@ -233,6 +249,21 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'EXCEPTION_HANDLER': 'core.exceptions.custom_exception_handler',
+    'DEFAULT_THROTTLE_CLASSES': [
+        'core.throttling.UniversalRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon_default': '50/min',           # Общий лимит для анонимов
+        'user_default': '300/min',          # Общий лимит для юзеров
+        'anon_login': '5/min',              # login — анонимы
+        'user_login': '5/min',              # login — авторизованные
+        'anon_register': '5/hour',          # register — анонимы
+        'user_register': '5/hour',          # register — авторизованные
+        'user_password_reset': '10/hour',   # восстановление пароля — юзеры
+        'user_password_change': '10/hour',  # смена пароля — юзеры
+        'user_upload': '50/min',            # upload — юзеры
+        'user_feedback': '10/min',          # feedback — юзеры
+    },
 }
 
 # =============================================================================
@@ -245,8 +276,8 @@ REST_AUTH = {
     'USER_ID_FIELD': 'user_id',
     'JWT_AUTH_COOKIE': 'access-token',
     'JWT_AUTH_REFRESH_COOKIE': 'refresh-token',
-    'JWT_AUTH_HTTPONLY': False,
-    'JWT_AUTH_SECURE': False,
+    'JWT_AUTH_HTTPONLY': True if not DEBUG else False,
+    'JWT_AUTH_SECURE': True if not DEBUG else False,
     'JWT_AUTH_SAMESITE': 'Lax',
     'JWT_AUTH_RETURN_EXPIRATION': True,
     'OLD_PASSWORD_FIELD_ENABLED': True,
