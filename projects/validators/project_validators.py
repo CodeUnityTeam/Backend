@@ -42,7 +42,13 @@ class StrictCharField(serializers.CharField):
         'invalid': 'Значение должно быть строкой.',
     }
 
-    def to_internal_value(self, data):
+    def to_internal_value(self, data: object) -> str:
+        """Преобразует и валидирует входное значение.
+
+        Принимает только строки. Если значение не является строкой
+        (кроме None, которое передаётся в базовую реализацию), возвращается
+        ошибка валидации.
+        """
         if data is None:
             return super().to_internal_value(data)
         if not isinstance(data, str):
