@@ -589,7 +589,11 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
             full_data['project_format'] = [
                 str(f.format_id) for f in project.project_format.all()
             ]
-        return validate_project_data(full_data, user)
+        return validate_project_data(
+            full_data,
+            user,
+            exclude_project_id=str(project.project_id),
+        )
 
     def _run_update_validation_scenarios(
         self,
