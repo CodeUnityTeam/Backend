@@ -77,8 +77,8 @@ def validate_can_invite(
     try:
         invitee = User.objects.get(user_id=invitee_id)
     except User.DoesNotExist:
-        raise serializers.ValidationError(
-            {'user_id': 'Пользователь с таким ID не найден.'},
+        raise exceptions.NotFound(
+            'Пользователь с таким ID не найден.',
         )
     if project.author == invitee:
         raise serializers.ValidationError(
