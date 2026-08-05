@@ -1,19 +1,23 @@
 from datetime import timedelta
-from typing import Any
+from typing import Any, List
 
 import django_filters
 from django.contrib.auth import get_user_model
-from django.contrib.postgres.search import SearchRank, SearchVector
 from django.db.models import (
+    Case,
     Count,
     DurationField,
     Exists,
     F,
+    IntegerField,
     OuterRef,
     Q,
     QuerySet,
+    Value,
+    When,
 )
 from django.db.models.expressions import ExpressionWrapper
+from django.db.models.functions import Coalesce
 from rest_framework import serializers
 from rest_framework.exceptions import NotAuthenticated
 
@@ -46,45 +50,78 @@ class ProjectOrderingFilter(django_filters.OrderingFilter):
 
     ordering_param = 'sort_by'
 
-    def filter(self, qs: QuerySet, value: Any) -> QuerySet:
+    def filter(self, queryset: QuerySet, value: Any) -> QuerySet:
         """Применяет сортировку с поддержкой кастомных аннотаций."""
         if not value:
-            return qs.order_by('-published_at')
+            return queryset.order_by('-published_at')
 
-        # Определяем, какие сортировки запрошены
-        ordering = []
-        for param in value:
-            desc = param.startswith('-')
-            field_name = param.lstrip('-')
+        ordering: List[str] = []
+        param_list: List[str] = [str(param) for param in value]
 
-            if field_name == 'like':
-                # Аннотация likes_count уже добавлена в
-                # get_optimized_project_queryset. Если её нет
-                # (например, при прямом использовании фильтра без селектора),
-                # добавляем.
-                if 'likes_count' not in qs.query.annotations:
-                    qs = qs.annotate(likes_count=Count('likes'))
-                ordering.append('-likes_count' if desc else 'likes_count')
+        for param in param_list:
+            desc: bool = param.startswith('-')
+            field_name: str = param.lstrip('-')
+
+            if field_name == 'published_at':
+                ordering.append(
+                    'published_at' if desc else '-published_at',
+                )
+
+            elif field_name == 'like':
+                if 'likes_count' not in queryset.query.annotations:
+                    queryset = queryset.annotate(
+                        likes_count=Coalesce(
+                            Count('likes'),
+                            Value(0),
+                        ),
+                    )
+                ordering.append(
+                    'likes_count' if desc else '-likes_count',
+                )
+
             elif field_name == 'relevance':
-                search_query = self.parent.request.GET.get('search', '')
-                if search_query:
-                    search_vector = SearchVector(
-                        'title', weight='A',
-                    ) + SearchVector(
-                        'short_desc', weight='B',
+                request_object: Any = self.parent.request
+                search_query: str = str(
+                    request_object.GET.get('search', ''),
+                )
+
+                if len(search_query) > 0:
+                    relevance_weight: Case = Case(
+                        When(
+                            title__iexact=search_query,
+                            then=Value(4),
+                        ),
+                        When(
+                            title__istartswith=search_query,
+                            then=Value(3),
+                        ),
+                        When(
+                            title__icontains=search_query,
+                            then=Value(2),
+                        ),
+                        When(
+                            Q(short_desc__icontains=search_query)
+                            | Q(full_desc__icontains=search_query),
+                            then=Value(1),
+                        ),
+                        default=Value(0),
+                        output_field=IntegerField(),
                     )
-                    qs = qs.annotate(
-                        search=search_vector,
-                        rank=SearchRank(search_vector, search_query),
+                    queryset = queryset.annotate(
+                        relevance_score=relevance_weight,
                     )
-                    ordering.append('-rank' if desc else 'rank')
+                    ordering.extend(
+                        ['-relevance_score', '-published_at'],
+                    )
                 else:
-                    suffix = 'published_at'
-                    ordering.append(f'-{suffix}' if desc else suffix)
+                    ordering.append(
+                        'published_at' if desc else '-published_at',
+                    )
             else:
                 ordering.append(param)
 
-        return qs.order_by(*ordering)
+        ordering.append('-project_id')
+        return queryset.order_by(*ordering)
 
 
 class ProjectFilter(django_filters.FilterSet):
