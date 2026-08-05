@@ -53,7 +53,9 @@ STATUS_RESPONSE_PROJECT = (
 MAX_LEN_INITIATOR_TYPE = 20
 MAX_LEN_STATUS_RESPONSE = 20
 
+# Минимальное количество дней для фильтрации проектов
 MIN_FILTER_DAYS = 7
+# Максимальное количество дней для фильтрации проектов
 MAX_FILTER_DAYS = 365
 
 

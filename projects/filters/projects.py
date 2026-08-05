@@ -27,6 +27,7 @@ from core.constants.projects import (
 )
 from core.filters import UUIDInFilter
 from projects.models import Project, ProjectFavorite
+from projects.validators import validate_duration_project
 
 User = get_user_model()
 
@@ -187,26 +188,32 @@ class ProjectFilter(django_filters.FilterSet):
             greater — duration >= duration_min
             between — duration_min <= duration <= duration_max
         """
-        duration_min = self.request.GET.get('duration_min')
-        duration_max = self.request.GET.get('duration_max')
+        duration_min_str = self.request.GET.get('duration_min')
+        duration_max_str = self.request.GET.get('duration_max')
         operator = self.request.GET.get(
             'duration_operator', 'between',
         )
-        if not duration_min and not duration_max:
+        if not duration_min_str and not duration_max_str:
             return queryset
-        # Валидация входных данных
         try:
-            min_days = (
-                int(duration_min) if duration_min else MIN_FILTER_DAYS
+            duration_min = (
+                int(duration_min_str) if duration_min_str else None
             )
-            max_days = (
-                int(duration_max) if duration_max else MAX_FILTER_DAYS
+            duration_max = (
+                int(duration_max_str) if duration_max_str else None
             )
         except (ValueError, TypeError):
             raise serializers.ValidationError(
                 'Параметры duration_min и duration_max '
                 'должны быть целыми числами.',
             )
+        validate_duration_project(duration_min, duration_max)
+        min_days = (
+            duration_min if duration_min is not None else MIN_FILTER_DAYS
+        )
+        max_days = (
+            duration_max if duration_max is not None else MAX_FILTER_DAYS
+        )
         # Конвертируем дни в timedelta для сравнения interval с interval
         min_delta = timedelta(days=min_days)
         max_delta = timedelta(days=max_days)

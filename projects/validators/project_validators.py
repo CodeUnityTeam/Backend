@@ -11,6 +11,7 @@ from core.constants.projects import (
     ARCHIVED,
     BLOCKED,
     DRAFT,
+    MAX_FILTER_DAYS,
     MAX_LEN_FULL_DESC,
     MAX_LEN_LOCATION,
     MAX_LEN_TELEGRAM,
@@ -18,6 +19,7 @@ from core.constants.projects import (
     MAX_PROJECTS_PER_AUTHOR,
     MAX_SHORT_DESC,
     MAX_SKILLS_COUNT,
+    MIN_FILTER_DAYS,
     MIN_LEN_TITLE,
     MIN_SHORT_DESC,
     PUBLISHED,
@@ -254,6 +256,24 @@ def validate_published_project_dates(
                 'даты начала проекта.'
             ),
         })
+
+
+def validate_duration_project(
+    duration_min: int | None,
+    duration_max: int | None,
+) -> None:
+    """Валидация продолжительности дней в фильтре для списка проектов."""
+    for value in (duration_min, duration_max):
+        if value is None:
+            continue
+        if (
+            not isinstance(value, int)
+            or not MIN_FILTER_DAYS <= value <= MAX_FILTER_DAYS
+        ):
+            raise serializers.ValidationError(
+                'Параметры duration_min и duration_max должны быть целыми '
+                f'числами от {MIN_FILTER_DAYS} до {MAX_FILTER_DAYS}.',
+            )
 
 
 def validate_project_count_per_author(user: User) -> None:
