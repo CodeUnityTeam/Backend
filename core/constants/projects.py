@@ -56,6 +56,9 @@ MAX_LEN_STATUS_RESPONSE = 20
 MIN_FILTER_DAYS = 7
 MAX_FILTER_DAYS = 365
 
+# Максимальная длина поискового запроса
+MAX_SEARCH_LENGTH = 100
+
 
 PAGE_SIZE = 20
 MAX_PAGE_SIZE = 100
