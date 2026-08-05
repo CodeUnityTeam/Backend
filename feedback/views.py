@@ -1,8 +1,6 @@
-import hashlib
 import logging
 from typing import Any
 
-from django.core.cache import cache
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import serializers, status, viewsets
 from rest_framework.permissions import (
@@ -13,12 +11,6 @@ from rest_framework.permissions import (
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from core.cache_mixins import CacheRetrieveMixin
-from core.constants.cache import (
-    CACHE_KEY_REVIEWS_PREFIX,
-    REVIEW_DETAIL_CACHE_TIMEOUT,
-    REVIEW_LIST_CACHE_TIMEOUT,
-)
 from core.throttling import FeedbackRateThrottle
 from feedback.permissions import CanEditDeleteReview
 from feedback.selectors import get_reviews_queryset
@@ -60,13 +52,11 @@ logger = logging.getLogger(__name__)
         description='Удаляет отзыв (только автор).',
     ),
 )
-class ReviewViewSet(CacheRetrieveMixin, viewsets.ModelViewSet):
+class ReviewViewSet(viewsets.ModelViewSet):
     """Представление для отзывов."""
 
     queryset = get_reviews_queryset()
     http_method_names = ('get', 'post', 'patch', 'delete')
-    retrieve_cache_timeout = REVIEW_DETAIL_CACHE_TIMEOUT
-    retrieve_cache_key_prefix = CACHE_KEY_REVIEWS_PREFIX
 
     def get_permissions(self) -> BasePermission:
         """Назначает разные права для разных действий.
@@ -90,48 +80,6 @@ class ReviewViewSet(CacheRetrieveMixin, viewsets.ModelViewSet):
         if self.action == 'partial_update':
             return ReviewUpdateSerializer
         return ReviewCreateSerializer
-
-    def list(
-        self,
-        request: Request,
-        *args: Any,
-        **kwargs: Any,
-    ) -> Response:
-        """Кэширует список отзывов.
-
-        Ключ: reviews:list:{md5(params)} — без user_id, т.к. данные публичные
-        (ReviewListSerializer не содержит персонализированных полей).
-        """
-        query_params = request.query_params.dict()
-        sorted_params = sorted(query_params.items())
-        params_str = hashlib.md5(
-            str(sorted_params).encode(),
-        ).hexdigest()
-        cache_key = f'{CACHE_KEY_REVIEWS_PREFIX}:list:{params_str}'
-        cached_response = cache.get(cache_key)
-        logger.info(
-            'Запрос списка отзывов: cache_key=%s',
-            cache_key,
-        )
-        if cached_response is not None:
-            logger.info(
-                'Передача списка отзывов из кеша: cache_key=%s',
-                cache_key,
-            )
-            return Response(cached_response)
-        response = super().list(request, *args, **kwargs)
-        if response.status_code == 200:
-            cache.set(
-                cache_key,
-                response.data,
-                timeout=REVIEW_LIST_CACHE_TIMEOUT,
-            )
-            logger.info(
-                'Кэширование списка отзывов, передача пользователю: '
-                'cache_key=%s',
-                cache_key,
-            )
-        return response
 
     @extend_schema(
         request=ReviewCreateSerializer,

@@ -31,6 +31,7 @@ from users.views.auth import (
     MailRuAuthUrlView,
     MailRuLogin,
     YandexAuthUrlView,
+    # YandexCallbackView,
     YandexLogin,
 )
 from users.views.profile import (
@@ -217,23 +218,28 @@ urlpatterns = (
                 YandexAuthUrlView.as_view(),
                 name='yandex_auth_url',
             ),
+            # path(
+            #     'yandex/callback/',
+            #     YandexCallbackView.as_view(),
+            #     name='yandex_callback',
+            # ),
             path(
                 'mailru/url/',
                 MailRuAuthUrlView.as_view(),
                 name='mailru_auth_url',
             ),
             path(
-                'google/',
+                'google/callback',
                 GoogleLogin.as_view(),
                 name='google_login',
             ),
             path(
-                'yandex/',
+                'yandex/callback',
                 YandexLogin.as_view(),
                 name='yandex_login',
             ),
             path(
-                'mailru/',
+                'mailru/callback',
                 MailRuLogin.as_view(),
                 name='mailru_login',
             ),

@@ -99,6 +99,11 @@ class User(TimestampMixin, AbstractUser):
         default=False,
         help_text='Пользователь согласился с условиями использования.',
     )
+    onboarding_completed = models.BooleanField(
+        'Онбординг завершен',
+        default=False,
+        help_text='Пользователь заполнил форму знакомства.',
+    )
     first_name = models.CharField(
         'Имя',
         max_length=USER_FIRST_NAME_LENGTH,

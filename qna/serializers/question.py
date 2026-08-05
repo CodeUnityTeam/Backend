@@ -3,10 +3,12 @@ from django.db.models import QuerySet
 from rest_framework import serializers
 
 from core.constants.qna import (
+    MAX_IMAGES_COUNT,
     MAX_TITLE_QUESTION,
     MIN_DESC_QUESTION,
     MIN_TITLE_QUESTION,
 )
+from core.validators import validate_no_bad_words
 from qna.models import Question
 from qna.selectors import (
     create_question,
@@ -61,9 +63,11 @@ class QuestionCreateSerializer(serializers.ModelSerializer):
     title = serializers.CharField(
         min_length=MIN_TITLE_QUESTION,
         max_length=MAX_TITLE_QUESTION,
+        validators=[validate_no_bad_words],
     )
     description = serializers.CharField(
         min_length=MIN_DESC_QUESTION,
+        validators=[validate_no_bad_words],
     )
 
     class Meta:
@@ -75,6 +79,20 @@ class QuestionCreateSerializer(serializers.ModelSerializer):
             'is_anonymous',
             'images',
         )
+
+    def to_internal_value(self, data: dict) -> dict:
+        """Проверяет количество изображений до валидации каждого элемента."""
+        images = data.get('images')
+        if images is not None and len(images) > MAX_IMAGES_COUNT:
+            raise serializers.ValidationError(
+                {
+                    'images': (
+                        f'Можно прикрепить не более '
+                        f'{MAX_IMAGES_COUNT} изображений.'
+                    ),
+                },
+            )
+        return super().to_internal_value(data)
 
     def create(self, validated_data: dict) -> Question:
         """Создание вопроса."""
@@ -228,7 +246,17 @@ class QuestionListSerializer(AuthorInfoMixin, serializers.ModelSerializer):
         return obj.user.avatar_url
 
     def get_is_liked_by_me(self, obj: Question) -> bool:
-        """Проверяет, поставил ли текущий пользователь лайк этому вопросу."""
+        """Проверяет, поставил ли текущий пользователь лайк этому вопросу.
+
+        Использует prefetch_related('likes') для избежания дополнительных
+        запросов к БД.
+        """
+        request = self.context.get('request')
+        if request is None or not hasattr(request, 'user'):
+            return False
+        if request.user.is_anonymous:
+            return False
+        return any(like.user_id == request.user.pk for like in obj.likes.all())
 
 
 class QuestionDetailSerializer(AuthorInfoMixin, serializers.ModelSerializer):

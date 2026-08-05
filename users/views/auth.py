@@ -1,6 +1,7 @@
 import logging
+import os
 from typing import Any
-from urllib.parse import unquote, urlencode
+from urllib.parse import unquote, urlencode, urljoin
 
 from allauth.socialaccount.adapter import get_adapter
 from allauth.socialaccount.models import SocialApp
@@ -13,7 +14,7 @@ from allauth.socialaccount.providers.oauth2.views import OAuth2View
 from allauth.socialaccount.providers.yandex.views import YandexOAuth2Adapter
 from dj_rest_auth.registration.views import SocialLoginView
 from django.contrib.auth import get_user_model
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponseRedirect
 from drf_spectacular.utils import (
     OpenApiExample,
     extend_schema,
@@ -27,49 +28,20 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from config.settings import SOCIALACCOUNT_PROVIDERS
+from users.schemas import (
+    SOCIAL_LOGIN_ERROR_SCHEMA,
+    SOCIAL_LOGIN_REDIRECT_SCHEMA,
+    SocialAuthQueryParamsSerializer,
+)
 from users.serializers.auth import (
     EmailChangeSerializer,
-    SocialAuthCodeRequestSerializer,
+    SafeSocialLoginSerializer,
     SocialAuthUrlResponseSerializer,
 )
-from users.serializers.profile import MeProfileRetrieveSerializer
 
 UserModel = get_user_model()
 
 logger = logging.getLogger(__name__)
-
-
-SOCIAL_LOGIN_SUCCESS_SERIALIZER: serializers.Serializer = inline_serializer(
-    name='SocialLoginSuccessResponse',
-    fields={
-        'access': serializers.CharField(
-            help_text='JWT access токен для аутентификации запросов.',
-        ),
-        'refresh': serializers.CharField(
-            help_text='JWT refresh токен для обновления access токена.',
-        ),
-        'user': MeProfileRetrieveSerializer(),
-        'access_expiration': serializers.DateTimeField(
-            help_text='Дата и время истечения access токена.',
-        ),
-        'refresh_expiration': serializers.DateTimeField(
-            help_text='Дата и время истечения refresh токена.',
-        ),
-    },
-)
-
-SOCIAL_LOGIN_ERROR_SERIALIZER: serializers.Serializer = inline_serializer(
-    name='SocialLoginErrorResponse',
-    fields={
-        'non_field_errors': serializers.ListField(
-            child=serializers.CharField(),
-            default=[
-                'Не удалось авторизоваться через социальную сеть. '
-                'Неверный или истекший code.',
-            ],
-        ),
-    },
-)
 
 
 class SocialAuthUrlView(APIView):
@@ -132,46 +104,6 @@ class SocialAuthUrlView(APIView):
         )
 
 
-class SocialLogin(SocialLoginView):
-    """Базовый View для обработки запросов авторизации.
-
-    Обрабатывает запросы авторизации через сторонние приложения.
-    """
-
-    client_class = OAuth2Client
-
-    def post(
-        self,
-        request: HttpRequest,
-        *args: any,
-        **kwargs: any,
-    ) -> Response:
-        """Перехватывает запрос и очищает URL-кодированный code."""
-        provider_name: str = self.adapter_class.__name__.replace(
-            'OAuth2Adapter',
-            '',
-        )
-
-        logger.info(
-            'Запрос на авторизацию через %s аккаунт',
-            provider_name,
-        )
-
-        if request.data and 'code' in request.data:
-            raw_code: str = request.data.get('code', '')
-            request.data['code'] = unquote(raw_code)
-
-        response = super().post(request, *args, **kwargs)
-
-        logger.info(
-            'Авторизация через %s аккаунт успешна: user_id=%s',
-            provider_name,
-            request.user.user_id,
-        )
-
-        return response
-
-
 @extend_schema_view(
     get=extend_schema(
         tags=['social_auth'],
@@ -216,61 +148,6 @@ class GoogleAuthUrlView(APIView):
             {'authorization_url': auth_url},
             status=status.HTTP_200_OK,
         )
-
-
-@extend_schema_view(
-    post=extend_schema(
-        tags=['social_auth'],
-        summary='Вход через Google',
-        description=(
-            'Принимает код авторизации от Google и возвращает '
-            'JWT-токены с данными профиля.'
-        ),
-        request=SocialAuthCodeRequestSerializer,
-        responses={
-            200: SOCIAL_LOGIN_SUCCESS_SERIALIZER,
-            400: SOCIAL_LOGIN_ERROR_SERIALIZER,
-        },
-    ),
-)
-class GoogleLogin(SocialLogin):
-    """View для обработки запросов авторизации через Google."""
-
-    adapter_class = GoogleOAuth2Adapter
-    callback_url = SOCIALACCOUNT_PROVIDERS['google']['CALLBACK_URL']
-
-    def post(
-        self,
-        request: HttpRequest,
-        *args: any,
-        **kwargs: any,
-    ) -> Response:
-        """Перехватывает запрос и очищает URL-кодированный code."""
-        code: str | None = request.data.get('code') if request.data else None
-        logger.info(
-            'Запрос на авторизацию через Google. '
-            'code (первые 20 символов): %s',
-            code[:20] if code else None,
-        )
-
-        if code:
-            request.data['code'] = unquote(code)
-            logger.info(
-                'Google: code декодирован из URL-encoding. '
-                'Было: %s..., стало: %s...',
-                code[:20],
-                request.data['code'][:20],
-            )
-
-        response = super().post(request, *args, **kwargs)
-
-        logger.info(
-            'Google: авторизация успешна. user_id=%s, status=%s',
-            request.user.user_id,
-            response.status_code,
-        )
-
-        return response
 
 
 @extend_schema_view(
@@ -326,61 +203,6 @@ class YandexAuthUrlView(APIView):
 
 
 @extend_schema_view(
-    post=extend_schema(
-        tags=['social_auth'],
-        summary='Вход через Yandex',
-        description=(
-            'Принимает код авторизации от Yandex и возвращает '
-            'JWT-токены с данными профиля.'
-        ),
-        request=SocialAuthCodeRequestSerializer,
-        responses={
-            200: SOCIAL_LOGIN_SUCCESS_SERIALIZER,
-            400: SOCIAL_LOGIN_ERROR_SERIALIZER,
-        },
-    ),
-)
-class YandexLogin(SocialLogin):
-    """View для обработки запросов авторизации через Yandex."""
-
-    adapter_class = YandexOAuth2Adapter
-    callback_url = SOCIALACCOUNT_PROVIDERS['yandex']['CALLBACK_URL']
-
-    def post(
-        self,
-        request: HttpRequest,
-        *args: any,
-        **kwargs: any,
-    ) -> Response:
-        """Перехватывает запрос и очищает URL-кодированный code."""
-        code: str | None = request.data.get('code') if request.data else None
-        logger.info(
-            'Запрос на авторизацию через Yandex. '
-            'code (первые 20 символов): %s',
-            code[:20] if code else None,
-        )
-
-        if code:
-            request.data['code'] = unquote(code)
-            logger.info(
-                'Yandex: code декодирован из URL-encoding. '
-                'Было: %s..., стало: %s...',
-                code[:20],
-                request.data['code'][:20],
-            )
-
-        response = super().post(request, *args, **kwargs)
-
-        logger.info(
-            'Yandex: авторизация успешна. user_id=%s, status=%s',
-            request.user.user_id,
-            response.status_code,
-        )
-
-        return response
-
-
-@extend_schema_view(
     get=extend_schema(
         tags=['social_auth'],
         summary='Получить ссылку для авторизации через Mail.ru',
@@ -423,59 +245,184 @@ class MailRuAuthUrlView(APIView):
         )
 
 
+class SocialLogin(SocialLoginView):
+    """Базовый View для обработки запросов авторизации.
+
+    Поддерживает получение кода через GET-запрос и последующий
+    редирект пользователя на фронтенд с токенами в URL.
+    """
+
+    client_class: type[OAuth2Client] = OAuth2Client
+
+    serializer_class: type[
+        SafeSocialLoginSerializer
+    ] = SafeSocialLoginSerializer
+
+    def get(
+        self,
+        request: HttpRequest,
+        *args: Any,
+        **kwargs: Any,
+    ) -> HttpResponseRedirect:
+        """Принимает код от провайдера через GET.
+
+        Обменивает его на JWT и делает редирект.
+        """
+        provider_name: str = self.adapter_class.__name__.replace(
+            'OAuth2Adapter',
+            '',
+        )
+        logger.info(
+            'Получен редирект (GET) от провайдера %s',
+            provider_name,
+        )
+
+        raw_code: str = request.query_params.get('code', '')
+
+        if not hasattr(request, 'data') or request.data is None:
+            request.data = {}
+        request.data['code'] = unquote(raw_code)
+
+        drf_response: Response = self.post(request, *args, **kwargs)
+
+        access_token: str | None = drf_response.data.get('access')
+        refresh_token: str | None = drf_response.data.get('refresh')
+
+        frontend_host: str = os.getenv('HOST_URL', 'http://localhost:3000')
+        if not frontend_host.startswith(('http://', 'https://')):
+            frontend_host = f'https://{frontend_host}'
+        base_frontend_url: str = urljoin(
+            frontend_host,
+            '/auth/callback',
+        )
+
+        query_params: dict[str, str | None] = {
+            'access': access_token,
+            'refresh': refresh_token,
+        }
+        redirect_url: str = (
+            f'{base_frontend_url}?{urlencode(query_params)}'
+        )
+
+        redirect_response = HttpResponseRedirect(redirect_url)
+
+        for (
+            cookie_name,
+            cookie_obj,
+        ) in drf_response.cookies.items():
+            redirect_response.set_cookie(
+                key=cookie_name,
+                value=cookie_obj.value,
+                max_age=cookie_obj.get('max-age'),
+                expires=cookie_obj.get('expires'),
+                path=cookie_obj.get('path', '/'),
+                domain=cookie_obj.get('domain'),
+                secure=cookie_obj.get('secure', True),
+                httponly=cookie_obj.get('httponly', True),
+                samesite=cookie_obj.get('samesite', 'Lax'),
+            )
+
+        logger.info(
+            'Пользователь перенаправлен на фронтенд с токенами',
+        )
+        return redirect_response
+
+    def post(
+        self,
+        request: HttpRequest,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Response:
+        """Стандартный метод обмена кода на JWT."""
+        provider_name: str = self.adapter_class.__name__.replace(
+            'OAuth2Adapter',
+            '',
+        )
+
+        if request.data and 'code' in request.data:
+            raw_code: str = request.data.get('code', '')
+            request.data['code'] = unquote(raw_code)
+
+        # Возвращаем дефолтный вызов, так как сериализатор уже подменен
+        response: Response = super().post(request, *args, **kwargs)
+
+        logger.info(
+            'Авторизация через %s аккаунт успешна',
+            provider_name,
+        )
+        return response
+
+
 @extend_schema_view(
-    post=extend_schema(
+    get=extend_schema(
         tags=['social_auth'],
-        summary='Вход через Mail.ru',
+        summary='Вход через Yandex (Редирект от провайдера)',
         description=(
-            'Принимает код авторизации от Mail.ru и возвращает '
-            'JWT-токены с данными профиля.'
+            'Принимает код авторизации от Yandex в URL-параметрах, '
+            'создает/авторизует пользователя, устанавливает куки '
+            'и редиректит на фронтенд (/auth/callback).'
         ),
-        request=SocialAuthCodeRequestSerializer,
+        parameters=[SocialAuthQueryParamsSerializer],
+        request=None,
         responses={
-            200: SOCIAL_LOGIN_SUCCESS_SERIALIZER,
-            400: SOCIAL_LOGIN_ERROR_SERIALIZER,
+            302: SOCIAL_LOGIN_REDIRECT_SCHEMA,
+            400: SOCIAL_LOGIN_ERROR_SCHEMA,
+        },
+    ),
+)
+class YandexLogin(SocialLogin):
+    """View для обработки запросов авторизации через Yandex."""
+
+    adapter_class: type[YandexOAuth2Adapter] = YandexOAuth2Adapter
+    callback_url: str = SOCIALACCOUNT_PROVIDERS['yandex']['CALLBACK_URL']
+
+
+@extend_schema_view(
+    get=extend_schema(
+        tags=['social_auth'],
+        summary='Вход через Google (Редирект от провайдера)',
+        description=(
+            'Принимает код авторизации от Google в URL-параметрах, '
+            'создает/авторизует пользователя, устанавливает куки '
+            'и редиректит на фронтенд (/auth/callback).'
+        ),
+        parameters=[SocialAuthQueryParamsSerializer],
+        request=None,
+        responses={
+            302: SOCIAL_LOGIN_REDIRECT_SCHEMA,
+            400: SOCIAL_LOGIN_ERROR_SCHEMA,
+        },
+    ),
+)
+class GoogleLogin(SocialLogin):
+    """View для обработки запросов авторизации через Google."""
+
+    adapter_class: type[GoogleOAuth2Adapter] = GoogleOAuth2Adapter
+    callback_url: str = SOCIALACCOUNT_PROVIDERS['google']['CALLBACK_URL']
+
+
+@extend_schema_view(
+    get=extend_schema(
+        tags=['social_auth'],
+        summary='Вход через Mail.ru (Редирект от провайдера)',
+        description=(
+            'Принимает код авторизации от Mail.ru в URL-параметрах, '
+            'создает/авторизует пользователя, устанавливает куки '
+            'и редиректит на фронтенд (/auth/callback).'
+        ),
+        parameters=[SocialAuthQueryParamsSerializer],
+        request=None,
+        responses={
+            302: SOCIAL_LOGIN_REDIRECT_SCHEMA,
+            400: SOCIAL_LOGIN_ERROR_SCHEMA,
         },
     ),
 )
 class MailRuLogin(SocialLogin):
     """View для обработки запросов авторизации через Mail.ru."""
 
-    adapter_class = MailRuOAuth2Adapter
-    callback_url = SOCIALACCOUNT_PROVIDERS['mailru']['CALLBACK_URL']
-
-    def post(
-        self,
-        request: HttpRequest,
-        *args: any,
-        **kwargs: any,
-    ) -> Response:
-        """Перехватывает запрос и очищает URL-кодированный code."""
-        code: str | None = request.data.get('code') if request.data else None
-        logger.info(
-            'Запрос на авторизацию через Mail.ru. '
-            'code (первые 20 символов): %s',
-            code[:20] if code else None,
-        )
-
-        if code:
-            request.data['code'] = unquote(code)
-            logger.info(
-                'Mail.ru: code декодирован из URL-encoding. '
-                'Было: %s..., стало: %s...',
-                code[:20],
-                request.data['code'][:20],
-            )
-
-        response = super().post(request, *args, **kwargs)
-
-        logger.info(
-            'Mail.ru: авторизация успешна. user_id=%s, status=%s',
-            request.user.user_id,
-            response.status_code,
-        )
-
-        return response
+    adapter_class: type[MailRuOAuth2Adapter] = MailRuOAuth2Adapter
+    callback_url: str = SOCIALACCOUNT_PROVIDERS['mailru']['CALLBACK_URL']
 
 
 @extend_schema_view(

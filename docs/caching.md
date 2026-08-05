@@ -1,175 +1,242 @@
 # Кэширование
 
-Кэширование построено на **Redis** через `django-redis` с fallback на `LocMemCache`. При отказе Redis приложение продолжает работать без кэша (`DJANGO_REDIS_IGNORE_EXCEPTIONS = True`).
+Redis используется только для выбранных GET-endpoints. Источником истины всегда
+остаётся БД: кэш ускоряет повторное чтение, но не должен менять видимость,
+персонализацию, фильтрацию или порядок данных.
 
-## Стек
+Изменяющие запросы (`POST`, `PATCH`, `PUT`, `DELETE`), авторизация,
+`GET /user/profile/me/`, отзывы, feedback forms и документы не кэшируются.
+Такие запросы при необходимости только инвалидируют данные, созданные ранее
+кэшируемыми GET-endpoints.
 
-- **Бэкенд:** `django_redis.cache.RedisCache`
-- **Fallback:** `django_redis.cache.backends.locmem.LocMemCache`
-- **Инвалидация по паттерну:** `cache.delete_pattern()` — Redis SCAN
-- **Счётчики:** `cache.incr()` / `cache.decr()` — атомарные операции Redis
+Инвалидация выполняется через `transaction.on_commit()`. Redis изменяется только
+после успешного commit транзакции БД. TTL ограничивает максимальное время жизни
+ключа, но не заменяет инвалидацию.
 
-## Паттерны кэширования
+## Принципы персонализации
 
-### 1. Счётчики в Redis (incr/decr)
+Кэш считается корректным только при соблюдении следующих правил:
 
-Файл: [`core/cache_mixins.py`](../core/cache_mixins.py)
+1. Если от пользователя зависит состав или порядок выдачи, в ключ входит его ID.
+2. Если состав общий, а персональны только поля сериализатора, кэшируются общие
+   ID, а объекты заново читаются и сериализуются для каждого запроса.
+3. Если кэшируется готовый JSON с персональными полями, в ключ входит ID
+   просматривающего пользователя. Для публичного анонимного detail используется
+   явный scope `anonymous`.
+4. Action-level permissions DRF проверяются до входа в обработчик и чтения
+   кэшированного ответа.
 
-Агрегированные счётчики (лайки, участники) хранятся в Redis и обновляются атомарно через `incr`/`decr`. Это заменяет дорогие `Count`-аннотации в SQL-запросах.
+Благодаря этому `is_liked_by_me`, `is_favorite_by_me`, `is_participant`, доступ
+к контактам и закрытым полям не перетекают между пользователями.
 
-**Ключи:**
-- `counter:project:likes:{project_id}` — количество лайков проекта
-- `counter:project:participants:{project_id}` — количество участников проекта
+## Стратегия по endpoint
 
-**Функции-хелперы:**
-- `incr_counter(prefix, object_id)` — увеличить счётчик
-- `decr_counter(prefix, object_id)` — уменьшить счётчик (не уходит в минус)
-- `get_counter(prefix, object_id, default=0)` — прочитать счётчик
-- `get_or_seed_counter(prefix, object_id, qs)` — прочитать счётчик, при отсутствии — подсчитать в БД и сохранить
+| Endpoint/группа | Что кэшируется | Scope |
+|---|---|---|
+| `GET /projects/` | Упорядоченный список ID | По пользователю; для анонима кэш отключён |
+| `GET /projects/{id}/` | Готовый detail JSON | По просматривающему пользователю |
+| Рекомендации проектов | Упорядоченный список ID | По пользователю |
+| Лента откликов/приглашений | Упорядоченный список ID | По пользователю |
+| `GET /user/profile/` | Упорядоченный список ID | По просматривающему работодателю |
+| `GET /user/profile/{id}/` | Готовый detail JSON | По просматривающему пользователю |
+| `GET /qna/questions/` | Упорядоченный список ID | Общий `public`; для `filter=my` — по пользователю |
+| `GET /qna/questions/{id}/` | Готовый detail JSON | По пользователю или `anonymous` |
+| Skills, specializations, work formats | Общий JSON | Публичный |
 
-**Обновление:** В сигналах `ProjectLike.post_save`/`post_delete` и `ProjectParticipant.post_save`/`post_delete` — `incr_counter()`/`decr_counter()`.
+`GET /user/profile/me/` намеренно всегда читает БД. Отзывы также не используют
+Redis: их объём и текущая нагрузка не оправдывают стоимость инвалидации.
 
-**Чтение:** В сериализаторах `ProjectShortSerializer`, `ProjectDetailSerializer`, `FeedbackAndInvitationFeedSerializer` — `get_or_seed_counter()` с fallback на БД.
+## Упорядоченные списки ID
 
-**Преимущества:**
-- Убирает `LEFT JOIN` + `GROUP BY` из каждого запроса списка/детальной страницы
-- Счётчики обновляются атомарно, без сброса всего кэша
-- При откате Redis — автоматический fallback на COUNT в БД
+Списковые endpoints хранят один полный упорядоченный список ID для каждой
+комбинации фильтров. Пагинация применяется уже к этому списку, после чего объекты
+текущей страницы заново читаются из БД и сериализуются с актуальными полями.
 
-### 2. `CacheRetrieveMixin` — для детальных страниц
+| Данные | Формат ключа | TTL |
+|---|---|---:|
+| Проекты | `projects:list:ids:{user_id}:{hash}` | 5 минут |
+| Рекомендации | `projects:recommendations:{user_id}:ids:{hash}` | 10 минут |
+| Профили | `users:list:ids:{viewer_id}:{hash}` | 5 минут |
+| Лента откликов | `responses:feed:{user_id}:ids:{hash}` | 3 минуты |
+| Публичный Q&A | `qna:list:ids:public:{hash}` | 3 минуты |
+| Мои вопросы | `qna:list:ids:{user_id}:{hash}` | 3 минуты |
 
-Файл: [`core/cache_mixins.py`](../core/cache_mixins.py)
+В hash входят нормализованные query-параметры, включая все значения повторяемых
+параметров. Параметры пагинации не входят в hash:
 
-Миксин для ViewSet'ов, кэширующий результат `retrieve()`.
+- для проектов, профилей, рекомендаций и откликов исключаются `page` и `limit`;
+- для Q&A исключаются `limit` и `offset`.
 
-**Ключ:** `{prefix}:detail:{lookup_value}:{user_id}`
+Изменение фильтра создаёт другой ключ. Для сортировки `popular` в Q&A сначала
+используется количество лайков, затем дата создания.
 
-Каждый пользователь имеет **свой кэш**, поэтому персонализированные поля (`is_liked_by_me`, `is_participant`, `is_liked`) сохраняются как есть — они всегда актуальны для конкретного пользователя.
+### Анонимный Q&A
 
-**Используется в:**
-- `ProjectViewSet` — `projects:detail:{project_id}:{user_id}`, TTL 10 мин
-- `QuestionViewSet` — `qna:detail:{pk}:{user_id}`, TTL 5 мин
-- `UserProfileView` — `users:detail:{user_id}:{user_id}`, TTL 10 мин
+Анонимный и авторизованный запросы публичного списка вопросов могут читать один
+и тот же список ID `qna:list:ids:public:{hash}`. Готовая страница не хранится:
+после получения ID вопросы сериализуются заново. Поэтому аноним получает
+`is_liked_by_me=false`, а авторизованный пользователь — своё актуальное значение.
 
-### 3. Кэширование IDs объектов (вместо полного JSON-ответа)
+`filter=my` не использует публичный ключ. Для авторизованного пользователя ключ
+содержит его ID, а анонимный запрос получает `403` до чтения Redis.
 
-Паттерн cache-aside: в кэше хранятся только ID объектов (UUID), а сам queryset с prefetch_related строится заново. Это делает ответ независимым от изменений сериализаторов.
+## Detail JSON
 
-**Ключ:** `{prefix}:list:ids:{user_id?}:{md5(query_params)}`
+Готовые detail-ответы с персональными полями используют ключ:
 
-- `user_id` добавляется, если данные персонализированы (список проектов, профилей)
-- `user_id` **не** добавляется, если данные публичные (список вопросов)
-
-**Где используется:**
-- [`ProjectViewSet.list`](../projects/views/project.py:157) — `projects:list:ids:{user_id}:{md5}`, TTL 5 мин
-
-**Преимущества:**
-- Компактный кэш (только UUID, а не полный JSON)
-- Независимость от изменений сериализаторов
-- Данные всегда актуальны (кроме списка IDs)
-
-### 4. Ручное кэширование списков (полный JSON)
-
-Для списков, где частота изменений низкая или сериализаторы стабильны.
-
-**Ключ:** `{prefix}:list:{user_id?}:{md5(query_params)}`
-
-**Где используется:**
-- [`QuestionViewSet.list`](../qna/views/question.py:68) — `qna:list:{md5}`, TTL 3 мин
-- [`UserProfileListView.list`](../users/views/profile.py:475) — `users:list:{user_id}:{md5}`, TTL 5 мин
-- [`ResponseFeedViewSet.list`](../projects/views/response_project.py:118) — `responses:feed:{user_id}:{md5}`, TTL 3 мин
-
-### 5. Ручное кэширование рекомендаций
-
-**Ключ:** `projects:recommendations:{user_id}`, TTL 10 мин
-
-Где: [`ProjectViewSet.recommendations`](../projects/views/project.py:515)
-
-### 6. Ручное кэширование справочных данных
-
-**Ключи:** `skills:list`, `specializations:list`, `work_formats:list`, TTL 1 час
-
-Где: [`TagsListAPIView.list`](../help/views.py:128)
-
-### 7. `@never_cache` — для приватных эндпоинтов
-
-- `MeProfileView` — профиль текущего пользователя
-- `ProfileLikeAPIView` — переключение лайка пользователю
-
-## Инвалидация
-
-Вся инвалидация — сигнальная, через `post_save`/`post_delete`.
-
-### Принципы
-
-1. **Счётчики через incr/decr** — лайки и участники обновляются атомарно, без сброса кэша.
-2. **Точечная инвалидация (cache stampede prevention)** — при лайке/действии кэш сбрасывается **только для конкретного пользователя**, а не для всех. Например, `ProjectLike.post_save` удаляет `projects:list:ids:{user_id}:*` — только для того, кто лайкнул. Остальные пользователи продолжают использовать свой кэш.
-3. **Инвалидация по паттерну для всех** — когда меняются сами данные (а не отношение пользователя к ним), кэш сбрасывается для всех через `delete_pattern('{prefix}:detail:{id}:*')`. Например, при изменении названия проекта — все видят новое название.
-4. **Минимизация избыточной инвалидации** — лайк вопроса не сбрасывает список вопросов (`qna:list:*`), т.к. не меняет состав списка. Инвалидация списка проектов при изменении проекта сужена до автора (`projects:list:{author_id}:*`).
-
-### Сигналы
-
-| Модель | Файл | Что инвалидирует |
-|--------|------|-------------------|
-| `Project` | [`projects/signals.py:16`](../projects/signals.py:16) | `projects:detail:{id}:*`, `projects:list:{author_id}:*`, `projects:recommendations:*` |
-| `ProjectLike` | [`projects/signals.py:48`](../projects/signals.py:48) | `counter:project:likes:{id}` (incr/decr), `projects:detail:{id}:{user_id}`, `projects:list:{user_id}:*` |
-| `Response` | [`projects/signals.py:93`](../projects/signals.py:93) | `responses:feed:{user_id}:*` (только автор отклика) |
-| `ProjectParticipant` | [`projects/signals.py:108`](../projects/signals.py:108) | `counter:project:participants:{id}` (incr/decr), `projects:detail:{project_id}:*` |
-| `Question` | [`qna/signals.py:28`](../qna/signals.py:28) | `qna:detail:{pk}:*`, `qna:list:*` |
-| `Answer` | [`qna/signals.py:42`](../qna/signals.py:42) | `qna:detail:{question_id}:*` |
-| `QuestionLike` | [`qna/signals.py:55`](../qna/signals.py:55) | `qna:detail:{question_id}:{user_id}` (список не инвалидируется) |
-| `AnswerLike` | [`qna/signals.py:73`](../qna/signals.py:73) | `qna:detail:{answer.question_id}:{user_id}` |
-| `User` | [`users/signals.py:17`](../users/signals.py:17) | `users:detail:{user_id}:*`, `users:list:*`, `projects:recommendations:{user_id}` |
-| `UserLike` | [`users/signals.py:36`](../users/signals.py:36) | `users:list:{employer_id}:*`, `users:detail:{worker_id}:{employer_id}` |
-| `Skill` | [`help/signals.py:16`](../help/signals.py:16) | `skills:list` |
-| `Specialization` | [`help/signals.py:26`](../help/signals.py:26) | `specializations:list` |
-| `WorkFormat` | [`help/signals.py:36`](../help/signals.py:36) | `work_formats:list` |
-
-## Конфигурация
-
-Все TTL и префиксы ключей: [`core/constants/cache.py`](../core/constants/cache.py)
-
-| Константа | Значение | Назначение |
-|-----------|----------|------------|
-| `TAGS_CACHE_TIMEOUT` | 3600 (1 час) | Справочные данные |
-| `PROJECT_LIST_CACHE_TIMEOUT` | 300 (5 мин) | Список проектов |
-| `PROJECT_DETAIL_CACHE_TIMEOUT` | 600 (10 мин) | Детали проекта |
-| `PROJECT_RECOMMENDATIONS_CACHE_TIMEOUT` | 600 (10 мин) | Рекомендации |
-| `QUESTION_LIST_CACHE_TIMEOUT` | 180 (3 мин) | Список вопросов |
-| `QUESTION_DETAIL_CACHE_TIMEOUT` | 300 (5 мин) | Детали вопроса |
-| `USER_PROFILE_CACHE_TIMEOUT` | 600 (10 мин) | Профиль пользователя |
-| `USER_PROFILE_LIST_CACHE_TIMEOUT` | 300 (5 мин) | Список профилей |
-| `RESPONSE_FEED_CACHE_TIMEOUT` | 180 (3 мин) | Лента откликов |
-| `COUNTER_PROJECT_LIKES_PREFIX` | `counter:project:likes` | Префикс счётчика лайков проекта |
-| `COUNTER_PROJECT_PARTICIPANTS_PREFIX` | `counter:project:participants` | Префикс счётчика участников проекта |
-
-## Кэширование изображений
-
-Изображения (аватары, изображения вопросов/ответов, feedback) хранятся в **MinIO/S3** и кэшируются на уровне браузера. Redis для них не используется.
-
-### Cache-Control на уровне S3
-
-Файл: [`core/s3_utils.py:44`](../core/s3_utils.py:44)
-
-При инициализации `MinioService` всем загружаемым файлам устанавливается заголовок:
-
+```text
+{prefix}:detail:{object_id}:{viewer_scope}
 ```
+
+Для авторизованного пользователя `viewer_scope` равен `user_id`, для анонимного
+публичного Q&A — строке `anonymous`. Сейчас проекты и профили доступны только
+авторизованным пользователям, но всё равно изолируются по viewer ID из-за
+персональных полей и различий в доступе.
+
+Примеры:
+
+```text
+projects:detail:{project_id}:{user_id}
+users:detail:{profile_id}:{viewer_id}
+qna:detail:{question_id}:{user_id|anonymous}
+```
+
+## Общие справочники
+
+Skills, specializations и work formats не персонализированы и хранят готовый
+общий JSON:
+
+```text
+skills:list
+specializations:list
+work_formats:list
+```
+
+При изменении справочника удаляется его собственный ключ и зависимые
+представления профилей и проектов. Изменение Skill дополнительно инвалидирует
+Q&A, потому что навыки используются как теги вопросов.
+
+## Счётчики проектов
+
+Используются два cache-aside счётчика:
+
+```text
+counter:project:likes:{project_id}
+counter:project:participants:{project_id}
+```
+
+При cache miss выполняется `COUNT` в БД, результат записывается в Redis с
+настройкой `DEFAULT_TIMEOUT` backend'а (сейчас пять минут). При добавлении или
+удалении лайка/участника соответствующий ключ удаляется после commit. Следующее
+чтение снова получает точное значение из БД и заполняет Redis. Detail проекта
+также инвалидируется, а лайк дополнительно инвалидирует списки проектов, потому
+что существует сортировка по лайкам.
+
+## Зависимости и инвалидация
+
+| Изменение БД | Инвалидируемые ключи |
+|---|---|
+| `Project` create/update/delete | `projects:detail:{id}:*`, все `projects:list:ids:*`, все `projects:recommendations:*`, оба счётчика проекта |
+| `Project.skills/specializations/project_format` | Те же представления проекта, списки, рекомендации и счётчики |
+| `ProjectLike` | Счётчик лайков, `projects:detail:{id}:*`, все списки проектов |
+| `ProjectParticipant` | Счётчик участников, `projects:detail:{id}:*`, список и рекомендации участника |
+| `ProjectFavorite` | Detail и списки только пользователя, изменившего избранное |
+| `Response` | Лента автора отклика, список профилей автора проекта, detail проекта |
+| Представляемые поля `User` | Detail профиля; зависимые detail проектов и Q&A, где пользователь является автором/участником |
+| Фильтруемые поля `User` | Все списки профилей |
+| Viewer-поля `User.projects_relation/is_active` | Все `users:detail:*:{viewer_id}` и `projects:detail:*:{viewer_id}` |
+| Viewer-поля `User.role/is_staff/is_superuser/projects_relation` | `projects:list:ids:{viewer_id}:*` |
+| `User.skills/specializations/workformats` | Detail пользователя и все списки профилей; skills также меняют рекомендации пользователя |
+| `UserExperience` | `users:detail:{user_id}:*` |
+| `UserLike` | Все списки профилей из-за popularity; detail работника для поставившего/удалившего лайк работодателя |
+| `Question` | `qna:detail:{id}:*`, все списки Q&A |
+| `Question.skills` | Detail вопроса и все списки Q&A |
+| `Answer` | Detail вопроса и все списки Q&A из-за `answers_count`/`no_answers` |
+| `QuestionLike` | Detail вопроса и все списки Q&A из-за `popular` |
+| `AnswerLike` | Detail связанного вопроса |
+| `QuestionImage/AnswerImage` | Detail связанного вопроса |
+| `Skill/Specialization/WorkFormat` | Собственный справочник и зависимые профили/проекты; для Skill также Q&A |
+
+Глобальная инвалидация списков используется там, где изменение может повлиять
+на состав или порядок неизвестного количества ключей фильтров. Точечная
+инвалидация применяется только когда зависимость однозначно ограничена одним
+пользователем или объектом.
+
+## Мягкое удаление пользователя
+
+`deactivate_user_account()` до изменения данных собирает связанные проекты,
+участия, отклики и затронутые ленты. После commit удаляются:
+
+- detail всех затронутых проектов;
+- списки проектов и рекомендации, поскольку проекты автора архивируются;
+- ленты пользователя и пользователей, откликнувшихся на его проекты;
+- detail профиля, списки профилей и кэши, где пользователь был viewer.
+
+Неактивные пользователи исключаются из списка профилей, архивные проекты — из
+публичных списков.
+
+## TTL
+
+Основные значения определены в `core/constants/cache.py`. Счётчики используют
+стандартный timeout Django cache backend:
+
+| Группа | TTL |
+|---|---:|
+| Списки проектов | 5 минут |
+| Detail проекта | 10 минут |
+| Рекомендации | 10 минут |
+| Списки Q&A | 3 минуты |
+| Detail Q&A | 5 минут |
+| Списки профилей | 5 минут |
+| Detail профиля | 10 минут |
+| Лента откликов | 3 минуты |
+| Счётчики проектов | 5 минут |
+| Справочники | 1 час |
+
+## Физические ключи Redis
+
+В документации выше указаны логические ключи Django cache. В локальном Redis к
+ним автоматически добавляются `KEY_PREFIX=codeunity` и версия ключа. Поэтому в
+`redis-cli MONITOR` ключ проекта выглядит, например, так:
+
+```text
+codeunity:1:projects:detail:{project_id}:{viewer_id}
+```
+
+`cache.get()`, `cache.delete_pattern()` и `cache.iter_keys()` получают логический
+ключ без `codeunity:1:`.
+
+## Кэширование файлов
+
+Файлы в S3/MinIO не хранятся в Redis. Для них задаётся HTTP-заголовок:
+
+```text
 Cache-Control: public, max-age=31536000, immutable
 ```
 
-- `public` — разрешает кэширование прокси и CDN
-- `max-age=31536000` — 1 год браузерного кэша
-- `immutable` — файл никогда не меняется по одному URL
+Имена файлов содержат UUID, поэтому новая версия файла получает новый URL и не
+конфликтует с годовым кэшем браузера/CDN. Удаление связанного объекта планирует
+удаление файла из хранилища через `transaction.on_commit()`.
 
-Это возможно, потому что каждый файл получает **UUID в имени** (`uuid4().hex`). Новый файл = новый URL, старый URL остаётся в кэше браузера навсегда. При обновлении изображения старый файл удаляется из MinIO, а в БД сохраняется новый URL.
+## Отказ Redis и обход сигналов
 
-### Удаление файлов при удалении записи
+Для `django-redis` включён `IGNORE_EXCEPTIONS`: при недоступности Redis ошибки
+кэша не должны прерывать запрос, и приложение продолжает получать данные из БД.
+Alias `local_memory` настроен отдельно, но автоматического переключения на него
+нет.
 
-При удалении записи, ссылающейся на файл, файл физически удаляется из MinIO через сигналы `post_delete`. Удаление выполняется в `transaction.on_commit()` — только после успешного коммита транзакции БД, чтобы файл не был удалён при откате транзакции.
+Сигналы Django покрывают `save()`, `delete()` и изменения M2M. Прямой SQL и
+произвольный `QuerySet.update()` сигналы не вызывают. Такие пути записи должны
+явно инвалидировать зависимости через `transaction.on_commit()`; для известных
+служебных обновлений эта инвалидация уже выполняется в сервисном слое.
 
-| Сигнал | Файл | Действие |
-|--------|------|----------|
-| `QuestionImage.post_delete` | [`qna/signals.py:93`](../qna/signals.py:93) | Удаляет файл из MinIO |
-| `AnswerImage.post_delete` | [`qna/signals.py:107`](../qna/signals.py:107) | Удаляет файл из MinIO |
-| `FeedbackImage.post_delete` | [`qna/signals.py:121`](../qna/signals.py:121) | Удаляет файл из MinIO |
-| `User.post_delete` | [`qna/signals.py:135`](../qna/signals.py:135) | Удаляет аватар из MinIO |
+## Проверка
+
+Автоматические проверки находятся в `tests/caching`:
+
+```powershell
+uv run pytest tests/caching -q
+```
+
+Набор включает проверки ключей и TTL, cache hit/miss, анонимной и персональной
+выдачи, фильтров, счётчиков, M2M и сквозной инвалидации через API.

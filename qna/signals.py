@@ -4,6 +4,7 @@ from typing import Any
 from django.core.cache import cache
 from django.db import transaction
 from django.db.models.signals import (
+    m2m_changed,
     post_delete,
     post_save,
     pre_delete,
@@ -28,6 +29,15 @@ from users.services import update_user_rating
 logger = logging.getLogger(__name__)
 
 
+def _invalidate_question(question_id: Any, invalidate_list: bool) -> None:
+    """Очистить кэш вопроса после успешного коммита БД."""
+    cache.delete_pattern(
+        f'{CACHE_KEY_QNA_PREFIX}:detail:{question_id}:*',
+    )
+    if invalidate_list:
+        cache.delete_pattern(f'{CACHE_KEY_QNA_PREFIX}:list:ids:*')
+
+
 @receiver(post_save, sender=Question)
 @receiver(post_delete, sender=Question)
 def invalidate_question_cache(
@@ -35,14 +45,17 @@ def invalidate_question_cache(
     instance: Question,
     **kwargs: Any,
 ) -> None:
-    """Инвалидирует кэш при создании/изменении/удалении вопроса."""
-    cache.delete_pattern(
-        f'{CACHE_KEY_QNA_PREFIX}:detail:{instance.pk}:*',
+    """Запланировать инвалидацию изменённого вопроса."""
+    question_id = instance.pk
+    transaction.on_commit(
+        lambda question_id=question_id: _invalidate_question(
+            question_id,
+            invalidate_list=True,
+        ),
     )
-    cache.delete_pattern(f'{CACHE_KEY_QNA_PREFIX}:list:*')
     logger.info(
-        'Инвалидация кэша вопроса: question_id=%s',
-        instance.pk,
+        'Инвалидация вопроса запланирована: question_id=%s',
+        question_id,
     )
 
 
@@ -53,14 +66,84 @@ def invalidate_answer_cache(
     instance: Answer,
     **kwargs: Any,
 ) -> None:
-    """Инвалидирует кэш вопроса при добавлении/удалении ответа."""
+    """Инвалидирует кэш вопроса при добавлении/удалении ответа.
+
+    Очищает детали вопроса и список вопросов, т.к. answers_count
+    отображается в QuestionListSerializer.
+    """
     cache.delete_pattern(
         f'{CACHE_KEY_QNA_PREFIX}:detail:{instance.question_id}:*',
     )
+    cache.delete_pattern(f'{CACHE_KEY_QNA_PREFIX}:list:*')
     logger.info(
-        'Инвалидация кэша ответа: answer_id=%s, question_id=%s',
+        'Инвалидация ответа запланирована: answer_id=%s, question_id=%s',
         instance.pk,
         instance.question_id,
+    )
+
+
+@receiver(m2m_changed, sender=Question.skills.through)
+def invalidate_question_skills_cache(
+    sender: Any,
+    instance: Any,
+    action: str,
+    **kwargs: Any,
+) -> None:
+    """Инвалидировать вопрос после изменения его навыков."""
+    if kwargs.get('reverse', False):
+        if action in {'post_add', 'post_remove'}:
+            question_ids = tuple(kwargs.get('pk_set') or ())
+        elif action == 'pre_clear':
+            question_ids = tuple(
+                instance.questions.values_list('question_id', flat=True),
+            )
+        else:
+            return
+    elif action in {'post_add', 'post_remove', 'pre_clear'}:
+        question_ids = (instance.question_id,)
+    else:
+        return
+
+    for question_id in question_ids:
+        transaction.on_commit(
+            lambda question_id=question_id: _invalidate_question(
+                question_id,
+                invalidate_list=True,
+            ),
+        )
+
+
+@receiver(post_save, sender=QuestionImage)
+@receiver(post_delete, sender=QuestionImage)
+def invalidate_question_image_cache(
+    sender: Any,
+    instance: QuestionImage,
+    **kwargs: Any,
+) -> None:
+    """Инвалидировать detail вопроса после изменения изображения."""
+    question_id = instance.question_id
+    transaction.on_commit(
+        lambda question_id=question_id: _invalidate_question(
+            question_id,
+            invalidate_list=False,
+        ),
+    )
+
+
+@receiver(post_save, sender=AnswerImage)
+@receiver(post_delete, sender=AnswerImage)
+def invalidate_answer_image_cache(
+    sender: Any,
+    instance: AnswerImage,
+    **kwargs: Any,
+) -> None:
+    """Инвалидировать detail вопроса после изменения изображения ответа."""
+    question_id = instance.answer.question_id
+    transaction.on_commit(
+        lambda question_id=question_id: _invalidate_question(
+            question_id,
+            invalidate_list=False,
+        ),
     )
 
 
@@ -74,13 +157,14 @@ def invalidate_question_like_cache(
     """Инвалидирует кэш при лайке/снятии лайка вопроса.
 
     Очищает детали только для пользователя, поставившего лайк.
-    Список вопросов не очищается — лайк не меняет состав списка,
-    только likes_count, который не отображается в QuestionListSerializer.
+    Также очищает список вопросов, т.к. likes_count отображается
+    в QuestionListSerializer и должен быть актуальным.
     """
     cache.delete_pattern(
         f'{CACHE_KEY_QNA_PREFIX}:detail:'
         f'{instance.question_id}:{instance.user_id}',
     )
+    cache.delete_pattern(f'{CACHE_KEY_QNA_PREFIX}:list:*')
 
 
 @receiver(post_save, sender=AnswerLike)
@@ -90,14 +174,13 @@ def invalidate_answer_like_cache(
     instance: AnswerLike,
     **kwargs: Any,
 ) -> None:
-    """Инвалидирует кэш вопроса при лайке/снятии лайка ответа.
-
-    Очищает детали вопроса только для пользователя, поставившего лайк.
-    Список вопросов не очищается — лайк ответа не влияет на список.
-    """
-    cache.delete_pattern(
-        f'{CACHE_KEY_QNA_PREFIX}:detail:'
-        f'{instance.answer.question_id}:{instance.user_id}',
+    """Запланировать инвалидацию detail после изменения лайка ответа."""
+    question_id = instance.answer.question_id
+    transaction.on_commit(
+        lambda question_id=question_id: _invalidate_question(
+            question_id,
+            invalidate_list=False,
+        ),
     )
 
 
