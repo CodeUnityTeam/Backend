@@ -18,6 +18,7 @@ from core.constants.cache import (
 from core.constants.projects import (
     AUTHOR,
     DRAFT,
+    MAX_SKILLS_COUNT,
     PUBLISHED,
     RECRUITING_CLOSED,
 )
@@ -652,6 +653,7 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
         Если передан пустой список:
           - project_format — очищается (разрешено)
           - skills / specializations — ошибка (минимум 1 шт)
+          - skills больше MAX_SKILLS_COUNT — ошибка
         """
         project_format = data.get('project_format')
         if project_format is not None:
@@ -662,6 +664,13 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
             if not skills:
                 raise serializers.ValidationError({
                     'skills': 'Необходимо указать хотя бы один навык.',
+                })
+            if len(skills) > MAX_SKILLS_COUNT:
+                raise serializers.ValidationError({
+                    'skills': (
+                        'Количество навыков не должно превышать '
+                        f'{MAX_SKILLS_COUNT}. Сейчас: {len(skills)}.'
+                    ),
                 })
             validated_skills = _validate_related_ids(
                 skills,
