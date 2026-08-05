@@ -19,6 +19,7 @@ from core.constants.projects import (
     MAX_PROJECTS_PER_AUTHOR,
     MAX_SHORT_DESC,
     MAX_SKILLS_COUNT,
+    MAX_SPECIALIZATIONS_COUNT,
     MIN_FILTER_DAYS,
     MIN_LEN_TITLE,
     MIN_SHORT_DESC,
@@ -127,13 +128,11 @@ def validate_location_project(value: str | None) -> str | None:
     cleaned_value = value.strip()
     if len(cleaned_value) > MAX_LEN_LOCATION:
         raise serializers.ValidationError(
-            f'Местоположение не должно превышать {MAX_LEN_LOCATION} '
-            'символов.',
+            f'Местоположение не должно превышать {MAX_LEN_LOCATION} символов.',
         )
     if not re.match(r'^[a-zA-Zа-яА-Я \-]*$', cleaned_value):
         raise serializers.ValidationError(
-            'Местоположение может содержать '
-            'только буквы, пробелы, дефисы.',
+            'Местоположение может содержать только буквы, пробелы, дефисы.',
         )
     return cleaned_value
 
@@ -458,7 +457,9 @@ def validate_project_data(
     validate_project_count_per_author(user)
     # Валидация текстовых полей
     data['title'] = validate_title_project(
-        data['title'], user, exclude_project_id=exclude_project_id,
+        data['title'],
+        user,
+        exclude_project_id=exclude_project_id,
     )
     data['short_desc'] = validate_short_desc_project(data['short_desc'])
     data['full_desc'] = validate_full_desc_project(data['full_desc'])
@@ -493,6 +494,14 @@ def validate_project_data(
         raise serializers.ValidationError({
             'specializations': (
                 'Необходимо указать хотя бы одну специализацию.',
+            ),
+        })
+    if len(specializations_data) > MAX_SPECIALIZATIONS_COUNT:
+        raise serializers.ValidationError({
+            'specializations': (
+                'Количество специализаций не должно превышать '
+                f'{MAX_SPECIALIZATIONS_COUNT}. Сейчас: '
+                f'{len(specializations_data)}.'
             ),
         })
     validated_specializations = _validate_related_ids(
