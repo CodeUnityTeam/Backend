@@ -8,9 +8,14 @@ from rest_framework import serializers, status
 from rest_framework.exceptions import APIException
 
 from core.constants.feedback import (
+    MAX_CONTENT_FEEDBACK,
     MAX_IMAGE_COUNT_FEEDBACK,
     MAX_IMAGE_SIZE_FEEDBACK,
+    MAX_SUBJECT_FEEDBACK,
+    MIN_CONTENT_FEEDBACK,
+    MIN_SUBJECT_FEEDBACK,
 )
+from core.validators import validate_no_bad_words
 from feedback.models import FeedbackForm, FeedbackImage, Review
 from feedback.selectors import create_review
 from feedback.services import feedback_image_upload_handler
@@ -102,6 +107,16 @@ class ReviewUpdateSerializer(serializers.ModelSerializer):
 class FeedbackCreateSerializer(serializers.ModelSerializer):
     """Сериализатор создания обратной связи."""
 
+    subject = serializers.CharField(
+        min_length=MIN_SUBJECT_FEEDBACK,
+        max_length=MAX_SUBJECT_FEEDBACK,
+        validators=[validate_no_bad_words],
+    )
+    content = serializers.CharField(
+        min_length=MIN_CONTENT_FEEDBACK,
+        max_length=MAX_CONTENT_FEEDBACK,
+        validators=[validate_no_bad_words],
+    )
     attachments = serializers.ListField(
         child=serializers.ImageField(),
         write_only=True,
