@@ -29,6 +29,27 @@ from projects.models import Project, WorkFormat
 User = get_user_model()
 
 
+class StrictCharField(serializers.CharField):
+    """CharField, который отклоняет любые нестроковые значения.
+
+    Стандартный CharField приводит числа (int/float) к строке через str()
+    в to_internal_value, поэтому требуется строгая проверка типа до
+    преобразования. Поле принимает только строки, иначе возвращается
+    ошибка валидации (400 Bad Request).
+    """
+
+    default_error_messages = {
+        'invalid': 'Значение должно быть строкой.',
+    }
+
+    def to_internal_value(self, data):
+        if data is None:
+            return super().to_internal_value(data)
+        if not isinstance(data, str):
+            self.fail('invalid')
+        return super().to_internal_value(data)
+
+
 def validate_title_project(
     value: str,
     user: User,
