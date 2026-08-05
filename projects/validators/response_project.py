@@ -44,7 +44,7 @@ def validate_can_create_response(
             f'Отклик возможен только на проекты со статусом "{PUBLISHED}".',
         )
     if Response.objects.filter(project=project, user=user).exists():
-        raise serializers.ValidationError(
+        raise ConflictException(
             'Вы уже откликнулись на этот проект.',
         )
 
