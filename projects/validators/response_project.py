@@ -14,6 +14,7 @@ from core.constants.projects import (
     REJECTED,
     WITHDRAWN,
 )
+from core.exceptions import ConflictException
 from projects.models import Project, ProjectParticipant, Response
 
 User = get_user_model()
@@ -84,14 +85,14 @@ def validate_can_invite(
             'Нельзя пригласить автора проекта.',
         )
     if Response.objects.filter(project=project, user=invitee).exists():
-        raise serializers.ValidationError(
+        raise ConflictException(
             'Пользователь уже приглашён в этот проект.',
         )
     if ProjectParticipant.objects.filter(
         project=project,
         user=invitee,
     ).exists():
-        raise serializers.ValidationError(
+        raise ConflictException(
             'Пользователь уже является участником этого проекта.',
         )
     if project.status_project != PUBLISHED:
