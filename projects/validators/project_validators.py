@@ -113,27 +113,27 @@ def validate_full_desc_project(value: str) -> str:
     return cleaned_value
 
 
-def validate_location_project(value: str) -> str:
+def validate_location_project(value: str | None) -> str | None:
     """Валидирует местоположение проекта.
 
     Выполняет следующие проверки:
         1. Удаляет ведущие и завершающие пробелы.
         2. Проверяет длину на превышение максимально допустимого значения.
         3. Проверяет, что строка содержит только разрешённые символы:
-        буквы (A-Za-z, А-Яа-я), цифры (0-9), пробелы и дефисы (-).
+        буквы (A-Za-z, А-Яа-я), пробелы и дефисы (-).
     """
     if value is None:
         return value
     cleaned_value = value.strip()
     if len(cleaned_value) > MAX_LEN_LOCATION:
         raise serializers.ValidationError(
-            f'Местоположение не должно превышать {MAX_LEN_FULL_DESC} '
+            f'Местоположение не должно превышать {MAX_LEN_LOCATION} '
             'символов.',
         )
-    if not re.match(r'^[a-zA-Zа-яА-Я0-9\s\-]*$', cleaned_value):
+    if not re.match(r'^[a-zA-Zа-яА-Я \-]*$', cleaned_value):
         raise serializers.ValidationError(
             'Местоположение может содержать '
-            'только буквы, цифры, пробелы, дефисы.',
+            'только буквы, пробелы, дефисы.',
         )
     return cleaned_value
 
