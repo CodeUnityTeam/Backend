@@ -111,7 +111,7 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
                 'allow_blank': False,
                 'validators': [validate_no_bad_words],
                 'error_messages': {
-                    'required': 'Кратное описание обязательно для заполнения.',
+                    'required': 'Краткое описание обязательно для заполнения.',
                     'blank': 'Краткое описание не может быть пустым.',
                 },
             },

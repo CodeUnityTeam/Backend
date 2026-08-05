@@ -79,7 +79,7 @@ def validate_short_desc_project(value: str) -> str:
     cleaned_value: str = value.strip()
     if not MIN_SHORT_DESC <= len(cleaned_value) <= MAX_SHORT_DESC:
         raise serializers.ValidationError(
-            f'Кратное описание проекта не может быть короче {MIN_SHORT_DESC} '
+            f'Краткое описание проекта не может быть короче {MIN_SHORT_DESC} '
             f'и более {MAX_SHORT_DESC} символов. '
             f'Текущая длина: {len(cleaned_value)}',
         )
