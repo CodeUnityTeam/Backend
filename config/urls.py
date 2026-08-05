@@ -7,11 +7,6 @@ from drf_spectacular.views import (
 )
 
 from feedback.urls import reviews_router
-from users.views.auth import (
-    GoogleCallbackView,
-    MailRuCallbackView,
-    YandexCallbackView,
-)
 
 v1_urlpatterns = [
     path('help/', include(('help.urls', 'help'), namespace='help')),
@@ -50,20 +45,4 @@ v1_urlpatterns = [
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/', include(v1_urlpatterns)),
-    # OAuth callback endpoints — доступны по /auth/... через nginx
-    path(
-        'auth/yandex/callback/',
-        YandexCallbackView.as_view(),
-        name='yandex_callback',
-    ),
-    path(
-        'auth/google/callback/',
-        GoogleCallbackView.as_view(),
-        name='google_callback',
-    ),
-    path(
-        'auth/mailru/callback/',
-        MailRuCallbackView.as_view(),
-        name='mailru_callback',
-    ),
 ]

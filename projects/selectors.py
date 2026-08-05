@@ -235,6 +235,16 @@ def get_recommended_projects_queryset(user: User) -> QuerySet[Project]:
     return qs.order_by('-relevance')
 
 
+def exclude_archived_blocked(
+    qs: QuerySet[Project],
+) -> QuerySet[Project]:
+    """Исключает из queryset'а проекты со статусом archived и blocked.
+
+    Используется для action 'retrieve' и 'partial_update'.
+    """
+    return qs.exclude(status_project__in=(ARCHIVED, BLOCKED))
+
+
 def get_visible_projects_for_list(
     qs: QuerySet[Project],
 ) -> QuerySet[Project]:
@@ -254,23 +264,25 @@ def get_visible_projects_for_retrieve(
 ) -> QuerySet[Project]:
     """Возвращает проекты, доступные пользователю для просмотра.
 
-    - Employer видит свои проекты + опубликованные/с закрытым набором.
+    - Employer видит свои опубликованные проекты (кроме archived/blocked)
+      + чужие опубликованные/с закрытым набором.
     - Остальные пользователи — только опубликованные/с закрытым набором.
+    - Проекты со статусом archived или blocked не отдаются никому
+      через API (возвращается 404). Доступны только через админку.
 
     Используется в ProjectViewSet.get_queryset для action 'retrieve'.
     """
+    base_filter = Q(status_project__in=(PUBLISHED, RECRUITING_CLOSED))
+
     if (
         user.is_authenticated
         and user.projects_relation
         == User.ProjectsRelationChoices.EMPLOYER
     ):
-        return qs.filter(
-            Q(author=user)
-            | Q(status_project__in=(PUBLISHED, RECRUITING_CLOSED)),
+        return exclude_archived_blocked(
+            qs.filter(Q(author=user) | base_filter),
         )
-    return qs.filter(
-        status_project__in=(PUBLISHED, RECRUITING_CLOSED),
-    )
+    return qs.filter(base_filter)
 
 
 def get_project_for_response_queryset() -> QuerySet[Project]:
