@@ -270,6 +270,7 @@ def validate_project_count_per_author(
         user: Пользователь — автор проекта.
         exclude_project_id: ID проекта, который нужно исключить из подсчёта
             (используется при обновлении, чтобы не учитывать сам проект).
+
     """
     qs = (
         Project.objects
