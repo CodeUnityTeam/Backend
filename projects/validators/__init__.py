@@ -12,6 +12,7 @@ from .project_validators import (
     add_relationships_to_project,
     extract_relationship_data,
     validate_create_project_status,
+    validate_duration_project,
     validate_full_desc_project,
     validate_location_project,
     validate_project_count_per_author,
