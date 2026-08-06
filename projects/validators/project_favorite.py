@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError
 
 from core.constants.projects import PUBLISHED, RECRUITING_CLOSED
 from projects.models import Project

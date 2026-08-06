@@ -306,7 +306,7 @@ def validate_duration_project(
 
 def validate_project_count_per_author(
     user: User,
-    exclude_project_id: int | None = None,
+    exclude_project_id: str | None = None,
 ) -> None:
     """Валидация количества проектов у автора.
 
