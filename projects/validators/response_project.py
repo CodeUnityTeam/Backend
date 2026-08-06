@@ -7,6 +7,7 @@ from core.constants.projects import (
     APPLICANT,
     APPROVED,
     AUTHOR,
+    DRAFT,
     MAX_PROJECTS_PER_MEMBER,
     MEMBER,
     PENDING,
@@ -14,6 +15,7 @@ from core.constants.projects import (
     REJECTED,
     WITHDRAWN,
 )
+from core.exceptions import ConflictException
 from projects.models import Project, ProjectParticipant, Response
 
 User = get_user_model()
@@ -38,12 +40,16 @@ def validate_can_create_response(
         raise serializers.ValidationError(
             'Нельзя откликнуться на собственный проект.',
         )
+    if project.status_project == DRAFT:
+        raise exceptions.PermissionDenied(
+            'Нельзя откликнуться на черновик.',
+        )
     if project.status_project != PUBLISHED:
         raise serializers.ValidationError(
             f'Отклик возможен только на проекты со статусом "{PUBLISHED}".',
         )
     if Response.objects.filter(project=project, user=user).exists():
-        raise serializers.ValidationError(
+        raise ConflictException(
             'Вы уже откликнулись на этот проект.',
         )
 
@@ -76,22 +82,22 @@ def validate_can_invite(
     try:
         invitee = User.objects.get(user_id=invitee_id)
     except User.DoesNotExist:
-        raise serializers.ValidationError(
-            {'user_id': 'Пользователь с таким ID не найден.'},
+        raise exceptions.NotFound(
+            'Пользователь с таким ID не найден.',
         )
     if project.author == invitee:
         raise serializers.ValidationError(
             'Нельзя пригласить автора проекта.',
         )
     if Response.objects.filter(project=project, user=invitee).exists():
-        raise serializers.ValidationError(
+        raise ConflictException(
             'Пользователь уже приглашён в этот проект.',
         )
     if ProjectParticipant.objects.filter(
         project=project,
         user=invitee,
     ).exists():
-        raise serializers.ValidationError(
+        raise ConflictException(
             'Пользователь уже является участником этого проекта.',
         )
     if project.status_project != PUBLISHED:
@@ -116,9 +122,9 @@ def validate_status_can_be_changed(user_response: Response) -> None:
 def validate_project_count_per_member(user: User) -> None:
     """Проверяет, не превысил ли пользователь лимит участия в проектах."""
     active_count = ProjectParticipant.objects.filter(
-            user=user,
-            status_participant=MEMBER,
-        ).count()
+        user=user,
+        status_participant=MEMBER,
+    ).count()
     if active_count >= MAX_PROJECTS_PER_MEMBER:
         raise serializers.ValidationError(
             'Пользователь не может участвовать больше чем в '

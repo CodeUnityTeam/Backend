@@ -14,6 +14,7 @@ from core.constants.projects import (
     MAX_LEN_TELEGRAM,
     MAX_LEN_TITLE,
     MAX_SHORT_DESC,
+    MIN_LEN_FULL_DESC,
     MIN_LEN_TITLE,
     MIN_SHORT_DESC,
     STATUS_PARTICIPANT,
@@ -55,6 +56,7 @@ class Project(TimestampMixin, models.Model):
     )
     full_desc = models.TextField(
         max_length=MAX_LEN_FULL_DESC,
+        validators=[MinLengthValidator(MIN_LEN_FULL_DESC)],
         verbose_name='Полное описание проекта',
     )
     location = models.CharField(
