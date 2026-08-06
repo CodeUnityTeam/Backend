@@ -305,7 +305,7 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
             return qs
         if self.action == 'retrieve':
             return get_visible_projects_for_retrieve(qs, user)
-        if self.action == 'partial_update':
+        if self.action in ('partial_update', 'favorite'):
             return exclude_archived_blocked(qs)
         if self.action == 'destroy':
             return qs.exclude(status_project=BLOCKED)
@@ -611,8 +611,8 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
         logger.info(
             'Запрос на изменение "избранного" для '
             'проекта: project_id=%s, user_id=%s.',
-            request.user.pk,
             project.project_id,
+            request.user.pk,
         )
         result = toggle_project_favorite(project, request.user)
         logger.info(
