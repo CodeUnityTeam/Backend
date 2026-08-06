@@ -433,8 +433,11 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
             400: OpenApiResponse(
                 description=(
                     'Нельзя лайкнуть свой проект '
-                    'или проект с текущим статусом.'
+                    'или проект с текущим статусом (draft, blocked).'
                 ),
+            ),
+            404: OpenApiResponse(
+                description='Проект не найден.',
             ),
         },
     )
