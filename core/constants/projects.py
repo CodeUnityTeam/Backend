@@ -54,7 +54,9 @@ STATUS_RESPONSE_PROJECT = (
 MAX_LEN_INITIATOR_TYPE = 20
 MAX_LEN_STATUS_RESPONSE = 20
 
+# Минимальное количество дней для фильтрации проектов
 MIN_FILTER_DAYS = 7
+# Максимальное количество дней для фильтрации проектов
 MAX_FILTER_DAYS = 365
 
 # Максимальная длина поискового запроса
@@ -69,6 +71,8 @@ ALLOWED_STATUSED_FOR_LIKE = (PUBLISHED, RECRUITING_CLOSED)
 
 # Максимальное количество навыков в проекте
 MAX_SKILLS_COUNT = 10
+# Максимальное количество специализаций в проекте
+MAX_SPECIALIZATIONS_COUNT = 10
 # Максимальное количество проектов у пользователя
 MAX_PROJECTS_PER_AUTHOR = 10
 # Максимальное количество проектов у пользователя - где он участник.
