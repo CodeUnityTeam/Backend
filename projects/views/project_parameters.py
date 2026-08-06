@@ -1,6 +1,6 @@
 from drf_spectacular.utils import OpenApiParameter
 
-from core.constants.projects import MAX_PAGE_SIZE, PAGE_SIZE
+from core.constants.projects import MAX_PAGE_SIZE, MAX_SEARCH_LENGTH, PAGE_SIZE
 
 # Параметры вью для проектов в списке
 PROJECT_LIST_PARAMETERS = [
@@ -41,7 +41,10 @@ PROJECT_LIST_PARAMETERS = [
         name='search',
         type=str,
         location=OpenApiParameter.QUERY,
-        description='Поиск по title и short_desc',
+        description=(
+            'Поиск по title и short_desc. '
+            f'Максимальная длина запроса — {MAX_SEARCH_LENGTH} символов.'
+        ),
         required=False,
     ),
     OpenApiParameter(

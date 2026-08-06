@@ -21,6 +21,7 @@ from core.constants.projects import (
     ARCHIVED,
     BLOCKED,
     MAX_FILTER_DAYS,
+    MAX_SEARCH_LENGTH,
     MEMBER,
     MIN_FILTER_DAYS,
     PUBLISHED,
@@ -162,6 +163,10 @@ class ProjectFilter(django_filters.FilterSet):
         """Поиск по названию, описанию проекта."""
         if not value:
             return queryset
+        if len(value) > MAX_SEARCH_LENGTH:
+            raise serializers.ValidationError(
+                'Длина запроса превышает допустимый лимит',
+            )
         return queryset.filter(
             Q(title__icontains=value) |
             Q(short_desc__icontains=value) |

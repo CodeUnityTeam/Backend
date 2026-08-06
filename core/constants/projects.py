@@ -3,6 +3,7 @@ MIN_LEN_TITLE = 10
 MAX_LEN_TITLE = 50
 MIN_SHORT_DESC = 20
 MAX_SHORT_DESC = 500
+MIN_LEN_FULL_DESC = 20
 MAX_LEN_FULL_DESC = 5000
 MAX_LEN_LOCATION = 100
 MAX_LEN_TELEGRAM = 50
@@ -57,6 +58,9 @@ MAX_LEN_STATUS_RESPONSE = 20
 MIN_FILTER_DAYS = 7
 # Максимальное количество дней для фильтрации проектов
 MAX_FILTER_DAYS = 365
+
+# Максимальная длина поискового запроса
+MAX_SEARCH_LENGTH = 100
 
 
 PAGE_SIZE = 20

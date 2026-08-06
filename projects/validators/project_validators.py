@@ -20,8 +20,7 @@ from core.constants.projects import (
     MAX_PROJECTS_PER_AUTHOR,
     MAX_SHORT_DESC,
     MAX_SKILLS_COUNT,
-    MAX_SPECIALIZATIONS_COUNT,
-    MIN_FILTER_DAYS,
+    MIN_LEN_FULL_DESC,
     MIN_LEN_TITLE,
     MIN_SHORT_DESC,
     PUBLISHED,
@@ -128,16 +127,16 @@ def validate_full_desc_project(value: str) -> str:
 
     Выполняет следующие проверки:
         1. Удаляет ведущие и завершающие пробелы.
-        2. Проверяет длину описания на превышение максимально допустимого
-           значения.
+        2. Проверяет длину описания на соответствие допустимому диапазону.
     """
     if value is None:
         return value
     cleaned_value: str = value.strip()
-    if len(cleaned_value) > MAX_LEN_FULL_DESC:
+    if not MIN_LEN_FULL_DESC <= len(cleaned_value) <= MAX_LEN_FULL_DESC:
         raise serializers.ValidationError(
-            f'Полное описание проекта не должно превышать {MAX_LEN_FULL_DESC} '
-            'символов.',
+            f'Полное описание проекта не может быть короче '
+            f'{MIN_LEN_FULL_DESC} и более {MAX_LEN_FULL_DESC} символов. '
+            f'Текущая длина: {len(cleaned_value)}',
         )
     return cleaned_value
 

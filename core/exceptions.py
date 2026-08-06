@@ -22,6 +22,18 @@ class ProjectAPIException(APIException):
     default_code = 'error'
 
 
+class ConflictException(ProjectAPIException):
+    """Исключение конфликта состояния (HTTP 409).
+
+    Используется, когда запрос конфликтует с текущим состоянием ресурса,
+    например при повторном приглашении уже приглашённого пользователя.
+    """
+
+    status_code = status.HTTP_409_CONFLICT
+    default_detail = 'Конфликт с текущим состоянием ресурса.'
+    default_code = 'conflict'
+
+
 def custom_exception_handler(exc: Exception, context: dict) -> Response:
     """Кастомный обработчик исключений для проекта."""
     request = context.get('request')
