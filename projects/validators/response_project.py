@@ -15,7 +15,7 @@ from core.constants.projects import (
     REJECTED,
     WITHDRAWN,
 )
-from core.exceptions import ConflictException
+from core.exceptions import ConflictException, InvalidResponseStatusTransition
 from projects.models import Project, ProjectParticipant, Response
 
 User = get_user_model()
@@ -113,9 +113,8 @@ def validate_status_can_be_changed(user_response: Response) -> None:
     Статус можно изменить только если текущий статус — 'pending'.
     """
     if user_response.status_resp != PENDING:
-        raise serializers.ValidationError(
-            f'Статус можно изменить только из "{PENDING}", '
-            f'текущий статус: "{user_response.status_resp}".',
+        raise InvalidResponseStatusTransition(
+            detail='Отклик/приглашение уже обработано.',
         )
 
 
