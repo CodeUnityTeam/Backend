@@ -12,6 +12,7 @@ from core.constants.projects import (
     ARCHIVED,
     BLOCKED,
     DRAFT,
+    MAX_FILTER_DAYS,
     MAX_LEN_FULL_DESC,
     MAX_LEN_LOCATION,
     MAX_LEN_TELEGRAM,
@@ -19,6 +20,8 @@ from core.constants.projects import (
     MAX_PROJECTS_PER_AUTHOR,
     MAX_SHORT_DESC,
     MAX_SKILLS_COUNT,
+    MAX_SPECIALIZATIONS_COUNT,
+    MIN_FILTER_DAYS,
     MIN_LEN_TITLE,
     MIN_SHORT_DESC,
     PUBLISHED,
@@ -139,27 +142,25 @@ def validate_full_desc_project(value: str) -> str:
     return cleaned_value
 
 
-def validate_location_project(value: str) -> str:
+def validate_location_project(value: str | None) -> str | None:
     """Валидирует местоположение проекта.
 
     Выполняет следующие проверки:
         1. Удаляет ведущие и завершающие пробелы.
         2. Проверяет длину на превышение максимально допустимого значения.
         3. Проверяет, что строка содержит только разрешённые символы:
-        буквы (A-Za-z, А-Яа-я), цифры (0-9), пробелы и дефисы (-).
+        буквы (A-Za-z, А-Яа-я), пробелы и дефисы (-).
     """
     if value is None:
         return value
     cleaned_value = value.strip()
     if len(cleaned_value) > MAX_LEN_LOCATION:
         raise serializers.ValidationError(
-            f'Местоположение не должно превышать {MAX_LEN_FULL_DESC} '
-            'символов.',
+            f'Местоположение не должно превышать {MAX_LEN_LOCATION} символов.',
         )
-    if not re.match(r'^[a-zA-Zа-яА-Я0-9\s\-]*$', cleaned_value):
+    if not re.match(r'^[a-zA-Zа-яА-Я \-]*$', cleaned_value):
         raise serializers.ValidationError(
-            'Местоположение может содержать '
-            'только буквы, цифры, пробелы, дефисы.',
+            'Местоположение может содержать только буквы, пробелы, дефисы.',
         )
     return cleaned_value
 
@@ -284,10 +285,25 @@ def validate_published_project_dates(
         })
 
 
-def validate_project_count_per_author(
-    user: User,
-    exclude_project_id: str | None = None,
+def validate_duration_project(
+    duration_min: int | None,
+    duration_max: int | None,
 ) -> None:
+    """Валидация продолжительности дней в фильтре для списка проектов."""
+    for value in (duration_min, duration_max):
+        if value is None:
+            continue
+        if (
+            not isinstance(value, int)
+            or not MIN_FILTER_DAYS <= value <= MAX_FILTER_DAYS
+        ):
+            raise serializers.ValidationError(
+                'Параметры duration_min и duration_max должны быть целыми '
+                f'числами от {MIN_FILTER_DAYS} до {MAX_FILTER_DAYS}.',
+            )
+
+
+def validate_project_count_per_author(user: User) -> None:
     """Валидация количества проектов у автора.
 
     Проверяет, что у пользователя не больше MAX_PROJECTS_PER_AUTHOR
@@ -477,7 +493,9 @@ def validate_project_data(
     validate_project_count_per_author(user, exclude_project_id)
     # Валидация текстовых полей
     data['title'] = validate_title_project(
-        data['title'], user, exclude_project_id=exclude_project_id,
+        data['title'],
+        user,
+        exclude_project_id=exclude_project_id,
     )
     data['short_desc'] = validate_short_desc_project(data['short_desc'])
     data['full_desc'] = validate_full_desc_project(data['full_desc'])
@@ -512,6 +530,14 @@ def validate_project_data(
         raise serializers.ValidationError({
             'specializations': (
                 'Необходимо указать хотя бы одну специализацию.',
+            ),
+        })
+    if len(specializations_data) > MAX_SPECIALIZATIONS_COUNT:
+        raise serializers.ValidationError({
+            'specializations': (
+                'Количество специализаций не должно превышать '
+                f'{MAX_SPECIALIZATIONS_COUNT}. Сейчас: '
+                f'{len(specializations_data)}.'
             ),
         })
     validated_specializations = _validate_related_ids(
