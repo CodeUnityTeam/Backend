@@ -20,6 +20,8 @@ from core.constants.projects import (
     MAX_PROJECTS_PER_AUTHOR,
     MAX_SHORT_DESC,
     MAX_SKILLS_COUNT,
+    MAX_SPECIALIZATIONS_COUNT,
+    MIN_FILTER_DAYS,
     MIN_LEN_FULL_DESC,
     MIN_LEN_TITLE,
     MIN_SHORT_DESC,
@@ -302,7 +304,10 @@ def validate_duration_project(
             )
 
 
-def validate_project_count_per_author(user: User) -> None:
+def validate_project_count_per_author(
+    user: User,
+    exclude_project_id: str | None = None,
+) -> None:
     """Валидация количества проектов у автора.
 
     Проверяет, что у пользователя не больше MAX_PROJECTS_PER_AUTHOR
