@@ -77,3 +77,6 @@ class InvalidResponseStatusTransition(ProjectAPIException):
     """Исключение, возникающее при недопустимом переходе статуса отклика."""
 
     status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+    default_detail = {
+        'message': 'Отклик/приглашение уже обработано',
+    }
