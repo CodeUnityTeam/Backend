@@ -6,6 +6,7 @@ from .project_like import (
     validate_project_like,
 )
 from .project_validators import (
+    StrictCharField,
     _validate_formats_by_uuid_list,
     _validate_related_ids,
     add_relationships_to_project,

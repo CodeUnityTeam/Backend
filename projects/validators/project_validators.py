@@ -6,6 +6,7 @@ from django.apps import apps
 from django.contrib.auth import get_user_model
 from django.db.models import Model
 from rest_framework import serializers
+from rest_framework.exceptions import PermissionDenied
 
 from core.constants.projects import (
     ARCHIVED,
@@ -29,6 +30,33 @@ from core.constants.projects import (
 from projects.models import Project, WorkFormat
 
 User = get_user_model()
+
+
+class StrictCharField(serializers.CharField):
+    """CharField, который отклоняет любые нестроковые значения.
+
+    Стандартный CharField приводит числа (int/float) к строке через str()
+    в to_internal_value, поэтому требуется строгая проверка типа до
+    преобразования. Поле принимает только строки, иначе возвращается
+    ошибка валидации (400 Bad Request).
+    """
+
+    default_error_messages = {
+        'invalid': 'Значение должно быть строкой.',
+    }
+
+    def to_internal_value(self, data: object) -> str:
+        """Преобразует и валидирует входное значение.
+
+        Принимает только строки. Если значение не является строкой
+        (кроме None, которое передаётся в базовую реализацию), возвращается
+        ошибка валидации.
+        """
+        if data is None:
+            return super().to_internal_value(data)
+        if not isinstance(data, str):
+            self.fail('invalid')
+        return super().to_internal_value(data)
 
 
 def validate_title_project(
@@ -82,7 +110,7 @@ def validate_short_desc_project(value: str) -> str:
     cleaned_value: str = value.strip()
     if not MIN_SHORT_DESC <= len(cleaned_value) <= MAX_SHORT_DESC:
         raise serializers.ValidationError(
-            f'Кратное описание проекта не может быть короче {MIN_SHORT_DESC} '
+            f'Краткое описание проекта не может быть короче {MIN_SHORT_DESC} '
             f'и более {MAX_SHORT_DESC} символов. '
             f'Текущая длина: {len(cleaned_value)}',
         )
@@ -280,8 +308,14 @@ def validate_project_count_per_author(user: User) -> None:
 
     Проверяет, что у пользователя не больше MAX_PROJECTS_PER_AUTHOR
     активных проектов (draft, published, recruiting_closed).
+
+    Args:
+        user: Пользователь — автор проекта.
+        exclude_project_id: ID проекта, который нужно исключить из подсчёта
+            (используется при обновлении, чтобы не учитывать сам проект).
+
     """
-    active_projects_count = (
+    qs = (
         Project.objects
         .filter(
             author=user,
@@ -289,10 +323,12 @@ def validate_project_count_per_author(user: User) -> None:
         .exclude(
             status_project__in=[ARCHIVED, BLOCKED],
         )
-        .count()
     )
+    if exclude_project_id is not None:
+        qs = qs.exclude(project_id=exclude_project_id)
+    active_projects_count = qs.count()
     if active_projects_count >= MAX_PROJECTS_PER_AUTHOR:
-        raise serializers.ValidationError(
+        raise PermissionDenied(
             f'У пользователя не может быть больше '
             f'{MAX_PROJECTS_PER_AUTHOR} активных проектов. '
             f'Текущее количество: {active_projects_count}.',
@@ -454,7 +490,7 @@ def validate_project_data(
 
     """
     # Валидиция лимита проектов у автора
-    validate_project_count_per_author(user)
+    validate_project_count_per_author(user, exclude_project_id)
     # Валидация текстовых полей
     data['title'] = validate_title_project(
         data['title'],

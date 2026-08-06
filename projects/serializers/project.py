@@ -27,6 +27,7 @@ from projects.models import Project, ProjectLike, ProjectParticipant
 from projects.selectors import get_project_with_relations
 from projects.services import add_user_to_project_participants
 from projects.validators import (
+    StrictCharField,
     _validate_formats_by_uuid_list,
     _validate_related_ids,
     add_relationships_to_project,
@@ -60,7 +61,16 @@ logger = logging.getLogger(__name__)
 logger = logging.getLogger('app.' + __name__)
 
 
-class ProjectCreateSerializer(serializers.ModelSerializer):
+class ProjectBaseSerializer(serializers.ModelSerializer):
+    """Базовый сериализатор проекта.
+
+    Строковые поля (title, short_desc, full_desc, location,
+    telegram_contact) объявляются как StrictCharField, который отклоняет
+    нестроковые значения на этапе to_internal_value.
+    """
+
+
+class ProjectCreateSerializer(ProjectBaseSerializer):
     """Сериализатор для создания проекта."""
 
     skills = serializers.ListField(
@@ -81,6 +91,44 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
         required=False,
         help_text='Список форматов работы в формате ["uuid", "uuid"]',
     )
+    title = StrictCharField(
+        required=True,
+        allow_blank=False,
+        validators=[validate_no_bad_words],
+        error_messages={
+            'required': 'Название обязательно для заполнения.',
+            'blank': 'Название не может быть пустым.',
+        },
+    )
+    short_desc = StrictCharField(
+        required=True,
+        allow_blank=False,
+        validators=[validate_no_bad_words],
+        error_messages={
+            'required': 'Краткое описание обязательно для заполнения.',
+            'blank': 'Краткое описание не может быть пустым.',
+        },
+    )
+    full_desc = StrictCharField(
+        required=False,
+        allow_blank=True,
+        default=None,
+        validators=[validate_no_bad_words],
+    )
+    location = StrictCharField(
+        required=True,
+        allow_blank=False,
+        validators=[validate_no_bad_words],
+        error_messages={
+            'required': 'Местоположение обязательно для заполнения.',
+            'blank': 'Местоположение не может быть пустым.',
+        },
+    )
+    telegram_contact = StrictCharField(
+        required=False,
+        allow_blank=True,
+        default='',
+    )
 
     class Meta:
         model = Project
@@ -98,39 +146,6 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
             'telegram_contact',
         )
         extra_kwargs = {
-            'title': {
-                'required': True,
-                'allow_blank': False,
-                'validators': [validate_no_bad_words],
-                'error_messages': {
-                    'required': 'Название обязательно для заполнения.',
-                    'blank': 'Название не может быть пустым.',
-                },
-            },
-            'short_desc': {
-                'required': True,
-                'allow_blank': False,
-                'validators': [validate_no_bad_words],
-                'error_messages': {
-                    'required': 'Кратное описание обязательно для заполнения.',
-                    'blank': 'Краткое описание не может быть пустым.',
-                },
-            },
-            'full_desc': {
-                'required': False,
-                'allow_blank': True,
-                'default': None,
-                'validators': [validate_no_bad_words],
-            },
-            'location': {
-                'required': True,
-                'allow_blank': False,
-                'validators': [validate_no_bad_words],
-                'error_messages': {
-                    'required': 'Местоположение обязательно для заполнения.',
-                    'blank': 'Местоположение не может быть пустым.',
-                },
-            },
             'start_date': {
                 'required': False,
                 'input_formats': ['%Y.%m.%d', '%Y-%m-%d'],
@@ -413,7 +428,7 @@ class ProjectArchiveSerializer(serializers.Serializer):
     pass
 
 
-class ProjectUpdateSerializer(serializers.ModelSerializer):
+class ProjectUpdateSerializer(ProjectBaseSerializer):
     """Сериализатор для обновления проекта."""
 
     skills = serializers.ListField(
@@ -434,6 +449,27 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
         allow_empty=True,
         help_text='Список форматов работы в формате ["uuid", "uuid"]',
     )
+    title = StrictCharField(
+        required=False,
+        validators=[validate_no_bad_words],
+    )
+    short_desc = StrictCharField(
+        required=False,
+        validators=[validate_no_bad_words],
+    )
+    full_desc = StrictCharField(
+        required=False,
+        allow_blank=True,
+        validators=[validate_no_bad_words],
+    )
+    location = StrictCharField(
+        required=False,
+        validators=[validate_no_bad_words],
+    )
+    telegram_contact = StrictCharField(
+        required=False,
+        allow_blank=True,
+    )
 
     class Meta:
         model = Project
@@ -451,22 +487,6 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
             'telegram_contact',
         )
         extra_kwargs = {
-            'title': {
-                'required': False,
-                'validators': [validate_no_bad_words],
-            },
-            'short_desc': {
-                'required': False,
-                'validators': [validate_no_bad_words],
-            },
-            'full_desc': {
-                'required': False,
-                'validators': [validate_no_bad_words],
-            },
-            'location': {
-                'required': False,
-                'validators': [validate_no_bad_words],
-            },
             'end_date': {
                 'required': False,
                 'input_formats': ['%Y.%m.%d', '%Y-%m-%d'],
@@ -590,7 +610,11 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
             full_data['project_format'] = [
                 str(f.format_id) for f in project.project_format.all()
             ]
-        return validate_project_data(full_data, user)
+        return validate_project_data(
+            full_data,
+            user,
+            exclude_project_id=str(project.project_id),
+        )
 
     def _run_update_validation_scenarios(
         self,
