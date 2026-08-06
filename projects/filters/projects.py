@@ -25,7 +25,6 @@ from core.constants.projects import (
     ARCHIVED,
     BLOCKED,
     MAX_FILTER_DAYS,
-    MAX_SEARCH_LENGTH,
     MEMBER,
     MIN_FILTER_DAYS,
     PUBLISHED,

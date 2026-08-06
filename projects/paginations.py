@@ -1,5 +1,7 @@
 from typing import Any, Dict
 
+from django.core.paginator import InvalidPage
+from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
@@ -13,6 +15,34 @@ class CustomProjectPagination(CustomPaginationMixin, PageNumberPagination):
     page_size = PAGE_SIZE
     page_size_query_param = 'limit'
     max_page_size = MAX_PAGE_SIZE
+
+    def paginate_queryset(
+        self,
+        queryset: Any,
+        request: Any,
+        view: Any = None,
+    ) -> list[Any] | None:
+        """Возвращает 400, если клиент передал некорректный номер страницы."""
+        self.request = request
+        page_size = self.get_page_size(request)
+        if not page_size:
+            return None
+
+        paginator = self.django_paginator_class(queryset, page_size)
+        page_number = self.get_page_number(request, paginator)
+        try:
+            self.page = paginator.page(page_number)
+        except InvalidPage as exc:
+            message = self.invalid_page_message.format(
+                page_number=page_number,
+                message=str(exc),
+            )
+            raise ValidationError({'page': message})
+
+        if paginator.num_pages > 1 and self.template is not None:
+            self.display_page_controls = True
+
+        return list(self.page)
 
 
 class CustomResponseFeedPagination(CustomProjectPagination):
