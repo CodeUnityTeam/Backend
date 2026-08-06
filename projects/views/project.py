@@ -321,7 +321,15 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
         if self.action == 'list':
             my_project = self.request.query_params.get('my_project')
             if not my_project or my_project.lower() == 'false':
-                qs = get_visible_projects_for_list(qs)
+                # Если применена фильтрация по специализации (spec_id),
+                # скрываем проекты с закрытым набором (recruiting_closed).
+                has_spec_filter = bool(
+                    self.request.query_params.getlist('spec_id'),
+                )
+                qs = get_visible_projects_for_list(
+                    qs,
+                    exclude_recruiting_closed=has_spec_filter,
+                )
             return qs
         if self.action == 'retrieve':
             return get_visible_projects_for_retrieve(qs, user)
