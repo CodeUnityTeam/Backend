@@ -21,10 +21,12 @@ from core.constants.projects import (
     MAX_SHORT_DESC,
     MAX_SKILLS_COUNT,
     MAX_SPECIALIZATIONS_COUNT,
+    MAX_VALUE_SEARCH_QUERY_LENGTH,
     MIN_FILTER_DAYS,
     MIN_LEN_FULL_DESC,
     MIN_LEN_TITLE,
     MIN_SHORT_DESC,
+    MIN_VALUE_SEARCH_QUERY_LENGTH,
     PUBLISHED,
     RECRUITING_CLOSED,
 )
@@ -319,14 +321,10 @@ def validate_project_count_per_author(
             (используется при обновлении, чтобы не учитывать сам проект).
 
     """
-    qs = (
-        Project.objects
-        .filter(
-            author=user,
-        )
-        .exclude(
-            status_project__in=[ARCHIVED, BLOCKED],
-        )
+    qs = Project.objects.filter(
+        author=user,
+    ).exclude(
+        status_project__in=[ARCHIVED, BLOCKED],
     )
     if exclude_project_id is not None:
         qs = qs.exclude(project_id=exclude_project_id)
@@ -559,3 +557,18 @@ def validate_project_data(
     data['_validated_specializations'] = validated_specializations
     data['_validated_formats'] = validated_formats
     return data
+
+
+def validators_search(value: str) -> None:
+    """Проверяет длину поискового запроса."""
+    cleaned_value = value.strip()
+    if not (
+        MIN_VALUE_SEARCH_QUERY_LENGTH
+        <= len(cleaned_value)
+        <= MAX_VALUE_SEARCH_QUERY_LENGTH
+    ):
+        raise serializers.ValidationError(
+            'Поисковый запрос принимает длину строки от '
+            f'{MIN_VALUE_SEARCH_QUERY_LENGTH} до '
+            f'{MAX_VALUE_SEARCH_QUERY_LENGTH} символов.',
+        )
