@@ -1,10 +1,10 @@
 import hashlib
 import logging
-from typing import Any
+from typing import Any, List, Optional
 
 from django.core.cache import cache
 from django.db import transaction
-from django.db.models import Case, IntegerField, QuerySet, When
+from django.db.models import Case, IntegerField, QuerySet, Value, When
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import (
     OpenApiResponse,
@@ -185,15 +185,23 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
         *args: Any,
         **kwargs: Any,
     ) -> DRFResponse:
-        """Возвращает список проектов с кэшированием полного списка ID."""
-        user = request.user
-        query_params = request.query_params
+        """Возвращает список проектов с кэшированием списка ID."""
+        user: Any = request.user
+        query_params: Any = request.query_params
 
-        cache_key = _build_list_cache_key(
-            prefix=CACHE_KEY_PROJECTS_PREFIX,
-            user=user,
-            query_params=query_params,
+        sort_by: str = str(query_params.get('sort_by', ''))
+        search_query: str = str(query_params.get('search', ''))
+        is_relevance: bool = (
+            'relevance' in sort_by and len(search_query) > 0
         )
+
+        cache_key: Optional[str] = None
+        if not is_relevance:
+            cache_key = _build_list_cache_key(
+                prefix=CACHE_KEY_PROJECTS_PREFIX,
+                user=user,
+                query_params=query_params,
+            )
 
         logger.info(
             'Запрос списка проектов: user_id=%s, role=%s, params=%s, '
@@ -208,17 +216,16 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
             cache_key,
         )
 
-        if cache_key is None:
+        if cache_key is None and not is_relevance:
             logger.info(
                 'Кэширование списка проектов отключено: user=anonymous',
             )
             return super().list(request, *args, **kwargs)
 
-        cached_ids = cache.get(cache_key)
+        ordered_ids: List[str] = []
 
-        if cached_ids is None:
+        if cache_key is None:
             filtered_queryset = self.filter_queryset(self.get_queryset())
-
             ordered_ids = [
                 str(project_id)
                 for project_id in filtered_queryset.values_list(
@@ -226,28 +233,38 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
                     flat=True,
                 )
             ]
-
-            cache.set(
-                cache_key,
-                ordered_ids,
-                timeout=PROJECT_LIST_CACHE_TIMEOUT,
-            )
-
-            logger.info(
-                'Cache MISS: key=%s, total_ids=%d',
-                cache_key,
-                len(ordered_ids),
-            )
         else:
-            ordered_ids = cached_ids
+            cached_ids: Optional[List[str]] = cache.get(cache_key)
+            if cached_ids is None:
+                filtered_queryset = self.filter_queryset(self.get_queryset())
+                ordered_ids = [
+                    str(project_id)
+                    for project_id in filtered_queryset.values_list(
+                        'project_id',
+                        flat=True,
+                    )
+                ]
+                cache.set(
+                    cache_key,
+                    ordered_ids,
+                    timeout=PROJECT_LIST_CACHE_TIMEOUT,
+                )
+                logger.info(
+                    'Cache MISS: key=%s, total_ids=%d',
+                    cache_key,
+                    len(ordered_ids),
+                )
+            else:
+                ordered_ids = cached_ids
+                logger.info(
+                    'Cache HIT IDs: key=%s, total_ids=%d',
+                    cache_key,
+                    len(ordered_ids),
+                )
 
-            logger.info(
-                'Cache HIT IDs: key=%s, total_ids=%d',
-                cache_key,
-                len(ordered_ids),
-            )
-
-        page_ids = self.paginate_queryset(ordered_ids)
+        page_ids: Optional[List[str]] = self.paginate_queryset(
+            ordered_ids,
+        )
 
         if not page_ids:
             logger.debug(
@@ -256,9 +273,9 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
             )
             return self.get_paginated_response([])
 
-        preserved_order = Case(
+        preserved_order: Case = Case(
             *[
-                When(project_id=project_id, then=position)
+                When(project_id=project_id, then=Value(position))
                 for position, project_id in enumerate(page_ids)
             ],
             output_field=IntegerField(),
@@ -270,7 +287,10 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
             .order_by(preserved_order)
         )
 
-        serializer = self.get_serializer(
+        page_queryset.query.extra_order_by = ()
+        page_queryset.query.default_ordering = False
+
+        serializer: Any = self.get_serializer(
             page_queryset,
             many=True,
         )
@@ -278,7 +298,7 @@ class ProjectViewSet(CacheRetrieveMixin, ModelViewSet):
         logger.debug(
             'Список проектов сформирован: cache_status=%s, '
             'page=%d, page_size=%d, total_ids=%d',
-            'HIT' if cached_ids is not None else 'MISS',
+            'HIT' if cache_key and cached_ids is not None else 'MISS',
             self.paginator.page.number,
             len(page_ids),
             len(ordered_ids),
