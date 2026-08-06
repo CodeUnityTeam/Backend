@@ -257,12 +257,13 @@ def get_visible_projects_for_list(
     Args:
         qs: Базовый queryset проектов.
         exclude_recruiting_closed: Если True, дополнительно исключает
-            проекты со статусом recruiting_closed. Применяется, когда
-            используется фильтрация по специализации (spec_id), чтобы
-            не показывать пользователю закрытые наборы.
+        проекты со статусом recruiting_closed. Применяется, когда
+        используется фильтрация по специализации (spec_id), чтобы
+        не показывать пользователю закрытые наборы.
 
     Возвращает:
         QuerySet проектов, видимых в списке.
+
     """
     excluded = (DRAFT, BLOCKED, ARCHIVED)
     if exclude_recruiting_closed:
