@@ -227,7 +227,7 @@ class ProjectFilter(django_filters.FilterSet):
             duration_operator (str): less | greater | between
 
         Логика:
-            less    — duration <= duration_min
+            less    — duration <= duration_max
             greater — duration >= duration_min
             between — duration_min <= duration <= duration_max
         """
@@ -267,7 +267,7 @@ class ProjectFilter(django_filters.FilterSet):
         )
         queryset = queryset.annotate(duration=duration_expr)
         if operator == 'less':
-            return queryset.filter(duration__lte=min_delta)
+            return queryset.filter(duration__lte=max_delta)
         if operator == 'greater':
             return queryset.filter(duration__gte=min_delta)
         # between (по умолчанию)

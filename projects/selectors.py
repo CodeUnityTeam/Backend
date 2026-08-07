@@ -247,15 +247,28 @@ def exclude_archived_blocked(
 
 def get_visible_projects_for_list(
     qs: QuerySet[Project],
+    exclude_recruiting_closed: bool = False,
 ) -> QuerySet[Project]:
     """Исключает черновики, заблокированные и архивные проекты.
 
     Используется в ProjectViewSet.get_queryset для action 'list',
     когда не запрошен фильтр my_project.
+
+    Args:
+        qs: Базовый queryset проектов.
+        exclude_recruiting_closed: Если True, дополнительно исключает
+        проекты со статусом recruiting_closed. Применяется, когда
+        используется фильтрация по специализации (spec_id), чтобы
+        не показывать пользователю закрытые наборы.
+
+    Возвращает:
+        QuerySet проектов, видимых в списке.
+
     """
-    return qs.exclude(
-        status_project__in=(DRAFT, BLOCKED, ARCHIVED),
-    )
+    excluded = (DRAFT, BLOCKED, ARCHIVED)
+    if exclude_recruiting_closed:
+        excluded += (RECRUITING_CLOSED,)
+    return qs.exclude(status_project__in=excluded)
 
 
 def get_visible_projects_for_retrieve(
