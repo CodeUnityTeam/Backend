@@ -33,6 +33,7 @@ from projects.validators import (
     add_relationships_to_project,
     extract_relationship_data,
     validate_create_project_status,
+    validate_location_project,
     validate_project_data,
     validate_project_dates,
     validate_published_project_dates,
@@ -503,6 +504,10 @@ class ProjectUpdateSerializer(ProjectBaseSerializer):
                 'allow_blank': True,
             },
         }
+
+    def validate_location(self, value: str) -> str:
+        """Валидирует и нормализует местоположение проекта."""
+        return validate_location_project(value)
 
     def validate(self, data: dict) -> dict:
         """Валидация данных при обновлении проекта.

@@ -15,7 +15,7 @@ from core.constants.projects import (
     REJECTED,
     WITHDRAWN,
 )
-from core.exceptions import ConflictException
+from core.exceptions import ConflictException, InvalidResponseStatusTransition
 from projects.models import Project, ProjectParticipant, Response
 
 User = get_user_model()
@@ -113,10 +113,7 @@ def validate_status_can_be_changed(user_response: Response) -> None:
     Статус можно изменить только если текущий статус — 'pending'.
     """
     if user_response.status_resp != PENDING:
-        raise serializers.ValidationError(
-            f'Статус можно изменить только из "{PENDING}", '
-            f'текущий статус: "{user_response.status_resp}".',
-        )
+        raise InvalidResponseStatusTransition
 
 
 def validate_project_count_per_member(user: User) -> None:
@@ -154,7 +151,6 @@ def validate_can_change_status(
       - текущий статус должен быть 'pending'
       - при одобрении — пользователь не должен быть участником проекта
     """
-    validate_status_can_be_changed(user_response)
     is_employer = (
         user.projects_relation == User.ProjectsRelationChoices.EMPLOYER
     )
@@ -193,22 +189,22 @@ def validate_can_change_status(
         error_messages = {
             APPROVED: 'Нет прав для одобрения этого отклика/приглашения.',
             REJECTED: 'Нет прав для отклонения этого отклика/приглашения.',
-            WITHDRAWN: 'Инициатор может отозвать свой отклик/приглашение.',
+            WITHDRAWN: 'Вы не можете отозвать этот отклик/приглашение.',
         }
-        raise serializers.ValidationError(
+        raise exceptions.PermissionDenied(
             error_messages.get(
                 new_status,
                 f'Нет прав для действия "{new_status}".',
             ),
         )
+    validate_status_can_be_changed(user_response)
+    if new_status != APPROVED:
+        return
     validate_project_count_per_member(user_response.user)
-    if (
-        new_status == APPROVED
-        and ProjectParticipant.objects.filter(
-            project=user_response.project,
-            user=user_response.user,
-        ).exists()
-    ):
+    if ProjectParticipant.objects.filter(
+        project=user_response.project,
+        user=user_response.user,
+    ).exists():
         raise serializers.ValidationError(
             'Пользователь уже является участником проекта.',
         )
