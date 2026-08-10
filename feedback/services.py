@@ -1,6 +1,6 @@
 from django.core.files.uploadedfile import UploadedFile
 
-from core.s3_utils import MediaType, S3Service
+from minio.s3_utils import MediaType, S3Service
 
 
 def feedback_image_upload_handler(file_obj: UploadedFile) -> str:

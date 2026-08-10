@@ -1,24 +1,23 @@
 import logging
 import uuid
-from typing import Any, List
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
-from rest_framework import serializers, status
+from rest_framework import serializers
 from rest_framework.exceptions import APIException
 
 from core.constants.feedback import (
     MAX_CONTENT_FEEDBACK,
     MAX_IMAGE_COUNT_FEEDBACK,
-    MAX_IMAGE_SIZE_FEEDBACK,
     MAX_SUBJECT_FEEDBACK,
     MIN_CONTENT_FEEDBACK,
     MIN_SUBJECT_FEEDBACK,
 )
-from core.validators import validate_no_bad_words
+from core.validators import file_validator, validate_no_bad_words
 from feedback.models import FeedbackForm, FeedbackImage, Review
 from feedback.selectors import create_review
 from feedback.services import feedback_image_upload_handler
+from minio.s3_utils import MediaType
 from projects.serializers.specialization import SpecializationSerializer
 
 logger = logging.getLogger(__name__)
@@ -118,7 +117,10 @@ class FeedbackCreateSerializer(serializers.ModelSerializer):
         validators=[validate_no_bad_words],
     )
     attachments = serializers.ListField(
-        child=serializers.ImageField(),
+        child=serializers.ImageField(
+            validators=[file_validator(MediaType.FEEDBACK_IMAGE)],
+        ),
+        max_length=MAX_IMAGE_COUNT_FEEDBACK,
         write_only=True,
         required=False,
     )
@@ -161,34 +163,3 @@ class FeedbackCreateSerializer(serializers.ModelSerializer):
             len(attachments),
         )
         return feedback
-
-    def validate_attachments(self, value: List) -> List[Any]:
-        """Валидация изображений прикреплённых к форме обратной связи.
-
-        Выполняет следующие проверки:
-        - Количество - не более 5.
-        - Размер каждого изображения - не более 5 МБ.
-        - Формат изображений - только JPEG/PNG.
-        """
-        if len(value) > MAX_IMAGE_COUNT_FEEDBACK:
-            raise DynamicHTTPValidationError(
-                detail={'error': 'Количество изображений не должно '
-                        'превышать 5 шт.'},
-                status_code=status.HTTP_400_BAD_REQUEST,
-                code='max_limit_exceeded',
-            )
-        for image in value:
-            if image.content_type.split('/')[1] not in ('jpeg', 'png'):
-                raise DynamicHTTPValidationError(
-                    detail={'error': 'Неподдерживаемый тип файла. Пожалуйста, '
-                            'загрузите файл в формате png либо jpeg.'},
-                    status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-                )
-            if image.size > MAX_IMAGE_SIZE_FEEDBACK:
-                raise DynamicHTTPValidationError(
-                    detail={'error': 'Файл слишком большой. Максимально '
-                            'допустимый размер - 5 Мб. Пожалуйста, уменьшите '
-                            'размер файла и попробуйте снова.'},
-                    status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-                )
-        return value

@@ -8,8 +8,8 @@ from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from config import settings
-from core.validators import file_size_validator
+from core.validators import file_validator
+from minio.s3_utils import MediaType
 from users.models.skills import Skill
 from users.models.specializations import Specialization
 from users.models.users import User, UserExperience, UserLike
@@ -176,9 +176,7 @@ class AvatarUploadSerializer(serializers.Serializer[dict[str, Any]]):
     """Сериализатор для валидации загружаемого файла аватара."""
 
     file: serializers.ImageField = serializers.ImageField(
-        validators=[file_size_validator(
-            allow_size_mb=settings.S3_MAX_FILE_SIZE_MB,
-        )],
+        validators=[file_validator(MediaType.AVATAR)],
         write_only=True,
     )
 

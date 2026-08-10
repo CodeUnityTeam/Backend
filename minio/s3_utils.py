@@ -1,5 +1,6 @@
 import logging
 from enum import StrEnum
+from typing import Any
 from uuid import uuid4
 
 from django.conf import settings
@@ -102,6 +103,66 @@ class S3Service:
             'public_url': storage.url(cloud_path),
         }
 
+    @classmethod
+    def get_size_limit_mb(cls, media_type: MediaType) -> int:
+        """Возвращает максимальный размер файла в МБ для указанного бакета."""
+        bucket_config = settings.S3_BUCKETS.get(media_type.value, {})
+        # Если лимит не задан, откатываемся к глобальному дефолту безопасности
+        return bucket_config.get('max_size_mb', settings.S3_MAX_FILE_SIZE_MB)
+
+    @classmethod
+    def is_allowed_type(cls, media_type: MediaType, content_type: str) -> bool:
+        """Проверяет, разрешен ли переданный MIME-тип для этого бакета."""
+        bucket_config = settings.S3_BUCKETS.get(media_type.value, {})
+        raw_types = bucket_config.get('allowed_types', [])
+
+        return content_type.strip().lower() in (
+            t.strip().lower() for t in raw_types
+        )
+
+    @classmethod
+    def generate_presigned_post_url(
+        cls,
+        media_type: MediaType,
+        filename: str,
+        content_type: str,
+        expires_in: int = 3600,
+    ) -> dict[str, Any]:
+        """Генерирует Presigned POST данные для прямой загрузки.
+
+        Принудительно зашивает лимиты размера и типа файла в политику
+         безопасности MinIO.
+        """
+        storage = cls._get_storage(media_type)
+        s3_client = storage.connection.meta.client
+        bucket_name = cls._get_bucket_name(media_type)
+        cloud_path = cls._generate_cloud_path(media_type, filename)
+
+        # Переводим мегабайты из настроек в чистые байты для AWS S3 API
+        max_bytes = cls.get_size_limit_mb(media_type) * 1024 * 1024
+
+        # Политика безопасности: ограничиваем Content-Length и Content-Type
+        conditions = [
+            ['content-length-range', 0, max_bytes],
+            ['starts-with', '$Content-Type', content_type],
+        ]
+
+        # Генерируем POST данные (URL + скрытые поля подписи)
+        post_data = s3_client.generate_presigned_post(
+            Bucket=bucket_name,
+            Key=cloud_path,
+            Fields={'Content-Type': content_type},
+            Conditions=conditions,
+            ExpiresIn=expires_in,
+        )
+
+        return {
+            'url': post_data['url'],
+            'fields': post_data['fields'],
+            'object_key': cloud_path,
+            'public_url': storage.url(cloud_path),
+        }
+
     # ------------------------------------------------------------------
     # Внутренние методы
     # ------------------------------------------------------------------
@@ -109,7 +170,7 @@ class S3Service:
     @classmethod
     def _get_bucket_name(cls, media_type: MediaType) -> str:
         """Возвращает имя бакета для типа медиа из настроек."""
-        return settings.S3_BUCKETS[media_type]
+        return settings.S3_BUCKETS[media_type.value]['name']
 
     @classmethod
     def _get_storage(cls, media_type: MediaType) -> S3Boto3Storage:

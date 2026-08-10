@@ -152,7 +152,7 @@ def invalidate_cache(...):
 - [`core/cache_mixins.py`](../core/cache_mixins.py) — кэширование
 - [`core/exceptions.py`](../core/exceptions.py) — исключения
 - [`core/parsers.py`](../core/parsers.py) — парсеры
-- [`core/s3_utils.py`](../core/s3_utils.py) — S3
+- [`../minio/s3_utils.py`](../minio/s3_utils.py) — S3
 - [`core/management/commands/cleanup_s3_orphans.py`](../core/management/commands/cleanup_s3_orphans.py) — команда очистки S3
 - [`documents/views.py`](../documents/views.py) — документы
 - [`feedback/serializers.py`](../feedback/serializers.py) — сериализаторы фидбека
