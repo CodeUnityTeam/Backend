@@ -9,6 +9,7 @@ from rest_framework_simplejwt.exceptions import (
     InvalidToken,
 )
 
+from users.models import User
 from users.services import update_last_login
 
 logger = logging.getLogger(__name__)
@@ -31,11 +32,11 @@ class UpdateLastActivityMiddleware:
         self.get_response = get_response
         self.jwt_auth = JWTAuthentication()
 
-    def _get_user_from_jwt(self, request: HttpRequest) -> object | None:
+    def _get_user_from_jwt(self, request: HttpRequest) -> User | None:
         """Попытаться извлечь пользователя из JWT-токена.
 
         Парсит access-токен из заголовка Authorization (Bearer) или
-        из куки access-token.
+        из cookie.
         """
         # Пробуем заголовок Authorization
         auth_header = request.META.get('HTTP_AUTHORIZATION', '')
@@ -62,10 +63,11 @@ class UpdateLastActivityMiddleware:
             )
             return None
         try:
+            token_bytes = str(raw_token).encode('utf-8')
             validated_token = self.jwt_auth.get_validated_token(
-                raw_token,
+                token_bytes,
             )
-            user = self.jwt_auth.get_user(validated_token)
+            user: User = self.jwt_auth.get_user(validated_token)
             logger.debug(
                 'Пользователь извлечён из JWT: user_id=%s, path=%s',
                 getattr(user, 'pk', None),
@@ -87,7 +89,7 @@ class UpdateLastActivityMiddleware:
 
     def __call__(self, request: HttpRequest) -> HttpResponse:
         """Обновляет last_login для аутентифицированных пользователей."""
-        if request.user.is_authenticated:
+        if request.user.is_authenticated and isinstance(request.user, User):
             logger.debug(
                 'Обновление last_login для аутентифицированного '
                 'пользователя: user_id=%s, path=%s',

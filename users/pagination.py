@@ -1,6 +1,8 @@
-from typing import Any, Dict
+from typing import Any, Dict, cast
 
+from django.core.paginator import Page
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.request import Request
 from rest_framework.response import Response
 
 from core.constants.projects import MAX_PAGE_SIZE, PAGE_SIZE
@@ -16,9 +18,12 @@ class ProfileListPagination(PageNumberPagination):
 
     def get_paginated_response(self, data: Any) -> Response:
         """Формирует ответ с порцией данных и номером следующей страницы."""
-        total_count: int = self.page.paginator.count
-        current_page: int = self.page.number
-        current_limit: int = self.get_page_size(self.request)
+        page = cast(Page, self.page)
+        request = cast(Request, self.request)
+
+        total_count: int = page.paginator.count
+        current_page: int = page.number
+        current_limit: int = self.get_page_size(request) or self.page_size
 
         # Вычисляем полный физический остаток в базе
         total_remaining: int = total_count - (current_page * current_limit)
@@ -33,13 +38,13 @@ class ProfileListPagination(PageNumberPagination):
 
         # Вычисляем номер следующей страницы
         next_page: int | None = (
-            current_page + 1 if self.page.has_next() else None
+            current_page + 1 if page.has_next() else None
         )
 
         return Response({
             'items': data,
             'total': total_count,
-            'has_more': self.page.has_next(),
+            'has_more': page.has_next(),
             'next_page': next_page,
             'remaining': remaining,
         })

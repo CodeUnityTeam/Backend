@@ -21,8 +21,7 @@ def test_file_size_validator_passes_within_limit() -> None:
     valid_file = DummyFile(size_bytes=4 * 1024 * 1024)
 
     # Вызов не должен приводить к исключению
-    result = validator(valid_file)  # type: ignore[arg-type]
-    assert result == valid_file
+    validator(valid_file)  # type: ignore[arg-type]
 
 
 def test_file_size_validator_fails_exceeding_limit() -> None:

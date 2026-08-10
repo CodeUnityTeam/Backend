@@ -4,7 +4,7 @@ from pathlib import Path
 
 import ahocorasick
 from django.core.exceptions import ValidationError
-from django.core.files.uploadedfile import UploadedFile
+from django.core.files import File
 
 logger = logging.getLogger(__name__)
 
@@ -97,14 +97,13 @@ def is_excepted(
 
 def file_size_validator(
     allow_size_mb: int,
-) -> Callable[[UploadedFile], UploadedFile]:
+) -> Callable[[File], None]:
     """Валидировать размер файла."""
     max_bytes: int = allow_size_mb * 1024 * 1024
 
-    def validator(file_obj: UploadedFile) -> UploadedFile:
+    def validator(file_obj: File) -> None:
         if file_obj.size > max_bytes:
             msg: str = f'Размер файла не должен превышать {allow_size_mb} МБ.'
             raise ValidationError(msg)
-        return file_obj
 
     return validator
