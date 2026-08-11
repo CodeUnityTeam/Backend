@@ -22,7 +22,7 @@ classifiers = [
 ]
 
 dependencies = [
-    "Django>=5.2,<6.0",
+    "django>=5.2,<6.0",
     "djangorestframework>=3.17.1,<4.0",
     "django-cors-headers>=4.4.0,<5.0",
     "psycopg[binary]>=3.1.18,<4.0",
@@ -30,6 +30,7 @@ dependencies = [
     "python-dotenv==1.2.2",
     "djangorestframework-simplejwt>=5.5.1",
     "dj-rest-auth[with-social]>=7.2.0",
+    "requests",
     "django-allauth>=65.16.1",
     "drf-spectacular>=0.29.0",
     "django-filter>=25.1",
@@ -54,6 +55,10 @@ python_version = "3.12"
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
+plugins = ["mypy_django_plugin.main"]
+
+[tool.django-stubs]
+django_settings_module = "config.settings"
 
 [tool.ruff]
 line-length = 79
@@ -83,4 +88,6 @@ dev = [
     "ruff>=0.15.13",
     "mypy>=1.10.0",
     "testcontainers>=4.14.2",
+    "django-stubs>=6.0.9",
+    "djangorestframework-stubs[compatible-mypy]>=3.17.1",
 ]

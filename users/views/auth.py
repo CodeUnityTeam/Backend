@@ -1,12 +1,11 @@
 import logging
 import os
-from typing import Any
+from typing import Any, cast
 from urllib.parse import unquote, urlencode, urljoin
 
 from allauth.socialaccount.adapter import get_adapter
 from allauth.socialaccount.models import SocialApp
 from allauth.socialaccount.providers import registry
-from allauth.socialaccount.providers.base import Provider
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.mailru.views import MailRuOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
@@ -28,6 +27,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from config.settings import SOCIALACCOUNT_PROVIDERS
+from users.models import User
 from users.schemas import (
     SOCIAL_LOGIN_ERROR_SCHEMA,
     SOCIAL_LOGIN_REDIRECT_SCHEMA,
@@ -49,13 +49,13 @@ class SocialAuthUrlView(APIView):
 
     permission_classes = (AllowAny,)
     provider_id: str | None = None
-    adapter_class: any = None
+    adapter_class: type | None = None
 
     def get(
         self,
         request: HttpRequest,
-        *args: any,
-        **kwargs: any,
+        *_args: Any,
+        **_kwargs: Any,
     ) -> Response:
         """Обрабатывает GET-запрос и возвращает URL для авторизации."""
         logger.info(
@@ -65,22 +65,28 @@ class SocialAuthUrlView(APIView):
         adapter = get_adapter()
         app: SocialApp = adapter.get_app(request, provider=self.provider_id)
 
-        provider: Provider = registry.get_class(self.provider_id)(
+        provider: Any = registry.get_class(self.provider_id)(
             request,
             app=app,
         )
 
         # Создаем OAuth2View и привязываем к нему наш request и адаптер
-        view = OAuth2View()
+        view: Any = OAuth2View()
         view.request = request
+
+        if self.adapter_class is None:
+            raise ValueError(
+                f'Класс {self.__class__.__name__} обязан '
+                f'определить свойство adapter_class.',
+            )
         view.adapter = self.adapter_class(request)
 
         # Подменяем get_callback_url у view, чтобы пропустить NoReverseMatch
         callback_url: str = app.settings.get('CALLBACK_URL', '')
-        view.get_callback_url = lambda req, app: callback_url
+        view.get_callback_url = lambda _req, _app: callback_url
 
         # Получаем сконфигурированный клиент напрямую из allauth OAuth2View
-        client = view.get_client(request, app)
+        client: Any = getattr(view, 'get_client')(request, app)
 
         action = 'login'
         auth_params = provider.get_auth_params(request, action)
@@ -118,14 +124,14 @@ class GoogleAuthUrlView(APIView):
 
     def get(
         self,
-        request: HttpRequest,
-        *args: any,
-        **kwargs: any,
+        _request: HttpRequest,
+        *_args: Any,
+        **_kwargs: Any,
     ) -> Response:
         """Обрабатывает GET-запрос и формирует прямую ссылку для Google."""
         logger.info('Запуск генерации URL авторизации Google.')
 
-        config: dict[str, any] = SOCIALACCOUNT_PROVIDERS['google']
+        config: dict[str, Any] = SOCIALACCOUNT_PROVIDERS['google']
 
         query_params: dict[str, str] = {
             'client_id': config['APP']['client_id'],
@@ -165,8 +171,8 @@ class YandexAuthUrlView(APIView):
     def get(
         self,
         request: HttpRequest,
-        *args: any,
-        **kwargs: any,
+        *_args: Any,
+        **_kwargs: Any,
     ) -> Response:
         """Обрабатывает GET-запрос и формирует прямую ссылку для Yandex."""
         logger.info(
@@ -174,7 +180,7 @@ class YandexAuthUrlView(APIView):
             request.GET.get('state', '<не передан>'),
         )
 
-        config: dict[str, any] = SOCIALACCOUNT_PROVIDERS['yandex']
+        config: dict[str, Any] = SOCIALACCOUNT_PROVIDERS['yandex']
 
         # Если фронтенд передает свой state для защиты или контекста
         state: str = request.GET.get('state', 'AAA')
@@ -216,14 +222,14 @@ class MailRuAuthUrlView(APIView):
 
     def get(
         self,
-        request: HttpRequest,
-        *args: any,
-        **kwargs: any,
+        _request: HttpRequest,
+        *_args: Any,
+        **_kwargs: Any,
     ) -> Response:
         """Обрабатывает GET-запрос и формирует прямую ссылку для Mail.ru."""
         logger.info('Запуск генерации URL авторизации Mail.ru.')
 
-        config: dict[str, any] = SOCIALACCOUNT_PROVIDERS['mailru']
+        config: dict[str, Any] = SOCIALACCOUNT_PROVIDERS['mailru']
 
         query_params: dict[str, str] = {
             'client_id': config['APP']['client_id'],
@@ -245,6 +251,7 @@ class MailRuAuthUrlView(APIView):
         )
 
 
+# noinspection HttpUrlsUsage
 class SocialLogin(SocialLoginView):
     """Базовый View для обработки запросов авторизации.
 
@@ -252,6 +259,7 @@ class SocialLogin(SocialLoginView):
     редирект пользователя на фронтенд с токенами в URL.
     """
 
+    adapter_class: Any = None
     client_class: type[OAuth2Client] = OAuth2Client
 
     serializer_class: type[
@@ -260,7 +268,7 @@ class SocialLogin(SocialLoginView):
 
     def get(
         self,
-        request: HttpRequest,
+        request: Request,
         *args: Any,
         **kwargs: Any,
     ) -> HttpResponseRedirect:
@@ -278,12 +286,12 @@ class SocialLogin(SocialLoginView):
         )
 
         raw_code: str = request.query_params.get('code', '')
+        post_data = {'code': unquote(raw_code)}
+        setattr(request, '_full_data', post_data)
 
-        if not hasattr(request, 'data') or request.data is None:
-            request.data = {}
-        request.data['code'] = unquote(raw_code)
-
-        drf_response: Response = self.post(request, *args, **kwargs)
+        drf_response: Response = (
+            self.post(request, *args, **kwargs) # type: ignore
+        )
 
         access_token: str | None = drf_response.data.get('access')
         refresh_token: str | None = drf_response.data.get('refresh')
@@ -329,7 +337,7 @@ class SocialLogin(SocialLoginView):
 
     def post(
         self,
-        request: HttpRequest,
+        request: Request,
         *args: Any,
         **kwargs: Any,
     ) -> Response:
@@ -338,9 +346,9 @@ class SocialLogin(SocialLoginView):
             'OAuth2Adapter',
             '',
         )
-
-        if request.data and 'code' in request.data:
-            raw_code: str = request.data.get('code', '')
+        data_dict = cast(dict[str, Any], request.data)
+        if data_dict and 'code' in data_dict:
+            raw_code: str = str(data_dict.get('code', ''))
             request.data['code'] = unquote(raw_code)
 
         # Возвращаем дефолтный вызов, так как сериализатор уже подменен
@@ -462,12 +470,13 @@ class EmailChangeView(APIView):
 
     permission_classes = (IsAuthenticated,)
 
-    def post(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+    def post(self, request: Request, *_args: Any, **_kwargs: Any) -> Response:
         """Обработать POST-запрос на изменение email пользователя."""
+        user = cast(User, request.user)
         logger.info(
             'Запрос на изменение email пользователя. user_id=%s, old_email=%s',
-            request.user.user_id,
-            request.user.email,
+            user.user_id,
+            user.email,
         )
         serializer = EmailChangeSerializer(
             data=request.data,
@@ -481,8 +490,8 @@ class EmailChangeView(APIView):
         logger.info(
             'Отправлено письмо подтверждения на новый email. '
             'user_id=%s, old_email=%s, new_email=%s',
-            request.user.user_id,
-            request.user.email,
+            user.user_id,
+            user.email,
             new_email,
         )
 

@@ -13,6 +13,7 @@ from minio.s3_utils import MediaType
 from users.models.skills import Skill
 from users.models.specializations import Specialization
 from users.models.users import User, UserExperience, UserLike
+from users.validators import validate_user_name
 
 UserModel = get_user_model()
 
@@ -33,14 +34,14 @@ class UserExperienceSerializer(
     class Meta:
         model = UserExperience
         fields = (
-            'pk',
+            'exp_id',
             'company',
             'position',
             'responsibilities',
             'start_date',
             'end_date',
         )
-        read_only_fields = ('pk',)
+        read_only_fields = ('exp_id',)
 
     def validate_start_date(self, value: date) -> date:
         """Проверка, что дата начала работы не в будущем."""
@@ -75,6 +76,12 @@ class MeProfileUpdateSerializer(UserDetailsSerializer):
         """Инициализирует сериализатор и добавляет поле workformats."""
         from projects.models import WorkFormat
         super().__init__(*args, **kwargs)
+
+        if 'first_name' in self.fields:
+            self.fields['first_name'].validators.append(validate_user_name)
+        if 'last_name' in self.fields:
+            self.fields['last_name'].validators.append(validate_user_name)
+
         self.fields['workformats'] = serializers.PrimaryKeyRelatedField(
             queryset=WorkFormat.objects.all(),
             many=True,
@@ -229,7 +236,7 @@ class PublicUserProfileSerializer(serializers.ModelSerializer):
 
         if (
             employer.projects_relation
-            != UserModel.ProjectsRelationChoices.EMPLOYER
+            != User.ProjectsRelationChoices.EMPLOYER
         ):
             return False
 
@@ -262,26 +269,17 @@ class DetailUserProfileSerializer(PublicUserProfileSerializer):
 class UserResponseCardSerializer(serializers.ModelSerializer):
     """Сериализатор карточки отклика с вложенным профилем соискателя."""
 
-    response_id: serializers.UUIDField = serializers.UUIDField(
-        read_only=True,
-    )
-    project_id: serializers.UUIDField = serializers.UUIDField(
+    response_id = serializers.UUIDField(read_only=True)
+    project_id = serializers.UUIDField(
         source='project.project_id', read_only=True,
     )
-    project_title: serializers.CharField = serializers.CharField(
+    project_title = serializers.CharField(
         source='project.title', read_only=True,
     )
-    profile: PublicUserProfileSerializer = (
-        PublicUserProfileSerializer(source='user', read_only=True)
-    )
-
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        """Инициализирует сериализатор."""
-        from projects.models import Response as ProjectResponse
-        super().__init__(*args, **kwargs)
-        self.Meta.model = ProjectResponse
+    profile = PublicUserProfileSerializer(source='user', read_only=True)
 
     class Meta:
+        model = ProjectResponse
         fields = (
             'response_id',
             'project_id',
@@ -302,8 +300,8 @@ class UserLikeSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs: dict) -> dict:
         """Проверка бизнес-правил перед созданием лайка."""
-        employer = self.context['request'].user
-        worker = attrs.get('worker')
+        employer: User = self.context['request'].user
+        worker: User = attrs['worker']
 
         # 1. Проверяем роль автора лайка
         if (
@@ -315,7 +313,7 @@ class UserLikeSerializer(serializers.ModelSerializer):
                 'автором проекта.',
             )
 
-        # 2. Проверяем активность лайкаемого пользователя
+        # 2. Проверяем активность пользователя, которому ставят лайк
         if not worker.is_active:
             raise ValidationError(
                 'Можно лайкать только активных пользователей.',

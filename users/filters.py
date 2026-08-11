@@ -39,7 +39,7 @@ class UserFilter(django_filters.FilterSet):
         return 'user__' if queryset.model.__name__ == 'Response' else ''
 
     def filter_by_search(
-        self, queryset: QuerySet[Any], name: str, value: Any,
+        self, queryset: QuerySet[Any], _name: str, value: Any,
     ) -> QuerySet[Any]:
         """Ищет по вхождению подстроки (icontains) в 4 текстовых поля."""
         if not value:
@@ -54,7 +54,7 @@ class UserFilter(django_filters.FilterSet):
         ).distinct()
 
     def filter_noop(
-        self, queryset: QuerySet[Any], name: str, value: Any,
+        self, queryset: QuerySet[Any], _name: str, _value: Any,
     ) -> QuerySet[Any]:
         """Заглушка. Параметры обрабатываются на уровне селектора."""
         return queryset
