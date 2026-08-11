@@ -1,4 +1,5 @@
 import logging
+from functools import partial
 from typing import Any
 
 from allauth.account.models import EmailAddress
@@ -75,17 +76,19 @@ def _invalidate_user_base_cache(
     invalidate_lists: bool,
 ) -> None:
     """Очистить detail пользователя и при необходимости списки профилей."""
-    cache.delete_pattern(f'{CACHE_KEY_USERS_PREFIX}:detail:{user_id}:*')
+    redis_cache: Any = cache
+    redis_cache.delete_pattern(f'{CACHE_KEY_USERS_PREFIX}:detail:{user_id}:*')
     if invalidate_lists:
-        cache.delete_pattern(f'{CACHE_KEY_USERS_PREFIX}:list:*')
+        redis_cache.delete_pattern(f'{CACHE_KEY_USERS_PREFIX}:list:*')
 
 
 def _invalidate_viewer_cache(user_id: Any) -> None:
     """Очистить JSON-кэш, где пользователь является просматривающим."""
-    cache.delete_pattern(
+    redis_cache: Any = cache
+    redis_cache.delete_pattern(
         f'{CACHE_KEY_USERS_PREFIX}:detail:*:{user_id}',
     )
-    cache.delete_pattern(
+    redis_cache.delete_pattern(
         f'{CACHE_KEY_PROJECTS_PREFIX}:detail:*:{user_id}',
     )
 
@@ -94,11 +97,12 @@ def _invalidate_user_project_cache(user_id: Any) -> None:
     """Очистить project JSON, содержащий данные автора или участника."""
     from projects.models import Project, Response
 
+    redis_cache: Any = cache
     project_ids = Project.objects.filter(
         Q(author_id=user_id) | Q(participants__user_id=user_id),
     ).values_list('project_id', flat=True).distinct()
     for project_id in project_ids:
-        cache.delete_pattern(
+        redis_cache.delete_pattern(
             f'{CACHE_KEY_PROJECTS_PREFIX}:detail:{project_id}:*',
         )
 
@@ -109,7 +113,7 @@ def _invalidate_user_project_cache(user_id: Any) -> None:
     )
     feed_user_ids.add(user_id)
     for feed_user_id in feed_user_ids:
-        cache.delete_pattern(
+        redis_cache.delete_pattern(
             f'{CACHE_KEY_RESPONSES_PREFIX}:feed:{feed_user_id}:*',
         )
 
@@ -118,11 +122,12 @@ def _invalidate_user_qna_cache(user_id: Any) -> None:
     """Очистить detail вопросов, содержащих данные пользователя-автора."""
     from qna.models import Question
 
+    redis_cache: Any = cache
     question_ids = Question.objects.filter(
         Q(user_id=user_id) | Q(answers__user_id=user_id),
     ).values_list('question_id', flat=True).distinct()
     for question_id in question_ids:
-        cache.delete_pattern(
+        redis_cache.delete_pattern(
             f'{CACHE_KEY_QNA_PREFIX}:detail:{question_id}:*',
         )
 
@@ -132,13 +137,14 @@ def _invalidate_user_m2m_by_ids(
     skills_changed: bool,
 ) -> None:
     """Очистить кэши пользователей после прямого или обратного M2M."""
-    cache.delete_pattern(f'{CACHE_KEY_USERS_PREFIX}:list:*')
+    redis_cache: Any = cache
+    redis_cache.delete_pattern(f'{CACHE_KEY_USERS_PREFIX}:list:*')
     for user_id in user_ids:
-        cache.delete_pattern(
+        redis_cache.delete_pattern(
             f'{CACHE_KEY_USERS_PREFIX}:detail:{user_id}:*',
         )
         if skills_changed:
-            cache.delete_pattern(
+            redis_cache.delete_pattern(
                 f'{CACHE_KEY_PROJECTS_PREFIX}:recommendations:{user_id}:*',
             )
 
@@ -158,7 +164,7 @@ def _get_reverse_m2m_user_ids(
 
 @receiver(post_save, sender=User)
 def invalidate_user_profile_save(
-    sender: Any,
+    sender: Any, # noqa: ARG001
     instance: User,
     update_fields: Any = None,
     **kwargs: Any,
@@ -166,10 +172,11 @@ def invalidate_user_profile_save(
     """Запланировать инвалидацию зависимых кэшей после коммита User."""
     user_id = instance.user_id
     is_created = kwargs.get('created', False)
+    fields_to_check = update_fields or ()
     should_invalidate_list = (
         is_created
         or update_fields is None
-        or bool(set(update_fields) & CRITICAL_LIST_FIELDS)
+        or bool(set(fields_to_check) & CRITICAL_LIST_FIELDS)
     )
     invalidate_project_data = (
         not is_created
@@ -190,11 +197,12 @@ def invalidate_user_profile_save(
 
     def invalidate() -> None:
         _invalidate_user_base_cache(user_id, should_invalidate_list)
-        cache.delete_pattern(
+        redis_cache: Any = cache
+        redis_cache.delete_pattern(
             f'{CACHE_KEY_PROJECTS_PREFIX}:recommendations:{user_id}:*',
         )
         if invalidate_project_list:
-            cache.delete_pattern(
+            redis_cache.delete_pattern(
                 f'{CACHE_KEY_PROJECTS_PREFIX}:list:ids:{user_id}:*',
             )
         if invalidate_viewer_data:
@@ -218,23 +226,24 @@ def invalidate_user_profile_save(
 
 @receiver(post_delete, sender=User)
 def invalidate_user_profile_delete(
-    sender: Any,
+    sender: Any, # noqa: ARG001
     instance: User,
-    **kwargs: Any,
+    **kwargs: Any, # noqa: ARG001
 ) -> None:
     """Запланировать инвалидацию основных кэшей удалённого пользователя."""
     user_id = instance.user_id
+    redis_cache: Any = cache
 
     def invalidate() -> None:
         _invalidate_user_base_cache(user_id, invalidate_lists=True)
         _invalidate_viewer_cache(user_id)
-        cache.delete_pattern(
+        redis_cache.delete_pattern(
             f'{CACHE_KEY_PROJECTS_PREFIX}:recommendations:{user_id}:*',
         )
-        cache.delete_pattern(
+        redis_cache.delete_pattern(
             f'{CACHE_KEY_PROJECTS_PREFIX}:list:ids:{user_id}:*',
         )
-        cache.delete_pattern(
+        redis_cache.delete_pattern(
             f'{CACHE_KEY_RESPONSES_PREFIX}:feed:{user_id}:*',
         )
 
@@ -248,14 +257,16 @@ def invalidate_user_profile_delete(
 @receiver(post_save, sender=UserExperience)
 @receiver(post_delete, sender=UserExperience)
 def invalidate_user_experience_cache(
-    sender: Any,
+    sender: Any, # noqa: ARG001
     instance: UserExperience,
-    **kwargs: Any,
+    **kwargs: Any, # noqa: ARG001
 ) -> None:
     """Инвалидировать detail профиля после изменения опыта работы."""
+    redis_cache: Any = cache
     user_id = instance.user_id
     transaction.on_commit(
-        lambda user_id=user_id: cache.delete_pattern(
+        partial(
+            redis_cache.delete_pattern,
             f'{CACHE_KEY_USERS_PREFIX}:detail:{user_id}:*',
         ),
     )
@@ -283,13 +294,13 @@ def invalidate_user_m2m_cache(
         if user_ids is None:
             return
 
-        def invalidate_reverse() -> None:
-            _invalidate_user_m2m_by_ids(
+        transaction.on_commit(
+            partial(
+                _invalidate_user_m2m_by_ids,
                 user_ids,
                 skills_changed,
-            )
-
-        transaction.on_commit(invalidate_reverse)
+            ),
+        )
         logger.debug(
             'Инвалидация обратного M2M-кэша запланирована: sender=%s, '
             'action=%s, users=%d',
@@ -323,17 +334,18 @@ def invalidate_user_m2m_cache(
 @receiver(post_save, sender=UserLike)
 @receiver(post_delete, sender=UserLike)
 def invalidate_user_like_cache(
-    sender: Any,
+    sender: Any, # noqa: ARG001
     instance: UserLike,
-    **kwargs: Any,
+    **kwargs: Any, # noqa: ARG001
 ) -> None:
     """Инвалидировать сортировку профилей и персональное поле is_liked."""
     employer_id = instance.employer_id
     worker_id = instance.worker_id
+    redis_cache: Any = cache
 
     def invalidate() -> None:
-        cache.delete_pattern(f'{CACHE_KEY_USERS_PREFIX}:list:ids:*')
-        cache.delete_pattern(
+        redis_cache.delete_pattern(f'{CACHE_KEY_USERS_PREFIX}:list:ids:*')
+        redis_cache.delete_pattern(
             f'{CACHE_KEY_USERS_PREFIX}:detail:{worker_id}:{employer_id}',
         )
 
@@ -348,9 +360,9 @@ def invalidate_user_like_cache(
 
 @receiver(email_confirmed)
 def log_email_confirmed(
-    request: HttpRequest,
+    request: HttpRequest, # noqa: ARG001
     email_address: EmailAddress,
-    **kwargs: Any,
+    **kwargs: Any, # noqa: ARG001
 ) -> None:
     """Логирует успешное подтверждение email."""
     logger.info(

@@ -94,16 +94,18 @@ def _invalidate_deactivated_user_cache(
     response_feed_user_ids: tuple[Any, ...],
 ) -> None:
     """Очистить кэш, затронутый мягким удалением пользователя."""
+    redis_cache: Any = cache
+
     for project_id in project_ids:
-        cache.delete_pattern(
+        redis_cache.delete_pattern(
             f'{CACHE_KEY_PROJECTS_PREFIX}:detail:{project_id}:*',
         )
 
-    cache.delete_pattern(f'{CACHE_KEY_PROJECTS_PREFIX}:list:ids:*')
-    cache.delete_pattern(f'{CACHE_KEY_PROJECTS_PREFIX}:recommendations:*')
+    redis_cache.delete_pattern(f'{CACHE_KEY_PROJECTS_PREFIX}:list:ids:*')
+    redis_cache.delete_pattern(f'{CACHE_KEY_PROJECTS_PREFIX}:recommendations:*')
 
     for feed_user_id in response_feed_user_ids:
-        cache.delete_pattern(
+        redis_cache.delete_pattern(
             f'{CACHE_KEY_RESPONSES_PREFIX}:feed:{feed_user_id}:*',
         )
 
@@ -116,7 +118,7 @@ def _invalidate_deactivated_user_cache(
     )
 
 
-def deactivate_user_account(user: User) -> None:
+def deactivate_user_account(user: Any) -> None:
     """Выполнить мягкое удаление пользователя и обработать связанные сущности.
 
     - Переводит FeedbackForm в статус Closed
@@ -206,17 +208,14 @@ def deactivate_user_account(user: User) -> None:
             updated,
         )
 
-        transaction.on_commit(
-            lambda user_id=user.user_id,
-            project_ids=affected_project_ids,
-            feed_user_ids=tuple(response_feed_user_ids): (
-                _invalidate_deactivated_user_cache(
-                    user_id,
-                    project_ids,
-                    feed_user_ids,
-                )
-            ),
-        )
+        def invalidate_cache_callback() -> None:
+            _invalidate_deactivated_user_cache(
+                user.user_id,
+                affected_project_ids,
+                tuple(response_feed_user_ids),
+            )
+
+        transaction.on_commit(invalidate_cache_callback)
 
 
 def _is_valid_uuid(val: str) -> bool:
@@ -325,6 +324,7 @@ def update_last_login(user: User) -> None:
     if not last_login or (now - last_login) > timedelta(
         minutes=LAST_LOGIN_UPDATE_INTERVAL,
     ):
+        redis_cache: Any = cache
         user_id = user.pk
         User.objects.filter(pk=user_id).update(last_login=now)
         user.last_login = now
@@ -332,14 +332,14 @@ def update_last_login(user: User) -> None:
         def invalidate() -> None:
             from projects.models import Project
 
-            cache.delete_pattern(
+            redis_cache.delete_pattern(
                 f'{CACHE_KEY_USERS_PREFIX}:detail:{user_id}:*',
             )
             project_ids = Project.objects.filter(
                 Q(author_id=user_id) | Q(participants__user_id=user_id),
             ).values_list('project_id', flat=True).distinct()
             for project_id in project_ids:
-                cache.delete_pattern(
+                redis_cache.delete_pattern(
                     f'{CACHE_KEY_PROJECTS_PREFIX}:detail:{project_id}:*',
                 )
 
@@ -356,14 +356,15 @@ def update_user_rating(user: User, delta: int) -> None:
     def invalidate() -> None:
         from qna.models import Question
 
-        cache.delete_pattern(
+        redis_cache: Any = cache
+        redis_cache.delete_pattern(
             f'{CACHE_KEY_USERS_PREFIX}:detail:{user_id}:*',
         )
         question_ids = Question.objects.filter(
             Q(user_id=user_id) | Q(answers__user_id=user_id),
         ).values_list('question_id', flat=True).distinct()
         for question_id in question_ids:
-            cache.delete_pattern(
+            redis_cache.delete_pattern(
                 f'{CACHE_KEY_QNA_PREFIX}:detail:{question_id}:*',
             )
 

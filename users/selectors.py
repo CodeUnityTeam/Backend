@@ -74,7 +74,7 @@ def get_employer_base_queryset(
 # --- Специфичные легкие функции фильтрации сценариев ---
 
 def _apply_all_scenario(
-        queryset: QuerySet[User], current_user: Any) -> QuerySet[User]:
+        queryset: QuerySet[User], _current_user: Any) -> QuerySet[User]:
     """Сценарий 1: Возвращает исходный QuerySet пользователей."""
     return queryset
 
@@ -86,7 +86,7 @@ def _apply_favourites_scenario(
 
 
 def _apply_responses_scenario(
-    queryset: QuerySet[ProjectResponse], current_user: User,
+    queryset: QuerySet[ProjectResponse], _current_user: User,
 ) -> QuerySet[ProjectResponse]:
     """Сценарий 3: Возвращает отклики на проекты текущего нанимателя."""
     return queryset

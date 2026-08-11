@@ -2,17 +2,20 @@ import os
 from typing import Any, Optional
 
 from allauth.account.adapter import DefaultAccountAdapter
-from allauth.account.models import EmailConfirmation
+from allauth.account.models import EmailAddress, EmailConfirmation
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from allauth.socialaccount.models import SocialLogin
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.password_validation import validate_password
 from django.core.mail import EmailMessage
-from django.db.models import Model
 from django.http import HttpRequest
 from rest_framework import status
 from rest_framework.exceptions import APIException
 from rest_framework.response import Response
+
+from users.models import User
+from users.validators import clear_text_data
 
 UserModel = get_user_model()
 
@@ -33,14 +36,14 @@ class ImmediateResponseException(APIException):
         super().__init__(detail=detail)
 
 
+# noinspection HttpUrlsUsage
 class CustomAccountAdapter(DefaultAccountAdapter):
     """Адаптер для процесса регистрации и управления пользователем."""
 
     def clean_password(
         self,
         password: str,
-        user: Model = None,
-        password_sign_up: bool = True,
+        user: AbstractBaseUser | None = None,
     ) -> str:
         """Валидировать пароль."""
         validate_password(password, user=user)
@@ -60,7 +63,7 @@ class CustomAccountAdapter(DefaultAccountAdapter):
     def respond_email_verification_sent(
         self,
         request: HttpRequest,
-        user: Model,
+        user: AbstractBaseUser | None,
     ) -> Response:
         """Сформировать ответ на запрос регистрации в сервисе."""
         return Response(
@@ -71,7 +74,7 @@ class CustomAccountAdapter(DefaultAccountAdapter):
     def render_mail(
         self,
         template_prefix: str,
-        email: str,
+        email: str | list[str],
         context: dict[str, Any],
         headers: dict[str, str] | None = None,
     ) -> EmailMessage:
@@ -117,6 +120,28 @@ class CustomAccountAdapter(DefaultAccountAdapter):
 class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
     """Адаптер для контроля реактивации пользователя через провайдера."""
 
+    def populate_user(
+        self,
+        request: HttpRequest,
+        sociallogin: SocialLogin,
+        data: dict[str, Any],
+    ) -> Any:
+        """Нормализует персональные данные из соцсетей перед записью."""
+        # 1. Запускаем базовое наполнение полей (email, first_name, last_name)
+        user = super().populate_user(request, sociallogin, data)
+
+        # 2. Мягко нормализуем имя и фамилию через функцию очистки
+        user.first_name = clear_text_data(
+            value=getattr(user, 'first_name', ''),
+            field_name='first_name',
+        )
+        user.last_name = clear_text_data(
+            value=getattr(user, 'last_name', ''),
+            field_name='last_name',
+        )
+
+        return user
+
     def pre_social_login(
         self,
         request: HttpRequest,
@@ -124,42 +149,45 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
     ) -> None:
         """Проверить наличие зарегистрированного через провайдера пользователя.
 
-        Если аккаунт был мягко удален, реактивируем его.
+        Если аккаунт был мягко удален, ре активируем его.
         """
         if sociallogin.is_existing:
             user = sociallogin.user
 
-            if not user.is_active:
-                # 1. Реактивируем пользователя
-                user.is_active = True
-                user.save(update_fields=('is_active',))
+            if isinstance(user, User):
+                if not user.is_active:
+                    # 1. Ре активируем пользователя
+                    user.is_active = True
+                    user.save(update_fields=('is_active',)) # type: ignore[arg-type]
 
-                # 2. Принудительно подтверждаем email
-                email_address = user.emailaddress_set.filter(
-                    email__iexact=user.email,
-                ).first()
-                if email_address and not email_address.verified:
-                    email_address.verified = True
-                    email_address.save(update_fields=('verified',))
+                    # 2. Принудительно подтверждаем email
+                    email_address = EmailAddress.objects.filter(
+                        user=user,
+                        email__iexact=user.email,
+                    ).first()
+                    if email_address and not email_address.verified:
+                        email_address.verified = True
+                        email_address.save(update_fields=('verified',))
 
-                # 3. Форматируем название провайдера
-                provider_id = sociallogin.account.provider
-                provider_names = {
-                    'yandex': 'Yandex',
-                    'google': 'Google',
-                    'mailru': 'Mail.ru',
-                }
-                provider_name = provider_names.get(
-                    provider_id, provider_id.capitalize(),
-                )
+                    # 3. Форматируем название провайдера
+                    provider_id = sociallogin.account.provider
+                    provider_names = {
+                        'yandex': 'Yandex',
+                        'google': 'Google',
+                        'mailru': 'Mail.ru',
+                    }
+                    provider_name: str = provider_names.get(
+                        provider_id,
+                        provider_id.capitalize() if provider_id else 'соцсеть',
+                    )
 
-                # 4. Прерываем стандартный вход
-                raise ImmediateResponseException(
-                    detail={
-                        'detail': (
-                            'Ваш аккаунт был успешно восстановлен через '
-                            f'{provider_name}. Пожалуйста, повторите вход.'
-                        ),
-                    },
-                    status_code=status.HTTP_201_CREATED,
-                )
+                    # 4. Прерываем стандартный вход
+                    raise ImmediateResponseException(
+                        detail={
+                            'detail': (
+                                'Ваш аккаунт был успешно восстановлен через '
+                                f'{provider_name}. Пожалуйста, повторите вход.'
+                            ),
+                        },
+                        status_code=status.HTTP_201_CREATED,
+                    )

@@ -12,9 +12,9 @@ class IsEmployer(BasePermission):
         self, request: Request, view: APIView,
     ) -> bool:
         """Проверяет роль текущего пользователя."""
-        return (
+        return bool(
             request.user
             and request.user.is_authenticated
-            and request.user.projects_relation
-            == User.ProjectsRelationChoices.EMPLOYER
+            and getattr(request.user, 'projects_relation', None)
+            == User.ProjectsRelationChoices.EMPLOYER,
         )
