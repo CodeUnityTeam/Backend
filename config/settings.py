@@ -133,19 +133,60 @@ S3_CUSTOM_DOMAIN = (
     else S3_ENDPOINT.replace('http://', '').replace('https://', '')
 )
 
-# Имена бакетов для каждого типа медиа.
-# Ключи должны соответствовать значениям MediaType из core.s3_utils.
-S3_BUCKETS = {
-    'avatars': os.getenv('AVATARS_BUCKET', 'user-avatars'),
-    'questions': os.getenv('QUESTION_IMAGES_BUCKET', 'question-images'),
-    'answers': os.getenv('ANSWER_IMAGES_BUCKET', 'answer-images'),
-    'feedback': os.getenv('FEEDBACK_IMAGES_BUCKET', 'feedback-images'),
-    'projects': os.getenv('PROJECT_IMAGES_BUCKET', 'project-images'),
-    'images': os.getenv('UPLOAD_IMAGES_BUCKET', 'upload-images'),
-}
-
 # Максимальный размер файла для всех типов (в MB)
 S3_MAX_FILE_SIZE_MB = 10
+# Базовый список допустимы типов файлов для загрузки
+S3_ALLOWED_TYPES = 'image/jpeg,image/jpg,image/png'
+
+MAX_IMAGE_COUNT_FEEDBACK = os.getenv('MAX_IMAGE_COUNT_FEEDBACK', 5)
+
+
+# Единая конфигурация бакетов S3/MinIO
+# Ключи должны соответствовать значениям MediaType из core.s3_utils.
+S3_BUCKETS = {
+    'avatars': {
+        'name': os.getenv('AVATARS_BUCKET', 'user-avatars'),
+        'max_size_mb': int(os.getenv('AVATARS_MAX_SIZE_MB', 2)),
+        'allowed_types': os.getenv(
+            'AVATARS_ALLOWED_TYPES', S3_ALLOWED_TYPES,
+        ).split(','),
+    },
+    'questions': {
+        'name': os.getenv('QUESTION_IMAGES_BUCKET', 'question-images'),
+        'max_size_mb': int(os.getenv('QUESTION_IMAGES_MAX_SIZE_MB', 10)),
+        'allowed_types': os.getenv(
+            'QUESTION_IMAGES_ALLOWED_TYPES', S3_ALLOWED_TYPES,
+        ).split(','),
+    },
+    'answers': {
+        'name': os.getenv('ANSWER_IMAGES_BUCKET', 'answer-images'),
+        'max_size_mb': int(os.getenv('ANSWER_IMAGES_MAX_SIZE_MB', 10)),
+        'allowed_types': os.getenv(
+            'ANSWER_IMAGES_ALLOWED_TYPES', S3_ALLOWED_TYPES,
+        ).split(','),
+    },
+    'feedback': {
+        'name': os.getenv('FEEDBACK_IMAGES_BUCKET', 'feedback-images'),
+        'max_size_mb': int(os.getenv('FEEDBACK_IMAGES_MAX_SIZE_MB', 10)),
+        'allowed_types': os.getenv(
+            'FEEDBACK_IMAGES_ALLOWED_TYPES', S3_ALLOWED_TYPES,
+        ).split(','),
+    },
+    'projects': {
+        'name': os.getenv('PROJECT_IMAGES_BUCKET', 'project-images'),
+        'max_size_mb': int(os.getenv('PROJECT_IMAGES_MAX_SIZE_MB', 10)),
+        'allowed_types': os.getenv(
+            'PROJECT_IMAGES_ALLOWED_TYPES', S3_ALLOWED_TYPES,
+        ).split(','),
+    },
+    'images': {
+        'name': os.getenv('UPLOAD_IMAGES_BUCKET', 'upload-images'),
+        'max_size_mb': int(os.getenv('UPLOAD_IMAGES_MAX_SIZE_MB', 10)),
+        'allowed_types': os.getenv(
+            'UPLOAD_IMAGES_ALLOWED_TYPES', S3_ALLOWED_TYPES,
+        ).split(','),
+    },
+}
 
 STORAGES = {
     'default': {

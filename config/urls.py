@@ -7,6 +7,7 @@ from drf_spectacular.views import (
 )
 
 from feedback.urls import reviews_router
+from minio.views import PresignedPostURLAPIView
 
 v1_urlpatterns = [
     path('help/', include(('help.urls', 'help'), namespace='help')),
@@ -39,6 +40,11 @@ v1_urlpatterns = [
     path(
         'documents/',
         include(('documents.urls', 'documents'), namespace='documents'),
+    ),
+    path(
+        'minio-upload/',
+        PresignedPostURLAPIView.as_view(),
+        name='minio-upload',
     ),
 ]
 

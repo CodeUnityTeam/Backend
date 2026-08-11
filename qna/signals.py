@@ -13,8 +13,8 @@ from django.db.models.signals import (
 from django.dispatch import receiver
 
 from core.constants.cache import CACHE_KEY_QNA_PREFIX
-from core.s3_utils import MediaType, S3Service
 from feedback.models import FeedbackImage
+from minio.s3_utils import MediaType, S3Service
 from qna.models import (
     Answer,
     AnswerImage,

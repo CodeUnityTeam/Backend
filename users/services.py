@@ -1,5 +1,6 @@
 import logging
 from datetime import timedelta
+from functools import partial
 from typing import Any, Union
 from uuid import UUID
 
@@ -19,7 +20,7 @@ from core.constants.cache import (
 from core.constants.feedback import FEEDBACK_STATUS_CLOSED
 from core.constants.projects import ARCHIVED
 from core.constants.users import LAST_LOGIN_UPDATE_INTERVAL
-from core.s3_utils import MediaType, S3Service
+from minio.s3_utils import MediaType, S3Service
 from projects.models import Response as ProjectResponse
 from users.models.users import User
 from users.selectors import (
@@ -208,14 +209,14 @@ def deactivate_user_account(user: Any) -> None:
             updated,
         )
 
-        def invalidate_cache_callback() -> None:
-            _invalidate_deactivated_user_cache(
+        transaction.on_commit(
+            partial(
+                _invalidate_deactivated_user_cache,
                 user.user_id,
                 affected_project_ids,
                 tuple(response_feed_user_ids),
-            )
-
-        transaction.on_commit(invalidate_cache_callback)
+            ),
+        )
 
 
 def _is_valid_uuid(val: str) -> bool:

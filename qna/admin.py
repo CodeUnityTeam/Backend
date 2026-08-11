@@ -7,7 +7,7 @@ from core.admin_mixins import (
     LikeCountMixin,
     SaveImageFormsetMixin,
 )
-from core.s3_utils import MediaType
+from minio.s3_utils import MediaType
 
 from .models import (
     Answer,
