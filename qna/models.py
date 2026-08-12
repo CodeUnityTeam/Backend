@@ -250,8 +250,6 @@ class QuestionImage(BaseImageMixin):
         verbose_name_plural = 'Изображения вопроса'
         indexes = (
             models.Index(fields=['question']),
-            models.Index(fields=['uploaded_by']),
-            models.Index(fields=['uploaded_at']),
         )
 
     def __str__(self) -> str:
@@ -281,8 +279,6 @@ class AnswerImage(BaseImageMixin):
         verbose_name_plural = 'Изображения ответов'
         indexes = (
             models.Index(fields=['answer']),
-            models.Index(fields=['uploaded_by']),
-            models.Index(fields=['uploaded_at']),
         )
 
     def __str__(self) -> str:
