@@ -66,8 +66,8 @@ class Question(TimestampMixin, models.Model):
         verbose_name = 'Вопрос'
         verbose_name_plural = 'Вопросы'
         indexes = (
-            models.Index(fields=['-created_at']),  # поля из миксина
-            models.Index(fields=['-updated_at']),  # поля из миксина
+            models.Index(fields=['-created_at']),  # поле миксина
+            models.Index(fields=['-updated_at']),  # поле миксина
             models.Index(fields=['is_active']),
             models.Index(fields=['is_anonymous']),
         )

@@ -174,7 +174,7 @@ def invalidate_cache(...):
 - [`qna/views/question.py`](../qna/views/question.py) — вьюхи вопросов
 - [`users/middleware.py`](../users/middleware.py) — middleware
 - [`users/serializers/auth.py`](../users/serializers/auth.py) — сериализаторы аутентификации
-- [`users/services.py`](../users/services.py) — сервисы пользователей
+- [`../users/services/services/profile.py`](../users/services/profile.py) — сервисы пользователей
 - [`users/signals.py`](../users/signals.py) — сигналы пользователей
 - [`users/views/auth.py`](../users/views/auth.py) — вьюхи аутентификации
 - [`users/views/profile.py`](../users/views/profile.py) — вьюхи профиля

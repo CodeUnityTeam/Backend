@@ -10,7 +10,7 @@ from rest_framework_simplejwt.exceptions import (
 )
 
 from users.models import User
-from users.services import update_last_login
+from users.services.profile import update_last_login
 
 logger = logging.getLogger(__name__)
 

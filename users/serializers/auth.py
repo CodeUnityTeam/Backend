@@ -7,7 +7,6 @@ from allauth.account.models import EmailAddress
 from allauth.account.utils import user_pk_to_url_str
 from dj_rest_auth.registration.serializers import (
     RegisterSerializer,
-    SocialLoginSerializer,
 )
 from dj_rest_auth.serializers import (
     LoginSerializer,
@@ -17,7 +16,6 @@ from dj_rest_auth.serializers import (
 )
 from django.contrib.sites.models import Site
 from django.http import HttpRequest
-from requests.exceptions import RequestException
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -31,53 +29,6 @@ from users.validators import (
 )
 
 logger = logging.getLogger(__name__)
-
-
-class SocialAuthUrlResponseSerializer(serializers.Serializer):
-    """Сериализатор для возврата URL авторизации."""
-
-    authorization_url = serializers.URLField(
-        help_text='Url перенаправления пользователя на сторону провайдера.',
-    )
-
-
-class SafeSocialLoginSerializer(SocialLoginSerializer):
-    """Сериализатор для безопасного входа через соцсети.
-
-    Устраняет RelatedObjectDoesNotExist при автоматическом
-    связывании аккаунтов по Email и обрабатывает сетевые сбои.
-    """
-
-    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
-        """Проверяет данные кода и связывает пользователя."""
-        try:
-            # Запускаем оригинальную валидацию dj-rest-auth
-            attrs = super().validate(attrs)
-        except AttributeError as exc:
-            # Ловим ошибку связи базы данных
-            if type(exc).__name__ == 'RelatedObjectDoesNotExist':
-                request = self._get_request()
-                user: User | None = getattr(request, 'user', None)
-
-                if user and not user.is_anonymous:
-                    attrs['user'] = user
-                    return attrs
-            raise exc
-        except RequestException as exc:
-            # Перехватываем любые сетевые тайм-ауты сторонних соцсетей
-            # и превращаем их в чистую ошибку 400 DRF
-            raise ValidationError(
-                {
-                    'non_field_errors': [
-                        'Внешний сервис авторизации временно недоступен. '
-                        'Пожалуйста, попробуйте позже.',
-                    ],
-                },
-            ) from exc
-        except Exception as exc:
-            raise exc
-
-        return attrs
 
 
 class CustomLoginSerializer(LoginSerializer):
