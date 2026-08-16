@@ -255,7 +255,6 @@ class MeProfileView(RetrieveUpdateDestroyAPIView):
             status.HTTP_400_BAD_REQUEST: OpenApiTypes.OBJECT,
         },
         tags=['Files'],
-        auth=['jwt_cookie_auth'],
     ),
     delete=extend_schema(
         summary='Удалить аватар пользователя',
@@ -268,7 +267,6 @@ class MeProfileView(RetrieveUpdateDestroyAPIView):
             status.HTTP_400_BAD_REQUEST: OpenApiTypes.OBJECT,
         },
         tags=['Files'],
-        auth=['jwt_cookie_auth'],
     ),
 )
 class UserAvatarAPIView(APIView):

@@ -79,7 +79,10 @@ def validate_no_bad_words(value: str) -> None:
             word,
             value[:50],
         )
-        raise ValidationError('Без плохих слов, пожалуйста')
+        raise ValidationError(
+            f'Обнаружено запрещённое слово "{word}". '
+            'Без плохих слов, пожалуйста.',
+        )
 
 
 def is_excepted(
