@@ -4,7 +4,7 @@ from django.db import transaction
 from django.db.models import Model
 
 from qna.selectors import count_likes, delete_like, get_or_create_like
-from users.services import update_user_rating
+from users.services.profile import update_user_rating
 
 logger = logging.getLogger(__name__)
 

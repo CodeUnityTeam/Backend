@@ -24,7 +24,7 @@ from qna.models import (
     QuestionLike,
 )
 from users.models import User
-from users.services import update_user_rating
+from users.services.profile import update_user_rating
 
 logger = logging.getLogger(__name__)
 

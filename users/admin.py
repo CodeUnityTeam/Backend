@@ -13,6 +13,7 @@ from django.utils.safestring import mark_safe
 
 from core.admin_mixins import RolePermissionsMixin
 from users.forms import UserAdminAddForm, UserImageAdminForm
+from users.services.profile import avatar_delete_handler, avatar_upload_handler
 
 from .models import (
     Skill,
@@ -24,7 +25,6 @@ from .models import (
     UserSpecialization,
     UserWorkFormat,
 )
-from .services import avatar_delete_handler, avatar_upload_handler
 
 admin.site.unregister(Group)
 admin.site.unregister(SocialAccount)

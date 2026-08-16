@@ -28,7 +28,7 @@ def test_upload_avatar_successful(
     fake_s3_url = 'https://codeunity.ru'
     # Патчим S3Service там, где его используют функции в users/services.py
     mocker.patch(
-        'users.services.S3Service.upload', return_value=fake_s3_url,
+        'minio.s3_utils.S3Service.upload', return_value=fake_s3_url,
     )
 
     payload = {'file': test_image_file}
@@ -61,8 +61,8 @@ def test_upload_avatar_overwrites_existing(
     verified_user.save(update_fields=('avatar_url',))
 
     new_s3_url = 'https://codeunity.ru'
-    mocker.patch('users.services.S3Service.upload', return_value=new_s3_url)
-    mocker.patch('users.services.S3Service.delete', return_value=None)
+    mocker.patch('minio.s3_utils.S3Service.upload', return_value=new_s3_url)
+    mocker.patch('minio.s3_utils.S3Service.delete', return_value=None)
 
     payload = {'file': test_image_file}
     response: Any = api_client.post(
@@ -88,7 +88,7 @@ def test_delete_avatar_successful(
     setattr(verified_user, 'avatar_url', 'https://minio.ru')
     verified_user.save(update_fields=('avatar_url',))
 
-    mocker.patch('users.services.S3Service.delete', return_value=None)
+    mocker.patch('minio.s3_utils.S3Service.delete', return_value=None)
 
     response: Any = api_client.delete(AVATAR_URL)
 

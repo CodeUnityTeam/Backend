@@ -10,6 +10,7 @@ from rest_framework.exceptions import ValidationError
 
 from core.validators import file_validator
 from minio.s3_utils import MediaType
+from projects.models import Response as ProjectResponse
 from users.models.skills import Skill
 from users.models.specializations import Specialization
 from users.models.users import User, UserExperience, UserLike

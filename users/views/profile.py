@@ -60,7 +60,7 @@ from users.serializers.profile import (
     UserLikeSerializer,
     UserResponseCardSerializer,
 )
-from users.services import (
+from users.services.profile import (
     avatar_delete_handler,
     avatar_upload_handler,
     deactivate_user_account,
