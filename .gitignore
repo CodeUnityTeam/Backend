@@ -27,6 +27,7 @@ coverage.xml
 .cache
 .mypy_cache/
 .ruff_cache/
+*.http
 
 # Virtualenv / uv
 .venv/
@@ -57,3 +58,7 @@ postgres_data/
 # Migratioms
 
 migrations/
+
+#media
+*.jpeg
+*.png

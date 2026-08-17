@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any, Optional, Sequence
 
 from allauth.account.models import EmailAddress
 from allauth.socialaccount.models import SocialAccount, SocialApp, SocialToken
@@ -9,11 +9,11 @@ from django.contrib.auth.models import Group
 from django.core.files.uploadedfile import UploadedFile
 from django.db.models import QuerySet
 from django.http import HttpRequest
-from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
 from core.admin_mixins import RolePermissionsMixin
 from users.forms import UserAdminAddForm, UserImageAdminForm
+from users.services.profile import avatar_delete_handler, avatar_upload_handler
 
 from .models import (
     Skill,
@@ -25,7 +25,6 @@ from .models import (
     UserSpecialization,
     UserWorkFormat,
 )
-from .services import avatar_delete_handler, avatar_upload_handler
 
 admin.site.unregister(Group)
 admin.site.unregister(SocialAccount)
@@ -44,7 +43,7 @@ class EmailConfirmedFilter(admin.SimpleListFilter):
         self,
         request: HttpRequest,
         model_admin: admin.ModelAdmin,
-    ) -> list[tuple[str, str]]:
+    ) -> Sequence[tuple[str, str]]:
         """Возвращает варианты фильтра: 'Да' и 'Нет'."""
         return (
             ('yes', 'Да'),
@@ -57,19 +56,14 @@ class EmailConfirmedFilter(admin.SimpleListFilter):
         queryset: QuerySet,
     ) -> QuerySet:
         """Фильтрует пользователей по наличию подтверждённого EmailAddress."""
+        confirmed_users = (
+            EmailAddress.objects
+            .filter(verified=True)
+            .values_list('user_id', flat=True)
+        )
         if self.value() == 'yes':
-            confirmed_users = (
-                EmailAddress.objects
-                .filter(verified=True)
-                .values_list('user_id', flat=True)
-            )
             return queryset.filter(user_id__in=confirmed_users)
         if self.value() == 'no':
-            confirmed_users = (
-                EmailAddress.objects
-                .filter(verified=True)
-                .values_list('user_id', flat=True)
-            )
             return queryset.exclude(user_id__in=confirmed_users)
         return queryset
 
@@ -115,6 +109,7 @@ class SpecializationAdmin(RolePermissionsMixin, admin.ModelAdmin):
     """Админ-панель для модели специализаций."""
 
     list_display = ('spec_id', 'name')
+    # noinspection PyUnresolvedReferences
     search_fields = ('^name',)
 
 
@@ -131,6 +126,7 @@ class UserLikeAdmin(RolePermissionsMixin, admin.ModelAdmin):
     """Админ-панель для модели лайков."""
 
     list_display = ('employer', 'worker')
+    # noinspection PyUnresolvedReferences
     search_fields = ('^employer__email', 'worker__email')
 
 
@@ -150,12 +146,14 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
         'get_email_confirmed',
         'get_rating',
     )
+    # noinspection PyUnresolvedReferences
     list_filter = (
         'role',
         'workformats__name',
         'projects_relation',
         EmailConfirmedFilter,
     )
+    # noinspection PyUnresolvedReferences
     search_fields = (
         'email',
         'first_name',
@@ -168,6 +166,7 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
         )
     ordering = ('-created_at',)
     list_editable = ('role', 'projects_relation')
+    # noinspection PyUnresolvedReferences
     fieldsets = (
         (None, {'fields': ('email', 'password', 'new_email')}),
         (
@@ -235,11 +234,12 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
         EmailAddressInline,
     )
 
+    # noinspection PyMethodOverriding
     def get_form(
-            self,
-            request: HttpRequest,
-            obj: Optional[User] = None,
-            **kwargs: Any,
+        self,
+        request: HttpRequest,
+        obj: Optional[User] = None,
+        **kwargs: Any,
     ) -> forms.ModelForm:
         """Замена формы для отображения кнопки загрузки аватара."""
         if obj is None:
@@ -252,9 +252,8 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
     def get_avatar(self, obj: User) -> str:
         """Метод для отображения аватара."""
         if obj.avatar_url:
-            return format_html(
-                '<img src="{}" style="max-height: 200px;">',
-                obj.avatar_url,
+            return mark_safe(
+                f'<img src="{obj.avatar_url}" style="max-height: 200px;">',
             )
         return 'Не загружено'
 

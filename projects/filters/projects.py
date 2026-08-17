@@ -25,7 +25,6 @@ from core.constants.projects import (
     ARCHIVED,
     BLOCKED,
     MAX_FILTER_DAYS,
-    MAX_SEARCH_LENGTH,
     MEMBER,
     MIN_FILTER_DAYS,
     PUBLISHED,
@@ -33,7 +32,7 @@ from core.constants.projects import (
 )
 from core.filters import UUIDInFilter
 from projects.models import Project, ProjectFavorite
-from projects.validators import validate_duration_project
+from projects.validators import validate_duration_project, validators_search
 
 User = get_user_model()
 
@@ -200,10 +199,7 @@ class ProjectFilter(django_filters.FilterSet):
         """Поиск по названию, описанию проекта."""
         if not value:
             return queryset
-        if len(value) > MAX_SEARCH_LENGTH:
-            raise serializers.ValidationError(
-                'Длина запроса превышает допустимый лимит',
-            )
+        validators_search(value)
         return queryset.filter(
             Q(title__icontains=value) |
             Q(short_desc__icontains=value) |
@@ -227,7 +223,7 @@ class ProjectFilter(django_filters.FilterSet):
             duration_operator (str): less | greater | between
 
         Логика:
-            less    — duration <= duration_min
+            less    — duration <= duration_max
             greater — duration >= duration_min
             between — duration_min <= duration <= duration_max
         """
@@ -267,7 +263,7 @@ class ProjectFilter(django_filters.FilterSet):
         )
         queryset = queryset.annotate(duration=duration_expr)
         if operator == 'less':
-            return queryset.filter(duration__lte=min_delta)
+            return queryset.filter(duration__lte=max_delta)
         if operator == 'greater':
             return queryset.filter(duration__gte=min_delta)
         # between (по умолчанию)

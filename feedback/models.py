@@ -144,7 +144,6 @@ class FeedbackImage(BaseImageMixin):
         verbose_name_plural = 'Изображения обратной связи'
         indexes = (
             models.Index(fields=['feedback']),
-            models.Index(fields=['uploaded_at']),
         )
 
     def __str__(self) -> str:

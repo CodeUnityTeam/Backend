@@ -39,7 +39,7 @@ class UserAdminAddForm(UserImageAdminForm):
     class Meta(UserImageAdminForm.Meta):
         pass
 
-    def clean_password2(self) -> str:
+    def clean_password2(self) -> str | None:
         """Проверка, что пароли совпадают."""
         password1 = self.cleaned_data.get('password1')
         password2 = self.cleaned_data.get('password2')

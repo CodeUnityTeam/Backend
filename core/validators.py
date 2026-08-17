@@ -4,7 +4,9 @@ from pathlib import Path
 
 import ahocorasick
 from django.core.exceptions import ValidationError
-from django.core.files.uploadedfile import UploadedFile
+from django.core.files import File
+
+from minio.s3_utils import MediaType, S3Service
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +43,7 @@ for word in EXCEPTION_WORDS:
 EXCEPTION_AUTO.make_automaton()
 
 
-def validate_no_bad_words(value: str) -> str:
+def validate_no_bad_words(value: str) -> None:
     """Блокирует строку при наличии стоп-слов.
 
     Поиск через алгоритм Ахо-Корасик за O(n).
@@ -49,7 +51,7 @@ def validate_no_bad_words(value: str) -> str:
 
     """
     if not CURSE_WORDS and not ABUSIVE_WORDS:
-        return value
+        return
 
     lower_value = value.lower()
 
@@ -60,7 +62,7 @@ def validate_no_bad_words(value: str) -> str:
         curse_matches.append((start_idx, end_idx, word))
 
     if not curse_matches:
-        return value
+        return
 
     # Собираем все совпадения исключений за O(n)
     exception_ranges: list[tuple[int, int]] = []
@@ -77,9 +79,10 @@ def validate_no_bad_words(value: str) -> str:
             word,
             value[:50],
         )
-        raise ValidationError('Без плохих слов, пожалуйста')
-
-    return value
+        raise ValidationError(
+            f'Обнаружено запрещённое слово "{word}". '
+            'Без плохих слов, пожалуйста.',
+        )
 
 
 def is_excepted(
@@ -95,16 +98,28 @@ def is_excepted(
     return False
 
 
-def file_size_validator(
-    allow_size_mb: int,
-) -> Callable[[UploadedFile], UploadedFile]:
-    """Валидировать размер файла."""
-    max_bytes: int = allow_size_mb * 1024 * 1024
+def file_validator(
+    media_type: MediaType,
+) -> Callable[[File], None]:
+    """Валидировать размер и тип файла."""
 
-    def validator(file_obj: UploadedFile) -> UploadedFile:
+    def validator(file_obj: File) -> None:
+        # 1. Проверяем размер файла
+        max_mb = S3Service.get_size_limit_mb(media_type)
+        max_bytes = max_mb * 1024 * 1024
         if file_obj.size > max_bytes:
-            msg: str = f'Размер файла не должен превышать {allow_size_mb} МБ.'
+            msg: str = f'Размер файла не должен превышать {max_mb} МБ.'
             raise ValidationError(msg)
-        return file_obj
+
+        # 2. Проверяем MIME-тип файла
+        content_type: str | None = getattr(file_obj, 'content_type', None)
+        if content_type and not S3Service.is_allowed_type(
+            media_type, content_type,
+        ):
+            msg = (
+                f'Неподдерживаемый тип данных '
+                f'"{content_type}" для этого раздела.'
+            )
+            raise ValidationError(msg)
 
     return validator
