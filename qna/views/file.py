@@ -8,7 +8,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from core.s3_utils import MediaType, S3Service
+from minio.s3_utils import MediaType, S3Service
 from qna.serializers.file import (
     FileUploadResponseSerializer,
     FileUploadSerializer,

@@ -18,7 +18,7 @@
 |---|---|---|
 | [`ru_curse_words.txt`](../core/constants/ru_curse_words.txt) | Нецензурная лексика (мат) | 2189 |
 | [`ru_abusive_words.txt`](../core/constants/ru_abusive_words.txt) | Оскорбления | 125 |
-| [`ru_exception_words.txt`](../core/constants/ru_exception_words.txt) | Исключения (парикмахер, мандат, заштрихуй и др.) | 9 |
+| [`ru_exception_words.txt`](../core/constants/ru_exception_words.txt) | Исключения (парикмахер, мандат, заштрихуй и др.)
 
 Файлы представляют собой обычный текст — одно слово на строку. Строки, начинающиеся с `#`, игнорируются.
 

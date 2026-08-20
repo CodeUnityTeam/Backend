@@ -1,11 +1,12 @@
 import hashlib
 import logging
 import uuid
-from typing import Any, Type
+from typing import Any, Type, cast
 
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.core.files.uploadedfile import UploadedFile
+from django.core.paginator import Page
 from django.db.models import Case, IntegerField, QuerySet, When
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404
@@ -18,7 +19,6 @@ from drf_spectacular.utils import (
     OpenApiTypes,
     PolymorphicProxySerializer,
     extend_schema,
-    extend_schema_field,
     extend_schema_view,
     inline_serializer,
 )
@@ -44,6 +44,7 @@ from core.constants.cache import (
     USER_PROFILE_CACHE_TIMEOUT,
     USER_PROFILE_LIST_CACHE_TIMEOUT,
 )
+from projects.models import Response as ProjectResponse
 from users.filters import UserFilter
 from users.models.users import User, UserExperience, UserLike
 from users.pagination import ProfileListPagination
@@ -59,7 +60,7 @@ from users.serializers.profile import (
     UserLikeSerializer,
     UserResponseCardSerializer,
 )
-from users.services import (
+from users.services.profile import (
     avatar_delete_handler,
     avatar_upload_handler,
     deactivate_user_account,
@@ -68,6 +69,7 @@ from users.services import (
 
 UserModel = get_user_model()
 
+# noinspection DuplicatedCode
 logger = logging.getLogger(__name__)
 
 
@@ -82,9 +84,10 @@ def _build_profile_list_cache_key(request: Request) -> str:
     params_hash = hashlib.sha256(
         repr(normalized_params).encode('utf-8'),
     ).hexdigest()
+    user = cast(User, request.user)
     return (
         f'{CACHE_KEY_USERS_PREFIX}:list:ids:'
-        f'{request.user.pk}:{params_hash}'
+        f'{user.pk}:{params_hash}'
     )
 
 # ============================== MeProfile ===================================
@@ -145,7 +148,7 @@ class MeProfileView(RetrieveUpdateDestroyAPIView):
 
     def get_object(self) -> User:
         """Вернуть объект текущего авторизованного пользователя."""
-        return self.request.user
+        return cast(User, self.request.user)
 
     def get_serializer_class(self) -> Type[serializers.Serializer]:
         """Возвращать разные сериализаторы для чтения и записи."""
@@ -156,11 +159,12 @@ class MeProfileView(RetrieveUpdateDestroyAPIView):
     def update(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         """Обновить профиль и вернуть полные данные профиля."""
         partial = kwargs.pop('partial', False)
+        user = cast(User, request.user)
         logger.info(
             'Запрос на редактирование профиля пользователя: '
             'user_id=%s, fields=%s',
-            request.user.user_id,
-            list(request.data.keys()),
+            user.user_id,
+            list(cast(dict[str, Any], request.data).keys()),
         )
         instance = self.get_object()
 
@@ -178,7 +182,7 @@ class MeProfileView(RetrieveUpdateDestroyAPIView):
                 'user_id=%s',
                 instance.pk,
             )
-            instance._prefetched_objects_cache = {}
+            setattr(instance, '_prefetched_objects_cache', {})
         else:
             logger.debug(
                 'Кэш профиля у пользователя отсутствует, очистка не требуется:'
@@ -187,7 +191,7 @@ class MeProfileView(RetrieveUpdateDestroyAPIView):
             )
         logger.info(
             'Профиль пользователя успешно обновлён: user_id=%s',
-            request.user.user_id,
+            user.user_id,
         )
         response_serializer = MeProfileRetrieveSerializer(
             instance,
@@ -206,14 +210,15 @@ class MeProfileView(RetrieveUpdateDestroyAPIView):
         **kwargs: Any,
     ) -> Response:
         """Мягко удалить аккаунт и вернуть статус HTTP 200."""
+        user = cast(User, request.user)
         logger.info(
             'Запрос на архивирование пользователя: user_id=%s',
-            request.user.user_id,
+            user.user_id,
         )
         self.destroy(request, *args, **kwargs)
         logger.info(
             'Пользователь успешно переведён в архив: user_id=%s',
-            request.user.user_id,
+            user.user_id,
         )
         return Response(
             {'detail': 'Аккаунт успешно удален.'},
@@ -235,8 +240,9 @@ class MeProfileView(RetrieveUpdateDestroyAPIView):
             'multipart/form-data': inline_serializer(
                 name='AvatarUploadRequest',
                 fields={
-                    'file': extend_schema_field(OpenApiTypes.BINARY)(
-                        serializers.FileField(help_text='Файл аватара'),
+                    'file': serializers.FileField(
+                        help_text='Файл аватара',
+                        error_messages={'invalid': 'Невалидный файл'},
                     ),
                 },
             ),
@@ -249,7 +255,6 @@ class MeProfileView(RetrieveUpdateDestroyAPIView):
             status.HTTP_400_BAD_REQUEST: OpenApiTypes.OBJECT,
         },
         tags=['Files'],
-        auth=[{'jwt_cookie_auth': []}],
     ),
     delete=extend_schema(
         summary='Удалить аватар пользователя',
@@ -262,7 +267,6 @@ class MeProfileView(RetrieveUpdateDestroyAPIView):
             status.HTTP_400_BAD_REQUEST: OpenApiTypes.OBJECT,
         },
         tags=['Files'],
-        auth=[{'jwt_cookie_auth': []}],
     ),
 )
 class UserAvatarAPIView(APIView):
@@ -274,14 +278,16 @@ class UserAvatarAPIView(APIView):
 
     def post(
         self,
-        request: HttpRequest,
-        *args: Any,  # noqa: ARG002
-        **kwargs: Any,  # noqa: ARG002
+        request: Request,
+        *_args: Any,
+        **_kwargs: Any,
     ) -> Response:
         """Загрузить новый аватар и удалить старый при наличии."""
+        user: User = request.user  # type: ignore[valid-type]
+
         logger.info(
             'Запрос на загрузку аватара: user_id=%s',
-            request.user.user_id,
+            user.user_id,
         )
         serializer: AvatarUploadSerializer = AvatarUploadSerializer(
             data=request.data,
@@ -295,7 +301,7 @@ class UserAvatarAPIView(APIView):
 
         logger.info(
             'Аватар успешно загружен: user_id=%s, avatar_url=%s',
-            request.user.user_id,
+            user.user_id,
             public_url,
         )
 
@@ -307,16 +313,16 @@ class UserAvatarAPIView(APIView):
     def delete(
         self,
         request: HttpRequest,
-        *args: Any,  # noqa: ARG002
-        **kwargs: Any,  # noqa: ARG002
+        *_args: Any,
+        **_kwargs: Any,
     ) -> Response:
-        """Удаленить аватар."""
+        """Удалить аватар."""
         user: User = request.user  # type: ignore[valid-type]
 
         if not user.avatar_url:
             logger.warning(
                 'Попытка удалить аватар при его отсутствии: user_id=%s',
-                request.user.user_id,
+                user.user_id,
             )
             return Response(
                 {'detail': 'Аватар отсутствует.'},
@@ -325,14 +331,14 @@ class UserAvatarAPIView(APIView):
 
         logger.info(
             'Запрос на удаление аватара: user_id=%s, avatar_url=%s',
-            request.user.user_id,
+            user.user_id,
             user.avatar_url,
         )
         avatar_delete_handler(user)
 
         logger.info(
             'Аватар успешно удалён: user_id=%s',
-            request.user.user_id,
+            user.user_id,
         )
 
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -350,11 +356,31 @@ class UserAvatarAPIView(APIView):
     update=extend_schema(
         tags=['profile'],
         summary='Полностью обновить запись своего опыта',
+        parameters=[
+            OpenApiParameter(
+                name='id',
+                type=OpenApiTypes.UUID,
+                location=OpenApiParameter.PATH,
+                description=(
+                    'Уникальный идентификатор записи опыта работы (UUID).'
+                ),
+            ),
+        ],
         responses={200: UserExperienceSerializer},
     ),
     destroy=extend_schema(
         tags=['profile'],
         summary='Удалить запись своего опыта',
+        parameters=[
+            OpenApiParameter(
+                name='id',
+                type=OpenApiTypes.UUID,
+                location=OpenApiParameter.PATH,
+                description=(
+                    'Уникальный идентификатор записи опыта работы (UUID).'
+                ),
+            ),
+        ],
         responses={204: None},
     ),
 )
@@ -372,7 +398,7 @@ class MeExperienceViewSet(ModelViewSet):
         """Возвращает опыт работы только текущего пользователя."""
         return UserExperience.objects.filter(user=self.request.user)
 
-    def perform_create(self, serializer: UserExperienceSerializer) -> None:
+    def perform_create(self, serializer: serializers.BaseSerializer) -> None:
         """Автоматически привязывает опыт к текущему пользователю."""
         serializer.save(user=self.request.user)
 
@@ -404,10 +430,11 @@ class UserProfileView(CacheRetrieveMixin, RetrieveAPIView):
         **kwargs: Any,
     ) -> Response:
         """Просмотр профиля пользователя с логированием."""
+        user = cast(User, request.user)
         logger.info(
             'Запрос на просмотр профиля пользователя: '
             'viewer_id=%s, target_user_id=%s',
-            request.user.user_id,
+            user.user_id,
             kwargs.get(self.lookup_field, ''),
         )
         return super().retrieve(request, *args, **kwargs)
@@ -429,6 +456,19 @@ class ProfileLikeAPIView(APIView):
             'Если лайк уже стоял — он удаляется (is_liked: false). '
             'Если лайка не было — он создается (is_liked: true).'
         ),
+        request=None,
+        parameters=[
+            OpenApiParameter(
+                name='worker_id',
+                type=OpenApiTypes.UUID,
+                location=OpenApiParameter.PATH,
+                description=(
+                    'Уникальный идентификатор соискателя (UUID), '
+                    'которому ставится лайк.'
+                ),
+                required=True,
+            ),
+        ],
         responses={
             200: inline_serializer(
                 name='LikeDeletedResponse',
@@ -463,13 +503,14 @@ class ProfileLikeAPIView(APIView):
                 },
             ),
         },
+        tags=['Profile'],
     )
     def post(
         self,
         request: Request,
         worker_id: uuid.UUID,
-        *args: Any,
-        **kwargs: Any,
+        *_args: Any,
+        **_kwargs: Any,
     ) -> Response:
         """Переключение (toggle) лайка для указанного worker_id."""
         employer = request.user
@@ -648,7 +689,7 @@ class UserProfileListView(ListAPIView):
 
     def get_serializer_class(self) -> Type[BaseSerializer]:
         """Динамически выбирает сериализатор на основе query-параметров."""
-        params: dict[str, str] = self.request.query_params
+        params = getattr(self.request, 'query_params', {})
         responses_param: str = params.get('responses', '').lower()
 
         if responses_param == 'true':
@@ -656,11 +697,12 @@ class UserProfileListView(ListAPIView):
 
         return PublicUserProfileSerializer
 
-    def get_queryset(self) -> QuerySet[User]:
+    def get_queryset(self) -> QuerySet[ProjectResponse] | QuerySet[User]:
         """Делегирует получение и фильтрацию QuerySet слою сервисов."""
+        params = getattr(self.request, 'query_params', {})
         return get_profiles_for_employer_service(
             current_user=self.request.user,
-            query_params=self.request.query_params,
+            query_params=params,
         )
 
     def list(
@@ -706,6 +748,7 @@ class UserProfileListView(ListAPIView):
                 len(ordered_ids),
             )
 
+        # noinspection DuplicatedCode
         page_ids = self.paginate_queryset(ordered_ids)
         if not page_ids:
             return self.get_paginated_response([])
@@ -723,11 +766,13 @@ class UserProfileListView(ListAPIView):
             .order_by(preserved_order)
         )
         serializer = self.get_serializer(page_queryset, many=True)
+        paginator = cast(ProfileListPagination, self.paginator)
+        page = cast(Page, paginator.page)
         logger.debug(
             'Список профилей сформирован: cache_status=%s, page=%d, '
             'page_size=%d, total_ids=%d',
             'HIT' if cached_ids is not None else 'MISS',
-            self.paginator.page.number,
+            page.number,
             len(page_ids),
             len(ordered_ids),
         )

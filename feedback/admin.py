@@ -5,7 +5,7 @@ from core.admin_mixins import (
     RolePermissionsMixin,
     SaveImageFormsetMixin,
 )
-from core.s3_utils import MediaType
+from minio.s3_utils import MediaType
 
 from .models import FeedbackForm, FeedbackImage, Review
 

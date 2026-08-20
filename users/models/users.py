@@ -1,5 +1,5 @@
-import uuid
 from typing import Any
+from uuid import UUID, uuid4
 
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
@@ -32,11 +32,13 @@ from .managers import UserManager
 class User(TimestampMixin, AbstractUser):
     """Кастомная модель пользователя на базе стандартного AbstractUser."""
 
+    # noinspection PyTypeChecker
     class RoleChoices(models.TextChoices):
         USER = 'user', 'Пользователь'
         MODERATOR = 'moderator', 'Модератор'
         ADMIN = 'admin', 'Администратор'
 
+    # noinspection PyTypeChecker
     class ProjectsRelationChoices(models.TextChoices):
         EMPLOYER = 'employer', 'Наниматель'
         WORKER = 'worker', 'Работник'
@@ -54,20 +56,20 @@ class User(TimestampMixin, AbstractUser):
     user_id = models.UUIDField(
         'ID пользователя',
         primary_key=True,
-        default=uuid.uuid4,
+        default=uuid4,
         editable=False,
         help_text='Уникальный идентификатор.',
     )
     role = models.CharField(
         'Роль',
         max_length=USER_ROLE_LENGTH,
-        choices=RoleChoices.choices,
+        choices=RoleChoices,
         default=RoleChoices.USER,
         help_text='Роль пользователя в системе.',
     )
     projects_relation = models.CharField(
         'Роль в проектах',
-        choices=ProjectsRelationChoices.choices,
+        choices=ProjectsRelationChoices,
         default=ProjectsRelationChoices.WORKER,
         help_text='Роль по отношению к проектам (наниматель или исполнитель).',
     )
@@ -213,7 +215,7 @@ class User(TimestampMixin, AbstractUser):
         )
 
     @property
-    def id(self) -> str:
+    def id(self) -> UUID:
         """При логине ожидается id - > возвращаем user_id."""
         return self.user_id
 
@@ -222,12 +224,12 @@ class User(TimestampMixin, AbstractUser):
 
 
 class UserExperience(TimestampMixin):
-    """Моедль опыта работы пользователя."""
+    """Модель опыта работы пользователя."""
 
     exp_id = models.UUIDField(
         'ID записи опыта пользователя',
         primary_key=True,
-        default=uuid.uuid4,
+        default=uuid4,
         editable=False,
         help_text='Уникальный идентификатор.',
     )
@@ -290,7 +292,7 @@ class UserLike(CreatedAtMixin, models.Model):
         on_delete=models.RESTRICT,
         db_column='worker_id',
         related_name='employers_likes',
-        verbose_name='Лайкнутый пользователь',
+        verbose_name='Пользователь, которому поставили лайк',
     )
 
     class Meta:
@@ -311,7 +313,7 @@ class UserLike(CreatedAtMixin, models.Model):
         """Проверка бизнес-логики перед сохранением."""
         super().clean()
 
-        if self.employer_id == self.worker_id:
+        if self.employer.pk == self.worker.pk:
             raise ValidationError('Нельзя лайкнуть свой профиль.')
 
     def save(self, *args: Any, **kwargs: Any) -> None:

@@ -20,14 +20,8 @@ from rest_framework_simplejwt.views import (
 
 from users.views.auth import (
     EmailChangeView,
-    GoogleAuthUrlView,
-    GoogleLogin,
-    MailRuAuthUrlView,
-    MailRuLogin,
-    YandexAuthUrlView,
-    # YandexCallbackView,
-    YandexLogin,
 )
+from users.views.oauth import SocialAuthCallbackView, SocialAuthUrlView
 from users.views.profile import (
     MeExperienceViewSet,
     MeProfileView,
@@ -195,39 +189,14 @@ urlpatterns = (
                 ]),
             ),
             path(
-                'google/url/',
-                GoogleAuthUrlView.as_view(),
-                name='google_auth_url',
+                '<str:provider>/url/',
+                SocialAuthUrlView.as_view(),
+                name='social_auth_url',
             ),
             path(
-                'yandex/url/',
-                YandexAuthUrlView.as_view(),
-                name='yandex_auth_url',
-            ),
-            # path(
-            #     'yandex/callback/',
-            #     YandexCallbackView.as_view(),
-            #     name='yandex_callback',
-            # ),
-            path(
-                'mailru/url/',
-                MailRuAuthUrlView.as_view(),
-                name='mailru_auth_url',
-            ),
-            path(
-                'google/callback',
-                GoogleLogin.as_view(),
-                name='google_login',
-            ),
-            path(
-                'yandex/callback',
-                YandexLogin.as_view(),
-                name='yandex_login',
-            ),
-            path(
-                'mailru/callback',
-                MailRuLogin.as_view(),
-                name='mailru_login',
+                '<str:provider>/callback/',
+                SocialAuthCallbackView.as_view(),
+                name='social_auth_callback',
             ),
         ]),
     ),

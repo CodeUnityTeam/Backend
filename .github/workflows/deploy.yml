@@ -44,20 +44,22 @@ jobs:
       - name: Copy docker-compose.dev.yaml via ssh
         uses: appleboy/scp-action@master
         with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: ${{ secrets.TEST_HOST }}
+          username: ${{ secrets.TEST_USER }}
+          key: ${{ secrets.TEST_SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.TEST_SSH_PASSPHRASE }}
           source: "docker-compose.dev.yaml"
-          target: "/code-unity"
+          target: "/opt/code-unity-dev"
       - name: Executing remote ssh commands to deploy
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: ${{ secrets.TEST_HOST }}
+          username: ${{ secrets.TEST_USER }}
+          key: ${{ secrets.TEST_SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.TEST_SSH_PASSPHRASE }}
           script: |
             set -e
-            cd /code-unity/
+            cd /opt/code-unity-dev/
             sudo docker compose -f docker-compose.dev.yaml pull
             sudo docker compose -f docker-compose.dev.yaml down
             sudo docker compose -f docker-compose.dev.yaml up -d

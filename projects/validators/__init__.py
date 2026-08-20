@@ -23,6 +23,7 @@ from .project_validators import (
     validate_telegram_contact,
     validate_title_project,
     validate_update_project_status,
+    validators_search,
 )
 from .response_project import (
     validate_can_change_status,

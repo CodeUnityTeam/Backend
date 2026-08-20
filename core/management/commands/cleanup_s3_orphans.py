@@ -15,8 +15,8 @@ from typing import Any
 
 from django.core.management.base import BaseCommand
 
-from core.s3_utils import MediaType, S3Service
 from feedback.models import FeedbackImage
+from minio.s3_utils import MediaType, S3Service
 from qna.models import AnswerImage, QuestionImage
 from users.models import User
 

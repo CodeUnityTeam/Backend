@@ -66,8 +66,8 @@ class Question(TimestampMixin, models.Model):
         verbose_name = 'Вопрос'
         verbose_name_plural = 'Вопросы'
         indexes = (
-            models.Index(fields=['-created_at']),  # поля из миксина
-            models.Index(fields=['-updated_at']),  # поля из миксина
+            models.Index(fields=['-created_at']),  # поле миксина
+            models.Index(fields=['-updated_at']),  # поле миксина
             models.Index(fields=['is_active']),
             models.Index(fields=['is_anonymous']),
         )
@@ -250,8 +250,6 @@ class QuestionImage(BaseImageMixin):
         verbose_name_plural = 'Изображения вопроса'
         indexes = (
             models.Index(fields=['question']),
-            models.Index(fields=['uploaded_by']),
-            models.Index(fields=['uploaded_at']),
         )
 
     def __str__(self) -> str:
@@ -281,8 +279,6 @@ class AnswerImage(BaseImageMixin):
         verbose_name_plural = 'Изображения ответов'
         indexes = (
             models.Index(fields=['answer']),
-            models.Index(fields=['uploaded_by']),
-            models.Index(fields=['uploaded_at']),
         )
 
     def __str__(self) -> str:

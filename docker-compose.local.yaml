@@ -1,6 +1,7 @@
 volumes:
   pg_data:
   minio_data:
+  redis_data:
 
 services:
   db:
@@ -34,6 +35,8 @@ services:
     image: redis:7-alpine
     container_name: redis
     restart: unless-stopped
+    volumes:
+      - redis_data:/data
     ports:
       - "6379:6379"
     healthcheck:

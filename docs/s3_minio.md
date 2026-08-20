@@ -4,7 +4,7 @@
 
 ## Архитектура
 
-Для взаимодействия с S3 реализован единый сервис [`S3Service`](../core/s3_utils.py). Он автоматически:
+Для взаимодействия с S3 реализован единый сервис [`S3Service`](../minio/s3_utils.py). Он автоматически:
 - Создаёт бакеты при первом обращении, если они отсутствуют.
 - Выполняет загрузку и удаление объектов.
 - Генерирует presigned URL для прямой загрузки с фронтенда.
@@ -27,7 +27,7 @@
 ### Использование
 
 ```python
-from core.s3_utils import S3Service, MediaType
+from minio.s3_utils import S3Service, MediaType
 
 # Загрузка файла
 url = S3Service.upload(MediaType.AVATAR, file_obj)

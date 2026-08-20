@@ -1,5 +1,3 @@
-import uuid
-
 from django.contrib import admin
 from django.db import models
 from django.utils.safestring import mark_safe
@@ -48,12 +46,6 @@ class TimestampMixin(CreatedAtMixin, UpdatedAtMixin):
 class BaseImageMixin(models.Model):
     """Базовый класс для изображений в вопросах, ответах и обратной связи."""
 
-    image_id = models.UUIDField(
-        primary_key=True,
-        default=uuid.uuid4,
-        editable=False,
-        verbose_name='Идентификатор изображения',
-    )
     original_name = models.CharField(
         max_length=MAX_ORIGINAL_NAME,
         verbose_name='Оригинальное имя файла',
@@ -64,16 +56,6 @@ class BaseImageMixin(models.Model):
     mime_type = models.CharField(
         max_length=MAX_MINE_TYPE,
         verbose_name='Тип файла',
-    )
-    uploaded_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Дата и время загрузки',
-    )
-    uploaded_by = models.ForeignKey(
-        'users.User',
-        on_delete=models.CASCADE,
-        db_column='uploaded_by',
-        verbose_name='Загружено',
     )
     image_url = models.URLField(
         max_length=MAX_IMAGE_URL,

@@ -71,3 +71,12 @@ def custom_exception_handler(exc: Exception, context: dict) -> Response:
         {'detail': 'Internal server error'},
         status=status.HTTP_500_INTERNAL_SERVER_ERROR,
     )
+
+
+class InvalidResponseStatusTransition(ProjectAPIException):
+    """Исключение, возникающее при недопустимом переходе статуса отклика."""
+
+    status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+    default_detail = {
+        'message': 'Отклик/приглашение уже обработано',
+    }
