@@ -4,8 +4,8 @@ import django_filters
 from django.db.models import Q, QuerySet
 from rest_framework.exceptions import NotAuthenticated
 
-from core.constants.qna import MAX_VALUE_SEARCH_QUERY_LENGTH
 from core.filters import UUIDInFilter
+from core.validators import validators_search
 
 from .models import Question
 
@@ -23,7 +23,6 @@ class QuestionFilter(django_filters.FilterSet):
     search = django_filters.CharFilter(
         method='filter_search',
         label='Поиск по заголовку и описанию',
-        max_length=MAX_VALUE_SEARCH_QUERY_LENGTH,
     )
 
     class Meta:
@@ -76,6 +75,7 @@ class QuestionFilter(django_filters.FilterSet):
         """
         if not value or not value.strip():
             return queryset
+        validators_search(value)
         query = value.strip()
         return queryset.filter(
             Q(title__icontains=query) |

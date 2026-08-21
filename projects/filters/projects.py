@@ -25,15 +25,15 @@ from core.constants.projects import (
     ARCHIVED,
     BLOCKED,
     MAX_FILTER_DAYS,
-    MAX_VALUE_SEARCH_QUERY_LENGTH,
     MEMBER,
     MIN_FILTER_DAYS,
     PUBLISHED,
     RECRUITING_CLOSED,
 )
 from core.filters import UUIDInFilter
+from core.validators import validators_search
 from projects.models import Project, ProjectFavorite
-from projects.validators import validate_duration_project, validators_search
+from projects.validators import validate_duration_project
 
 User = get_user_model()
 
@@ -167,7 +167,6 @@ class ProjectFilter(django_filters.FilterSet):
     # Поиск по названию, описанию
     search = django_filters.CharFilter(
         method='filter_search',
-        max_length=MAX_VALUE_SEARCH_QUERY_LENGTH,
     )
     # Фильтр по статусу
     status = django_filters.BaseInFilter(field_name='status_project')
