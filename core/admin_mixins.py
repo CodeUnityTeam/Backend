@@ -132,5 +132,3 @@ class BaseImageInline(admin.TabularInline):
             {'_media_type': media_type},
         )
         return formset
-
-
