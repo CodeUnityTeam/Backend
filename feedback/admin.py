@@ -3,7 +3,6 @@ from django.contrib import admin
 from core.admin_mixins import (
     BaseImageInline,
     RolePermissionsMixin,
-    SaveImageFormsetMixin,
 )
 from minio.s3_utils import MediaType
 
@@ -34,7 +33,6 @@ class FeedbackImageInline(BaseImageInline):
 
 @admin.register(FeedbackForm)
 class FeedbackFormAdmin(
-    SaveImageFormsetMixin,
     RolePermissionsMixin,
     admin.ModelAdmin,
 ):
