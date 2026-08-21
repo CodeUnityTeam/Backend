@@ -2,7 +2,7 @@ from typing import Optional
 
 import django_filters
 from django.db.models import Q, QuerySet
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import NotAuthenticated
 
 from core.constants.qna import MAX_VALUE_SEARCH_QUERY_LENGTH
 from core.filters import UUIDInFilter
@@ -58,7 +58,7 @@ class QuestionFilter(django_filters.FilterSet):
         if value == 'my':
             user = self.request.user
             if not user.is_authenticated:
-                raise PermissionDenied(
+                raise NotAuthenticated(
                     'Для фильтра "my" требуется авторизация.',
                 )
             return queryset.filter(user=user)
