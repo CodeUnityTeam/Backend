@@ -4,6 +4,7 @@ import django_filters
 from django.db.models import Q, QuerySet
 from rest_framework.exceptions import PermissionDenied
 
+from core.constants.qna import MAX_VALUE_SEARCH_QUERY_LENGTH
 from core.filters import UUIDInFilter
 
 from .models import Question
@@ -22,6 +23,7 @@ class QuestionFilter(django_filters.FilterSet):
     search = django_filters.CharFilter(
         method='filter_search',
         label='Поиск по заголовку и описанию',
+        max_length=MAX_VALUE_SEARCH_QUERY_LENGTH,
     )
 
     class Meta:

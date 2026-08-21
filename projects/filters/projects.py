@@ -25,6 +25,7 @@ from core.constants.projects import (
     ARCHIVED,
     BLOCKED,
     MAX_FILTER_DAYS,
+    MAX_VALUE_SEARCH_QUERY_LENGTH,
     MEMBER,
     MIN_FILTER_DAYS,
     PUBLISHED,
@@ -164,7 +165,10 @@ class ProjectFilter(django_filters.FilterSet):
         method='filter_duration',
     )
     # Поиск по названию, описанию
-    search = django_filters.CharFilter(method='filter_search')
+    search = django_filters.CharFilter(
+        method='filter_search',
+        max_length=MAX_VALUE_SEARCH_QUERY_LENGTH,
+    )
     # Фильтр по статусу
     status = django_filters.BaseInFilter(field_name='status_project')
     # Показывает мои проекты, но с условием!
