@@ -2,9 +2,11 @@ from typing import Any
 
 import django_filters
 from django.core.validators import MaxLengthValidator
-from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q, QuerySet
+from django.http.request import HttpRequest
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.exceptions import ValidationError
+from rest_framework.views import APIView
 
 
 class StrictDjangoFilterBackend(DjangoFilterBackend):
@@ -15,7 +17,13 @@ class StrictDjangoFilterBackend(DjangoFilterBackend):
      ошибок.
     """
 
-    def filter_queryset(self, request, queryset, view):
+    def filter_queryset(
+            self,
+            request: HttpRequest,
+            queryset: QuerySet[Any],
+            view: APIView,
+    ) -> QuerySet[Any]:
+        """Валидирует query-параметры и фильтрует базовый QuerySet."""
         filterset_class = self.get_filterset_class(view, queryset)
 
         if filterset_class:
