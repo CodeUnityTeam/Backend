@@ -4,6 +4,7 @@ import django_filters
 from django.db.models import Q, QuerySet
 from rest_framework.exceptions import NotAuthenticated
 
+from core.constants import MAX_SEARCH_UUIDS_SKILL_SPEC
 from core.filters import UUIDInFilter
 from core.validators import validators_search
 
@@ -16,6 +17,7 @@ class QuestionFilter(django_filters.FilterSet):
     tags = UUIDInFilter(
         field_name='skills__skill_id',
         label='Теги (по ID навыков)',
+        max_length=MAX_SEARCH_UUIDS_SKILL_SPEC,
     )
     filter = django_filters.CharFilter(
         method='filter_by_type', label='Тип фильтра',

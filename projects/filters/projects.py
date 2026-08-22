@@ -21,6 +21,7 @@ from django.db.models.functions import Coalesce
 from rest_framework import serializers
 from rest_framework.exceptions import NotAuthenticated
 
+from core.constants import MAX_SEARCH_UUIDS_FORMAT, MAX_SEARCH_UUIDS_SKILL_SPEC
 from core.constants.projects import (
     ARCHIVED,
     BLOCKED,
@@ -146,12 +147,15 @@ class ProjectFilter(django_filters.FilterSet):
 
     format_id = UUIDInFilter(
         field_name='project_format__format_id',
+        max_length=MAX_SEARCH_UUIDS_FORMAT,
     )
     spec_id = UUIDInFilter(
         field_name='specializations__spec_id',
+        max_length=MAX_SEARCH_UUIDS_SKILL_SPEC,
     )
     skills_id = UUIDInFilter(
         field_name='skills__skill_id',
+        max_length=MAX_SEARCH_UUIDS_SKILL_SPEC,
     )
     # Фильтруем по дням
     duration_min = django_filters.NumberFilter(method='filter_duration')
