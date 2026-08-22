@@ -152,7 +152,6 @@ class AnswerCreateSerializer(serializers.ModelSerializer):
             for image in images:
                 create_answer_image(
                     answer=answer,
-                    uploaded_by=user,
                     image_url=image['image_url'],
                     original_name=image['original_name'],
                     file_size=image['file_size'],

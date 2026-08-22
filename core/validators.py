@@ -5,7 +5,12 @@ from pathlib import Path
 import ahocorasick
 from django.core.exceptions import ValidationError
 from django.core.files import File
+from rest_framework import serializers
 
+from core.constants import (
+    MAX_VALUE_SEARCH_QUERY_LENGTH,
+    MIN_VALUE_SEARCH_QUERY_LENGTH,
+)
 from minio.s3_utils import MediaType, S3Service
 
 logger = logging.getLogger(__name__)
@@ -123,3 +128,18 @@ def file_validator(
             raise ValidationError(msg)
 
     return validator
+
+
+def validators_search(value: str) -> None:
+    """Проверяет длину поискового запроса."""
+    cleaned_value = value.strip()
+    if not (
+        MIN_VALUE_SEARCH_QUERY_LENGTH
+        <= len(cleaned_value)
+        <= MAX_VALUE_SEARCH_QUERY_LENGTH
+    ):
+        raise serializers.ValidationError(
+            'Поисковый запрос принимает длину строки от '
+            f'{MIN_VALUE_SEARCH_QUERY_LENGTH} до '
+            f'{MAX_VALUE_SEARCH_QUERY_LENGTH} символов.',
+        )

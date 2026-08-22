@@ -107,7 +107,6 @@ class QuestionCreateSerializer(serializers.ModelSerializer):
             for image in images:
                 create_question_image(
                     question=question,
-                    uploaded_by=user,
                     image_id=image['image_id'],
                     image_url=image['image_url'],
                     original_name=image['original_name'],
@@ -148,7 +147,6 @@ class QuestionUpdateSerializer(QuestionCreateSerializer):
                     for image in get_question_images(instance)
                 }
                 incoming_ids: set[str] = set()
-                user = self.context['request'].user
 
                 for image_data in images:
                     image_id = image_data.get('image_id')
@@ -167,7 +165,6 @@ class QuestionUpdateSerializer(QuestionCreateSerializer):
                     else:
                         new_image = create_question_image(
                             question=instance,
-                            uploaded_by=user,
                             image_url=image_data['image_url'],
                             original_name=image_data['original_name'],
                             file_size=image_data['file_size'],

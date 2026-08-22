@@ -21,6 +21,7 @@ from django.db.models.functions import Coalesce
 from rest_framework import serializers
 from rest_framework.exceptions import NotAuthenticated
 
+from core.constants import MAX_SEARCH_UUIDS_FORMAT, MAX_SEARCH_UUIDS_SKILL_SPEC
 from core.constants.projects import (
     ARCHIVED,
     BLOCKED,
@@ -31,8 +32,9 @@ from core.constants.projects import (
     RECRUITING_CLOSED,
 )
 from core.filters import UUIDInFilter
+from core.validators import validators_search
 from projects.models import Project, ProjectFavorite
-from projects.validators import validate_duration_project, validators_search
+from projects.validators import validate_duration_project
 
 User = get_user_model()
 
@@ -145,12 +147,15 @@ class ProjectFilter(django_filters.FilterSet):
 
     format_id = UUIDInFilter(
         field_name='project_format__format_id',
+        max_length=MAX_SEARCH_UUIDS_FORMAT,
     )
     spec_id = UUIDInFilter(
         field_name='specializations__spec_id',
+        max_length=MAX_SEARCH_UUIDS_SKILL_SPEC,
     )
     skills_id = UUIDInFilter(
         field_name='skills__skill_id',
+        max_length=MAX_SEARCH_UUIDS_SKILL_SPEC,
     )
     # Фильтруем по дням
     duration_min = django_filters.NumberFilter(method='filter_duration')
@@ -164,7 +169,9 @@ class ProjectFilter(django_filters.FilterSet):
         method='filter_duration',
     )
     # Поиск по названию, описанию
-    search = django_filters.CharFilter(method='filter_search')
+    search = django_filters.CharFilter(
+        method='filter_search',
+    )
     # Фильтр по статусу
     status = django_filters.BaseInFilter(field_name='status_project')
     # Показывает мои проекты, но с условием!
