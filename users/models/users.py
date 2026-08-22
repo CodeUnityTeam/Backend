@@ -18,10 +18,6 @@ from core.constants.users import (
     USER_COUNTRY_LENGTH,
     USER_EMAIL_HELP,
     USER_EMAIL_LENGTH,
-    USER_FIRST_NAME_LENGTH,
-    USER_LAST_NAME_LENGTH,
-    USER_NAME_HELP,
-    USER_NAME_PATTERN,
     USER_ROLE_LENGTH,
 )
 from core.models.mixins import CreatedAtMixin, TimestampMixin
@@ -108,23 +104,9 @@ class User(TimestampMixin, AbstractUser):
     )
     first_name = models.CharField(
         'Имя',
-        max_length=USER_FIRST_NAME_LENGTH,
-        validators=(
-            RegexValidator(
-                regex=USER_NAME_PATTERN,
-                message=USER_NAME_HELP,
-            ),
-        ),
     )
     last_name = models.CharField(
         'Фамилия',
-        max_length=USER_LAST_NAME_LENGTH,
-        validators=(
-            RegexValidator(
-                regex=USER_NAME_PATTERN,
-                message=USER_NAME_HELP,
-            ),
-        ),
     )
     phone_number = models.CharField(
         'Номер телефона',
