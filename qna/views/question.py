@@ -12,7 +12,7 @@ from drf_spectacular.utils import (
 )
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import NotAuthenticated
 from rest_framework.permissions import (
     AllowAny,
     BasePermission,
@@ -167,8 +167,7 @@ class QuestionViewSet(CacheRetrieveMixin, viewsets.ModelViewSet):
             request.query_params.get('filter') == 'my'
             and not request.user.is_authenticated
         ):
-            raise PermissionDenied('Authentication is required for filter=my.')
-
+            raise NotAuthenticated('Authentication is required for filter=my.')
         cache_key = _build_question_list_cache_key(request)
         assert cache_key is not None
         cached_ids = cache.get(cache_key)

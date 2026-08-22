@@ -1,7 +1,9 @@
+from typing import Any
 from uuid import UUID
 
 import django_filters
 from django.db.models import QuerySet
+from rest_framework.exceptions import ValidationError
 
 
 class UUIDInFilter(django_filters.BaseInFilter):
@@ -12,12 +14,37 @@ class UUIDInFilter(django_filters.BaseInFilter):
 
     Логика фильтрации — «OR»: объект должен соответствовать хотя бы
     одному из переданных UUID.
+
+    Параметр max_length ограничивает суммарную длину строки запроса
+    (включая разделители-запятые). При превышении бросается
+    ValidationError (400).
     """
+
+    def __init__(
+        self,
+        *args: Any,
+        max_length: int | None = None,
+        **kwargs: Any,
+    ) -> None:
+        """Инициализирует фильтр.
+
+        :max_length: Максимальная допустимая длина.
+        Если None, ограничение не применяется.
+        """
+        self.max_length = max_length
+        super().__init__(*args, **kwargs)
 
     def filter(self, qs: QuerySet, value: list[str] | None) -> QuerySet:
         """Фильтрует queryset по списку UUID (логика «OR»)."""
         if not value:
             return qs
+        # Суммарная длина строки запроса (значения + разделители-запятые)
+        total_length = sum(len(item) for item in value) + (len(value) - 1)
+        if self.max_length is not None and total_length > self.max_length:
+            raise ValidationError(
+                f'Длина параметра "{self.field_name}" не должна превышать '
+                f'{self.max_length} символов.',
+            )
         valid_uuids = []
         for uuids_value in value:
             try:
