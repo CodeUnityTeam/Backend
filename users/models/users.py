@@ -2,17 +2,13 @@ from typing import Any
 from uuid import UUID, uuid4
 
 from django.contrib.auth.models import AbstractUser
-from django.core.exceptions import ValidationError
-from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models import Q
+from rest_framework.exceptions import ValidationError
 
 from config import settings
 from core.constants.users import (
     MAX_CHAR_FIELD_LENGTH,
-    MAX_PHONE_DIGITS,
-    MIN_PHONE_DIGITS,
-    PHONE_PATTERN,
     USER_ADDITIONAL_CONTACT_LENGTH,
     USER_CITY_LENGTH,
     USER_COUNTRY_LENGTH,
@@ -82,16 +78,6 @@ class User(TimestampMixin, AbstractUser):
         blank=True,
         default='',
     )
-    is_email_confirmed = models.BooleanField(
-        'Email подтверждён',
-        default=False,
-        help_text='Отмечает, подтверждён ли email пользователя.',
-    )
-    is_password_confirmed = models.BooleanField(
-        'Пароль подтверждён',
-        default=False,
-        help_text='Отмечает, подтверждён ли пароль пользователя.',
-    )
     is_agreed_to_terms = models.BooleanField(
         'Согласие с условиями',
         default=False,
@@ -102,27 +88,8 @@ class User(TimestampMixin, AbstractUser):
         default=False,
         help_text='Пользователь заполнил форму знакомства.',
     )
-    first_name = models.CharField(
-        'Имя',
-    )
-    last_name = models.CharField(
-        'Фамилия',
-    )
-    phone_number = models.CharField(
-        'Номер телефона',
-        max_length=MAX_PHONE_DIGITS,
-        blank=True,
-        default='',
-        validators=(
-            RegexValidator(
-                regex=PHONE_PATTERN,
-                message=(
-                    'Телефон должен начинаться с + и содержать от '
-                    f'{MIN_PHONE_DIGITS} до {MAX_PHONE_DIGITS} цифр.'
-                ),
-            ),
-        ),
-    )
+    first_name = models.CharField('Имя')
+    last_name = models.CharField('Фамилия')
     additional_contact = models.CharField(
         'Дополнительный контакт',
         max_length=USER_ADDITIONAL_CONTACT_LENGTH,

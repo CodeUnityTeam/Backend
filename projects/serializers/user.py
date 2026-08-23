@@ -42,5 +42,5 @@ class UserAuthorSerializer(UserAuthorShortSerializer):
         model = User
         fields = UserAuthorShortSerializer.Meta.fields + (
             'email',
-            'phone_number',
+            'additional_contact',
         )
