@@ -19,7 +19,13 @@ from django.http import HttpRequest
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from core.constants.users import MSG_RESENT
+from core.constants.users import (
+    MSG_RESENT,
+    PASSWORD_MAX_LENGTH,
+    PASSWORD_MIN_LENGTH,
+    USER_FIRST_NAME_LENGTH,
+    USER_LAST_NAME_LENGTH,
+)
 from core.tasks import send_async_template_email
 from users.adapters import ImmediateResponseException
 from users.models import User
@@ -44,17 +50,21 @@ class CustomRegisterSerializer(RegisterSerializer):
     email = serializers.EmailField(required=True)
     first_name = serializers.CharField(
         required=True,
-        max_length=150,
+        max_length=USER_FIRST_NAME_LENGTH,
         validators=[validate_user_name],
     )
+
     last_name = serializers.CharField(
         required=True,
-        max_length=150,
+        max_length=USER_LAST_NAME_LENGTH,
         validators=[validate_user_name],
     )
+
     password = serializers.CharField(
         write_only=True,
         required=True,
+        min_length=PASSWORD_MIN_LENGTH,
+        max_length=PASSWORD_MAX_LENGTH,
         style={'input_type': 'password'},
         validators=[validate_password_requirements],
     )

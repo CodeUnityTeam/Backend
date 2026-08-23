@@ -148,7 +148,6 @@ class FeedbackCreateSerializer(serializers.ModelSerializer):
             for image in attachments:
                 FeedbackImage.objects.create(
                     feedback=feedback,
-                    uploaded_by=user,
                     image_id=uuid.uuid4(),
                     image_url=feedback_image_upload_handler(file_obj=image),
                     original_name=image.name,

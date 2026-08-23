@@ -5,7 +5,6 @@ from core.admin_mixins import (
     BaseImageInline,
     BaseLikeInline,
     LikeCountMixin,
-    SaveImageFormsetMixin,
 )
 from minio.s3_utils import MediaType
 
@@ -50,7 +49,7 @@ class AnswerImageInline(BaseImageInline):
 
 
 @admin.register(Question)
-class QuestionAdmin(SaveImageFormsetMixin, LikeCountMixin, admin.ModelAdmin):
+class QuestionAdmin(LikeCountMixin, admin.ModelAdmin):
     """Админ‑панель для модели Question."""
 
     list_display = (
@@ -64,7 +63,7 @@ class QuestionAdmin(SaveImageFormsetMixin, LikeCountMixin, admin.ModelAdmin):
 
 
 @admin.register(Answer)
-class AnswerAdmin(SaveImageFormsetMixin, LikeCountMixin, admin.ModelAdmin):
+class AnswerAdmin(LikeCountMixin, admin.ModelAdmin):
     """Админ‑панель для модели Answer."""
 
     list_display = (

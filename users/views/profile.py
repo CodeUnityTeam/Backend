@@ -45,7 +45,7 @@ from core.constants.cache import (
     USER_PROFILE_LIST_CACHE_TIMEOUT,
 )
 from projects.models import Response as ProjectResponse
-from users.filters import UserFilter
+from users.filters import StrictDjangoFilterBackend, UserFilter
 from users.models.users import User, UserExperience, UserLike
 from users.pagination import ProfileListPagination
 from users.permissions import IsEmployer
@@ -683,7 +683,7 @@ class UserProfileListView(ListAPIView):
     permission_classes: tuple[Type[BasePermission], ...] = (IsEmployer,)
     pagination_class: Type[BasePagination] = ProfileListPagination
     filter_backends: tuple[Type[DjangoFilterBackend], ...] = (
-        DjangoFilterBackend,
+        StrictDjangoFilterBackend,
     )
     filterset_class: Type[UserFilter] = UserFilter
 
