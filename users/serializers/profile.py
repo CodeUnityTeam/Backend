@@ -108,7 +108,6 @@ class MeProfileUpdateSerializer(UserDetailsSerializer):
             'projects_relation',
             'first_name',
             'last_name',
-            'phone_number',
             'additional_contact',
             'country',
             'city',

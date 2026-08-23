@@ -177,7 +177,7 @@ class FeedbackAndInvitationFeedSerializer(serializers.Serializer):
 
     Возвращает поля отклика и проекта на одном уровне.
     - Когда response_status == 'approved' — добавляются
-      author_email и author_phone автора проекта.
+      author_email и author_additional_contact автора проекта.
     - Когда response_status == 'pending' — контакты автора скрыты.
 
     Все данные получает из аннотированного queryset
@@ -231,7 +231,7 @@ class FeedbackAndInvitationFeedSerializer(serializers.Serializer):
     )
     # Контакты автора (только для approved)
     author_email = serializers.SerializerMethodField()
-    author_phone = serializers.SerializerMethodField()
+    author_additional_contact = serializers.SerializerMethodField()
 
     def get_participants_count(self, instance: Response) -> int:
         """Количество участников из Redis-счётчика (с fallback на БД)."""
@@ -262,21 +262,21 @@ class FeedbackAndInvitationFeedSerializer(serializers.Serializer):
             return instance.project.author.email
         return None
 
-    def get_author_phone(self, instance: Response) -> str | None:
+    def get_author_additional_contact(self, instance: Response) -> str | None:
         """Телефон автора — только для approved откликов."""
         if instance.status_resp == APPROVED:
-            return instance.project.author.phone_number
+            return instance.project.author.additional_contact
         return None
 
     def to_representation(self, instance: Any) -> Dict[str, Any]:
         """Форматируем поля для ответа.
 
-        Удаляем author_email и author_phone, если они None
+        Удаляем author_email и author_additional_contact, если они None
         (т.е. статус не approved).
         """
         data = super().to_representation(instance)
         if data.get('author_email') is None:
             data.pop('author_email', None)
-        if data.get('author_phone') is None:
-            data.pop('author_phone', None)
+        if data.get('author_additional_contact') is None:
+            data.pop('author_additional_contact', None)
         return data

@@ -38,7 +38,7 @@
 
 **Ответ (200):** полный объект пользователя.
 
-> **Поля профиля:** `first_name`, `last_name`, `phone_number`, `additional_contact`, `country`, `city`, `soft_skills`, `about_me`, `projects_relation`, `skills`, `specializations`, `workformats`, `experiences`. Email и role — read-only.
+> **Поля профиля:** `first_name`, `last_name`, `additional_contact`, `country`, `city`, `soft_skills`, `about_me`, `projects_relation`, `skills`, `specializations`, `workformats`, `experiences`. Email и role — read-only.
 
 ### 2. Удалить аккаунт (мягкое удаление)
 
