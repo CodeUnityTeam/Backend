@@ -2,9 +2,11 @@ from typing import Optional
 
 import django_filters
 from django.db.models import Q, QuerySet
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import NotAuthenticated
 
+from core.constants import MAX_SEARCH_UUIDS_SKILL_SPEC
 from core.filters import UUIDInFilter
+from core.validators import validators_search
 
 from .models import Question
 
@@ -15,6 +17,7 @@ class QuestionFilter(django_filters.FilterSet):
     tags = UUIDInFilter(
         field_name='skills__skill_id',
         label='Теги (по ID навыков)',
+        max_length=MAX_SEARCH_UUIDS_SKILL_SPEC,
     )
     filter = django_filters.CharFilter(
         method='filter_by_type', label='Тип фильтра',
@@ -56,7 +59,7 @@ class QuestionFilter(django_filters.FilterSet):
         if value == 'my':
             user = self.request.user
             if not user.is_authenticated:
-                raise PermissionDenied(
+                raise NotAuthenticated(
                     'Для фильтра "my" требуется авторизация.',
                 )
             return queryset.filter(user=user)
@@ -74,6 +77,7 @@ class QuestionFilter(django_filters.FilterSet):
         """
         if not value or not value.strip():
             return queryset
+        validators_search(value)
         query = value.strip()
         return queryset.filter(
             Q(title__icontains=query) |

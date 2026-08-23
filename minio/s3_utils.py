@@ -220,9 +220,15 @@ class S3Service:
         storage: S3Boto3Storage,
         bucket_name: str,
     ) -> None:
-        """Проверяет существование бакета и создаёт его при необходимости."""
+        """Проверяет существование бакета и создаёт его при необходимости.
+
+        После создания сразу выставляет публичную bucket policy
+        (public-read), чтобы файлы открывались в браузере без подписи.
+        Это необходимо для корректного отображения миниатюр в админке
+        и публичных URL, которые сохраняются в БД.
+        """
+        s3_client = storage.connection.meta.client
         try:
-            s3_client = storage.connection.meta.client
             s3_client.head_bucket(Bucket=bucket_name)
         except Exception:
             try:
@@ -232,6 +238,42 @@ class S3Service:
                 logger.warning(
                     'Не удалось создать бакет %s: %s', bucket_name, err,
                 )
+                return
+
+        # Гарантируем публичное чтение для существующих и новых бакетов,
+        # т.к. `querystring_auth=False` подразумевает открытый доступ.
+        cls._set_public_read_policy(s3_client, bucket_name)
+
+    @classmethod
+    def _set_public_read_policy(
+        cls,
+        s3_client: Any,
+        bucket_name: str,
+    ) -> None:
+        """Выставляет bucket policy public-read для бакета."""
+        policy = {
+            'Version': '2012-10-17',
+            'Statement': [
+                {
+                    'Effect': 'Allow',
+                    'Principal': {'AWS': ['*']},
+                    'Action': ['s3:GetObject'],
+                    'Resource': [f'arn:aws:s3:::{bucket_name}/*'],
+                },
+            ],
+        }
+        try:
+            s3_client.put_bucket_policy(
+                Bucket=bucket_name,
+                Policy=__import__('json').dumps(policy),
+            )
+            logger.info('Бакет %s переведён в режим public-read', bucket_name)
+        except Exception as err:
+            logger.warning(
+                'Не удалось выставить public-read для бакета %s: %s',
+                bucket_name,
+                err,
+            )
 
     @classmethod
     def _generate_cloud_path(cls, media_type: MediaType, filename: str) -> str:

@@ -7,7 +7,6 @@ from django.db.models import Model, QuerySet
 from django.http import HttpRequest
 
 from core.admin_forms import ImageAdminForm
-from core.models.mixins import BaseImageMixin
 
 User = apps.get_model('users', 'User')
 
@@ -124,51 +123,12 @@ class BaseImageInline(admin.TabularInline):
         obj: Optional[Model] = None,
         **kwargs: Any,
     ) -> Any:
-        """Подставляет parent_obj и request в форму для корректной загрузки."""
+        """Задаёт тип медиа для валидации загружаемого файла."""
         formset = super().get_formset(request, obj, **kwargs)
         media_type = getattr(self, 'media_type', None)
         formset.form = type(
             'DynamicCoverForm',
             (formset.form,),
-            {
-                '__init__': lambda self, *args, **kwargs:
-                    ImageAdminForm.__init__(
-                        self, *args, parent_obj=obj, request=request, **kwargs,
-                    ),
-                '_media_type': media_type,
-            },
+            {'_media_type': media_type},
         )
         return formset
-
-
-class SaveImageFormsetMixin:
-    """Миксин для ModelAdmin, проставляющий uploaded_by в инлайн-изображениях.
-
-    После сохранения родительской формы проходит по всем инлайн-формам
-    и для моделей-наследников BaseImageMixin проставляет uploaded_by
-    из родительского объекта (form.instance.user), если он не был заполнен.
-    """
-
-    def save_formset(
-        self,
-        request: HttpRequest,
-        form: Any,
-        formset: Any,
-        change: bool,
-    ) -> None:
-        """Сохраняет формсет и проставляет uploaded_by для изображений.
-
-        1. Сохраняет новые/изменённые объекты с проставлением uploaded_by.
-        2. Вызывает formset.save() для обработки deleted_objects,
-           чтобы сработали сигналы post_delete (удаление из MinIO).
-        """
-        instances = formset.save(commit=False)
-        for i, instance in enumerate(instances):
-            if (
-                isinstance(instance, BaseImageMixin)
-                and not instance.uploaded_by_id
-            ):
-                instance.uploaded_by = form.instance.user
-            instance.save()
-
-        formset.save()

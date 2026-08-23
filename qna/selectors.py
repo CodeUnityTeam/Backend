@@ -131,13 +131,11 @@ def set_question_skills(question: Question, tags: list) -> None:
 
 def create_question_image(
     question: Question,
-    uploaded_by: Model,
     **image_data: Any,
 ) -> QuestionImage:
     """Создаёт изображение для вопроса."""
     return QuestionImage.objects.create(
         question=question,
-        uploaded_by=uploaded_by,
         **image_data,
     )
 
@@ -183,13 +181,11 @@ def create_answer(
 
 def create_answer_image(
     answer: Answer,
-    uploaded_by: Model,
     **image_data: Any,
 ) -> AnswerImage:
     """Создаёт изображение для ответа."""
     return AnswerImage.objects.create(
         answer=answer,
-        uploaded_by=uploaded_by,
         **image_data,
     )
 
