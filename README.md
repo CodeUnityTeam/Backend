@@ -47,7 +47,7 @@ Backend проекта реализован как RESTful API на Django/DRF, 
       <td>@miskhozhev</td>
     </tr>
     <tr>
-      <td>Кристина Алабова</td>
+      <td>Кристина Невская</td>
       <td><a href="https://github.com/Enigmatica33">https://github.com/Enigmatica33</a></td>
       <td>@enigmatica33</td>
     </tr>
