@@ -112,7 +112,7 @@ def test_my_question_filter_is_isolated_and_rejected_for_anonymous():
     assert [item['question_id'] for item in second.data['items']] == [
         str(second_question.pk),
     ]
-    assert anonymous.status_code == 403
+    assert anonymous.status_code == 401
     assert len(list(cache.iter_keys('qna:list:ids:*:*'))) == 2
 
 
@@ -173,7 +173,7 @@ def test_project_favorites_filter_is_personal_for_each_viewer():
     assert [item['project_id'] for item in second.data['items']] == [
         str(second_project.pk),
     ]
-    assert anonymous.data['items'] == []
+    assert anonymous.status_code == 401
     assert len(list(cache.iter_keys(
         f'projects:list:ids:{first_viewer.pk}:*',
     ))) == 1

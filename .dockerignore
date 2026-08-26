@@ -21,11 +21,6 @@ htmlcov/
 *.so
 *.db
 
-# Миграции — применяются через manage.py migrate при старте контейнера
-migrations/
-**/migrations/
-!**/migrations/__init__.py
-
 # Статика и медиа — собираются отдельно (S3 / volume)
 media/
 staticfiles/

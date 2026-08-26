@@ -76,14 +76,14 @@ EXAMPLE_DETAIL_RESPONSE_PROJECT = [
                         f'{participant["full_name"].split()[0].lower()}'
                         '@example.com'
                     ),
-                    'phone': '+79001234567',
+                    'additional_contact': '+79001234567',
                 }
                 for participant in BASE_PROJECT_RESPONSE['participants']
             ],
             'author': {
                 **BASE_PROJECT_RESPONSE['author'],
                 'email': 'ivan@example.com',
-                'phone': '+79001112233',
+                'additional_contact': '+79001112233',
             },
         },
     ),
@@ -107,7 +107,7 @@ EXAMPLE_DETAIL_RESPONSE_PROJECT = [
             'author': {
                 **BASE_PROJECT_RESPONSE['author'],
                 'email': 'ivan@example.com',
-                'phone': '+79001112233',
+                'additional_contact': '+79001112233',
             },
         },
     ),
