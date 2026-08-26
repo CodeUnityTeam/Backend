@@ -45,7 +45,7 @@ PROJECT_REPRESENTATION_FIELDS = {
     'first_name',
     'last_name',
     'email',
-    'phone_number',
+    'additional_contact',
     'avatar_url',
     'last_login',
 }

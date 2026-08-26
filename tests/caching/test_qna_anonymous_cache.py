@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import pytest
 from django.http import QueryDict
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import NotAuthenticated
 
 from qna.views.question import (
     QuestionViewSet,
@@ -51,7 +51,7 @@ def test_anonymous_my_filter_is_rejected_before_cache_read(mocker):
     cache = mocker.patch('qna.views.question.cache')
     view = QuestionViewSet()
 
-    with pytest.raises(PermissionDenied):
+    with pytest.raises(NotAuthenticated):
         view.list(_request(authenticated=False, query='filter=my'))
 
     cache.get.assert_not_called()

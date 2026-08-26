@@ -158,7 +158,6 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
         'email',
         'first_name',
         'last_name',
-        'phone_number',
         'experiences__company',
         'experiences__position',
         'specializations__name',
@@ -175,7 +174,6 @@ class UserAdmin(RolePermissionsMixin, DjangoUserAdmin):
                 'fields': (
                     'first_name',
                     'last_name',
-                    'phone_number',
                     'additional_contact',
                     'country',
                     'city',

@@ -1,45 +1,88 @@
-# CodeUnity
-Скопируй и вставь в терминал для локального тестирования перед PR
-Обязательно включен локальный стек, миграции и теги в отдельном терминале
-```bash
-bash fixtures/test_data/create_users.sh
-bash fixtures/test_data/create_obj.sh
-```
-теперь можно очистить и оставить админа
-```bash
-uv run python manage.py flush --noinput
-DJANGO_SUPERUSER_PASSWORD=admin uv run python manage.py createsuperuser --email admin@example.com --first_name Admin --last_name Admin --noinput
-```
-скопируй для быстрого старта локалки, чтобы пройти тесты, если не запущен локально, потом вставь первый кусок выше
-```
-docker compose -f docker-compose.local.yaml up -d
-uv run python manage.py makemigrations
-uv run python manage.py migrate
-uv run python manage.py loaddata fixtures/tags/*
-uv run python manage.py runserver
-```
+# CodeUnity  ![](/docs/logo-BGBMxMPc.svg)
 
-#### Запуск на dev-сервере
+Проект для связи разработчиков и авторов проектов.
 
-На сервере используется [`load_on_dev.sh`](../fixtures/test_data/load_on_dev.sh), который сам подставляет нужные переменные:
+Здесь разработчики смогут найти для себя проекты, соответствующие их навыкам, участие в которых поможет получить 
+необходимый опыт, а авторы проектов смогут собрать себе команду для реализации своих идей. Также на этом проекте есть 
+раздел Q&A, где каждый сможет задать вопрос по интересующим его навыкам и темам и получить ответы и комментарии от коллег. 
+Подробнее о возможностях сервиса можно узнать по ссылкам разделов ниже.
 
-```bash
-sudo docker compose -f docker-compose.dev.yaml exec backend bash fixtures/test_data/load_on_dev.sh
-```
+Backend проекта реализован как RESTful API на Django/DRF, использованы библиотеки и инструменты:
+  * df-rest-auth - авторизация, включая авторизацию по протоколу OAuth2
+  * psycopg - для работы с PostgreSQL
+  * django-redis и celery - для кеширования и настройки фоновых задач
+  * django-storages - для хранения файлов в хранилище MinIO
+  * drf-spectacular - для документирования API
+  * Docker - для контейниризации бэкенда и инфраструктуры
+  * GitHub Action - для настройки CI/CD
+  * Другие вспомогательные Django библиотеки
 
-Скрипт автоматически:
-1. Регистрирует пользователей через API `https://dev.code-unity.ru/api/v1`
-2. Подтверждает email через `python manage.py shell`
-3. Создаёт проекты, вопросы, ответы и остальные тестовые данные
 
-При необходимости можно переопределить переменные:
-
-```bash
-sudo docker compose -f docker-compose.dev.yaml exec \
-  -e BASE_URL="https://custom.domain/api/v1" \
-  backend bash fixtures/test_data/load_on_dev.sh
-```
----
+### Команда backend
+<table>
+  <thead>
+    <tr>
+      <th>Имя</th>
+      <th>GitHub</th>
+      <th>Telegram</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- Секция TeamLead -->
+    <tr>
+      <td colspan="3" style="font-weight: bold; text-align: center;">TeamLead</td>
+    </tr>
+    <tr>
+      <td>Станислав Баринов</td>
+      <td><a href="https://github.com/hixwizard">https://github.com/hixwizard</a></td>
+      <td>@hixhello</td>
+    </tr>
+    <!-- Секция Developers -->
+    <tr>
+      <td colspan="3" style="font-weight: bold; text-align: center;">Developers</td>
+    </tr>
+    <tr>
+      <td>Олег Мисхожев</td>
+      <td><a href="https://github.com/OlegMiskhozhev">https://github.com/OlegMiskhozhev</a></td>
+      <td>@miskhozhev</td>
+    </tr>
+    <tr>
+      <td>Кристина Невская</td>
+      <td><a href="https://github.com/Enigmatica33">https://github.com/Enigmatica33</a></td>
+      <td>@enigmatica33</td>
+    </tr>
+    <tr>
+      <td>Вячеслав Шипов</td>
+      <td><a href="https://github.com/clsvood">https://github.com/clsvood</a></td>
+      <td>@clsvood</td>
+    </tr>
+    <tr>
+      <td>Максим Числавский</td>
+      <td><a href="https://github.com/MaksimChislavskiy">https://github.com/MaksimChislavskiy</a></td>
+      <td>@M_75_x</td>
+    </tr>
+    <tr>
+      <td>Евгений Цыганков</td>
+      <td><a href="https://github.com/EvgeniyTsygankov">https://github.com/EvgeniyTsygankov</a></td>
+      <td>@tsygankov_eg</td>
+    </tr>
+    <tr>
+      <td>Наташа Хуснутдинова</td>
+      <td><a href="https://github.com/natixdev">https://github.com/natixdev</a></td>
+      <td>@natix_dev</td>
+    </tr>
+    <tr>
+      <td>Надежда Малюхина</td>
+      <td><a href="https://github.com/nadyamalyuhina">https://github.com/nadyamalyuhina</a></td>
+      <td>@hope_build</td>
+    </tr>
+    <tr>
+      <td>Александр Быстров</td>
+      <td><a href="https://github.com/Aleksandr-Bystrov">https://github.com/Aleksandr-Bystrov</a></td>
+      <td>@km00_1</td>
+    </tr>
+  </tbody>
+</table>
 
 ### Backend
 

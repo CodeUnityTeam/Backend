@@ -363,7 +363,7 @@ class ProjectDetailSerializer(ProjectShortSerializer):
         """Получает инфу об участниках проекта.
 
         - Автор-наниматель видит ID, full_name, аватар,
-          email, phone участников.
+          email, additional_contact участников.
         - Участник и обычный пользователь видят только
           ID, full_name, аватар участников.
 
@@ -385,8 +385,10 @@ class ProjectDetailSerializer(ProjectShortSerializer):
     def get_author(self, project: Project) -> dict:
         """Метод для показа информации об авторе проекта.
 
-        - Автор-наниматель видит полную информацию о себе (email, phone).
-        - Участник проекта видит полную информацию об авторе (email, phone).
+        - Автор-наниматель видит полную информацию о себе
+         (email, additional_contact).
+        - Участник проекта видит полную информацию об авторе
+         (email, additional_contact).
         - Обычный пользователь видит краткую информацию.
 
         Использует аннотацию is_participant из get_optimized_project_queryset.

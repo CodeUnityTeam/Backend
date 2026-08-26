@@ -132,7 +132,6 @@ jobs:
             sudo docker compose -f docker-compose.test.yaml pull
             sudo docker compose -f docker-compose.test.yaml down
             sudo docker compose -f docker-compose.test.yaml up -d
-            sudo docker compose -f docker-compose.test.yaml exec -T backend python manage.py makemigrations
             sudo docker compose -f docker-compose.test.yaml exec -T backend python manage.py migrate
             sudo docker compose -f docker-compose.test.yaml exec -T backend python manage.py loaddata fixtures/tags/formats.json
             sudo docker compose -f docker-compose.test.yaml exec -T backend python manage.py loaddata fixtures/tags/specializations.json
